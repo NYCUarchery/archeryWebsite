@@ -1,0 +1,54 @@
+.top_bar{
+    display: flex;
+    width: 100%;
+    height: 150px;
+    background-color:#2056cc ;
+    color : #ffffff;
+    font-family: DFKai-SB;
+    align-items: center;
+    justify-content: center;
+    
+}
+
+.game_title{
+    text-align: center;
+}
+
+.game_main_title{
+    font-size: 50px;
+}
+
+.game_subtitle{
+    font-size: 20px;
+}
+
+.sub_game_bar{
+    width: 100%;
+    height: 50px;
+    display: flex;
+    background-color:#2056cc ;
+    color : #ffffff;
+
+}
+
+.sub_game_tag{
+    width: 100px;
+    background-color: #1448b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    transition: 0.3s;
+}
+
+.sub_game_tag:hover{
+    background-color: #103890;
+}
+
+.bottom_bar{
+    width: 100%;
+    height: 40px;
+    background-color: #2056cc;
+    position: fixed;
+    bottom:0px;
+}
