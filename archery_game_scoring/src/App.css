@@ -1,3 +1,5 @@
+/*Screen*/
+
 .top_bar{
     display: flex;
     width: 100%;
@@ -51,4 +53,28 @@
     background-color: #2056cc;
     position: fixed;
     bottom:0px;
+}
+
+/*Qualifying phase*/
+
+.scoreboard_row{
+    display: grid;
+    grid-template-columns: 10% 10% 20% 50% 10%;
+    grid-template-rows: auto;
+}
+
+.qualifying_phase_board{
+    width: 600px;
+    height: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 50px;
+}
+
+.scoreboard{
+    text-align: center;
+}
+
+.ranking_info_bar{
+    background-color: #b6cdff;
 }

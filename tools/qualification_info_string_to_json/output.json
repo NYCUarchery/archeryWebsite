@@ -1,0 +1,284 @@
+{
+  "players": [
+    {
+      "rank": "1",
+      "target": "11C",
+      "name": "劉冠亨",
+      "institution": "海洋大學射箭社",
+      "score": "321"
+    },
+    {
+      "rank": "2",
+      "target": "8C",
+      "name": "林寶琳",
+      "institution": "輔大射箭社",
+      "score": "315"
+    },
+    {
+      "rank": "3",
+      "target": "1A",
+      "name": "蔡毅龍",
+      "institution": "成大騎射協會",
+      "score": "314"
+    },
+    {
+      "rank": "4",
+      "target": "1B",
+      "name": "梁永熹",
+      "institution": "中興騎射協會",
+      "score": "303"
+    },
+    {
+      "rank": "5",
+      "target": "6B",
+      "name": "蘇凌",
+      "institution": "東吳大學",
+      "score": "301"
+    },
+    {
+      "rank": "6",
+      "target": "2B",
+      "name": "王昭穎",
+      "institution": "中興騎射協會",
+      "score": "289"
+    },
+    {
+      "rank": "7",
+      "target": "6C",
+      "name": "余欣媛",
+      "institution": "清大現代弓射箭社",
+      "score": "282"
+    },
+    {
+      "rank": "8",
+      "target": "1D",
+      "name": "廖俊逸",
+      "institution": "交大射箭社",
+      "score": "282"
+    },
+    {
+      "rank": "9",
+      "target": "4A",
+      "name": "鍾承穎",
+      "institution": "成大騎射協會",
+      "score": "272"
+    },
+    {
+      "rank": "10",
+      "target": "12A",
+      "name": "魯星洋",
+      "institution": "嘉南藥理大學",
+      "score": "267"
+    },
+    {
+      "rank": "11",
+      "target": "10C",
+      "name": "孫國凱",
+      "institution": "海洋大學射箭社",
+      "score": "267"
+    },
+    {
+      "rank": "12",
+      "target": "2D",
+      "name": "沈芮熙",
+      "institution": "交大射箭社",
+      "score": "264"
+    },
+    {
+      "rank": "13",
+      "target": "4D",
+      "name": "張宗澔",
+      "institution": "交大射箭社",
+      "score": "259"
+    },
+    {
+      "rank": "14",
+      "target": "2A",
+      "name": "方資傑",
+      "institution": "成大騎射協會",
+      "score": "256"
+    },
+    {
+      "rank": "15",
+      "target": "2C",
+      "name": "汪佳儀",
+      "institution": "台大射箭協會",
+      "score": "255"
+    },
+    {
+      "rank": "16",
+      "target": "6A",
+      "name": "陳嵩富",
+      "institution": "成大騎射協會",
+      "score": "251"
+    },
+    {
+      "rank": "17",
+      "target": "4C",
+      "name": "林亭歡",
+      "institution": "清大現代弓射箭社",
+      "score": "247"
+    },
+    {
+      "rank": "18",
+      "target": "5C",
+      "name": "陳長庚",
+      "institution": "清大現代弓射箭社",
+      "score": "246"
+    },
+    {
+      "rank": "19",
+      "target": "3B",
+      "name": "林晏亘",
+      "institution": "中興騎射協會",
+      "score": "246"
+    },
+    {
+      "rank": "20",
+      "target": "1C",
+      "name": "陳詣斌",
+      "institution": "台大射箭協會",
+      "score": "232"
+    },
+    {
+      "rank": "21",
+      "target": "3C",
+      "name": "盧振華",
+      "institution": "清大現代弓射箭社",
+      "score": "232"
+    },
+    {
+      "rank": "22",
+      "target": "9C",
+      "name": "翁林玄",
+      "institution": "輔大射箭社",
+      "score": "228"
+    },
+    {
+      "rank": "23",
+      "target": "3A",
+      "name": "劉千愛",
+      "institution": "成大騎射協會",
+      "score": "228"
+    },
+    {
+      "rank": "24",
+      "target": "5B",
+      "name": "鍾佳靜",
+      "institution": "中興騎射協會",
+      "score": "217"
+    },
+    {
+      "rank": "25",
+      "target": "7A",
+      "name": "高伯恆",
+      "institution": "成大騎射協會",
+      "score": "214"
+    },
+    {
+      "rank": "26",
+      "target": "3D",
+      "name": "徐乙文",
+      "institution": "交大射箭社",
+      "score": "212"
+    },
+    {
+      "rank": "27",
+      "target": "9B",
+      "name": "彭郁睎",
+      "institution": "中興騎射協會",
+      "score": "212"
+    },
+    {
+      "rank": "28",
+      "target": "10B",
+      "name": "李旻訓",
+      "institution": "中興騎射協會",
+      "score": "201"
+    },
+    {
+      "rank": "29",
+      "target": "7B",
+      "name": "楊茗棋",
+      "institution": "中興騎射協會",
+      "score": "196"
+    },
+    {
+      "rank": "30",
+      "target": "11A",
+      "name": "張珈瑄",
+      "institution": "嘉南藥理大學",
+      "score": "193"
+    },
+    {
+      "rank": "31",
+      "target": "7C",
+      "name": "鄭凱睿",
+      "institution": "清大現代弓射箭社",
+      "score": "171"
+    },
+    {
+      "rank": "32",
+      "target": "11B",
+      "name": "郭沛綸",
+      "institution": "中興騎射協會",
+      "score": "162"
+    },
+    {
+      "rank": "33",
+      "target": "8A",
+      "name": "黃亭熒",
+      "institution": "嘉南藥理大學",
+      "score": "141"
+    },
+    {
+      "rank": "34",
+      "target": "8B",
+      "name": "李宜親",
+      "institution": "中興騎射協會",
+      "score": "137"
+    },
+    {
+      "rank": "35",
+      "target": "12C",
+      "name": "林祐傑",
+      "institution": "陽明射箭社",
+      "score": "107"
+    },
+    {
+      "rank": "36",
+      "target": "5A",
+      "name": "胡定亞",
+      "institution": "成大騎射協會",
+      "score": "98"
+    },
+    {
+      "rank": "37",
+      "target": "9A",
+      "name": "柯孟潔",
+      "institution": "嘉南藥理大學",
+      "score": "71"
+    },
+    {
+      "rank": "38",
+      "target": "12B",
+      "name": "黃紫璇",
+      "institution": "中興騎射協會",
+      "score": "57"
+    },
+    {
+      "rank": "39",
+      "target": "10A",
+      "name": "許堡絨",
+      "institution": "嘉南藥理大學",
+      "score": "28"
+    },
+    {
+      "rank": "40",
+      "target": "4B",
+      "name": "朱子宜",
+      "institution": "中興騎射協會",
+      "score": "0"
+    }
+  ]
+}
