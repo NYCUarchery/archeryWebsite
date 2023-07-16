@@ -1,5 +1,5 @@
-// import * as React from 'react';
-import { useState, ChangeEvent, MouseEvent } from 'react';
+
+import { useState, ChangeEvent, MouseEvent, Dispatch, SetStateAction, FC } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -24,7 +24,11 @@ import CardContent from '@mui/material/CardContent';
 
 import avatar from "../assets/images/avatar.jpg";
 
-export default function Header() {
+interface HeaderProps {
+  setSideBarOpen: Dispatch<SetStateAction<boolean>>;
+}
+
+const Header: FC<HeaderProps> = ({ setSideBarOpen }) => {
   const [auth, setAuth] = useState(true);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -43,7 +47,7 @@ export default function Header() {
 
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <FormGroup>
+      {/* <FormGroup>
         <FormControlLabel
           control={
             <Switch
@@ -54,8 +58,8 @@ export default function Header() {
           }
           label={auth ? 'Logout' : 'Login'}
         />
-      </FormGroup>
-      <AppBar position="static">
+      </FormGroup> */}
+      <AppBar position="static" sx={{zIndex: 99}}>
         <Toolbar>
           <IconButton
             size="large"
@@ -63,6 +67,9 @@ export default function Header() {
             color="inherit"
             aria-label="menu"
             sx={{ mr: 2 }}
+            onClick={() => {
+              setSideBarOpen(prev => !prev);
+            }}
           >
             <MenuIcon />
           </IconButton>
@@ -80,10 +87,11 @@ export default function Header() {
 										aria-haspopup="true"
 										onClick={handleMenu}
 										color="inherit"
+                    sx={{mr: "20px"}}
 									>
 										<AccountCircle />
 									</IconButton>
-									<Popper open={Boolean(anchorEl)} anchorEl={anchorEl}>
+									<Popper open={Boolean(anchorEl)} anchorEl={anchorEl} placement="bottom-end">
 										{/* <Box sx={{
 											border: '1px solid yellow',
 											p: "5px 10px 5px 10px",
@@ -92,8 +100,12 @@ export default function Header() {
 											minHeight: 300,
 										}}> */}
 										<Card>
-											<CardContent>
-												<img src={avatar} alt="My Avatar" width="40px" />
+											<CardContent sx={{display: "flex", flexFlow: "column", alignItems: "center"}}>
+												<img src={avatar} alt="My Avatar" width="100px" />
+                        <div style={{display: "flex", flexFlow: "column"}}>
+                          <MenuItem onClick={handleClose}>Profile</MenuItem>
+                          <MenuItem onClick={handleClose}>Log Out</MenuItem>
+                        </div>
 											</CardContent>
 										</Card>
 										{/* </Box> */}
@@ -127,3 +139,5 @@ export default function Header() {
     </Box>
   );
 }
+
+export default Header;
