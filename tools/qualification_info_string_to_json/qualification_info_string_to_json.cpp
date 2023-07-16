@@ -13,7 +13,7 @@ int main()
     int num_of_players;
     int num_of_columns;
 
-    file.open("./input.txt");
+    file.open("input.txt");
     output.open("./output.json");
 
     if (file.fail())

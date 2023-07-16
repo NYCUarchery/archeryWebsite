@@ -1,10 +1,16 @@
+
+
+.hidden{
+    max-height: 0px;
+    overflow: hidden;
+}
 /*Screen*/
 
 .top_bar{
     display: flex;
     width: 100%;
     height: 150px;
-    background-color:#2056cc ;
+    background-color:#2056cc;
     color : #ffffff;
     font-family: DFKai-SB;
     align-items: center;
@@ -26,15 +32,45 @@
 
 .sub_game_bar{
     width: 100%;
-    height: 50px;
+    height: 40px;
     display: flex;
     background-color:#2056cc ;
     color : #ffffff;
 
 }
+.group_list{
+    margin-left: auto;
+}
+.phase_list{
+    margin-right: auto;
+}
 
-.sub_game_tag{
-    width: 100px;
+.sub_game_bar_list{
+    width: 200px;
+    padding: 0px;
+    z-index: 1;
+}
+
+.sub_game_bar_list_button{
+    width: 200px;
+    height: 40px;
+    border: 0px;
+    color: #ffffff;
+    background-color: #1448b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+}
+
+.sub_game_bar_list_button:active{
+    background-color: #103890;
+}
+
+.group_list_item{
+    width: auto;
+    height: 40px;
+    border-top: 1px solid #ffffff;
     background-color: #1448b8;
     display: flex;
     align-items: center;
@@ -43,7 +79,23 @@
     transition: 0.3s;
 }
 
-.sub_game_tag:hover{
+.phase_list_item{
+    width: auto;
+    height: 40px;
+    border-top: 1px solid #ffffff;
+    background-color: #1448b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    transition: 0.3s;
+}
+
+
+.group_list_item:hover{
+    background-color: #103890;
+}
+.phase_list_item:hover{
     background-color: #103890;
 }
 
