@@ -12,23 +12,30 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import MenuItem from '@mui/material/MenuItem';
 import Menu from '@mui/material/Menu';
+import MenuList from '@mui/material/MenuList';
 
 
 import Popper from '@mui/material/Popper';
-import { ClickAwayListener } from '@mui/material';
+import { ClickAwayListener, createTheme } from '@mui/material';
 
+import ButtonBase from '@mui/material/ButtonBase';
+import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
+import Grow from '@mui/material/Grow';
 
 
 import avatar from "../assets/images/avatar.jpg";
+import { useNavigate } from 'react-router-dom';
+import { create } from 'domain';
 
 interface HeaderProps {
   setSideBarOpen: Dispatch<SetStateAction<boolean>>;
+  setAuthorized: Dispatch<SetStateAction<boolean>>;
 }
 
-const Header: FC<HeaderProps> = ({ setSideBarOpen }) => {
+const Header: FC<HeaderProps> = ({ setSideBarOpen, setAuthorized }) => {
   const [auth, setAuth] = useState(true);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -45,6 +52,9 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen }) => {
     setAnchorEl(null);
   };
 
+  const navigate = useNavigate();
+
+  
   return (
     <Box sx={{ flexGrow: 1 }}>
       {/* <FormGroup>
@@ -59,7 +69,7 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen }) => {
           label={auth ? 'Logout' : 'Login'}
         />
       </FormGroup> */}
-      <AppBar position="static" sx={{zIndex: 99}}>
+      <AppBar position="fixed" sx={{zIndex: 99}}>
         <Toolbar>
           <IconButton
             size="large"
@@ -73,9 +83,12 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen }) => {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Archery
-          </Typography>
+          <Button variant="text" sx={{ color: "white"}}>
+            <Typography variant="h6" component="div">
+              Archery
+            </Typography>
+          </Button>
+          <div style={{flexGrow: 1}}></div>
           {auth && (
             <div>
 							<ClickAwayListener onClickAway={handleClose}>
@@ -92,46 +105,42 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen }) => {
 										<AccountCircle />
 									</IconButton>
 									<Popper open={Boolean(anchorEl)} anchorEl={anchorEl} placement="bottom-end">
-										{/* <Box sx={{
-											border: '1px solid yellow',
-											p: "5px 10px 5px 10px",
-											bgcolor: 'background.paper',
-											minWidth: 200,
-											minHeight: 300,
-										}}> */}
-										<Card>
-											<CardContent sx={{display: "flex", flexFlow: "column", alignItems: "center"}}>
-												<img src={avatar} alt="My Avatar" width="100px" />
-                        <div style={{display: "flex", flexFlow: "column"}}>
-                          <MenuItem onClick={handleClose}>Profile</MenuItem>
-                          <MenuItem onClick={handleClose}>Log Out</MenuItem>
-                        </div>
-											</CardContent>
-										</Card>
-										{/* </Box> */}
-										{/* <MenuItem onClick={handleClose}>Profile</MenuItem>
-										<MenuItem onClick={handleClose}>My account</MenuItem> */}
+                    <Grow
+                      in={Boolean(anchorEl)}
+                      style={{ transformOrigin: '0 0 0' }}
+                      {...(Boolean(anchorEl) ? { timeout: 400 } : {})}
+                    >
+                      <Card>
+                        <CardContent sx={{display: "flex", flexFlow: "column", alignItems: "center"}}>
+                          <img src={avatar} alt="My Avatar" width="100px" />
+                          <Box component="div" sx={{display: "flex", flexFlow: "column", mt: "10px"}}>
+                            <MenuList>
+
+                              <MenuItem
+                                aria-label="personal page"
+                                onClick={() => {
+                                  handleClose();
+                                  navigate("/PersonalPage")
+                                }}
+                              >
+                                Profile
+                              </MenuItem>
+                              <MenuItem
+                                onClick={() => {
+                                  handleClose();
+                                  setAuthorized(false);
+                                }}
+                              >
+                                Log Out
+                              </MenuItem>
+                            </MenuList>
+                          </Box>
+                        </CardContent>
+                      </Card>
+                    </Grow>
 									</Popper>
 								</div>
 							</ClickAwayListener>
-              {/* <Menu
-                id="menu-appbar"
-                anchorEl={anchorEl}
-                anchorOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                keepMounted
-                transformOrigin={{
-                  vertical: 'top',
-                  horizontal: 'right',
-                }}
-                open={Boolean(anchorEl)}
-                onClose={handleClose}
-              >
-                <MenuItem onClick={handleClose}>Profile</MenuItem>
-                <MenuItem onClick={handleClose}>My account</MenuItem>
-              </Menu> */}
             </div>
           )}
         </Toolbar>
