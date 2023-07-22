@@ -8,6 +8,7 @@ import TextField from '@mui/material/TextField';
 
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
+import Stack from '@mui/material/Stack';
 
 import FormHelperText from '@mui/material/FormHelperText';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -123,6 +124,26 @@ const LoginPage: FC<LoginPageProps> = ({setAuthorized}) => {
 															)}
 														</FormControl>
 													</Grid>
+													<Grid item xs={1}>
+														<Grid container justifyContent="flex-end">
+															<Grid item xs={6}>
+																<Typography
+																	variant="caption"
+																	component={Button}
+																	onClick={() => {
+																		window.alert("Try to figure out by yourself")
+																	}}
+																	// component={Link}
+																	// to={props.login ? '/pages/forgot-password/forgot-password' + props.login : '#'}
+																	color="secondary"
+																	noWrap={true}
+																	sx={{ textDecoration: 'none'}}
+																>
+																	Forgot Password?
+																</Typography>
+															</Grid>
+														</Grid>
+													</Grid>
 													<Grid item xs={2}>
 														<Box
 															sx={{
@@ -140,6 +161,23 @@ const LoginPage: FC<LoginPageProps> = ({setAuthorized}) => {
 																	Log In
 															</Button>
 														</Box>
+													</Grid>
+
+													<Grid item xs={1}>
+																<Typography
+																	variant="caption"
+																	component={Button}
+																	onClick={() => {
+																		window.alert("Not available yet")
+																	}}
+																	// component={Link}
+																	// to={props.login ? '/pages/forgot-password/forgot-password' + props.login : '#'}
+																	color="secondary"
+																	noWrap={true}
+																	sx={{ textDecoration: 'none'}}
+																>
+																	Do not have an account?
+																</Typography>
 													</Grid>
 												</Grid>
 											</form>
