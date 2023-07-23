@@ -7,8 +7,6 @@ import (
 )
 
 func Login(c *gin.Context) {
-	// Perform login authentication
-	fmt.Println("Login here")
 	username := c.PostForm("username")
 	password := c.PostForm("password")
 	if Authenticate(username, password) {
@@ -45,12 +43,11 @@ func AuthMiddleware() gin.HandlerFunc {
 			c.JSON(http.StatusUnauthorized, gin.H{"result": "require login"})
 			c.Abort()
 			
-			fmt.Println("auth fail")
 			return
 		}
 
+		c.Header("Access-Control-Allow-Origin", "*")
 		// If authenticated, continue to the next handler
-		fmt.Println("auth success")
 		c.Next()
 	}
 }
