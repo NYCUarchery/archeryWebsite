@@ -3,20 +3,16 @@ package apis
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"fmt"
+	//"fmt"
+	"backend/pkg"
 )
 
 func Login(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
 	if Authenticate(username, password) {
-		// Set authentication cookie
-		cookie := http.Cookie{
-			Name:     "auth",
-			Value:    username,
-			HttpOnly: true,
-		}
-		http.SetCookie(c.Writer, &cookie)
+		pkg.SaveAuthSession(c, username)
+
 		c.JSON(http.StatusOK, gin.H{"result": "success"})
 		return
 	}
@@ -25,43 +21,8 @@ func Login(c *gin.Context) {
 }
 
 func Logout(c *gin.Context) {
-	// Clear authentication cookie
-	cookie := http.Cookie{
-		Name:     "auth",
-		Value:    "",
-		MaxAge:   -1,
-		HttpOnly: true,
-	}
-	http.SetCookie(c.Writer, &cookie)
-}
-
-func AuthMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		fmt.Println("authmiddleware here")
-		if !IsAuthenticated(c) {
-			c.JSON(http.StatusUnauthorized, gin.H{"result": "require login"})
-			c.Abort()
-			
-			return
-		}
-		
-		c.Next()
-	}
-}
-
-// IsAuthenticated checks if the user is authenticated
-func IsAuthenticated(c *gin.Context) bool {
-	// Check if the authentication cookie exists
-	cookie, err := c.Cookie("auth")
-	if err != nil || cookie == "" {
-		return false
-	}
-
-	// Validate the authentication cookie (e.g., check against session store, database, etc.)
-	// ...
-
-	// Return true if authenticated, false otherwise
-	return true
+	pkg.ClearAuthSession(c)
+	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
 
 // Authenticate performs the login authentication

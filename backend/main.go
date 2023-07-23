@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"backend/apis"
+	"backend/pkg"
 )
 
 func main() {
@@ -16,10 +17,11 @@ func routerSetup() *gin.Engine {
 	router := gin.Default()
 
 	router.Use(allowCORSMiddleware())
+	router.Use(pkg.EnableCookieSessionMiddleware())
 
 	sr := router.Group("/api")
 	{
-		sr.GET("/", apis.AuthMiddleware(), func(c *gin.Context) {
+		sr.GET("/", pkg.AuthSessionMiddleware(), func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"result": "ok"});
 		})
 
