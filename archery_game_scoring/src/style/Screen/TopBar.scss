@@ -1,0 +1,22 @@
+.top_bar {
+  display: flex;
+  width: 100%;
+  height: 150px;
+  background-color: $main-color;
+  color: #ffffff;
+  font-family: DFKai-SB;
+  align-items: center;
+  justify-content: center;
+}
+
+.game_title {
+  text-align: center;
+}
+
+.game_main_title {
+  font-size: 50px;
+}
+
+.game_subtitle {
+  font-size: 20px;
+}

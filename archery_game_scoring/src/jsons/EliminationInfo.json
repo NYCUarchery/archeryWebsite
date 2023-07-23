@@ -1,0 +1,812 @@
+{
+  "groups": [
+    {
+      "players": [
+        {
+          "name": "王逸蓁",
+          "rank": 1,
+          "score": 538
+        },
+        {
+          "name": "楊維寧",
+          "rank": 9,
+          "score": 435
+        },
+        {
+          "name": "洪凱昕",
+          "rank": 12,
+          "score": 426
+        },
+        {
+          "name": "陳鈞鈴",
+          "rank": 4,
+          "score": 490
+        },
+        {
+          "name": "王心柔",
+          "rank": 14,
+          "score": 417
+        },
+        {
+          "name": "黃于軒",
+          "rank": 6,
+          "score": 457
+        },
+        {
+          "name": "黃湘儀",
+          "rank": 7,
+          "score": 450
+        },
+        {
+          "name": "張孟儼",
+          "rank": 2,
+          "score": 534
+        }
+      ],
+      "stages": [
+        {
+          "matches": [
+            {
+              "players": [
+                {
+                  "name": "王逸蓁",
+                  "scores": [27, 26, 26],
+                  "points": 6,
+                  "is_winner": true
+                },
+                {
+                  "name": "楊維寧",
+                  "scores": [23, 25, 18],
+                  "points": 0,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "players": [
+                {
+                  "name": "洪凱昕",
+                  "scores": [19, 18, 20, 17],
+                  "points": 2,
+                  "is_winner": false
+                },
+                {
+                  "name": "陳鈞鈴",
+                  "scores": [22, 26, 19, 24],
+                  "points": 6,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "players": [
+                {
+                  "name": "王心柔",
+                  "scores": [26, 23, 22, 18, 8],
+                  "points": 6,
+                  "is_winner": true
+                },
+                {
+                  "name": "黃于軒",
+                  "scores": [26, 15, 22, 22, 26, 5],
+                  "points": 5,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "players": [
+                {
+                  "name": "黃湘儀",
+                  "scores": [17, 23, 16, 23],
+                  "points": 1,
+                  "is_winner": false
+                },
+                {
+                  "name": "張孟儼",
+                  "scores": [17, 24, 20, 25],
+                  "points": 7,
+                  "is_winner": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "matches": [
+            {
+              "players": [
+                {
+                  "name": "王逸蓁",
+                  "scores": [23, 26, 25, 22],
+                  "points": 6,
+                  "is_winner": true
+                },
+                {
+                  "name": "陳鈞鈴",
+                  "scores": [24, 23, 24, 21],
+                  "points": 2,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "players": [
+                {
+                  "name": "王心柔",
+                  "scores": [30, 24, 26, 18, 24],
+                  "points": 6,
+                  "is_winner": true
+                },
+                {
+                  "name": "張孟儼",
+                  "scores": [21, 26, 24, 23, 19],
+                  "points": 4,
+                  "is_winner": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "matches": [
+            {
+              "players": [
+                {
+                  "name": "王逸蓁",
+                  "scores": [26, 19, 24, 25],
+                  "points": 6,
+                  "is_winner": true
+                },
+                {
+                  "name": "王心柔",
+                  "scores": [18, 26, 20, 21],
+                  "points": 2,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "players": [
+                {
+                  "name": "陳鈞鈴",
+                  "scores": [25, 24, 28],
+                  "points": 6,
+                  "is_winner": true
+                },
+                {
+                  "name": "張孟儼",
+                  "scores": [20, 21, 27],
+                  "points": 0,
+                  "is_winner": false
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "result": {
+        "players": [
+          {
+            "name": "王逸蓁",
+            "medal": "GOLD"
+          },
+          {
+            "name": "王心柔",
+            "medal": "SILVER"
+          },
+          {
+            "name": "陳鈞鈴",
+            "medal": "BRONZE"
+          }
+        ]
+      }
+    },
+    {
+      "players": [
+        {
+          "name": "大專30m",
+          "rank": 1,
+          "score": 538
+        },
+        {
+          "name": "楊維寧",
+          "rank": 9,
+          "score": 435
+        },
+        {
+          "name": "洪凱昕",
+          "rank": 12,
+          "score": 426
+        },
+        {
+          "name": "陳鈞鈴",
+          "rank": 4,
+          "score": 490
+        },
+        {
+          "name": "王心柔",
+          "rank": 14,
+          "score": 417
+        },
+        {
+          "name": "黃于軒",
+          "rank": 6,
+          "score": 457
+        },
+        {
+          "name": "黃湘儀",
+          "rank": 7,
+          "score": 450
+        },
+        {
+          "name": "張孟儼",
+          "rank": 2,
+          "score": 534
+        }
+      ],
+      "stages": [
+        {
+          "matches": [
+            {
+              "players": [
+                {
+                  "name": "王逸蓁",
+                  "scores": [27, 26, 26],
+                  "points": 6,
+                  "is_winner": true
+                },
+                {
+                  "name": "楊維寧",
+                  "scores": [23, 25, 18],
+                  "points": 0,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "players": [
+                {
+                  "name": "洪凱昕",
+                  "scores": [19, 18, 20, 17],
+                  "points": 2,
+                  "is_winner": false
+                },
+                {
+                  "name": "陳鈞鈴",
+                  "scores": [22, 26, 19, 24],
+                  "points": 6,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "players": [
+                {
+                  "name": "王心柔",
+                  "scores": [26, 23, 22, 18, 8],
+                  "points": 6,
+                  "is_winner": true
+                },
+                {
+                  "name": "黃于軒",
+                  "scores": [26, 15, 22, 22, 26, 5],
+                  "points": 5,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "players": [
+                {
+                  "name": "黃湘儀",
+                  "scores": [17, 23, 16, 23],
+                  "points": 1,
+                  "is_winner": false
+                },
+                {
+                  "name": "張孟儼",
+                  "scores": [17, 24, 20, 25],
+                  "points": 7,
+                  "is_winner": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "matches": [
+            {
+              "players": [
+                {
+                  "name": "王逸蓁",
+                  "scores": [23, 26, 25, 22],
+                  "points": 6,
+                  "is_winner": true
+                },
+                {
+                  "name": "陳鈞鈴",
+                  "scores": [24, 23, 24, 21],
+                  "points": 2,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "players": [
+                {
+                  "name": "王心柔",
+                  "scores": [30, 24, 26, 18, 24],
+                  "points": 6,
+                  "is_winner": true
+                },
+                {
+                  "name": "張孟儼",
+                  "scores": [21, 26, 24, 23, 19],
+                  "points": 4,
+                  "is_winner": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "matches": [
+            {
+              "players": [
+                {
+                  "name": "王逸蓁",
+                  "scores": [26, 19, 24, 25],
+                  "points": 6,
+                  "is_winner": true
+                },
+                {
+                  "name": "王心柔",
+                  "scores": [18, 26, 20, 21],
+                  "points": 2,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "players": [
+                {
+                  "name": "陳鈞鈴",
+                  "scores": [25, 24, 28],
+                  "points": 6,
+                  "is_winner": true
+                },
+                {
+                  "name": "張孟儼",
+                  "scores": [20, 21, 27],
+                  "points": 0,
+                  "is_winner": false
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "result": {
+        "players": [
+          {
+            "name": "王逸蓁",
+            "medal": "GOLD"
+          },
+          {
+            "name": "王心柔",
+            "medal": "SILVER"
+          },
+          {
+            "name": "陳鈞鈴",
+            "medal": "BRONZE"
+          }
+        ]
+      }
+    },
+    {
+      "players": [
+        {
+          "name": "公開30m",
+          "rank": 1,
+          "score": 538
+        },
+        {
+          "name": "楊維寧",
+          "rank": 9,
+          "score": 435
+        },
+        {
+          "name": "洪凱昕",
+          "rank": 12,
+          "score": 426
+        },
+        {
+          "name": "陳鈞鈴",
+          "rank": 4,
+          "score": 490
+        },
+        {
+          "name": "王心柔",
+          "rank": 14,
+          "score": 417
+        },
+        {
+          "name": "黃于軒",
+          "rank": 6,
+          "score": 457
+        },
+        {
+          "name": "黃湘儀",
+          "rank": 7,
+          "score": 450
+        },
+        {
+          "name": "張孟儼",
+          "rank": 2,
+          "score": 534
+        }
+      ],
+      "stages": [
+        {
+          "matches": [
+            {
+              "players": [
+                {
+                  "name": "王逸蓁",
+                  "scores": [27, 26, 26],
+                  "points": 6,
+                  "is_winner": true
+                },
+                {
+                  "name": "楊維寧",
+                  "scores": [23, 25, 18],
+                  "points": 0,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "players": [
+                {
+                  "name": "洪凱昕",
+                  "scores": [19, 18, 20, 17],
+                  "points": 2,
+                  "is_winner": false
+                },
+                {
+                  "name": "陳鈞鈴",
+                  "scores": [22, 26, 19, 24],
+                  "points": 6,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "players": [
+                {
+                  "name": "王心柔",
+                  "scores": [26, 23, 22, 18, 8],
+                  "points": 6,
+                  "is_winner": true
+                },
+                {
+                  "name": "黃于軒",
+                  "scores": [26, 15, 22, 22, 26, 5],
+                  "points": 5,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "players": [
+                {
+                  "name": "黃湘儀",
+                  "scores": [17, 23, 16, 23],
+                  "points": 1,
+                  "is_winner": false
+                },
+                {
+                  "name": "張孟儼",
+                  "scores": [17, 24, 20, 25],
+                  "points": 7,
+                  "is_winner": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "matches": [
+            {
+              "players": [
+                {
+                  "name": "王逸蓁",
+                  "scores": [23, 26, 25, 22],
+                  "points": 6,
+                  "is_winner": true
+                },
+                {
+                  "name": "陳鈞鈴",
+                  "scores": [24, 23, 24, 21],
+                  "points": 2,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "players": [
+                {
+                  "name": "王心柔",
+                  "scores": [30, 24, 26, 18, 24],
+                  "points": 6,
+                  "is_winner": true
+                },
+                {
+                  "name": "張孟儼",
+                  "scores": [21, 26, 24, 23, 19],
+                  "points": 4,
+                  "is_winner": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "matches": [
+            {
+              "players": [
+                {
+                  "name": "王逸蓁",
+                  "scores": [26, 19, 24, 25],
+                  "points": 6,
+                  "is_winner": true
+                },
+                {
+                  "name": "王心柔",
+                  "scores": [18, 26, 20, 21],
+                  "points": 2,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "players": [
+                {
+                  "name": "陳鈞鈴",
+                  "scores": [25, 24, 28],
+                  "points": 6,
+                  "is_winner": true
+                },
+                {
+                  "name": "張孟儼",
+                  "scores": [20, 21, 27],
+                  "points": 0,
+                  "is_winner": false
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "result": {
+        "players": [
+          {
+            "name": "王逸蓁",
+            "medal": "GOLD"
+          },
+          {
+            "name": "王心柔",
+            "medal": "SILVER"
+          },
+          {
+            "name": "陳鈞鈴",
+            "medal": "BRONZE"
+          }
+        ]
+      }
+    },
+    {
+      "players": [
+        {
+          "name": "公開70m",
+          "rank": 1,
+          "score": 538
+        },
+        {
+          "name": "楊維寧",
+          "rank": 9,
+          "score": 435
+        },
+        {
+          "name": "洪凱昕",
+          "rank": 12,
+          "score": 426
+        },
+        {
+          "name": "陳鈞鈴",
+          "rank": 4,
+          "score": 490
+        },
+        {
+          "name": "王心柔",
+          "rank": 14,
+          "score": 417
+        },
+        {
+          "name": "黃于軒",
+          "rank": 6,
+          "score": 457
+        },
+        {
+          "name": "黃湘儀",
+          "rank": 7,
+          "score": 450
+        },
+        {
+          "name": "張孟儼",
+          "rank": 2,
+          "score": 534
+        }
+      ],
+      "stages": [
+        {
+          "matches": [
+            {
+              "players": [
+                {
+                  "name": "王逸蓁",
+                  "scores": [27, 26, 26],
+                  "points": 6,
+                  "is_winner": true
+                },
+                {
+                  "name": "楊維寧",
+                  "scores": [23, 25, 18],
+                  "points": 0,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "players": [
+                {
+                  "name": "洪凱昕",
+                  "scores": [19, 18, 20, 17],
+                  "points": 2,
+                  "is_winner": false
+                },
+                {
+                  "name": "陳鈞鈴",
+                  "scores": [22, 26, 19, 24],
+                  "points": 6,
+                  "is_winner": true
+                }
+              ]
+            },
+            {
+              "players": [
+                {
+                  "name": "王心柔",
+                  "scores": [26, 23, 22, 18, 8],
+                  "points": 6,
+                  "is_winner": true
+                },
+                {
+                  "name": "黃于軒",
+                  "scores": [26, 15, 22, 22, 26, 5],
+                  "points": 5,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "players": [
+                {
+                  "name": "黃湘儀",
+                  "scores": [17, 23, 16, 23],
+                  "points": 1,
+                  "is_winner": false
+                },
+                {
+                  "name": "張孟儼",
+                  "scores": [17, 24, 20, 25],
+                  "points": 7,
+                  "is_winner": true
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "matches": [
+            {
+              "players": [
+                {
+                  "name": "王逸蓁",
+                  "scores": [23, 26, 25, 22],
+                  "points": 6,
+                  "is_winner": true
+                },
+                {
+                  "name": "陳鈞鈴",
+                  "scores": [24, 23, 24, 21],
+                  "points": 2,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "players": [
+                {
+                  "name": "王心柔",
+                  "scores": [30, 24, 26, 18, 24],
+                  "points": 6,
+                  "is_winner": true
+                },
+                {
+                  "name": "張孟儼",
+                  "scores": [21, 26, 24, 23, 19],
+                  "points": 4,
+                  "is_winner": false
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "matches": [
+            {
+              "players": [
+                {
+                  "name": "王逸蓁",
+                  "scores": [26, 19, 24, 25],
+                  "points": 6,
+                  "is_winner": true
+                },
+                {
+                  "name": "王心柔",
+                  "scores": [18, 26, 20, 21],
+                  "points": 2,
+                  "is_winner": false
+                }
+              ]
+            },
+            {
+              "players": [
+                {
+                  "name": "陳鈞鈴",
+                  "scores": [25, 24, 28],
+                  "points": 6,
+                  "is_winner": true
+                },
+                {
+                  "name": "張孟儼",
+                  "scores": [20, 21, 27],
+                  "points": 0,
+                  "is_winner": false
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "result": {
+        "players": [
+          {
+            "name": "王逸蓁",
+            "medal": "GOLD"
+          },
+          {
+            "name": "王心柔",
+            "medal": "SILVER"
+          },
+          {
+            "name": "陳鈞鈴",
+            "medal": "BRONZE"
+          }
+        ]
+      }
+    }
+  ]
+}

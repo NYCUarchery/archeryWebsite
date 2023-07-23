@@ -1,0 +1,85 @@
+$stage_controller_width: 400px;
+
+.bottom_bar {
+  width: 100%;
+  height: 40px;
+  background-color: $main-color;
+  color: #ffffff;
+  display: flex;
+  position: fixed;
+  bottom: 0px;
+}
+
+@mixin bottom_bar_list() {
+  width: calc($stage_controller_width/3);
+  padding: 0px;
+  z-index: 1;
+}
+
+.stage_list {
+  @include bottom_bar_list();
+
+  background-color: transparent;
+  height: 120px;
+  margin: 0px;
+  left: calc(50% - $stage_controller_width/6);
+  bottom: 40px;
+  position: fixed;
+}
+
+@mixin bottom_bar_button() {
+  width: calc($stage_controller_width/3);
+  padding: 0px;
+  height: 40px;
+  border: 0px;
+  color: #ffffff;
+  background-color: $sub-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+
+  &:active {
+    background-color: darken($sub-color, 5%);
+  }
+}
+
+.next_stage_button {
+  @include bottom_bar_button();
+}
+
+.last_stage_button {
+  @include bottom_bar_button();
+}
+
+.stage_list_button {
+  @include bottom_bar_button();
+}
+
+@mixin bottom_bar_list_item() {
+  width: calc($stage_controller_width/3);
+  height: 40px;
+  border-bottom: 1px solid #ffffff;
+  background-color: $sub-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  transition: 0.3s;
+  max-height: 0px;
+  overflow: hidden;
+  transition: max-height 0.1s ease-in-out;
+  &:hover {
+    background-color: darken($sub-color, 5%);
+  }
+}
+
+.stage_list_item {
+  @include bottom_bar_list_item();
+}
+
+.stage_controller {
+  width: 400px;
+  margin: 0px auto;
+  display: flex;
+}

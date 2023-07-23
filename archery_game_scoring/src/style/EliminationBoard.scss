@@ -1,0 +1,154 @@
+$name_bar_height: 50px;
+
+.elimination_board {
+  max-width: $main_board_max_width;
+  margin: 50px auto 0px;
+
+  @mixin bar_block() {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  & > .players_board > .player_intro_bar {
+    width: 100%;
+    height: $name_bar_height;
+    display: grid;
+    background-color: $main_color;
+    color: #ffffff;
+    font-size: 25px;
+    grid-template-columns: 15% 70% 15%;
+    grid-template-rows: auto;
+    margin-bottom: 10px;
+    user-select: none;
+
+    & > .rank_block {
+      @include bar_block();
+      color: $main_color;
+      background-color: #ffffff;
+    }
+
+    & > .name_block {
+      @include bar_block();
+    }
+
+    & > .score_block {
+      @include bar_block();
+      color: $main_color;
+      background-color: #ffffff;
+    }
+  }
+
+  & > .stage_board > .match_block {
+    width: 100%;
+    height: calc($name_bar_height * 3);
+    margin-bottom: $name_bar_height;
+    background-color: $main_color;
+    color: #ffffff;
+    font-size: 25px;
+    user-select: none;
+
+    & > .player_bar {
+      width: 100%;
+      height: calc($name_bar_height * 1.5);
+      display: grid;
+      grid-template-columns: 80% 20%;
+      grid-auto-rows: calc($name_bar_height * 0.5);
+
+      & > .name_block {
+        @include bar_block();
+        height: $name_bar_height;
+        margin: 0px;
+        grid-row: 1 / 3;
+        grid-column: 1 / 2;
+
+        &.winner {
+          background-color: darken($main-color, 10%);
+        }
+      }
+
+      & > .points_block {
+        @include bar_block();
+        height: calc($name_bar_height * 1.5);
+        right: 0px;
+        color: $main_color;
+        background-color: #ffffff;
+        grid-row: 1/4;
+        grid-column: 2 / 3;
+      }
+
+      & > .score_bar {
+        height: calc($name_bar_height * 0.5);
+        margin: 0px;
+        display: flex;
+        grid-row: 3/4;
+        grid-column: 1 / 2;
+
+        & > .score_block {
+          @include bar_block();
+          width: calc(100% / 6 + 2px);
+          height: 100%;
+          color: $main_color;
+          background-color: #ffffff;
+          border-right: 1px solid $main_color;
+        }
+      }
+    }
+  }
+
+  & > .result_board > .result_bar {
+    height: calc($name_bar_height * 1.5);
+    display: grid;
+    grid-auto-rows: calc($name_bar_height * 0.5);
+
+    & > .name_block {
+      @include bar_block();
+      height: $name_bar_height;
+      color: #ffffff;
+      background-color: $main_color;
+      font-size: 25px;
+      margin: 0px;
+      grid-row: 1 / 3;
+    }
+
+    & > .medal_block {
+      @include bar_block();
+      height: calc($name_bar_height * 0.5);
+      right: 0px;
+      color: $main_color;
+      background-color: #ffffff;
+      grid-row: 3/4;
+      font-weight: bold;
+    }
+
+    &.GOLD {
+      $gold_color: #f0cc00;
+      & > .name_block {
+        background-color: $gold_color;
+      }
+      & > .medal_block {
+        color: $gold_color;
+      }
+    }
+
+    &.SILVER {
+      $silver_color: #a7a7a7;
+      & > .name_block {
+        background-color: $silver_color;
+      }
+      & > .medal_block {
+        color: $silver_color;
+      }
+    }
+
+    &.BRONZE {
+      $bronze_color: #cd7f32;
+      & > .name_block {
+        background-color: $bronze_color;
+      }
+      & > .medal_block {
+        color: $bronze_color;
+      }
+    }
+  }
+}

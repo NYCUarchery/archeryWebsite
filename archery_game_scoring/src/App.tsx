@@ -1,18 +1,21 @@
-import TopBar from "./features/Screen/TopBar"
-import './App.css'
-import SubGamesBar from "./features/Screen/SubGamesBar"
-import BottomBar from "./features/Screen/BottomBar"
-import QualifyingPhaseBoard from "./features/QualifyingPhaseBoard/QualifyingPhaseBoard"
+import TopBar from "./features/Screen/TopBar/TopBar";
+import "./style/App.scss";
+import SubGamesBar from "./features/Screen/SubGameBar/SubGamesBar";
+import BottomBar from "./features/Screen/BottomBar/BottomBar";
+import QualifyingPhaseBoard from "./features/QualifyingPhaseBoard/QualifyingPhaseBoard";
+import StageList from "./features/Screen/BottomBar/StageController/StageList/StageList";
+import EliminationBoard from "./features/EliminationBoard/EliminationBoard";
 
-
-
-function App(){
-  return <div>
-    <TopBar/>
-    <SubGamesBar/>
-    <QualifyingPhaseBoard/>
-    <BottomBar/>
-  </div>
+function App() {
+  return (
+    <div>
+      <TopBar />
+      <SubGamesBar />
+      <QualifyingPhaseBoard />
+      <EliminationBoard />
+      <BottomBar />
+    </div>
+  );
 }
 
-export default App
+export default App;

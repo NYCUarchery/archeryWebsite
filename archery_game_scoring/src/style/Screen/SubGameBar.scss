@@ -1,0 +1,79 @@
+.sub_game_bar {
+  width: 100%;
+  height: 40px;
+  display: flex;
+  background-color: $main-color;
+  color: #ffffff;
+}
+
+@mixin sub_game_bar_list() {
+  width: 200px;
+  padding: 0px;
+  z-index: 1;
+}
+
+.group_list {
+  @include sub_game_bar_list();
+  margin-left: auto;
+}
+.phase_list {
+  @include sub_game_bar_list();
+  margin-right: auto;
+}
+
+@mixin sub_game_bar_list_button() {
+  width: 200px;
+  height: 40px;
+  border: 0px;
+  color: #ffffff;
+  background-color: $sub-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+
+  &:active {
+    background-color: darken($sub-color, 5%);
+  }
+}
+
+.group_list_button {
+  @include sub_game_bar_list_button();
+}
+
+.phase_list_button {
+  @include sub_game_bar_list_button();
+}
+
+@mixin sub_game_bar_list_item() {
+  width: auto;
+  height: 40px;
+  border-top: 1px solid #ffffff;
+  background-color: $sub-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  transition: 0.3s;
+  max-height: 0px;
+  overflow: hidden;
+  transition: max-height 0.1s ease-in-out;
+  &:hover {
+    background-color: darken($sub-color, 5%);
+  }
+}
+
+.group_list_item {
+  @include sub_game_bar_list_item();
+}
+
+.phase_list_item {
+  @include sub_game_bar_list_item();
+}
+
+.group_list_item:hover {
+  background-color: #103890;
+}
+.phase_list_item:hover {
+  background-color: #103890;
+}
