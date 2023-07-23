@@ -42,6 +42,7 @@ func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		fmt.Println("authmiddleware here")
 		if !IsAuthenticated(c) {
+			c.JSON(http.StatusUnauthorized, gin.H{"result": "require login"})
 			c.Abort()
 			
 			fmt.Println("auth fail")

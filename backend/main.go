@@ -18,7 +18,7 @@ func routerSetup() *gin.Engine {
 	sr := router.Group("/api")
 	{
 		sr.GET("/", apis.AuthMiddleware(), func(c *gin.Context) {
-			c.JSON(http.StatusOK, gin.H{"Status": "ok"});
+			c.JSON(http.StatusOK, gin.H{"result": "ok"});
 		})
 
 		sr.POST("/login", apis.Login)
