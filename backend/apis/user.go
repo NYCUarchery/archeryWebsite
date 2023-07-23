@@ -17,7 +17,6 @@ func Login(c *gin.Context) {
 			HttpOnly: true,
 		}
 		http.SetCookie(c.Writer, &cookie)
-
 		c.JSON(http.StatusOK, gin.H{"result": "success"})
 		return
 	}
