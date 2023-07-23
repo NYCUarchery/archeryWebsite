@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from '../pages/LoginPage';
 
-import { Dispatch, SetStateAction, FC  } from 'react';
+import { Dispatch, SetStateAction, FC, useState } from 'react';
 import SignupPage from '../pages/SignupPage';
 
 interface UnauthRouteProps {
@@ -9,12 +9,14 @@ interface UnauthRouteProps {
 }
 
 const UnauthRoute: FC<UnauthRouteProps> = ({setAuthorized}) => {
+	const [path, setPath] = useState('/Login');
+	const navigator = (<Navigate to={path}/>)
 	return (
 		<>
-			{window.location.href == "/Signup"? <Navigate to="/Signup" />:<Navigate to="/Login" />}
+			{navigator}
 			<Routes>
-				<Route path={'/Login'} element={<LoginPage setAuthorized={setAuthorized}/>}/>
-				<Route path={'/Signup'} element={<SignupPage />}/>
+				<Route path={'/Login'} element={<LoginPage setAuthorized={setAuthorized} setPath={setPath}/>}/>
+				<Route path={'/Signup'} element={<SignupPage setPath={setPath}/>}/>
 			</Routes>
 		</>
 	)

@@ -18,16 +18,17 @@ import Button from '@mui/material/Button';
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
+import { useNavigate } from 'react-router-dom';
 
 import * as Yup from 'yup';
 import { Formik } from 'formik';
 import { FormControl } from '@mui/material';
 
-// interface SignupPageProps {
-//   setAuthorized: Dispatch<SetStateAction<boolean>>;
-// }
+interface SignupPageProps {
+	setPath: Dispatch<SetStateAction<string>>;
+}
 
-const SignupPage = () => {
+const SignupPage: FC<SignupPageProps> = ({setPath}) => {
 	const [showPassword, setShowPassword] = useState(false);
 	const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
@@ -46,6 +47,9 @@ const SignupPage = () => {
 	const handleMouseDownPasswordConfirm = (e: any) => {
 		e.preventDefault();
 	};
+
+
+	const navigate = useNavigate();
 
 	return (
 			<Grid container direction="column" alignItems="center" justifyContent="center" sx={{ minHeight: '100vh'}}>
@@ -66,12 +70,17 @@ const SignupPage = () => {
 											passwordConfirm: "",
 										}}
 										validationSchema={Yup.object().shape({
-											username: Yup.string().max(255).required('Email is required'),
-											password: Yup.string().max(255).required('Password is required'),
-											passwordConfirm: Yup.string().oneOf([Yup.ref("password"), ""]).required('Confirm your password')
+											username: Yup.string().max(255).required('Username is required'),
+											password: Yup.string().min(6, "Password should be longer than 6 characters").max(255).required('Password is required'),
+											passwordConfirm: Yup.string().required('Confirm your password').oneOf([Yup.ref("password"), ""], "Password must match"),
+											// passwordConfirm: Yup.string()
+											// 	.test('passwords-match', 'Passwords must match', function(value){
+											// 		return this.parent.password === value
+											// 	})
 										})}
 										onSubmit={(values, { setErrors, setStatus, setSubmitting }) => {
 											try {
+												console.log(values)
 											} catch (err) {
 											}
 									}}
@@ -81,7 +90,7 @@ const SignupPage = () => {
 
 												<Grid container direction="column" alignItems="center" justifyContent="center" spacing={2}>
 													<Grid item xs={2}>
-														<FormControl sx={{width: "300px"}} error={Boolean(touched.username && touched.password)}>
+														<FormControl sx={{width: "300px"}} error={Boolean(touched.username && touched.password && touched.passwordConfirm)}>
 															<TextField
 																required
 																label="Username"
@@ -100,7 +109,7 @@ const SignupPage = () => {
 														</FormControl>
 													</Grid>
 													<Grid item xs={2}>
-														<FormControl sx={{width: "300px"}} error={Boolean(touched.username && touched.password)}>
+														<FormControl sx={{width: "300px"}} error={Boolean(touched.username && touched.password && touched.passwordConfirm)}>
 															<TextField
 																required
 																type={showPassword ? 'text' : 'password'}
@@ -134,11 +143,11 @@ const SignupPage = () => {
 														</FormControl>
 													</Grid>
 													<Grid item xs={2}>
-														<FormControl sx={{width: "300px"}} error={Boolean(touched.username && touched.password)}>
+														<FormControl sx={{width: "300px"}} error={Boolean(touched.username && touched.password && touched.passwordConfirm)}>
 															<TextField
 																required
 																type={showPasswordConfirm ? 'text' : 'password'}
-																label="passwordConfirm"
+																label="Confirm your password"
 																value={values.passwordConfirm}
 																name="passwordConfirm" // input
 																onChange={handleChange}
@@ -147,7 +156,7 @@ const SignupPage = () => {
 																	endAdornment: (
 																		<InputAdornment position="end">
 																			<IconButton
-																					aria-label="toggle password visibility"
+																					aria-label="toggle confirm password visibility"
 																					onClick={handleClickShowPasswordConfirm}
 																					onMouseDown={handleMouseDownPasswordConfirm}
 																					edge="end"
@@ -167,26 +176,6 @@ const SignupPage = () => {
 															)}
 														</FormControl>
 													</Grid>
-													<Grid item xs={1}>
-														<Grid container justifyContent="flex-end">
-															<Grid item xs={6}>
-																<Typography
-																	variant="caption"
-																	component={Button}
-																	onClick={() => {
-																		window.alert("Try to figure out by yourself")
-																	}}
-																	// component={Link}
-																	// to={props.login ? '/pages/forgot-password/forgot-password' + props.login : '#'}
-																	color="secondary"
-																	noWrap={true}
-																	sx={{ textDecoration: 'none'}}
-																>
-																	Forgot Password?
-																</Typography>
-															</Grid>
-														</Grid>
-													</Grid>
 													<Grid item xs={2}>
 														<Box
 															sx={{
@@ -201,26 +190,27 @@ const SignupPage = () => {
 																variant="contained"
 																color="secondary"
 															>
-																	Log In
+																	Sign Up
 															</Button>
 														</Box>
 													</Grid>
 
 													<Grid item xs={1}>
-																<Typography
-																	variant="caption"
-																	component={Button}
-																	onClick={() => {
-																		window.alert("Not available yet")
-																	}}
-																	// component={Link}
-																	// to={props.login ? '/pages/forgot-password/forgot-password' + props.login : '#'}
-																	color="secondary"
-																	noWrap={true}
-																	sx={{ textDecoration: 'none'}}
-																>
-																	Do not have an account?
-																</Typography>
+														<Typography
+															variant="caption"
+															component={Button}
+															onClick={() => {
+																setPath("/Login");
+																navigate("/Login");
+															}}
+															// component={Link}
+															// to={props.login ? '/pages/forgot-password/forgot-password' + props.login : '#'}
+															color="secondary"
+															noWrap={true}
+															sx={{ textDecoration: 'none'}}
+														>
+															Back to Login
+														</Typography>
 													</Grid>
 												</Grid>
 											</form>

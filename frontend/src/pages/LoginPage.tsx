@@ -8,7 +8,6 @@ import TextField from '@mui/material/TextField';
 
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
 
 import FormHelperText from '@mui/material/FormHelperText';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -27,9 +26,10 @@ import { FormControl } from '@mui/material';
 
 interface LoginPageProps {
   setAuthorized: Dispatch<SetStateAction<boolean>>;
+	setPath: Dispatch<SetStateAction<string>>;
 }
 
-const LoginPage: FC<LoginPageProps> = ({setAuthorized}) => {
+const LoginPage: FC<LoginPageProps> = ({setAuthorized, setPath}) => {
 	const [showPassword, setShowPassword] = useState(false);
 
 	const handleClickShowPassword = () => {
@@ -69,15 +69,25 @@ const LoginPage: FC<LoginPageProps> = ({setAuthorized}) => {
 												fetch("http://localhost:8080/api/login", {
 													method: "POST",
 													body: JSON.stringify({
-														"username": "a",
-														"password": "a",
+														"username": values.username,
+														"password": "Not password",
 													})
 												})
-												.then((response) => response.json())
-												.then((json) => console.log(json));
-												setAuthorized(true);
-												navigate("/")
+												.then((res) => res.json())
+												.then((resjson) => {
+													console.log(resjson);
+													console.log("cookie!!", document.cookie)
+													if (resjson["result"] && resjson["result"] === "success") {
+														console.log("Log In Success");
+														setAuthorized(true);
+														navigate("/");
+													} else {
+														window.alert("Your username or password does not match any in our database");
+
+													}
+												});
 											} catch (err) {
+												console.log(err);
 											}
 									}}
 									>
@@ -182,8 +192,8 @@ const LoginPage: FC<LoginPageProps> = ({setAuthorized}) => {
 																	variant="caption"
 																	component={Button}
 																	onClick={() => {
-																		window.alert("Not available yet")
-																		// navigate("/Signup")
+																		setPath("/Signup");
+																		navigate("/Signup");
 																	}}
 																	// component={Link}
 																	// to={props.login ? '/pages/forgot-password/forgot-password' + props.login : '#'}
