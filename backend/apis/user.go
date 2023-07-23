@@ -44,9 +44,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			
 			return
 		}
-
-		c.Header("Access-Control-Allow-Origin", "*")
-		// If authenticated, continue to the next handler
+		
 		c.Next()
 	}
 }

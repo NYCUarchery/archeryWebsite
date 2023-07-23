@@ -15,6 +15,8 @@ func main() {
 func routerSetup() *gin.Engine {
 	router := gin.Default()
 
+	router.Use(allowCORSMiddleware())
+
 	sr := router.Group("/api")
 	{
 		sr.GET("/", apis.AuthMiddleware(), func(c *gin.Context) {
@@ -29,3 +31,9 @@ func routerSetup() *gin.Engine {
 	return router
 }
 
+func allowCORSMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Next()
+	}
+}
