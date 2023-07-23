@@ -1,15 +1,13 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
-import 'bootstrap/dist/css/bootstrap.css'
-import { Provider } from 'react-redux'
-import store from './app/store.ts'
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App.tsx";
+import { Provider } from "react-redux";
+import store from "./app/store.ts";
 
-
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <Provider store = {store}>
+    <Provider store={store}>
       <App></App>
     </Provider>
-  </React.StrictMode>,
-)
+  </React.StrictMode>
+);

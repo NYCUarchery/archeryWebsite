@@ -4,7 +4,6 @@ import NameColumnElement from "./ColumnElements/NameColumnElement";
 import InstitutionsColumnElement from "./ColumnElements/InstitutionColumnElement";
 import ScoreColumnElement from "./ColumnElements/ScoreColumnElement";
 import QualifyingPhaseInfo from "../../jsons/QualifyingPhaseInfo.json";
-import GroupInfo from "../../jsons/GroupInfo.json";
 import { useSelector } from "react-redux";
 
 function QualifyingPhaseBoard() {
