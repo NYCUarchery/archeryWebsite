@@ -8,6 +8,8 @@
 
 @mixin sub_game_bar_list() {
   width: 200px;
+  height: 100%;
+  margin: 0px;
   padding: 0px;
   z-index: 1;
 }
