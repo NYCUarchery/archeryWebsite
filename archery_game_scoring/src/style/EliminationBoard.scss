@@ -1,9 +1,6 @@
 $name_bar_height: 50px;
 
 .elimination_board {
-  max-width: $main_board_max_width;
-  margin: 50px auto 0px;
-
   @mixin bar_block() {
     display: flex;
     align-items: center;

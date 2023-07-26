@@ -3,38 +3,29 @@ import TargetColumnElement from "./ColumnElements/TargetColumnElement";
 import NameColumnElement from "./ColumnElements/NameColumnElement";
 import InstitutionsColumnElement from "./ColumnElements/InstitutionColumnElement";
 import ScoreColumnElement from "./ColumnElements/ScoreColumnElement";
-import QualifyingPhaseInfo from "../../jsons/QualifyingPhaseInfo.json";
 import { useSelector } from "react-redux";
 
-function QualifyingPhaseBoard() {
-  const phaseShown = useSelector(
-    (state: any) => state.phaseListButton.phaseShown
-  );
-  if (phaseShown !== 0 || QualifyingPhaseInfo.game_phase !== "qualification") {
-    return <></>;
-  }
-  return (
-    <div className="qualifying_phase_board">
-      <Scoreboard></Scoreboard>
-    </div>
-  );
+interface Props {
+  gameInfo: any;
 }
 
-function Scoreboard() {
+export default function QualificationBoard(props: Props) {
   const groupShown: number = useSelector(
     (state: any) => state.groupListButton.groupShown
   );
-  let gameInfo = QualifyingPhaseInfo.groups[groupShown];
+
+  const group = props.gameInfo.groups[groupShown];
+
   let RankingInfoBars = [];
-  for (let i = 0; i < gameInfo.players.length; i++) {
+  for (let i = 0; i < group.players.length; i++) {
     let isQudalified: boolean;
-    i < gameInfo.qualification_num
+    i < group.qualification_num
       ? (isQudalified = true)
       : (isQudalified = false);
 
     RankingInfoBars.push(
       <RankingInfoBar
-        player={gameInfo.players[i]}
+        player={group.players[i]}
         isQudalified={isQudalified}
         id={i}
       ></RankingInfoBar>
@@ -42,7 +33,7 @@ function Scoreboard() {
   }
 
   return (
-    <div className="scoreboard">
+    <div className="qualification_board">
       <ColumnTitle></ColumnTitle>
       {RankingInfoBars}
     </div>
@@ -96,5 +87,3 @@ function RankingInfoBar(rankingProps: RankingProps) {
     </div>
   );
 }
-
-export default QualifyingPhaseBoard;
