@@ -1,10 +1,10 @@
 {
-  "game_phase": "elimination",
+  "phase": "elimination",
   "groups": [
     {
       "players": [
         {
-          "name": "王逸蓁",
+          "name": "Team novice",
           "rank": 1,
           "score": 538
         },
@@ -206,7 +206,7 @@
     {
       "players": [
         {
-          "name": "大專30m",
+          "name": "Team 大專30m",
           "rank": 1,
           "score": 538
         },
@@ -408,7 +408,7 @@
     {
       "players": [
         {
-          "name": "公開30m",
+          "name": "Team 公開30m",
           "rank": 1,
           "score": 538
         },
@@ -610,7 +610,7 @@
     {
       "players": [
         {
-          "name": "公開70m",
+          "name": "Team 公開70m",
           "rank": 1,
           "score": 538
         },

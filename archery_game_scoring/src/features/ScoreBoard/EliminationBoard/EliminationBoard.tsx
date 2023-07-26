@@ -1,23 +1,18 @@
-import EliminationInfo from "../../jsons/EliminationInfo.json";
 import PlayersBoard from "./SubBoards/PlayersBoard/PlayersBoard";
 import StageBoard from "./SubBoards/StageBoard/StageBoard";
 import ResultBoard from "./SubBoards/ResultBoard/ResultBoard";
 import { useSelector } from "react-redux";
 
-let groups = EliminationInfo.groups;
+interface Props {
+  gameInfo: any;
+}
 
-export default function EliminationBoard() {
+export default function EliminationBoard(props: Props) {
   const groupShown = useSelector(
     (state: any) => state.groupListButton.groupShown
   );
-  const group = groups[groupShown];
-  const phaseShown = useSelector(
-    (state: any) => state.phaseListButton.phaseShown
-  );
+  const group = props.gameInfo.groups[groupShown];
   const stageNum = useSelector((state: any) => state.stageController.stageNum);
-  if (phaseShown !== 1) {
-    return null;
-  }
 
   let stageBoards = [];
 

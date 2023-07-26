@@ -1,5 +1,5 @@
 {
-  "game_phase": "elimination",
+  "phase": "elimination",
   "groups": [
     {
       "players": [
