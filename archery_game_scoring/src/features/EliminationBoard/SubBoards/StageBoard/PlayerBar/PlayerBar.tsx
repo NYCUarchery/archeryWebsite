@@ -7,12 +7,14 @@ interface Props {
 }
 
 export default function PlayerBar(props: Props) {
+  let className: string;
+  props.player.is_winner
+    ? (className = "player_bar winner")
+    : (className = "player_bar");
+
   return (
-    <div className="player_bar">
-      <NameBlock
-        name={props.player.name}
-        isWinner={props.player.is_winner}
-      ></NameBlock>
+    <div className={className}>
+      <NameBlock name={props.player.name}></NameBlock>
       <ScoreBar scores={props.player.scores} />
       <PointBlock points={props.player.points}></PointBlock>
     </div>

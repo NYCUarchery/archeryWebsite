@@ -10,7 +10,7 @@ function QualifyingPhaseBoard() {
   const phaseShown = useSelector(
     (state: any) => state.phaseListButton.phaseShown
   );
-  if (phaseShown !== 0) {
+  if (phaseShown !== 0 || QualifyingPhaseInfo.game_phase !== "qualification") {
     return <></>;
   }
   return (
