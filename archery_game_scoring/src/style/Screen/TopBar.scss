@@ -21,3 +21,20 @@
 .game_subtitle {
   font-size: 20px;
 }
+
+.board_switch {
+  width: 30px;
+  height: 30px;
+  background-color: $sub-color;
+  position: absolute;
+  color: #ffffff;
+  right: 5%;
+  top: 20px;
+  border-radius: 100%;
+  border: 0px;
+  text-align: center;
+
+  &:active {
+    background-color: darken($sub-color, 5%);
+  }
+}

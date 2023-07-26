@@ -9,13 +9,13 @@ const gameInfos = [QualificationInfo, EliminationInfo, TeamEliminationInfo];
 
 export default function ScoreBoard() {
   const boardShown = useSelector((state: any) => state.boardSwitch.boardShown);
-  if (boardShown !== "score") {
-    return null;
-  }
-
   const phaseShown = useSelector(
     (state: any) => state.phaseListButton.phaseShown
   );
+
+  if (boardShown !== "score") {
+    return null;
+  }
 
   const gameInfo = gameInfos[phaseShown];
   let board: any;
