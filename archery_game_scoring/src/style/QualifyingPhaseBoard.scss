@@ -14,11 +14,10 @@
 }
 
 .ranking_info_bar {
-  $background-color: #b6cdff;
-  background-color: $background-color;
+  background-color: $light-main-color;
 
   &.qualified {
-    $qualified-color: $background-color;
+    $qualified-color: $light-main-color;
     background-color: $qualified-color;
     &:nth-child(4n-3),
     &:nth-child(4n -4) {
@@ -29,8 +28,7 @@
     }
   }
   &.unqualified {
-    $gray-background-color: #d5d7dc;
-    $unqualified-color: $gray-background-color;
+    $unqualified-color: $gray-main-color;
     background-color: $unqualified-color;
     &:nth-child(4n-3),
     &:nth-child(4n -4) {
