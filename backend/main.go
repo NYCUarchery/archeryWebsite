@@ -3,7 +3,7 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"backend/apis"
+	"backend/api"
 	"backend/pkg"
 )
 
@@ -25,9 +25,9 @@ func routerSetup() *gin.Engine {
 			c.JSON(http.StatusOK, gin.H{"result": "ok"});
 		})
 
-		sr.POST("/login", apis.Login)
+		sr.POST("/login", api.Login)
 
-		sr.GET("/logout", apis.Logout)
+		sr.GET("/logout", api.Logout)
 	}
 
 	return router
