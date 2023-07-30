@@ -1,3 +1,5 @@
+import GameInfo from "../../../jsons/GameInfo.json";
+
 function GameTitle() {
   return (
     <div className="game_title">
@@ -9,11 +11,11 @@ function GameTitle() {
 }
 
 function GameMainTitle() {
-  return <span className="game_main_title">風城盃</span>;
+  return <span className="game_main_title">{GameInfo.title}</span>;
 }
 
 function GameSubtitle() {
-  return <span className="game_subtitle">第二十五屆</span>;
+  return <span className="game_subtitle">{GameInfo.sub_title}</span>;
 }
 
 export default GameTitle;

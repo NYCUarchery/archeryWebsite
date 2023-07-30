@@ -1,3 +1,6 @@
 {
-  "role": "player"
+  "role": "player",
+  "id": 0,
+  "name": "王逸蓁",
+  "group": 0
 }
