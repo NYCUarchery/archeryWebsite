@@ -1,10 +1,10 @@
-package models
+package model
 
 import (
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"log"
+	//"log"
 )
 
 type User struct {
@@ -17,6 +17,17 @@ var DB *gorm.DB
 
 func Setup() {
 	var err error
-	dsn := "user:pass@tcp(127.0.0.1:3306)/dbname?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		DBuser, DBpasswd, DBip, DBport, DBname)
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+
+	if err != nil {
+        fmt.Printf("mysql connect error %v", err)
+    }
+
+    if DB.Error != nil {
+        fmt.Printf("database error %v", DB.Error)
+    }
+
+    DB.AutoMigrate(&User{})
 }
