@@ -1,15 +1,23 @@
 package main
 
 import (
-	"web_server_gin/data"
+	"web_server_gin/routers"
+	"web_server_gin/database"
+	"web_server_gin/translate"
 
     "github.com/gin-gonic/gin"
 )
 
 func main() {
 	router := gin.Default() // initialize a Gin router
-	router.GET("/data/albums", data.GetAlbums) // "pass data" action through api(link)
-	router.GET("/data/:dataName", data.GetHTTPData) // response "name" data file with /data/2JSON method
+	api := router.Group("/api")
+	database.Database_Initial()
+	router.LoadHTMLGlob("views/index.html")
+	router.Static("/assets", "./views/assets") //設定靜態資源的讀取
+	router.GET("/home", translate.GetHTML)
+
+	routers.AddViewsRouter(api)
+	routers.AddDataRouter(api)
 
 	router.Run("localhost:8080") // attach the router to an http.Server and start the server
 }
