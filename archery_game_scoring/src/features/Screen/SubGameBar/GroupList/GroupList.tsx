@@ -54,7 +54,6 @@ function GroupListButton() {
     (state: any) => state.groupListButton.groupShown
   );
   const dispatch = useDispatch();
-
   return (
     <button
       className="group_list_button sub_game_bar_list_button"

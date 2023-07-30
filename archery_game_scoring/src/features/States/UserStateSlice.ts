@@ -8,10 +8,10 @@ const initialState = {
   userGroup: UserInfo.group,
 };
 
-const UserStateSlice = createSlice({
-  name: "UserState",
+const userStateSlice = createSlice({
+  name: "userState",
   initialState: initialState,
   reducers: {},
 });
 
-export const UserStateReducer = UserStateSlice.reducer;
+export const userStateReducer = userStateSlice.reducer;

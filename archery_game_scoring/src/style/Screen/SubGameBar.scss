@@ -74,9 +74,10 @@
   @include sub_game_bar_list_item();
 }
 
-.group_list_item:hover {
-  background-color: #103890;
-}
-.phase_list_item:hover {
-  background-color: #103890;
+.group_phase_tag {
+  @include sub_game_bar_list_button();
+  margin: 0px auto 0px;
+  &:active {
+    background-color: $sub-color;
+  }
 }
