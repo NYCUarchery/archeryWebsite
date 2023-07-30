@@ -19,29 +19,9 @@ interface SidebarProps {
 }
 
 const Sidebar: FC<SidebarProps> = ({ sideBarOpen }) => {
-	const [state, setState] = useState({
-    top: false,
-    left: false,
-    bottom: false,
-    right: false,
-  });
-
 
   const navigate = useNavigate();
 
-  const toggleDrawer =
-    (anchor: Anchor, open: boolean) =>
-    (event: KeyboardEvent | MouseEvent) => {
-      if (
-        event.type === 'keydown' &&
-        ((event as KeyboardEvent).key === 'Tab' ||
-          (event as KeyboardEvent).key === 'Shift')
-      ) {
-        return;
-      }
-
-      setState({ ...state, [anchor]: open });
-    };
 
   const list = () => (
 		<Collapse in={sideBarOpen} timeout="auto" orientation="horizontal" unmountOnExit>
@@ -66,13 +46,13 @@ const Sidebar: FC<SidebarProps> = ({ sideBarOpen }) => {
 				>
 					<List>
 						{[{
-								label: 'HomePage',
+								label: '首頁',
 								route: '/'
 							}, {
-								label: 'Contests',
-								route: '/'
+								label: '比賽',
+								route: '/Contests'
 							}, {
-								label: 'About',
+								label: '關於',
 								route: '/Abouts'
 
 							}].map((v, i) => (

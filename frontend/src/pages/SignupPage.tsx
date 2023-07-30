@@ -93,7 +93,7 @@ const SignupPage: FC<SignupPageProps> = ({setPath}) => {
 														<FormControl sx={{width: "300px"}} error={Boolean(touched.username && touched.password && touched.passwordConfirm)}>
 															<TextField
 																required
-																label="Username"
+																label="帳號"
 																value={values.username}
 																name="username" // input
 																onChange={handleChange}
@@ -113,7 +113,7 @@ const SignupPage: FC<SignupPageProps> = ({setPath}) => {
 															<TextField
 																required
 																type={showPassword ? 'text' : 'password'}
-																label="password"
+																label="密碼"
 																value={values.password}
 																name="password" // input
 																onChange={handleChange}
@@ -147,7 +147,7 @@ const SignupPage: FC<SignupPageProps> = ({setPath}) => {
 															<TextField
 																required
 																type={showPasswordConfirm ? 'text' : 'password'}
-																label="Confirm your password"
+																label="再輸入一次密碼"
 																value={values.passwordConfirm}
 																name="passwordConfirm" // input
 																onChange={handleChange}
@@ -190,7 +190,7 @@ const SignupPage: FC<SignupPageProps> = ({setPath}) => {
 																variant="contained"
 																color="secondary"
 															>
-																	Sign Up
+																註冊
 															</Button>
 														</Box>
 													</Grid>
@@ -209,7 +209,7 @@ const SignupPage: FC<SignupPageProps> = ({setPath}) => {
 															noWrap={true}
 															sx={{ textDecoration: 'none'}}
 														>
-															Back to Login
+															已有帳號
 														</Typography>
 													</Grid>
 												</Grid>

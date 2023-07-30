@@ -35,22 +35,26 @@ const Homepage = () => {
 
 	return (
 		<Grid container alignItems="stretch" justifyContent="center" sx={{ minWidth: '100vw', mt: 10}}>
-			<Grid item xs={6} sm={6}>
+			<Grid item xs={12} sm={9} sx={{p: 2}}>
 				<Card sx={{p: 2}}>
 					<CardContent>
 						<Box>
-							<Typography variant="h6" component="div">
-								Bulletin
-							</Typography>
+							<Grid container justifyContent="center">
+								<Grid item>
+									<Typography variant="h6" component="div">
+										公告欄
+									</Typography>
+								</Grid>
+							</Grid>
 						</Box>
-						<Box>
+						<Box sx={{mt: 2}}>
 							<TableContainer component={Paper}>
 								<Table aria-label="table">
-									<TableHead>
+									{/* <TableHead>
 										<TableRow>
 											<TableCell></TableCell>
 										</TableRow>
-									</TableHead>
+									</TableHead> */}
 									<TableBody>
 										{rows.map((v, i) => (
 											<TableRow

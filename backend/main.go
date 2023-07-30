@@ -5,11 +5,9 @@ import (
 	"net/http"
 	"backend/api"
 	"backend/pkg"
-	"backend/model"
 )
 
 func main() {
-	model.Setup()
 
 	router := routerSetup()
 	

@@ -83,7 +83,7 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen, setAuthorized }) => {
           >
             <MenuIcon />
           </IconButton>
-          <Button variant="text" sx={{ color: "white"}}>
+          <Button variant="text" sx={{ color: "white"}} onClick={() => navigate("/")}>
             <Typography variant="h6" component="div">
               Archery
             </Typography>
@@ -123,7 +123,7 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen, setAuthorized }) => {
                                   navigate("/PersonalPage")
                                 }}
                               >
-                                Profile
+                                個人頁面
                               </MenuItem>
                               <MenuItem
                                 onClick={() => {
@@ -131,7 +131,7 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen, setAuthorized }) => {
                                   setAuthorized(false);
                                 }}
                               >
-                                Log Out
+                                登出
                               </MenuItem>
                             </MenuList>
                           </Box>
