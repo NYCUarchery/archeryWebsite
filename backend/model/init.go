@@ -8,17 +8,18 @@ import (
 )
 
 type User struct {
-	ID       uint   `gorm:"primaryKey"`
+	ID       uint   `gorm:"primaryKey;autoIncrement"`
 	Username string `gorm:"unique;not null"`
 	Password string `gorm:"not null"`
 }
 
 var DB *gorm.DB
 
-func Setup() {
+func init() {
 	var err error
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		DBuser, DBpasswd, DBip, DBport, DBname)
+
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
 	if err != nil {

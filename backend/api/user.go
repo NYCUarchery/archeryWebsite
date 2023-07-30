@@ -5,16 +5,30 @@ import (
 	"net/http"
 	//"fmt"
 	"backend/pkg"
+	"backend/model"
 )
 
 func Login(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
-	if Authenticate(username, password) {
-		pkg.SaveAuthSession(c, username)
-
-		c.JSON(http.StatusOK, gin.H{"result": "success"})
+	if pkg.IsAuthenticated(c) {
+		c.JSON(http.StatusOK, gin.H{"result": "has loginned"})
 		return
+	}
+
+	var err error
+	var user model.User
+	user, err = model.UserInfo(username)
+
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"result": "fail"})
+		return
+	}
+
+	if user.Password == password {
+		pkg.SaveAuthSession(c, username)
+		c.JSON(http.StatusOK, gin.H{"result": "success"})
+		return 
 	}
 
 	c.JSON(http.StatusOK, gin.H{"result": "fail"})

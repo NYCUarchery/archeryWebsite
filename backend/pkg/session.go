@@ -7,10 +7,8 @@ import (
 	"net/http"
 )
 
-const KEY = "secret555555"
-
 func EnableCookieSessionMiddleware() gin.HandlerFunc {
-    store := cookie.NewStore([]byte(KEY))
+    store := cookie.NewStore([]byte(SessionKey))
     return sessions.Sessions("mysession", store)
 }
 
@@ -27,7 +25,6 @@ func AuthSessionMiddleware() gin.HandlerFunc {
 	}
 }
 
-// IsAuthenticated checks if the user is authenticated
 func IsAuthenticated(c *gin.Context) bool {
 	session := sessions.Default(c)
 

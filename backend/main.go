@@ -5,12 +5,9 @@ import (
 	"net/http"
 	"backend/api"
 	"backend/pkg"
-	"backend/model"
 )
 
 func main() {
-	model.Setup()
-
 	router := routerSetup()
 	
 	router.Run("127.0.0.1:8080")
