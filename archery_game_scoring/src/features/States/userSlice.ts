@@ -6,12 +6,14 @@ const initialState = {
   userId: UserInfo.id,
   userRole: UserInfo.role,
   userGroup: UserInfo.group,
+  userLane: UserInfo.lane,
+  userTarget: UserInfo.target,
 };
 
-const userStateSlice = createSlice({
-  name: "userState",
+const userSlice = createSlice({
+  name: "user",
   initialState: initialState,
   reducers: {},
 });
 
-export const userStateReducer = userStateSlice.reducer;
+export const userReducer = userSlice.reducer;

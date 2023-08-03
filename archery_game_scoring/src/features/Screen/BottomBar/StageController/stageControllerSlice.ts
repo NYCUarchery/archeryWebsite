@@ -28,7 +28,7 @@ const stageControllerSlice = createSlice({
       state.stageControllerIsHidden = true;
     },
     nextStage: (state) => {
-      if (state.stageShown <= state.stageNum) state.stageShown++;
+      if (state.stageShown < state.stageNum - 1) state.stageShown++;
     },
     lastStage: (state) => {
       if (state.stageShown > 0) state.stageShown--;

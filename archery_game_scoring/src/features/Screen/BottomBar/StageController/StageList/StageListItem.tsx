@@ -4,6 +4,7 @@ import { selectStage } from "../stageControllerSlice";
 
 interface Props {
   stageId: number;
+  phaseKind: string;
 }
 
 export default function StageListItem(props: Props) {
@@ -11,6 +12,13 @@ export default function StageListItem(props: Props) {
     (state: any) => state.stageController.stageListIsHidden
   );
   const stageNum = useSelector((state: any) => state.stageController.stageNum);
+  const currentPhaseKind = useSelector(
+    (state: any) => state.game.currentPhaseKind
+  );
+  const boardShown = useSelector((state: any) => state.boardSwitch.boardShown);
+  const phaseKindShown = useSelector(
+    (state: any) => state.phaseListButton.phaseKindShown
+  );
 
   const dispatch = useDispatch();
   let maxHeight: string;
@@ -21,27 +29,30 @@ export default function StageListItem(props: Props) {
   }
 
   let content: string;
-
-  switch (props.stageId) {
-    case 0: {
-      content = "Players";
-      break;
+  if (props.phaseKind === "Elimination") {
+    switch (props.stageId) {
+      case 0: {
+        content = "Players";
+        break;
+      }
+      case stageNum - 1: {
+        content = "Results";
+        break;
+      }
+      case stageNum - 2: {
+        content = "Finals";
+        break;
+      }
+      case stageNum - 3: {
+        content = "Semi-Finals";
+        break;
+      }
+      default: {
+        content = "Stage " + props.stageId;
+      }
     }
-    case stageNum + 1: {
-      content = "Results";
-      break;
-    }
-    case stageNum: {
-      content = "Finals";
-      break;
-    }
-    case stageNum - 1: {
-      content = "Semi-Finals";
-      break;
-    }
-    default: {
-      content = "Stage " + props.stageId;
-    }
+  } else {
+    content = "Stage " + (props.stageId + 1);
   }
 
   return (

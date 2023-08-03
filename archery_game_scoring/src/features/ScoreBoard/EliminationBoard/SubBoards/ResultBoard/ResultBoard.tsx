@@ -1,4 +1,3 @@
-import { useSelector } from "react-redux";
 import ResultBar from "./ResultBar";
 
 interface Props {
@@ -11,15 +10,6 @@ interface Player {
 }
 
 export default function ResultBoard(props: Props) {
-  const stageShown = useSelector(
-    (state: any) => state.stageController.stageShown
-  );
-  const stageNum = useSelector((state: any) => state.stageController.stageNum);
-
-  if (stageShown !== stageNum + 1) {
-    return null;
-  }
-
   return (
     <div className="result_board">
       {props.players.map((player) => (

@@ -4,8 +4,8 @@ import { groupListButtonReducer } from "../features/Screen/SubGameBar/GroupList/
 import { phaseListButtonReducer } from "../features/Screen/SubGameBar/PhaseList/phaseListButtonSlice";
 import { stageControllerReducer } from "../features/Screen/BottomBar/StageController/stageControllerSlice";
 import { boardSwitchReducer } from "../features/Screen/TopBar/BoardSwitch/boardSwitchSlice";
-import { gameStateControllerReducer } from "../features/States/gameStateControllerSlice";
-import { userStateReducer } from "../features/States/userStateSlice";
+import { gameReducer } from "../features/States/gameSlice";
+import { userReducer } from "../features/States/userSlice";
 
 const store = configureStore({
   reducer: {
@@ -13,8 +13,8 @@ const store = configureStore({
     phaseListButton: phaseListButtonReducer,
     stageController: stageControllerReducer,
     boardSwitch: boardSwitchReducer,
-    gameStateController: gameStateControllerReducer,
-    userState: userStateReducer,
+    game: gameReducer,
+    user: userReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(ReduxLogger),

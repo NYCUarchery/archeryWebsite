@@ -39,7 +39,14 @@ function PhaseListItem(props: PhaseListItem) {
         maxHeight: maxHeight,
       }}
       key={props.phaseId}
-      onClick={() => dispatch(selectPhase(props.phaseId))}
+      onClick={() =>
+        dispatch(
+          selectPhase({
+            phase: props.phaseId,
+            phaseKind: PhaseInfo.phase_kinds[props.phaseId],
+          })
+        )
+      }
     >
       {phases[props.phaseId]}
     </li>

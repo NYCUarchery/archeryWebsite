@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   phaseShown: 0,
+  phaseKindShown: "Qualification",
   phaseListIsHidden: true,
 };
 
@@ -15,7 +16,8 @@ const phaseListButtonSlice = createSlice({
         : (state.phaseListIsHidden = true);
     },
     selectPhase: (state, action) => {
-      state.phaseShown = action.payload;
+      state.phaseShown = action.payload.phase;
+      state.phaseKindShown = action.payload.phaseKind;
       state.phaseListIsHidden = true;
     },
   },

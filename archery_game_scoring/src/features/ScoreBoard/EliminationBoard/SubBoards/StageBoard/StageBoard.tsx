@@ -1,4 +1,3 @@
-import { useSelector } from "react-redux";
 import MatchBlock from "./MatchBlock";
 
 interface Props {
@@ -7,13 +6,6 @@ interface Props {
 }
 
 export default function StageBoard(props: Props) {
-  const stageShown = useSelector(
-    (state: any) => state.stageController.stageShown
-  );
-  if (stageShown !== props.stageId) {
-    return null;
-  }
-
   let matches = [];
 
   for (let i = 0; i < props.stage.matches.length; i++) {

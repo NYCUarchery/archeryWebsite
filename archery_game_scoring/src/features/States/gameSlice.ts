@@ -1,16 +1,18 @@
 import { createSlice } from "@reduxjs/toolkit";
 import GroupInfo from "../../jsons/GroupInfo.json";
+import GameInfo from "../../jsons/GameInfo.json";
 import PhaseInfo from "../../jsons/PhaseInfo.json";
 
 const initialState = {
-  currentPhase: 0,
-  currentStage: 0,
+  currentPhase: GameInfo.current_phase,
+  currentPhaseKind: GameInfo.current_phase_kind,
+  currentStage: GameInfo.current_stage,
   phases: PhaseInfo.phases,
   groups: GroupInfo.groups,
 };
 
-const gameStateControllerSlice = createSlice({
-  name: "gameStateController",
+const gameSlice = createSlice({
+  name: "game",
   initialState: initialState,
   reducers: {
     progressPhase: (state) => {
@@ -28,8 +30,8 @@ const gameStateControllerSlice = createSlice({
   },
 });
 
-export const gameStateControllerReducer = gameStateControllerSlice.reducer;
-export const progressPhase = gameStateControllerSlice.actions.progressPhase;
-export const regressPhase = gameStateControllerSlice.actions.regressPhase;
-export const progressStage = gameStateControllerSlice.actions.progressStage;
-export const regressStage = gameStateControllerSlice.actions.regressStage;
+export const gameReducer = gameSlice.reducer;
+export const progressPhase = gameSlice.actions.progressPhase;
+export const regressPhase = gameSlice.actions.regressPhase;
+export const progressStage = gameSlice.actions.progressStage;
+export const regressStage = gameSlice.actions.regressStage;

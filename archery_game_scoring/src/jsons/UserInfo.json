@@ -1,6 +1,8 @@
 {
-  "role": "player",
   "id": 0,
   "name": "王逸蓁",
-  "group": 0
+  "role": "player",
+  "group": 0,
+  "lane": 1,
+  "target": "A"
 }
