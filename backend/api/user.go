@@ -8,6 +8,27 @@ import (
 	"backend/model"
 )
 
+func Register(c *gin.Context) {
+	var user model.User
+	user.Username = c.PostForm("username")
+
+	if findUser, _ := model.UserInfo(user.Username); findUser.ID != 0 {
+		c.JSON(http.StatusOK, gin.H{"result": "username exists"})
+		return
+	}
+
+	if c.PostForm("password") != c.PostForm("confirmPassword") {
+		c.JSON(http.StatusOK, gin.H{"result": "not consistent"})
+		return
+	}
+
+	user.Password = pkg.EncryptPassword(c.PostForm("password"))
+
+	model.AddUser(&user)
+
+	c.JSON(http.StatusOK, gin.H{"result": "success"})
+}
+
 func Login(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
@@ -25,13 +46,13 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	if user.Password == password {
-		pkg.SaveAuthSession(c, username)
-		c.JSON(http.StatusOK, gin.H{"result": "success"})
+	if err := pkg.Compare(user.Password, password); err != nil {
+		c.JSON(http.StatusOK, gin.H{"result": "wrong password"})
 		return 
 	}
 
-	c.JSON(http.StatusOK, gin.H{"result": "fail"})
+	pkg.SaveAuthSession(c, username)
+	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
 
 func Logout(c *gin.Context) {
@@ -39,11 +60,3 @@ func Logout(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
 
-// Authenticate performs the login authentication
-func Authenticate(username, password string) bool {
-	// Validate the username and password (e.g., check against database, external API, etc.)
-	// ...
-
-	// Return true if authentication is successful, false otherwise
-	return true
-}

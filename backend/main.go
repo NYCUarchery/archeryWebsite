@@ -26,6 +26,8 @@ func routerSetup() *gin.Engine {
 			c.JSON(http.StatusOK, gin.H{"result": "ok"});
 		})
 
+		sr.POST("/register", api.Register)
+
 		sr.POST("/login", api.Login)
 
 		sr.GET("/logout", api.Logout)
