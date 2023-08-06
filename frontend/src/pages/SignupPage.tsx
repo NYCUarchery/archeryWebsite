@@ -1,6 +1,5 @@
 
 import Card from '@mui/material/Card';
-import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import Box from '@mui/material/Box';
 import { useState, Dispatch, SetStateAction, FC } from 'react';
@@ -8,7 +7,6 @@ import TextField from '@mui/material/TextField';
 
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import Stack from '@mui/material/Stack';
 
 import FormHelperText from '@mui/material/FormHelperText';
 import InputAdornment from '@mui/material/InputAdornment';
@@ -23,6 +21,8 @@ import { useNavigate } from 'react-router-dom';
 import * as Yup from 'yup';
 import { Formik } from 'formik';
 import { FormControl } from '@mui/material';
+
+import * as AES from 'crypto-js/aes';
 
 interface SignupPageProps {
 	setPath: Dispatch<SetStateAction<string>>;
@@ -53,7 +53,7 @@ const SignupPage: FC<SignupPageProps> = ({setPath}) => {
 
 	return (
 			<Grid container direction="column" alignItems="center" justifyContent="center" sx={{ minHeight: '100vh'}}>
-				<Grid item xs={6} sm={12}>
+				<Grid item xs={12} sm={6} sx={{p: 2}}>
 					<Card>
 						<CardContent>
 							<Grid container direction="column" alignItems="center" justifyContent="center" spacing={2}>
@@ -72,15 +72,35 @@ const SignupPage: FC<SignupPageProps> = ({setPath}) => {
 										validationSchema={Yup.object().shape({
 											username: Yup.string().max(255).required('Username is required'),
 											password: Yup.string().min(6, "Password should be longer than 6 characters").max(255).required('Password is required'),
-											passwordConfirm: Yup.string().required('Confirm your password').oneOf([Yup.ref("password"), ""], "Password must match"),
-											// passwordConfirm: Yup.string()
-											// 	.test('passwords-match', 'Passwords must match', function(value){
-											// 		return this.parent.password === value
-											// 	})
+											passwordConfirm: Yup.string().oneOf([Yup.ref("password"), ""], "Password must match").required('Confirm your password'),
 										})}
 										onSubmit={(values, { setErrors, setStatus, setSubmitting }) => {
 											try {
-												console.log(values)
+												console.log("try to send");
+												const passwordCy = AES.encrypt(values.password, 'trytocypher').toString();
+												const passwordConfirmCy = AES.encrypt(values.passwordConfirm, 'trytocypher').toString();
+												console.log("passwordCy: ", passwordCy, " passwordConfirmCy: ", passwordConfirmCy)
+												fetch("http://localhost:8080/api/register", {
+													method: "POST",
+													body: JSON.stringify({
+														"username": values.username,
+														"password": passwordCy,
+														"confirmPassword": passwordConfirmCy,
+													}),
+													// credentials: 'include',
+												})
+												.then((res) => {
+													return res.json()
+												})
+												.then((resjson) => {
+													console.log(resjson);
+													if (resjson["result"] && resjson["result"] === "success") {
+														navigate("/Login");
+													} else {
+														window.alert("使用者帳號已存在");
+														navigate("/Signup");
+													}
+												});
 											} catch (err) {
 											}
 									}}
@@ -168,10 +188,10 @@ const SignupPage: FC<SignupPageProps> = ({setPath}) => {
 																}}
 															/>
 
-															{touched.password && errors.password && (
+															{touched.passwordConfirm && errors.passwordConfirm && (
 																	<FormHelperText error id="standard-weight-helper-text-email-login">
 																			{' '}
-																			{errors.password}{' '}
+																			{errors.passwordConfirm}{' '}
 																	</FormHelperText>
 															)}
 														</FormControl>

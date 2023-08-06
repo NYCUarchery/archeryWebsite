@@ -24,8 +24,7 @@ import * as Yup from 'yup';
 import { Formik } from 'formik';
 import { FormControl } from '@mui/material';
 
-import Cookies from 'universal-cookie';
- 
+import * as AES from 'crypto-js/aes';
 
 interface LoginPageProps {
   setAuthorized: Dispatch<SetStateAction<boolean>>;
@@ -44,9 +43,6 @@ const LoginPage: FC<LoginPageProps> = ({setAuthorized, setPath}) => {
 	};
 
 	const navigate = useNavigate();
-
-
-	const cookies = new Cookies();
 
 	return (
 		<Grid container direction="column" alignItems="center" justifyContent="center" sx={{ minHeight: '100vh'}}>
@@ -72,11 +68,13 @@ const LoginPage: FC<LoginPageProps> = ({setAuthorized, setPath}) => {
 									onSubmit={(values, { setErrors, setStatus, setSubmitting }) => {
 										try {
 											console.log("try to send");
+											const passwordCy = AES.encrypt(values.password, 'trytocypher').toString();
+											console.log("passwordCy: ", passwordCy)
 											fetch("http://localhost:8080/api/login", {
 												method: "POST",
 												body: JSON.stringify({
 													"username": values.username,
-													"password": "Not password",
+													"password": passwordCy,
 												}),
 												// credentials: 'include',
 											})
@@ -92,7 +90,7 @@ const LoginPage: FC<LoginPageProps> = ({setAuthorized, setPath}) => {
 													setAuthorized(true);
 													navigate("/");
 												} else {
-													window.alert("Your username or password does not match any in our database");
+													window.alert("有人帳號或密碼打錯囉");
 												}
 											});
 										} catch (err) {

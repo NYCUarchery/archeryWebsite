@@ -31,7 +31,7 @@ const Sidebar: FC<SidebarProps> = ({ sideBarOpen }) => {
 					// height: "calc(100vh - 64px)",
 					height: "100vh",
 					backgroundColor: "#87e8e3",
-					top: "64px",
+					top: { sm: "64px", xs: "56px" },
 				}}
 				role="presentation"
 

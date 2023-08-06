@@ -3,7 +3,7 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	//"fmt"
+	// "fmt"
 	"backend/pkg"
 	"backend/model"
 )
@@ -32,6 +32,7 @@ func Register(c *gin.Context) {
 func Login(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
+
 	if pkg.IsAuthenticated(c) {
 		c.JSON(http.StatusOK, gin.H{"result": "has loginned"})
 		return

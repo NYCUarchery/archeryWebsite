@@ -28,7 +28,9 @@ import Grow from '@mui/material/Grow';
 
 import avatar from "../assets/images/avatar.jpg";
 import { useNavigate } from 'react-router-dom';
-import { create } from 'domain';
+// import { create } from 'domain';
+
+import Avatar from '@mui/material/Avatar';
 
 interface HeaderProps {
   setSideBarOpen: Dispatch<SetStateAction<boolean>>;
@@ -102,7 +104,8 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen, setAuthorized }) => {
 										color="inherit"
                     sx={{mr: "20px"}}
 									>
-										<AccountCircle />
+										{/* <AccountCircle /> */}
+                    <Avatar alt="Remy Sharp" src={avatar} sx={{ width: 24, height: 24 }}/>
 									</IconButton>
 									<Popper open={Boolean(anchorEl)} anchorEl={anchorEl} placement="bottom-end">
                     <Grow
@@ -129,6 +132,22 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen, setAuthorized }) => {
                                 onClick={() => {
                                   handleClose();
                                   setAuthorized(false);
+                                  fetch("http://localhost:8080/api/logout", {
+                                    method: "GET",
+                                  })
+                                  .then((res) => {
+
+                                    return res.json()
+                                  })
+                                  .then((resjson) => {
+                                    console.log(resjson);
+                                    if (resjson["result"] && resjson["result"] === "success") {
+                                      console.log("Log Out Success");
+                                      navigate("/login");
+                                    } else {
+                                      window.alert("");
+                                    }
+                                  });
                                 }}
                               >
                                 登出

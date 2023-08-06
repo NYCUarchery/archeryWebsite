@@ -16,6 +16,12 @@ type User struct {
 var DB *gorm.DB
 
 func init() {
+	DBuser := "testuser"
+	DBpasswd := "pass123"
+	DBip := "127.0.0.1"
+	DBport := "3306"
+	DBname := "TEST"
+
 	var err error
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		DBuser, DBpasswd, DBip, DBport, DBname)
