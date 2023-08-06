@@ -14,8 +14,8 @@ import avatar from "../assets/images/avatar.jpg";
 const PersonalPage = () => {
 	const navigate = useNavigate();
 	return (
-		<Grid container alignItems="stretch" justifyContent="center" sx={{ minWidth: '100vw', mt: 10}}>
-			<Grid item xs={12} sm={9} sx={{p: 2}}>
+		// <Grid container alignItems="stretch" justifyContent="center" sx={{ minWidth: '100vw', mt: 10}}>
+		// 	<Grid item xs={12} sm={9} sx={{p: 2}}>
 				<Card sx={{p: 2}}>
 					<CardContent>
 						<Grid container alignItems="stretch" justifyContent="center" spacing={2}>
@@ -60,8 +60,8 @@ const PersonalPage = () => {
 						</Grid>
 					</CardContent>
 				</Card>
-			</Grid>
-		</Grid>
+		// 	</Grid>
+		// </Grid>
 	)
 }
 

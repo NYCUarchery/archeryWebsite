@@ -8,11 +8,11 @@ import PageRoute from './routings/PageRoute';
 import UnauthRoute from './routings/UnauthRoute';
 
 import { useState } from 'react';
-
+import PageContainer from './components/PageContainer';
 
 function App() {
   const [sideBarOpen, setSideBarOpen] = useState(false);
-  const [authorized, setAuthorized] = useState(false);
+  const [authorized, setAuthorized] = useState(true);
   
   return (
     <div>
@@ -21,10 +21,14 @@ function App() {
         <div style={{display: "flex"}}>
           <Sidebar sideBarOpen={sideBarOpen} />
           <div style={{position: "fixed", minHeight: "calc(100vh - 64px)", minWidth: "100vw", top: "64px", height: "calc(100vh - 64px)", overflowY: "scroll"}}>
-            {authorized?
-              <PageRoute />:
-              <UnauthRoute setAuthorized={setAuthorized}/>
-            }
+
+            <PageContainer>
+
+              {authorized?
+                <PageRoute />:
+                <UnauthRoute setAuthorized={setAuthorized}/>
+              }
+            </PageContainer>
           </div>
         </div>
       </BrowserRouter>

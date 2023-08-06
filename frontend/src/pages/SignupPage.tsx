@@ -52,8 +52,8 @@ const SignupPage: FC<SignupPageProps> = ({setPath}) => {
 	const navigate = useNavigate();
 
 	return (
-			<Grid container direction="column" alignItems="center" justifyContent="center" sx={{ minHeight: '100vh'}}>
-				<Grid item xs={12} sm={6} sx={{p: 2}}>
+			// <Grid container direction="column" alignItems="center" justifyContent="center" sx={{ minHeight: '100vh'}}>
+			// 	<Grid item xs={12} sm={6} sx={{p: 2}}>
 					<Card>
 						<CardContent>
 							<Grid container direction="column" alignItems="center" justifyContent="center" spacing={2}>
@@ -240,8 +240,8 @@ const SignupPage: FC<SignupPageProps> = ({setPath}) => {
 							</Grid>
 						</CardContent>
 					</Card>
-				</Grid>
-			</Grid>
+			// 	</Grid>
+			// </Grid>
 	)
 }
 
