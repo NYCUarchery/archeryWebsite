@@ -4,6 +4,10 @@ import (
 	"fmt"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"os"
+	"bufio"
+	"path/filepath"
+	"strings"
 	//"time"
 )
 
@@ -17,16 +21,52 @@ type User struct {
 	Score int64 `gorm:"column:name"`
 }
 
+type dsn_details struct {
+	database string 
+    username string 
+    password string 
+    host string 
+    port string
+}
+
 var DB *gorm.DB
+var DSN dsn_details 
 
 func GetDb() *gorm.DB {
 	return DB
 }
 
+func getdsn() {
+	Pwd, _ := os.Getwd()
+	FilePath := filepath.Join(Pwd, "database")
+	FilePath = filepath.Join(FilePath, "dsn_config.txt")
+	file, err := os.Open(FilePath)
+	if err != nil {
+		fmt.Println("Error opening file:", err)
+		return
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	if scanner.Scan() {
+		line := scanner.Text()
+		values := strings.Fields(line)
+		DSN.database = values[0]
+		DSN.username = values[1]
+		DSN.password = values[2]
+		DSN.host = values[3]
+		DSN.port = values[4]
+	} else {
+		fmt.Println("Error reading file:", scanner.Err())
+	}
+}
+
 func Database_Initial() {
 	// 建立資料庫連線
 	// reference https://github.com/go-sql-driver/mysql#dsn-data-source-name
-	dsn := "NYCUarchery:cegkuz-3hongA-nigpoz@tcp(172.190.212.47:3306)/testDB?charset=utf8mb4&parseTime=True&loc=Local"
+	getdsn()
+    dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify",
+        DSN.username, DSN.password, DSN.host, DSN.port, DSN.database)
 	_, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		fmt.Println("資料庫徹底連線失敗：", err)
@@ -51,3 +91,4 @@ func Database_Initial() {
 	DB = tempdb // for gorm database implementation
 	*/
 }
+
