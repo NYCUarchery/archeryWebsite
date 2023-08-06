@@ -8,7 +8,6 @@ import (
 )
 
 func EnableCookieSessionMiddleware() gin.HandlerFunc {
-    SessionKey := "eeeeeeeeee"
     store := cookie.NewStore([]byte(SessionKey))
     return sessions.Sessions("mysession", store)
 }
