@@ -13,6 +13,9 @@ interface Props {
 
 export default function StageList(props: Props) {
   const dispatch = useDispatch();
+  const stageListIsHidden = useSelector(
+    (state: any) => state.stageController.stageListIsHidden
+  );
   const groupShown = useSelector(
     (state: any) => state.groupListButton.groupShown
   );
@@ -41,8 +44,8 @@ export default function StageList(props: Props) {
     <ul
       className="stage_list "
       style={{
-        height: items.length * 40 + "px",
-        bottom: 40 + items.length - 1 + "px",
+        height: stageListIsHidden ? "0px" : items.length * 40 + "px",
+        bottom: 40 + items.length + "px",
       }}
     >
       {items}

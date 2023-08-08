@@ -3,5 +3,9 @@ interface Props {
 }
 
 export default function LaneNumber(props: Props) {
-  return <div className="lane_number">{props.laneNum}</div>;
+  return (
+    <div className="lane_number">
+      <div>{props.laneNum}</div>
+    </div>
+  );
 }

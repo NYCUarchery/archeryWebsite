@@ -14,17 +14,16 @@ $stage_controller_width: 400px;
   width: calc($stage_controller_width/3);
   padding: 0px;
   z-index: 1;
+  background-color: transparent;
+  margin: 0px;
+  transition: height 0.2s ease-out;
 }
 
 .stage_list {
   @include bottom_bar_list();
 
-  background-color: transparent;
-  height: 120px;
-  margin: 0px;
-  left: calc(50% - $stage_controller_width/6);
-  bottom: 40px;
   position: fixed;
+  left: calc(50% - $stage_controller_width/6);
 }
 
 @mixin bottom_bar_button() {
@@ -38,6 +37,7 @@ $stage_controller_width: 400px;
   align-items: center;
   justify-content: center;
   user-select: none;
+  z-index: 2;
 
   &:active {
     background-color: darken($sub-color, 5%);
@@ -68,7 +68,7 @@ $stage_controller_width: 400px;
   transition: 0.3s;
   max-height: 0px;
   overflow: hidden;
-  transition: max-height 0.1s ease-in-out;
+  transition: max-height 0.2s ease-out;
   &:hover {
     background-color: darken($sub-color, 5%);
   }

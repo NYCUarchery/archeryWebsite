@@ -1,7 +1,8 @@
 @import "variable";
-@import "EliminationBoard";
 @import "./Screen/Screen.scss";
-@import "QualificationBoard.scss";
+@import "./ScoreBoard/ScoreBoard.scss";
+@import "RecordingBoard";
+@import "Global";
 
 body {
   margin: 0px;
