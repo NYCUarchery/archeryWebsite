@@ -14,6 +14,26 @@
 
   & > .lane_board > .MuiToggleButtonGroup-root > .MuiButtonBase-root {
     > .player_info_bar {
+      > .confirmation_signal {
+        $diameter: 20px;
+        width: $diameter;
+        height: $diameter;
+        margin: 0px auto 5px;
+        border-radius: 50%;
+        font-size: calc($diameter - 5px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        color: white;
+        &[id="true"] {
+          background-color: #1bdc1b;
+        }
+        &[id="false"] {
+          background-color: #dc1b1b;
+        }
+      }
+
       > .score_bar {
         width: 100%;
         margin: 0px auto;

@@ -13,12 +13,14 @@
         [11, 9, 8, 7, 6, 5]
       ],
 
-      "totals": [36, 35, 27, 45]
+      "totals": [36, 35, 27, 45],
+      "confirmations": [true, true, true, true]
     },
     {
       "status": "ongoing",
       "all_scores": [[], [], [], []],
-      "totals": [0, 0, 0, 0]
+      "totals": [0, 0, 0, 0],
+      "confirmations": [false, false, false, false]
     }
   ]
 }

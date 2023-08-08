@@ -23,10 +23,12 @@ export default function LaneBoard(props: Props) {
 
   let playerInfos = [];
   for (let i = 0; i < props.userNames.length; i++) {
+    console.log(props.stageInfo.confirmations[i]);
     playerInfos.push(
       <ToggleButton value={props.userNames[i]} href="">
         <PlayerInfoBar
           name={props.userNames[i]}
+          comfirmed={props.stageInfo.confirmations[i]}
           scores={props.stageInfo.all_scores[i]}
         ></PlayerInfoBar>
       </ToggleButton>
