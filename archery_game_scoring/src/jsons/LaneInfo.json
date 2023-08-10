@@ -2,6 +2,7 @@
   "lane_num": 1,
   "user_ids": [0, 1, 2, 3],
   "user_names": ["王逸蓁", "楊維寧", "洪凱昕", "陳鈞鈴"],
+  "score_num": 6,
   "stage_num": 2,
   "stages": [
     {

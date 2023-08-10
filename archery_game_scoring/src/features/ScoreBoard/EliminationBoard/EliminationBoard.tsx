@@ -20,7 +20,6 @@ export default function EliminationBoard(props: Props) {
   let stageBoards = [];
 
   for (let i = 1; i < stageNum - 1; i++) {
-    console.log(group.stages[i - 1]);
     stageBoards.push(
       <StageBoard stageId={i} stage={group.stages[i - 1]}></StageBoard>
     );

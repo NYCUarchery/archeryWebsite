@@ -15,6 +15,7 @@ export default function PlayersBoard(props: Props) {
     <div className="players_board">
       {props.players.map((player) => (
         <PlayerIntroBar
+          key={player.name}
           name={player.name}
           rank={player.rank}
           score={player.score}

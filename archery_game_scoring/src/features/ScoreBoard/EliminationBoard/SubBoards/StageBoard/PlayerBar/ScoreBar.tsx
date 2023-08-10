@@ -5,19 +5,13 @@ interface Props {
 }
 
 export default function ScoreBar(props: Props) {
-  let scores: number[] = [];
+  let scores = [];
   for (let i = 0; i < 6; i++) {
     if (i >= props.scores.length) {
-      scores.push(-1);
+      scores.push(<ScoreBlock key={i} score={-1} />);
       continue;
     }
-    scores.push(props.scores[i]);
+    scores.push(<ScoreBlock key={i} score={props.scores[i]} />);
   }
-  return (
-    <div className="score_bar">
-      {scores.map((score: number) => (
-        <ScoreBlock score={score} />
-      ))}
-    </div>
-  );
+  return <div className="score_bar">{scores}</div>;
 }

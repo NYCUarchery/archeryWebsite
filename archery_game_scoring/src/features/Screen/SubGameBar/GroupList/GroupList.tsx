@@ -8,7 +8,7 @@ function GroupList() {
   let items = [];
 
   for (let i = 0; i < groups.length; i++) {
-    items.push(<GroupListItem groupId={i}></GroupListItem>);
+    items.push(<GroupListItem key={i} groupId={i}></GroupListItem>);
   }
 
   return (
@@ -41,7 +41,6 @@ function GroupListItem(props: GroupListItem) {
       style={{
         maxHeight: maxHeight,
       }}
-      key={props.groupId}
       onClick={() => dispatch(selectGroup(props.groupId))}
     >
       {groups[props.groupId]}

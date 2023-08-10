@@ -25,6 +25,7 @@ export default function QualificationBoard(props: Props) {
 
     RankingInfoBars.push(
       <RankingInfoBar
+        key={i}
         player={group.players[i]}
         isQudalified={isQudalified}
         id={i}

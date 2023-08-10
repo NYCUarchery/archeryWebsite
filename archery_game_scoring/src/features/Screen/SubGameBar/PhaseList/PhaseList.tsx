@@ -8,7 +8,7 @@ function PhaseList() {
   let items = [];
 
   for (let i = 0; i < phases.length; i++) {
-    items.push(<PhaseListItem phaseId={i}></PhaseListItem>);
+    items.push(<PhaseListItem key={i} phaseId={i}></PhaseListItem>);
   }
 
   return (

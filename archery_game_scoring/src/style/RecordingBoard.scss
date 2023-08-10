@@ -31,10 +31,10 @@
 
           color: white;
           &[id="true"] {
-            background-color: #1bdc1b;
+            background-color: $confirmed-color;
           }
           &[id="false"] {
-            background-color: #dc1b1b;
+            background-color: $unconfirmed-color;
           }
         }
 

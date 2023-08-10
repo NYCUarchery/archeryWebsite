@@ -1,4 +1,5 @@
 import StageListItem from "./StageListItem";
+import { useEffect } from "react";
 import { useSelector } from "react-redux/es/hooks/useSelector";
 import { useDispatch } from "react-redux/es/hooks/useDispatch";
 import EliminationInfo from "../../../../../jsons/EliminationInfo.json";
@@ -24,19 +25,27 @@ export default function StageList(props: Props) {
   let stages: any;
   const boardShown = useSelector((state: any) => state.boardSwitch.boardShown);
 
-  if (boardShown === "score") {
-    stages = groups[groupShown].stages;
-    dispatch(setStageNum(stages.length + 2));
-  } else if (boardShown === "recording") {
-    stages = LaneInfo.stages;
-    dispatch(setStageNum(stages.length));
-  }
+  useEffect(() => {
+    return () => {
+      if (boardShown === "score") {
+        stages = groups[groupShown].stages;
+        dispatch(setStageNum(stages.length + 2));
+      } else if (boardShown === "recording") {
+        stages = LaneInfo.stages;
+        dispatch(setStageNum(stages.length));
+      }
+    };
+  }, [boardShown]);
 
   let items = [];
 
   for (let i = 0; i < stageNum; i++) {
     items.push(
-      <StageListItem stageId={i} phaseKind={props.phaseKind}></StageListItem>
+      <StageListItem
+        stageId={i}
+        key={i}
+        phaseKind={props.phaseKind}
+      ></StageListItem>
     );
   }
 

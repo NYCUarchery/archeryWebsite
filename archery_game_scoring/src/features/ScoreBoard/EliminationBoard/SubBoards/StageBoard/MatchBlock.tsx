@@ -19,7 +19,7 @@ export default function MatchBlock(props: Props) {
   return (
     <div className="match_block">
       {props.match.players.map((player: any) => (
-        <PlayerBar player={player}></PlayerBar>
+        <PlayerBar key={player.name} player={player}></PlayerBar>
       ))}
     </div>
   );

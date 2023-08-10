@@ -13,7 +13,11 @@ export default function ResultBoard(props: Props) {
   return (
     <div className="result_board">
       {props.players.map((player) => (
-        <ResultBar name={player.name} medal={player.medal}></ResultBar>
+        <ResultBar
+          key={player.name}
+          name={player.name}
+          medal={player.medal}
+        ></ResultBar>
       ))}
     </div>
   );

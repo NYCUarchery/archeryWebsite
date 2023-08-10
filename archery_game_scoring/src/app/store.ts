@@ -4,6 +4,7 @@ import { groupListButtonReducer } from "../features/Screen/SubGameBar/GroupList/
 import { phaseListButtonReducer } from "../features/Screen/SubGameBar/PhaseList/phaseListButtonSlice";
 import { stageControllerReducer } from "../features/Screen/BottomBar/StageController/stageControllerSlice";
 import { boardSwitchReducer } from "../features/Screen/TopBar/BoardSwitch/boardSwitchSlice";
+import { scoreControllerReducer } from "../features/RecordingBoard/LaneBoard/ScoreController/scoreControllerSlice";
 import { gameReducer } from "../features/States/gameSlice";
 import { userReducer } from "../features/States/userSlice";
 
@@ -13,6 +14,7 @@ const store = configureStore({
     phaseListButton: phaseListButtonReducer,
     stageController: stageControllerReducer,
     boardSwitch: boardSwitchReducer,
+    scoreController: scoreControllerReducer,
     game: gameReducer,
     user: userReducer,
   },

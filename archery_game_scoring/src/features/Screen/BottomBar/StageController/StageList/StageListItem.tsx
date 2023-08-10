@@ -55,7 +55,6 @@ export default function StageListItem(props: Props) {
         maxHeight: maxHeight,
         borderBottom: maxHeight == "0px" ? "0px" : "1px solid white",
       }}
-      key={props.stageId}
       onClick={() => dispatch(selectStage(props.stageId))}
     >
       {content}
