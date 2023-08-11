@@ -70,6 +70,16 @@
 
     > .controll_button_group {
       width: 100%;
+      > .confirm_button {
+        &[id="confirmed"] {
+          background-color: $confirmed-color;
+          color: white;
+        }
+        &[id="unconfirmed"] {
+          background-color: $unconfirmed-color;
+          color: white;
+        }
+      }
     }
   }
 }

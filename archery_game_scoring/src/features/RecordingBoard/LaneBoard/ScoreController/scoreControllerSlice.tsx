@@ -5,7 +5,7 @@ const initialState = {
   scoreNum: 0,
   allScores: [[0], [0], [0], [0]],
   totals: [0, 0, 0, 0],
-  confirmations: [false],
+  confirmations: [false, false, false, false],
 };
 
 const scoreControllerSlice = createSlice({
@@ -32,6 +32,10 @@ const scoreControllerSlice = createSlice({
         state.allScores[state.selectedPlayer].pop();
       }
     },
+    toggleConfirmation: (state, action) => {
+      state.confirmations[action.payload] =
+        !state.confirmations[action.payload];
+    },
   },
 });
 
@@ -41,3 +45,5 @@ export const initScoreController =
 export const selectPlayer = scoreControllerSlice.actions.selectPlayer;
 export const addScore = scoreControllerSlice.actions.addScore;
 export const deleteScore = scoreControllerSlice.actions.deleteScore;
+export const toggleConfirmation =
+  scoreControllerSlice.actions.toggleConfirmation;

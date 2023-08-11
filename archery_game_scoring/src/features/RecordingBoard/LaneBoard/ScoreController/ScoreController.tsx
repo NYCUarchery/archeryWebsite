@@ -12,6 +12,7 @@ export default function ScoreController(props: Props) {
   for (let i = 0; i < props.possibleScores.length; i++) {
     scoreButtons.push(
       <ScoreButton
+        key={i}
         selectedPlayer={props.selectedPlayer}
         score={props.possibleScores[i]}
       ></ScoreButton>
@@ -20,7 +21,7 @@ export default function ScoreController(props: Props) {
 
   return (
     <>
-      <ButtonGroup className="score_button_group" variant="outlined">
+      <ButtonGroup className="score_button_group" variant="text">
         {scoreButtons}
       </ButtonGroup>
       <ControllButtonGroup></ControllButtonGroup>
