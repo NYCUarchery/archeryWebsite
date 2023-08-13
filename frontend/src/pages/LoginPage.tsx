@@ -22,7 +22,7 @@ import { useNavigate } from 'react-router-dom';
 
 import * as Yup from 'yup';
 import { Formik } from 'formik';
-import { FormControl } from '@mui/material';
+import FormControl from '@mui/material/FormControl';
 
 import * as AES from 'crypto-js/aes';
 
@@ -59,7 +59,7 @@ const LoginPage: FC<LoginPageProps> = ({setAuthorized, setPath}) => {
 								<Formik
 									initialValues={{
 										username: "",
-										password: ""
+										password: "",
 									}}
 									validationSchema={Yup.object().shape({
 										username: Yup.string().max(255).required('Username is required'),
@@ -67,21 +67,22 @@ const LoginPage: FC<LoginPageProps> = ({setAuthorized, setPath}) => {
 									})}
 									onSubmit={(values, { setErrors, setStatus, setSubmitting }) => {
 										try {
-											console.log("try to send");
-											const passwordCy = AES.encrypt(values.password, 'trytocypher').toString();
-											console.log("passwordCy: ", passwordCy)
+											
+											// const passwordCy = AES.encrypt(values.password, 'trytocypher').toString();
+											const body = new FormData();
+											body.append("username", values.username);
+											body.append("password", values.password);
 											fetch("http://localhost:8080/api/login", {
 												method: "POST",
-												body: JSON.stringify({
-													"username": values.username,
-													"password": passwordCy,
-												}),
+												body,
+												// body: JSON.stringify({
+												// 	"username": values.username,
+												// 	"password": passwordCy,
+												// }),
 												// credentials: 'include',
 											})
 											.then((res) => {
-
-												console.log(res.headers.get('Date'))
-												return res.json()
+												return res.json();
 											})
 											.then((resjson) => {
 												console.log(resjson);

@@ -3,7 +3,7 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	// "fmt"
+	"fmt"
 	"backend/pkg"
 	"backend/model"
 )
@@ -11,6 +11,10 @@ import (
 func Register(c *gin.Context) {
 	var user model.User
 	user.Username = c.PostForm("username")
+	fmt.Println("username:", c.PostForm("username"))
+	fmt.Println("password:", c.PostForm("password"))
+	fmt.Println("confirmPassword:", c.PostForm("confirmPassword"))
+
 
 	if findUser, _ := model.UserInfo(user.Username); findUser.ID != 0 {
 		c.JSON(http.StatusOK, gin.H{"result": "username exists"})

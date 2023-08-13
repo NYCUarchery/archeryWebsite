@@ -26,9 +26,10 @@ import * as AES from 'crypto-js/aes';
 
 interface SignupPageProps {
 	setPath: Dispatch<SetStateAction<string>>;
+  setAuthorized: Dispatch<SetStateAction<boolean>>;
 }
 
-const SignupPage: FC<SignupPageProps> = ({setPath}) => {
+const SignupPage: FC<SignupPageProps> = ({setPath, setAuthorized}) => {
 	const [showPassword, setShowPassword] = useState(false);
 	const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
@@ -75,34 +76,38 @@ const SignupPage: FC<SignupPageProps> = ({setPath}) => {
 											passwordConfirm: Yup.string().oneOf([Yup.ref("password"), ""], "Password must match").required('Confirm your password'),
 										})}
 										onSubmit={(values, { setErrors, setStatus, setSubmitting }) => {
-											try {
-												console.log("try to send");
-												const passwordCy = AES.encrypt(values.password, 'trytocypher').toString();
-												const passwordConfirmCy = AES.encrypt(values.passwordConfirm, 'trytocypher').toString();
-												console.log("passwordCy: ", passwordCy, " passwordConfirmCy: ", passwordConfirmCy)
-												fetch("http://localhost:8080/api/register", {
-													method: "POST",
-													body: JSON.stringify({
-														"username": values.username,
-														"password": passwordCy,
-														"confirmPassword": passwordConfirmCy,
-													}),
-													// credentials: 'include',
-												})
-												.then((res) => {
-													return res.json()
-												})
-												.then((resjson) => {
-													console.log(resjson);
-													if (resjson["result"] && resjson["result"] === "success") {
-														navigate("/Login");
-													} else {
-														window.alert("使用者帳號已存在");
-														navigate("/Signup");
-													}
-												});
-											} catch (err) {
-											}
+											console.log("try to send");
+											// const passwordCy = AES.encrypt(values.password, 'trytocypher').toString();
+											// const passwordConfirmCy = AES.encrypt(values.passwordConfirm, 'trytocypher').toString();
+											// console.log("passwordCy: ", passwordCy, " passwordConfirmCy: ", passwordConfirmCy)
+											const body = new FormData();
+											body.append("username", values.username);
+											body.append("password", values.password);
+											body.append("confirmPassword", values.passwordConfirm);
+											fetch("http://localhost:8080/api/register", {
+												method: "POST",
+												body,
+												// body: JSON.stringify({
+												// 	"username": values.username,
+												// 	"password": passwordCy,
+												// 	"confirmPassword": passwordConfirmCy,
+												// }),
+												// credentials: 'include',
+											})
+											.then((res) => {
+												return res.json();
+											})
+											.then((resjson) => {
+												if (resjson["result"] && (resjson["result"] === "success")) {
+													setPath("/Login")
+													navigate("/Login");
+												} else {
+													console.log("here3");
+													window.alert("使用者帳號已存在");
+													navigate("/Signup");
+												}
+												console.log("Here2")
+											});
 									}}
 									>
 										{({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
@@ -115,7 +120,7 @@ const SignupPage: FC<SignupPageProps> = ({setPath}) => {
 																required
 																label="帳號"
 																value={values.username}
-																name="username" // input
+																name="username" // input and display, check initialValues
 																onChange={handleChange}
 																onBlur={handleBlur}
 															/>

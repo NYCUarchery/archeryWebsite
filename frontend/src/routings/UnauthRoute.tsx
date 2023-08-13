@@ -16,7 +16,7 @@ const UnauthRoute: FC<UnauthRouteProps> = ({setAuthorized}) => {
 			{navigator}
 			<Routes>
 				<Route path={'/Login'} element={<LoginPage setAuthorized={setAuthorized} setPath={setPath}/>}/>
-				<Route path={'/Signup'} element={<SignupPage setPath={setPath}/>}/>
+				<Route path={'/Signup'} element={<SignupPage setAuthorized={setAuthorized} setPath={setPath}/>}/>
 			</Routes>
 		</>
 	)

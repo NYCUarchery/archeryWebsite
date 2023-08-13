@@ -12,7 +12,7 @@ import PageContainer from './components/PageContainer';
 
 function App() {
   const [sideBarOpen, setSideBarOpen] = useState(false);
-  const [authorized, setAuthorized] = useState(true);
+  const [authorized, setAuthorized] = useState(false);
   
   return (
     <div>
