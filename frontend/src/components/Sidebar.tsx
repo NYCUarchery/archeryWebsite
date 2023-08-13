@@ -1,5 +1,5 @@
 
-import { useState, FC, KeyboardEvent, MouseEvent} from 'react'
+import { useState, FC, KeyboardEvent, MouseEvent, Dispatch, SetStateAction } from 'react'
 import Box from '@mui/material/Box';
 import Drawer from '@mui/material/Drawer';
 import Button from '@mui/material/Button';
@@ -12,16 +12,20 @@ import ListItemText from '@mui/material/ListItemText';
 import Grow from '@mui/material/Grow';
 import Collapse from '@mui/material/Collapse';
 import { useNavigate } from 'react-router-dom';
-type Anchor = 'top' | 'left' | 'bottom' | 'right';
+
+import { ClickAwayListener } from '@mui/material';
 
 interface SidebarProps {
+  setSideBarOpen: Dispatch<SetStateAction<boolean>>;
   sideBarOpen: boolean,
 }
 
-const Sidebar: FC<SidebarProps> = ({ sideBarOpen }) => {
+const Sidebar: FC<SidebarProps> = ({ sideBarOpen, setSideBarOpen }) => {
 
   const navigate = useNavigate();
-
+	const handleClose = () => {
+		setSideBarOpen(false);
+	}
 
   const list = () => (
 		<Collapse in={sideBarOpen} timeout="auto" orientation="horizontal" unmountOnExit>
@@ -71,12 +75,16 @@ const Sidebar: FC<SidebarProps> = ({ sideBarOpen }) => {
 				</Grow>
 			</Box>
 		</Collapse>
-  );
+	);
 	return (
+
+		<ClickAwayListener onClickAway={handleClose}>
 		<Box sx={{position:"fixed",	zIndex: 10}}>
 			{/* {sideBarOpen && list()} */}
 			{list()}
 		</Box>
+
+		</ClickAwayListener>
 	)
 }
 

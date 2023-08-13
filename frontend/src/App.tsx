@@ -19,7 +19,7 @@ function App() {
       <BrowserRouter>
         <Header setSideBarOpen={setSideBarOpen} setAuthorized={setAuthorized}/>
         <div style={{display: "flex"}}>
-          <Sidebar sideBarOpen={sideBarOpen} />
+          <Sidebar setSideBarOpen={setSideBarOpen} sideBarOpen={sideBarOpen} />
           <div style={{position: "fixed", minHeight: "calc(100vh - 64px)", minWidth: "100vw", top: "64px", height: "calc(100vh - 64px)", overflowY: "scroll"}}>
 
             <PageContainer>
