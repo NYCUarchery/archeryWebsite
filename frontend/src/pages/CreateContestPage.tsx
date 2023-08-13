@@ -111,6 +111,7 @@ const CreateContestPage = () => {
 													name="bowType"
 													onChange={handleChange}
 													onBlur={handleBlur}
+													sx={{minWidth: "100px"}}
 												>
 													<MenuItem value={"composite"}>複合弓</MenuItem>
 													<MenuItem value={"recurve"}>反曲弓</MenuItem>
