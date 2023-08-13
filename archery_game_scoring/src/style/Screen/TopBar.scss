@@ -4,19 +4,31 @@
   height: 150px;
   background-color: $main-color;
   margin: 0px;
-  color: #ffffff;
-  font-family: DFKai-SB;
+  color: $main_text_color;
   align-items: center;
   justify-content: center;
   transition: height 0.2s ease-in-out;
+
+  > .user_name_prompt {
+    color: $main_text_color;
+    background-color: transparent;
+    opacity: 0.5;
+
+    font-size: 15px;
+    position: absolute;
+    top: 10px;
+    left: 10px;
+  }
 }
 
 .game_title {
+  font-family: DFKai-SB;
   text-align: center;
 }
 
 .game_main_title {
   font-size: 50px;
+  font-family: DFKai-SB;
   transition: font-size 0.2s ease-in-out;
 }
 
