@@ -8,6 +8,7 @@ import {
   initScoreController,
   selectPlayer,
 } from "./ScoreController/scoreControllerSlice";
+import TargetSigns from "./TargetSigns";
 
 interface Props {
   scoreNum: number;
@@ -22,6 +23,7 @@ export default function LaneBoard(props: Props) {
     (state: any) => state.stageController.stageShown
   );
   const boardShown = useSelector((state: any) => state.boardSwitch.boardShown);
+  const userTarget = useSelector((state: any) => state.user.userTarget);
   const [selectedPlayer, setSelectedPlayer] = useState(-1);
   const handleSelectedPlayerChange = (
     _event: React.MouseEvent<HTMLElement>,
@@ -35,6 +37,7 @@ export default function LaneBoard(props: Props) {
   useEffect(() => {
     dispatch(
       initScoreController({
+        userTarget: userTarget,
         scoreNum: props.scoreNum,
         allScores: props.stageInfo.all_scores,
         totals: props.stageInfo.totals,
@@ -58,6 +61,7 @@ export default function LaneBoard(props: Props) {
   return (
     <div className="lane_board">
       <LaneNumber laneNum={props.laneNum} />
+      <TargetSigns targetNum={props.userNames.length} />
       <ToggleButtonGroup
         className="player_button_group"
         color="info"

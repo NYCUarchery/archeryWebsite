@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
+  userTarget: 0,
   selectedPlayer: 0,
   scoreNum: 0,
   allScores: [[0], [0], [0], [0]],
@@ -13,6 +14,7 @@ const scoreControllerSlice = createSlice({
   initialState,
   reducers: {
     initScoreController: (state, action) => {
+      state.userTarget = action.payload.userTarget;
       state.scoreNum = action.payload.scoreNum;
       state.allScores = action.payload.allScores;
       state.totals = action.payload.totals;
@@ -23,18 +25,24 @@ const scoreControllerSlice = createSlice({
     },
 
     addScore: (state, action) => {
-      if (state.allScores[state.selectedPlayer].length < state.scoreNum) {
+      if (
+        state.allScores[state.selectedPlayer].length < state.scoreNum &&
+        !state.confirmations[state.userTarget]
+      ) {
         state.allScores[state.selectedPlayer].push(action.payload.score);
       }
     },
     deleteScore: (state) => {
-      if (state.allScores[state.selectedPlayer].length > 0) {
+      if (
+        state.allScores[state.selectedPlayer].length > 0 &&
+        !state.confirmations[state.userTarget]
+      ) {
         state.allScores[state.selectedPlayer].pop();
       }
     },
-    toggleConfirmation: (state, action) => {
-      state.confirmations[action.payload] =
-        !state.confirmations[action.payload];
+    toggleConfirmation: (state) => {
+      state.confirmations[state.userTarget] =
+        !state.confirmations[state.userTarget];
     },
   },
 });
