@@ -30,8 +30,8 @@ const CreateContestPage = () => {
 	return (
 		<Card sx={{p: 2}}>
 			<CardContent>
-				<Grid container alignItems="stretch" justifyContent="center" spacing={2}>
-					<Grid item xs={12}>
+				<Grid container alignItems="center" justifyContent="center" spacing={2}>
+					<Grid item sx={{width: "auto"}}>
 						<Formik
 							initialValues={{
 								name: "",
@@ -52,17 +52,12 @@ const CreateContestPage = () => {
 								body.append("bowType", values.bowType);
 								body.append("distance", values.distance);
 								body.append("date", dateString);
+								console.log("body: ", body)
 
 								try {
 									fetch("http://localhost:8080/api/createContest", {
 										method: "POST",
 										body,
-										// body: JSON.stringify({
-										// 	"name": values.name,
-										// 	"bowType": values.bowType,
-										// 	"distance": values.distance,
-										// 	"date": dateString,
-										// }),
 									})
 									.then((res) => {
 										return res.json();
@@ -85,7 +80,7 @@ const CreateContestPage = () => {
 								<form noValidate onSubmit={handleSubmit}>
 									<Grid container direction="column" alignItems="stretch" justifyContent="center" spacing={2}>
 										<Grid item xs={2}>
-											<FormControl sx={{minWidth: "100px"}} error={Boolean(touched.bowType && touched.date)}>
+											<FormControl required sx={{minWidth: "100px"}} error={Boolean(touched.date && touched.bowType && touched.distance && touched.name)}>
 												{/* <InputLabel id="createContestDateSelect">日期</InputLabel> */}
     										<LocalizationProvider dateAdapter={AdapterDateFns}>
 													<DatePicker
@@ -94,6 +89,7 @@ const CreateContestPage = () => {
 														// onChange={(e) => setFieldValue("date", parse(e), true)}
 														onChange={(e) => e}
 														// renderInput={(params) => <TextField {...params} />}
+														slotProps={{textField: {required: true}}}
 													/>
 												</LocalizationProvider>
 
@@ -106,10 +102,9 @@ const CreateContestPage = () => {
 											</FormControl>
 										</Grid>
 										<Grid item xs={2}>
-											<FormControl sx={{minWidth: "100px"}} error={Boolean(touched.bowType && touched.date)}>
+											<FormControl required error={Boolean(touched.date && touched.bowType && touched.distance && touched.name)}>
 												<InputLabel id="createContestBowTypeSelect">弓種</InputLabel>
 												<Select
-													required
 													label="弓種"
 													labelId="createContestBowTypeSelect"
 													value={values.bowType}
@@ -131,7 +126,7 @@ const CreateContestPage = () => {
 										</Grid>
 
 										<Grid item xs={2}>
-											<FormControl sx={{width: "300px"}} error={Boolean(touched.distance && touched.date)}>
+											<FormControl sx={{width: "300px"}} error={Boolean(touched.date && touched.bowType && touched.distance && touched.name)}>
 												<TextField
 													required
 													label="距離(m)"
@@ -155,7 +150,7 @@ const CreateContestPage = () => {
 										</Grid>
 
 										<Grid item xs={2}>
-											<FormControl sx={{width: "300px"}} error={Boolean(touched.name && touched.date)}>
+											<FormControl sx={{width: "300px"}} error={Boolean(touched.date && touched.bowType && touched.distance && touched.name)}>
 												<TextField
 													required
 													label="名稱"
@@ -183,6 +178,7 @@ const CreateContestPage = () => {
 													type="submit"
 													variant="contained"
 													color="secondary"
+													sx={{whiteSpace: "nowrap", minWidth: "auto",}}
 												>
 													創建比賽
 												</Button>

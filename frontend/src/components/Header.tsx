@@ -62,7 +62,7 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen, setAuthorized }) => {
             sx={{ mr: 2 }}
             onClick={(e) => {
               setSideBarOpen(prev => !prev);
-              e.stopPropagation();
+              e.stopPropagation(); // the sidebar has a ClickAwayListener, we prevent the click-away event to propogate
             }}
           >
             <MenuIcon />
