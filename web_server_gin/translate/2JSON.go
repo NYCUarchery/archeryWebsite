@@ -53,20 +53,6 @@ func GetGroupInfo (context *gin.Context) {
 	// groups 比賽有的各個項目的名字
 }
 
-func GetLaneInfo (context *gin.Context) {
-	// lane_num 
-	// user_ids 
-	// user_names 
-	// stage_num 
-	// stages 
-	//// status 
-	//// all_scores 
-	//// totals 
-	//// status 
-	//// all_scores 
-	//// totals 
-}
-
 // 對抗、資格、團體
 func GetPhaseInfo (context *gin.Context) {
 	gameName := context.Param("gameName")

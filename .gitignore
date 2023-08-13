@@ -1,2 +1,3 @@
 # 內含dsn隱密資訊
+# 格式：DBname    UserName   PassWord     HostName     PortNumber 
 dsn_config.txt

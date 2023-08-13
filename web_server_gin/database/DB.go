@@ -8,18 +8,7 @@ import (
 	"bufio"
 	"path/filepath"
 	"strings"
-	//"time"
 )
-
-type User struct {
-	ID   uint   `gorm:"primaryKey"`
-
-	Ranking int64 `gorm:"column:ranking"`
-	Target  string `gorm:"column:target"`
-	Name    string `gorm:"column:name"`
-	Institution string `gorm:"column:institution"`
-	Score int64 `gorm:"column:name"`
-}
 
 type dsn_details struct {
 	database string 
@@ -38,8 +27,7 @@ func GetDb() *gorm.DB {
 
 func getdsn() {
 	Pwd, _ := os.Getwd()
-	FilePath := filepath.Join(Pwd, "database")
-	FilePath = filepath.Join(FilePath, "dsn_config.txt")
+	FilePath := filepath.Join(Pwd, "dsn_config.txt")
 	file, err := os.Open(FilePath)
 	if err != nil {
 		fmt.Println("Error opening file:", err)
@@ -61,34 +49,26 @@ func getdsn() {
 	}
 }
 
+func testdsn() {
+	DSN.username = "root" ;
+	DSN.password = "099092099092" ;
+	DSN.host = "127.0.0.1" ;
+	DSN.port = "3306" ;
+	DSN.database = "Demo" ;
+}
+
 func Database_Initial() {
 	// 建立資料庫連線
 	// reference https://github.com/go-sql-driver/mysql#dsn-data-source-name
 	getdsn()
+	testdsn()
     dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify",
         DSN.username, DSN.password, DSN.host, DSN.port, DSN.database)
-	_, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	var err error
+	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})	
 	if err != nil {
 		fmt.Println("資料庫徹底連線失敗：", err)
 	}
 
-	/*
-	// 自動建立資料表
-	err = tempdb.AutoMigrate(&User{})
-	if err != nil {
-		fmt.Println("建立資料表失敗：", err)
-	}
-
-	// 設定connnection pool
-	sqlDB, err := tempdb.DB()
-	// SetMaxIdleConns sets the maximum number of connections in the idle connection pool.
-	sqlDB.SetMaxIdleConns(10)
-	// SetMaxOpenConns sets the maximum number of open connections to the database.
-	sqlDB.SetMaxOpenConns(100)
-	// SetConnMaxLifetime sets the maximum amount of time a connection may be reused.
-	sqlDB.SetConnMaxLifetime(time.Hour)
-
-	DB = tempdb // for gorm database implementation
-	*/
 }
 

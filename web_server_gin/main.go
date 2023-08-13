@@ -3,21 +3,19 @@ package main
 import (
     "web_server_gin/routers"
     "web_server_gin/database"
-    "web_server_gin/translate"
 
     "github.com/gin-gonic/gin"
 )
 
 func main() {
         router := gin.Default() // initialize a Gin router
-        api := router.Group("/api")
-        database.Database_Initial()
-        router.LoadHTMLGlob("views/index.html")
-        router.Static("/assets", "./views/assets") //設定靜態資源的讀取
-        router.GET("/home", translate.GetHTML)
+        data := router.Group("/data")
+        views := router.Group("/views")
 
-        routers.AddViewsRouter(api)
-        routers.AddDataRouter(api)
+        go func() {database.Database_Initial()}()
+
+        routers.AddViewsRouter(views, router)
+        routers.AddDataRouter(data)
 
         //router.Run("0.0.0.0:8080") // attach the router to an http.Server and start the server
         router.Run("127.0.0.1:8080") // for localhost test
