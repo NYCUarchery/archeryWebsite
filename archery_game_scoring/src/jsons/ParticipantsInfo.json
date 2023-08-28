@@ -1,0 +1,43 @@
+{
+  "players": [
+    {
+      "id": 0,
+      "name": "Player 1"
+    },
+    {
+      "id": 1,
+      "name": "Player 2"
+    }
+  ],
+  "player_applications": [
+    {
+      "id": 21,
+      "name": "Player 21"
+    },
+    {
+      "id": 20,
+      "name": "Player 20"
+    }
+  ],
+
+  "admins": [
+    {
+      "id": 8,
+      "name": "宋承諺"
+    },
+    {
+      "id": 9,
+      "name": "Admin 9"
+    }
+  ],
+  "admin_applications": [
+    {
+      "id": 10,
+      "name": "Admin 10"
+    },
+    {
+      "id": 11,
+      "name": "Admin 11"
+    }
+  ]
+}

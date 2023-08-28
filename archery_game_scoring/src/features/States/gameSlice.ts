@@ -4,6 +4,7 @@ import GameInfo from "../../jsons/GameInfo.json";
 import PhaseInfo from "../../jsons/PhaseInfo.json";
 
 const initialState = {
+  hostId: GameInfo.host_id,
   currentPhase: GameInfo.current_phase,
   currentPhaseKind: GameInfo.current_phase_kind,
   currentStage: GameInfo.current_stage,

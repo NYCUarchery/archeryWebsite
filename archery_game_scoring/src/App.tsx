@@ -4,6 +4,7 @@ import SubGamesBar from "./features/Screen/SubGameBar/SubGamesBar";
 import BottomBar from "./features/Screen/BottomBar/BottomBar";
 import ScoreBoard from "./features/ScoreBoard/ScoreBoard";
 import RecordingBoard from "./features/RecordingBoard/RecordingBoard";
+import AdministrationBoard from "./features/AdministrationBoard/AdministrationBoard";
 import { useSelector } from "react-redux/es/hooks/useSelector";
 
 function App() {
@@ -16,6 +17,9 @@ function App() {
       break;
     case "recording":
       board = <RecordingBoard></RecordingBoard>;
+      break;
+    case "administration":
+      board = <AdministrationBoard></AdministrationBoard>;
       break;
   }
 
