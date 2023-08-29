@@ -1,25 +1,26 @@
 package database
 
 import (
-	"fmt"
-	"gorm.io/driver/mysql"
-	"gorm.io/gorm"
-	"os"
 	"bufio"
+	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
+
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 type dsn_details struct {
-	database string 
-    username string 
-    password string 
-    host string 
-    port string
+	database string
+	username string
+	password string
+	host     string
+	port     string
 }
 
 var DB *gorm.DB
-var DSN dsn_details 
+var DSN dsn_details
 
 func GetDb() *gorm.DB {
 	return DB
@@ -50,11 +51,11 @@ func getdsn() {
 }
 
 func testdsn() {
-	DSN.username = "root" ;
-	DSN.password = "099092099092" ;
-	DSN.host = "127.0.0.1" ;
-	DSN.port = "3306" ;
-	DSN.database = "Demo" ;
+	DSN.username = "root"
+	DSN.password = "099092099092"
+	DSN.host = "127.0.0.1"
+	DSN.port = "3306"
+	DSN.database = "Demo"
 }
 
 func Database_Initial() {
@@ -62,13 +63,14 @@ func Database_Initial() {
 	// reference https://github.com/go-sql-driver/mysql#dsn-data-source-name
 	getdsn()
 	testdsn()
-    dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify",
-        DSN.username, DSN.password, DSN.host, DSN.port, DSN.database)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify",
+		DSN.username, DSN.password, DSN.host, DSN.port, DSN.database)
 	var err error
-	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})	
+	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		fmt.Println("資料庫徹底連線失敗：", err)
 	}
 
-}
+	InitLaneInfo()
 
+}
