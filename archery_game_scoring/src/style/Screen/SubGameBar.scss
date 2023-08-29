@@ -4,6 +4,25 @@
   display: flex;
   background-color: $main-color;
   color: #ffffff;
+  justify-content: center;
+  .admin_board_list_accordion {
+    height: 100%;
+    background-color: $sub-color;
+    color: $main_text_color;
+    .MuiAccordionSummary-root {
+      min-height: 100%;
+      .MuiAccordionSummary-content {
+        min-height: 100%;
+        margin: auto;
+      }
+    }
+    .admin_board_list_item {
+      background-color: $sub-color;
+      color: $main_text_color;
+      text-transform: none;
+      z-index: 3;
+    }
+  }
 }
 
 @mixin sub_game_bar_list() {
