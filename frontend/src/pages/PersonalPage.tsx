@@ -16,7 +16,11 @@ const PersonalPage = () => {
 	return (
 		<Card sx={{p: 2}}>
 			<CardContent>
-				<Grid container alignItems="stretch" justifyContent="center" spacing={2}>
+				<Grid container flexDirection="row-reverse" alignItems="stretch" justifyContent="center" spacing={2}>
+
+					<Grid item xs={4} sx={{minWidth: "160px"}}>
+						<img src={avatar} alt="My Avatar" width="160px" />
+					</Grid>
 					<Grid item xs={8}>
 						<Grid container direction="column" alignItems="stretch" justifyContent="center">
 							<Grid item xs={2}>
@@ -51,9 +55,6 @@ const PersonalPage = () => {
 								</Button>
 							</Grid>
 						</Grid>
-					</Grid>
-					<Grid item xs={4} sx={{overflow: "hidden"}}>
-						<img src={avatar} alt="My Avatar" width="160px" />
 					</Grid>
 				</Grid>
 			</CardContent>

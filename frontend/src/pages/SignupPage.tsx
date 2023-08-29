@@ -181,10 +181,10 @@ const SignupPage: FC<SignupPageProps> = ({setPath, setAuthorized}) => {
 																	endAdornment: (
 																		<InputAdornment position="end">
 																			<IconButton
-																					aria-label="toggle confirm password visibility"
-																					onClick={handleClickShowPasswordConfirm}
-																					onMouseDown={handleMouseDownPasswordConfirm}
-																					edge="end"
+																				aria-label="toggle confirm password visibility"
+																				onClick={handleClickShowPasswordConfirm}
+																				onMouseDown={handleMouseDownPasswordConfirm}
+																				edge="end"
 																			>
 																				{showPasswordConfirm ? <Visibility /> : <VisibilityOff />}
 																			</IconButton>
@@ -194,10 +194,10 @@ const SignupPage: FC<SignupPageProps> = ({setPath, setAuthorized}) => {
 															/>
 
 															{touched.passwordConfirm && errors.passwordConfirm && (
-																	<FormHelperText error id="standard-weight-helper-text-email-login">
-																			{' '}
-																			{errors.passwordConfirm}{' '}
-																	</FormHelperText>
+																<FormHelperText error id="standard-weight-helper-text-email-login">
+																	{' '}
+																	{errors.passwordConfirm}{' '}
+																</FormHelperText>
 															)}
 														</FormControl>
 													</Grid>

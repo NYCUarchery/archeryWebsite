@@ -20,7 +20,7 @@ const ContestPage = () => {
 			valueFormatter: params => new Date(params?.value).toLocaleString() },
 		{
 			field: "dashboard",
-			headerName: "dashboard",
+			headerName: "記分板",
 			width: 300,
 			renderCell: (params) => {
 				if (params) return (
