@@ -97,7 +97,7 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen, setAuthorized }) => {
                     >
                       <Card>
                         <CardContent sx={{display: "flex", flexFlow: "column", alignItems: "center"}}>
-                          <img src={avatar} alt="My Avatar" width="100px" />
+                          <img src={avatar} alt="My Avatar" width="100px" style={{cursor: "pointer"}} onClick={() => navigate("/PersonalPage")}/>
                           <Box component="div" sx={{display: "flex", flexFlow: "column", mt: "10px"}}>
                             <MenuList>
 
@@ -105,7 +105,7 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen, setAuthorized }) => {
                                 aria-label="personal page"
                                 onClick={() => {
                                   handleClose();
-                                  navigate("/PersonalPage")
+                                  navigate("/PersonalPage");
                                 }}
                               >
                                 個人頁面

@@ -34,7 +34,7 @@ import * as Yup from 'yup';
 const CreateContestPage = () => {
 	// date: new Date(),
 	return (
-		<Card sx={{p: 2}}>
+		<Card sx={{p: 2, mb: 2}}>
 			<CardContent>
 				<Grid container alignItems="center" justifyContent="flexstart" spacing={2}>
 					<Grid item sx={{width: "auto"}}>
@@ -42,7 +42,7 @@ const CreateContestPage = () => {
 							initialValues={{
 								name: "",
 								date: new Date(),
-								groups: [],
+								groups: ["", ],
 							}}
 							validationSchema={Yup.object().shape({
 								date: Yup.date().required('請填入日期'),
@@ -135,8 +135,8 @@ const CreateContestPage = () => {
 														<Grid container flexDirection="column" alignItems="flexstart" justifyContent="flexstart">
 															<Grid item xs={10} container flexDirection="row" alignItems="center" justifyContent="flexstart" sx={{minWidth: "500px"}}>
 																{values.groups && values.groups.length > 0? (values.groups.map((v, i) => (
-																	<Grid item xs={12} sm={6} sx={{p: 2, m: 0}}>
-																		<FormControl key={i} required error={Boolean(touched.date && touched.groups && touched.name)}>
+																	<Grid key={i} item xs={12} sm={6} sx={{p: 2, m: 0}}>
+																		<FormControl required error={Boolean(touched.date && touched.groups && touched.name)}>
 																			<Grid container flexDirection="row" alignItems="center" justifyContent="center" sx={{m: 0, p: 0}}>
 																				<Grid item xs={10}>
 																					<Field

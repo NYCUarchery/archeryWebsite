@@ -35,7 +35,8 @@ const ContestPage = () => {
 				return (<></>)
 			},
 			sortable: false,
-		}
+		},
+		{ field: 'participate', headerName: "參加狀況", width: 150},
 	]
 
 
@@ -44,43 +45,51 @@ const ContestPage = () => {
 			"id": "1",
 			"holder": "我大交通射箭隊",
 			"date": "2017-04-23 10:30",
-			"dashboard": "https://google.com/"
+			"dashboard": "https://google.com/",
+			"participate": "未報名",
 		},
 		{
 			"id": "2",
 			"holder": "隔壁校射箭隊",
 			"date": "2017-04-24 10:30",
-			"dashboard": "contest/2"
+			"dashboard": "contest/2",
+			"participate": "已報名",
 		},
 		{
 			"id": "3",
 			"holder": "隔壁校射箭隊",
-			"date": "2017-04-25 10:30"
+			"date": "2017-04-25 10:30",
+			"participate": "未報名",
 		},
 		{
 			"id": "4",
 			"holder": "隔壁校射箭隊",
-			"date": "2017-04-26 10:30"
+			"date": "2017-04-26 10:30",
+			"participate": "未報名",
 		},
 		{
 			"id": "5",
 			"holder": "隔壁校射箭隊",
-			"date": "2017-04-27 10:30"
+			"date": "2017-04-27 10:30",
+			"participate": "未報名",
 		},
 		{
 			"id": "6",
 			"holder": "隔壁校射箭隊",
-			"date": "2017-04-28 10:30"
+			"date": "2017-04-28 10:30",
+			"participate": "未報名",
 		},
 		{
 			"id": "7",
 			"holder": "隔壁校射箭隊",
-			"date": "2017-04-29 10:30"
+			"date": "2017-04-29 10:30",
+			"participate": "未報名",
 		},
 		{
 			"id": "8",
 			"holder": "隔壁校射箭隊",
-			"date": "2017-04-30 10:30"
+			"date": "2017-04-30 10:30",
+			"participate": "未報名",
 		},
 	];
 
@@ -89,56 +98,102 @@ const ContestPage = () => {
   const navigate = useNavigate();
 
 	return (
-		// <Grid container alignItems="stretch" justifyContent="center" sx={{ minWidth: '100vw', mt: 10}}>
-		// 	<Grid item xs={12} sm={9} sx={{p: 2}}>
-				<Card sx={{p: 2}}>
-					<CardContent>
-						<Box sx={{mt: 2}}>
-							<Grid container justifyContent="center">
-								<Grid item>
+		<>
+			<Card sx={{p: 2, mb: 2}}>
+				<CardContent>
+					<Box sx={{mt: 2}}>
+						<Grid container justifyContent="center">
+							<Grid item>
+								<Typography variant="h6" component="div">
+									比賽
+								</Typography>
+							</Grid>
+						</Grid>
+					</Box>
+
+					<Box sx={{mt: 2}}>
+						<DataGrid
+							rows={rows}
+							columns={columns}
+							initialState={{
+								pagination: {
+									paginationModel: { page: 0, pageSize: 5 },
+								},
+
+							}}
+							columnVisibilityModel={{
+								id: false,
+								// dashboard: false,
+							}}
+							pageSizeOptions={[5]} // select the items show per page
+							// checkboxSelection // add a checkbox
+							disableColumnMenu={true} // disable the column menu, including hiding columns, sorting plans
+							disableRowSelectionOnClick 
+						/>
+					</Box>
+
+					<Box sx={{mt: 2}}>
+						<Grid container justifyContent="center">
+							<Grid item>
+								<Button variant="text" onClick={() => navigate("/CreateContest")} sx={{ color: "#2074d4" }}>
 									<Typography variant="h6" component="div">
-										比賽
+										創建新的比賽
 									</Typography>
-								</Grid>
+								</Button>
 							</Grid>
-						</Box>
+						</Grid>
+					</Box>
+				</CardContent>
+			</Card>
 
-						<Box sx={{mt: 2}}>
-							<DataGrid
-								rows={rows}
-								columns={columns}
-								initialState={{
-									pagination: {
-										paginationModel: { page: 0, pageSize: 5 },
-									},
-
-								}}
-								columnVisibilityModel={{
-									id: false,
-									// dashboard: false,
-								}}
-								// pageSizeOptions={[5, 10]} // select the items show per page
-								// checkboxSelection // add a checkbox
-								disableColumnMenu={true} // disable the column menu, including hiding columns, sorting plans
-								disableRowSelectionOnClick 
-							/>
-						</Box>
-
-						<Box sx={{mt: 2}}>
-							<Grid container justifyContent="center">
-								<Grid item>
-									<Button variant="text" onClick={() => navigate("/CreateContest")} sx={{ color: "#2074d4" }}>
-										<Typography variant="h6" component="div">
-											創建新的比賽
-										</Typography>
-									</Button>
-								</Grid>
+			<Card sx={{p: 2, mb: 2}}>
+				<CardContent>
+					<Box sx={{mt: 2}}>
+						<Grid container justifyContent="center">
+							<Grid item>
+								<Typography variant="h6" component="div">
+									我報名的比賽
+								</Typography>
 							</Grid>
-						</Box>
-					</CardContent>
-				</Card>
-		// 	</Grid>
-		// </Grid>
+						</Grid>
+					</Box>
+
+					<Box sx={{mt: 2}}>
+						<DataGrid
+							// rows={rows}
+							rows={[]}
+							columns={columns.slice(0, 4)}
+							initialState={{
+								pagination: {
+									paginationModel: { page: 0, pageSize: 5 },
+								},
+
+							}}
+							columnVisibilityModel={{
+								id: false,
+								// dashboard: false,
+							}}
+							pageSizeOptions={[5]} // select the items show per page
+							// checkboxSelection // add a checkbox
+							disableColumnMenu={true} // disable the column menu, including hiding columns, sorting plans
+							disableRowSelectionOnClick 
+						/>
+					</Box>
+
+					{/* <Box sx={{mt: 2}}>
+						<Grid container justifyContent="center">
+							<Grid item>
+								<Button variant="text" onClick={() => navigate("/CreateContest")} sx={{ color: "#2074d4" }}>
+									<Typography variant="h6" component="div">
+										創建新的比賽
+									</Typography>
+								</Button>
+							</Grid>
+						</Grid>
+					</Box> */}
+				</CardContent>
+			</Card>
+		</>
 	)
 }
 

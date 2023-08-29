@@ -14,7 +14,7 @@ import avatar from "../assets/images/avatar.jpg";
 const PersonalPage = () => {
 	const navigate = useNavigate();
 	return (
-		<Card sx={{p: 2}}>
+		<Card sx={{p: 2, mb: 2}}>
 			<CardContent>
 				<Grid container flexDirection="row-reverse" alignItems="stretch" justifyContent="center" spacing={2}>
 

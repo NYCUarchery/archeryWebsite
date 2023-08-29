@@ -34,7 +34,7 @@ const Homepage = () => {
   const navigate = useNavigate();
 
 	return (
-		<Card sx={{p: 2}}>
+		<Card sx={{p: 2, mb: 2}}>
 			<CardContent>
 				<Box>
 					<Grid container justifyContent="center">

@@ -7,7 +7,6 @@ http://localhost:3000/
 
 ## build docker yourself
 ```bash=
-npm run build
 docker build . -t archeryfrontend:[version] -f ./start
 docker run -p [localport]:80 archeryfrontend:[version]
 ```

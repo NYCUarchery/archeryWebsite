@@ -38,7 +38,7 @@ const ChangeInfo = () => {
 		e.preventDefault();
 	};
 	return (
-		<Card sx={{p: 2}}>
+		<Card sx={{p: 2, mb: 2}}>
 			<CardContent>
 				<Formik
 					initialValues={{
@@ -167,10 +167,10 @@ const ChangeInfo = () => {
 													endAdornment: (
 														<InputAdornment position="end">
 															<IconButton
-																	aria-label="toggle password visibility"
-																	onClick={handleClickShowPasswordConfirm}
-																	onMouseDown={handleMouseDownPasswordConfirm}
-																	edge="end"
+																aria-label="toggle password visibility"
+																onClick={handleClickShowPasswordConfirm}
+																onMouseDown={handleMouseDownPasswordConfirm}
+																edge="end"
 															>
 																{showPasswordConfirm ? <Visibility /> : <VisibilityOff />}
 															</IconButton>
