@@ -36,8 +36,8 @@ const CreateContestPage = () => {
 	return (
 		<Card sx={{p: 2, mb: 2}}>
 			<CardContent>
-				<Grid container alignItems="center" justifyContent="flexstart" spacing={2}>
-					<Grid item sx={{width: "auto"}}>
+				<Grid container alignItems="stretch" justifyContent="flexstart" spacing={2}>
+					<Grid item sx={{width: "100%"}}>
 						<Formik
 							initialValues={{
 								name: "",
@@ -58,7 +58,10 @@ const CreateContestPage = () => {
 								// }
 								body.append("name", values.name);
 								body.append("date", dateString);
-								body.append("groups", JSON.stringify(values.groups));
+								values.groups.map((v, i) => {
+									body.append("groups", v);
+								})
+								// body.append("groups", JSON.stringify(values.groups));
 								console.log("body: ", body)
 
 								try {
@@ -86,7 +89,7 @@ const CreateContestPage = () => {
 							{({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values, setFieldValue }) => {
 								return (
 									<form noValidate onSubmit={handleSubmit}>
-										<Grid container direction="column" alignItems="flexstart" justifyContent="center" spacing={2}>
+										<Grid container direction="column" alignItems="stretch" justifyContent="center" spacing={2}>
 											<Grid item xs={2}>
 												<FormControl required sx={{minWidth: "100px"}} error={Boolean(touched.date && touched.groups && touched.name)}>
 													<LocalizationProvider dateAdapter={AdapterDateFns}>
