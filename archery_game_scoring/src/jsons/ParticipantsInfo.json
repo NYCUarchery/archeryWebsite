@@ -1,22 +1,71 @@
 {
   "players": [
     {
-      "id": 0,
-      "name": "Player 1"
+      "id": 10,
+      "name": "劉冠亨",
+      "group": 1
     },
     {
-      "id": 1,
-      "name": "Player 2"
+      "id": 11,
+      "name": "林寶琳",
+      "group": 1
+    },
+    {
+      "id": 12,
+      "name": "蔡毅龍",
+      "group": 1
+    },
+    {
+      "id": 13,
+      "name": "梁永熹",
+      "group": 1
+    },
+    {
+      "id": 14,
+      "name": "蘇凌",
+      "group": 1
+    },
+    {
+      "id": 15,
+      "name": "曾子瑀",
+      "group": 2
+    },
+    {
+      "id": 16,
+      "name": "朱星蓉",
+      "group": 2
+    },
+    {
+      "id": 17,
+      "name": "蘇佑勝",
+      "group": 2
+    },
+    {
+      "id": 18,
+      "name": "許博鈞",
+      "group": 3
+    },
+    {
+      "id": 19,
+      "name": "陳崇玄",
+      "group": 3
+    },
+    {
+      "id": 10,
+      "name": "鄞意東",
+      "group": 4
     }
   ],
   "player_applications": [
     {
       "id": 21,
-      "name": "Player 21"
+      "name": "Player 21",
+      "group": 1
     },
     {
       "id": 20,
-      "name": "Player 20"
+      "name": "Player 20",
+      "group": 0
     }
   ],
 

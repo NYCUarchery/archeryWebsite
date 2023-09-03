@@ -14,7 +14,7 @@ export default function QualificationBoard(props: Props) {
     (state: any) => state.groupListButton.groupShown
   );
 
-  const group = props.gameInfo.groups[groupShown];
+  const group = props.gameInfo.groups[groupShown - 1];
 
   let RankingInfoBars = [];
   for (let i = 0; i < group.players.length; i++) {

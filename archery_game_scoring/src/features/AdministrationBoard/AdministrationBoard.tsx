@@ -1,6 +1,9 @@
 import MainBoard from "./MainBoard/MainBoard";
 import ScoreEditionBoard from "./ScoreEditionBoard/ScoreEditionBoard";
 import ParticipantsBoard from "./ParticipantsBoard/ParticitpantsBoard";
+import GroupsBoard from "./GroupsBoard/GroupsBoard";
+import GameStructureBoard from "./GameStructureBoard/GameStructureBoard";
+import PhasesBoard from "./PhasesBoard/PhasesBoard";
 import { useSelector } from "react-redux";
 
 export default function AdministrationBoard() {
@@ -11,18 +14,33 @@ export default function AdministrationBoard() {
     (state: any) => state.adminBoardList.adminBoardList
   );
 
-  let board = <MainBoard></MainBoard>;
+  let board = specifyBoard(adminBoardList[adminBoardShown]);
 
-  switch (adminBoardList[adminBoardShown]) {
+  return <div className="administration_board">{board}</div>;
+}
+
+function specifyBoard(boardName: string) {
+  let board;
+  switch (boardName) {
     case "main":
       board = <MainBoard></MainBoard>;
       break;
-    case "score_edition":
-      board = <ScoreEditionBoard></ScoreEditionBoard>;
-      break;
     case "participants":
       board = <ParticipantsBoard></ParticipantsBoard>;
+      break;
+    case "groups":
+      board = <GroupsBoard></GroupsBoard>;
+      break;
+    case "gameStructure":
+      board = <GameStructureBoard></GameStructureBoard>;
+      break;
+    case "phases":
+      board = <PhasesBoard></PhasesBoard>;
+      break;
+    case "scoreEdition":
+      board = <ScoreEditionBoard></ScoreEditionBoard>;
+      break;
   }
 
-  return <div className="administration_board">{board}</div>;
+  return board;
 }

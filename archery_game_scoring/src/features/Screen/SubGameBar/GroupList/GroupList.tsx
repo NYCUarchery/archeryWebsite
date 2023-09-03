@@ -7,7 +7,7 @@ let groups = GroupInfo.groups;
 function GroupList() {
   let items = [];
 
-  for (let i = 0; i < groups.length; i++) {
+  for (let i = 1; i < groups.length; i++) {
     items.push(<GroupListItem key={i} groupId={i}></GroupListItem>);
   }
 

@@ -14,7 +14,7 @@ export default function EliminationBoard(props: Props) {
   const stageShown = useSelector(
     (state: any) => state.stageController.stageShown
   );
-  const group = props.gameInfo.groups[groupShown];
+  const group = props.gameInfo.groups[groupShown - 1];
   const stageNum = useSelector((state: any) => state.stageController.stageNum);
 
   let stageBoards = [];

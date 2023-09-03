@@ -9,6 +9,10 @@ body {
   font-family: "Roboto", '"Helvetica Neue"', "Arial";
 }
 
+.board {
+  padding-bottom: 50px;
+}
+
 .score_board {
   max-width: $main_board_max_width;
   margin: 50px auto 0px;

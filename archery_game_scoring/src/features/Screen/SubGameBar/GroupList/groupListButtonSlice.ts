@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  groupShown: 0,
+  groupShown: 1,
   groupListIsHidden: true,
 };
 

@@ -27,7 +27,7 @@ function App() {
     <div>
       <TopBar />
       <SubGamesBar />
-      {board}
+      <div className="board">{board}</div>
       <BottomBar />
     </div>
   );
