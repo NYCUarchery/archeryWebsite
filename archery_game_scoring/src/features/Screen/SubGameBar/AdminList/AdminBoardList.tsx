@@ -33,11 +33,20 @@ export default function AdminBoardList() {
     case "main":
       summery = "Main";
       break;
-    case "scoreEdition":
-      summery = "Score Edition";
-      break;
     case "participants":
       summery = "Participants";
+      break;
+    case "Groups":
+      summery = "Groups";
+      break;
+    case "gameStructure":
+      summery = "Game Structure";
+      break;
+    case "phases":
+      summery = "Phases";
+      break;
+    case "scoreEdition":
+      summery = "Score Edition";
       break;
   }
 

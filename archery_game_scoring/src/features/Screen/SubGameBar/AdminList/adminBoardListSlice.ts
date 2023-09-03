@@ -2,7 +2,14 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   adminBoardShown: 0,
-  adminBoardList: ["main", "scoreEdition", "participants"],
+  adminBoardList: [
+    "main",
+    "participants",
+    "groups",
+    "gameStructure",
+    "phases",
+    "scoreEdition",
+  ],
   adminBoardListIsHidden: true,
 };
 
