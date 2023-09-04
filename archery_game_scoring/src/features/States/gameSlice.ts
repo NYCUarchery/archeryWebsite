@@ -9,7 +9,7 @@ const initialState = {
   currentPhaseKind: GameInfo.current_phase_kind,
   currentStage: GameInfo.current_stage,
   phases: PhaseInfo.phases,
-  groups: GroupInfo.groups,
+  groupNames: GroupInfo.group_names,
 };
 
 const gameSlice = createSlice({

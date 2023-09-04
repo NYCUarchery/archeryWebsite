@@ -2,12 +2,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { toggleGroupList, selectGroup } from "./groupListButtonSlice";
 import GroupInfo from "../../../../jsons/GroupInfo.json";
 
-let groups = GroupInfo.groups;
+let groupNames = GroupInfo.group_names;
 
 function GroupList() {
   let items = [];
 
-  for (let i = 1; i < groups.length; i++) {
+  for (let i = 1; i < groupNames.length; i++) {
     items.push(<GroupListItem key={i} groupId={i}></GroupListItem>);
   }
 
@@ -43,7 +43,7 @@ function GroupListItem(props: GroupListItem) {
       }}
       onClick={() => dispatch(selectGroup(props.groupId))}
     >
-      {groups[props.groupId]}
+      {groupNames[props.groupId]}
     </li>
   );
 }
@@ -58,7 +58,7 @@ function GroupListButton() {
       className="group_list_button sub_game_bar_list_button"
       onClick={() => dispatch(toggleGroupList())}
     >
-      {groups[groupShown]}
+      {groupNames[groupShown]}
     </button>
   );
 }

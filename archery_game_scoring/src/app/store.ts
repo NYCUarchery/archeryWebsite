@@ -9,6 +9,7 @@ import { gameReducer } from "../features/States/gameSlice";
 import { userReducer } from "../features/States/userSlice";
 import { participantsReducer } from "../features/AdministrationBoard/ParticipantsBoard/ParticipantsSlice";
 import { adminBoardListReducer } from "../features/Screen/SubGameBar/AdminList/adminBoardListSlice";
+import { groupsBoardReducer } from "../features/AdministrationBoard/GroupsBoard/GroupsBoardSlice";
 
 const store = configureStore({
   reducer: {
@@ -21,6 +22,7 @@ const store = configureStore({
     user: userReducer,
     participants: participantsReducer,
     adminBoardList: adminBoardListReducer,
+    groupsBoard: groupsBoardReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(ReduxLogger),

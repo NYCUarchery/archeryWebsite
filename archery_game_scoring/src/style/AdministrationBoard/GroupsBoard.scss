@@ -1,0 +1,18 @@
+.groups_board {
+  display: flex;
+  .player_lists {
+    display: flex;
+    .player_list {
+      border: 1px solid $gray_main_color;
+      .player_list_subheader {
+        border-bottom: 1px solid $gray_main_color;
+      }
+      .player_item {
+        border-bottom: 1px solid $gray_main_color;
+        &:last-child {
+          border-bottom: none;
+        }
+      }
+    }
+  }
+}
