@@ -1,8 +1,7 @@
-import { List, ListSubheader } from "@mui/material";
+import { List } from "@mui/material";
 import PlayerItem from "./PlayerItem";
 
 interface Props {
-  groupName: string;
   players: Player[];
 }
 
@@ -11,7 +10,7 @@ interface Player {
   id: number;
 }
 
-export default function PlayerList({ groupName, players }: Props) {
+export default function PlayerList({ players }: Props) {
   let items = [];
 
   for (let i = 0; i < players.length; i++) {
@@ -24,12 +23,5 @@ export default function PlayerList({ groupName, players }: Props) {
     );
   }
 
-  return (
-    <List className="player_list">
-      <ListSubheader className="player_list_subheader">
-        {groupName}
-      </ListSubheader>
-      {items}
-    </List>
-  );
+  return <List className="player_list">{items}</List>;
 }

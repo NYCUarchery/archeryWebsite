@@ -23,17 +23,17 @@
   }
   @mixin list_item_accept_button {
     @include list_item_button;
-    background-color: $confirm_color;
+    background-color: $confirm-color;
     color: $main_text_color;
   }
   @mixin list_item_deny_button {
     @include list_item_button;
-    background-color: $delete_color;
+    background-color: $delete-color;
     color: $main_text_color;
   }
   @mixin list_item_delete_button {
     @include list_item_button;
-    background-color: $delete_color;
+    background-color: $delete-color;
     color: $main_text_color;
   }
   .applications_block {
