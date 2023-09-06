@@ -10,10 +10,9 @@ import (
 
 func Register(c *gin.Context) {
 	var user model.User
-	user.Username = c.PostForm("username")
+	user.Name = c.PostForm("username")
 
-
-	if findUser, _ := model.UserInfo(user.Username); findUser.ID != 0 {
+	if findUser, _ := model.UserInfoByName(user.Name); findUser.ID != 0 {
 		c.JSON(http.StatusOK, gin.H{"result": "username exists"})
 		return
 	}
@@ -41,7 +40,7 @@ func Login(c *gin.Context) {
 
 	var err error
 	var user model.User
-	user, err = model.UserInfo(username)
+	user, err = model.UserInfoByName(username)
 
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"result": "fail"})
@@ -53,7 +52,7 @@ func Login(c *gin.Context) {
 		return 
 	}
 
-	pkg.SaveAuthSession(c, username)
+	pkg.SaveAuthSession(c, user.ID, user.Name)
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
 

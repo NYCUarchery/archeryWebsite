@@ -31,6 +31,11 @@ func routerSetup() *gin.Engine {
 		sr.POST("/login", api.Login)
 
 		sr.GET("/logout", api.Logout)
+
+		ssr := sr.Group("/competition", pkg.AuthSessionMiddleware())
+		{
+			ssr.POST("/create", api.CreateCompetition)
+		}
 	}
 
 	return router

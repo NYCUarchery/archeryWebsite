@@ -8,7 +8,6 @@ import (
 )
 
 func EnableCookieSessionMiddleware() gin.HandlerFunc {
-    SessionKey := "eeeeeeeeeeeeeeeee"
     store := cookie.NewStore([]byte(SessionKey))
     return sessions.Sessions("mysession", store)
 }
@@ -34,9 +33,10 @@ func IsAuthenticated(c *gin.Context) bool {
 	return username != nil
 }
 
-func SaveAuthSession(c *gin.Context, username string) {
+func SaveAuthSession(c *gin.Context, id uint, username string) {
     session := sessions.Default(c)
     session.Set("username", username)
+	session.Set("id", id)
     session.Save()
 }
 
