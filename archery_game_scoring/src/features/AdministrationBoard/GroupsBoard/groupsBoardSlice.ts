@@ -27,6 +27,17 @@ const groupsBoardSlice = createSlice({
       }
       state.groups = groups;
     },
+    movePlayer: (state, action) => {
+      let playerIndex = action.payload.index;
+      let fromGroupId = action.payload.groupId;
+      let toGroupId = action.payload.selectedGroupId;
+      if (toGroupId === fromGroupId || toGroupId === null) {
+        return;
+      }
+      let player = state.groups[fromGroupId][playerIndex];
+      state.groups[fromGroupId].splice(playerIndex, 1);
+      state.groups[toGroupId].push(player);
+    },
   },
 });
 
@@ -42,3 +53,4 @@ export const groupsBoardReducer = groupsBoardSlice.reducer;
 export const addGroup = groupsBoardSlice.actions.addGroup;
 export const removeGroup = groupsBoardSlice.actions.removeGroup;
 export const setGroups = groupsBoardSlice.actions.setGroups;
+export const movePlayer = groupsBoardSlice.actions.movePlayer;

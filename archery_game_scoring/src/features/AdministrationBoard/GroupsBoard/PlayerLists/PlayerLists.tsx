@@ -16,7 +16,7 @@ export default function PlayerLists() {
   let playerLists = [];
 
   for (let i = 0; i < groupsNum; i++) {
-    playerLists.push(<PlayerList key={i} players={groups[i]} />);
+    playerLists.push(<PlayerList key={i} players={groups[i]} groupId={i} />);
   }
 
   return <div className="player_lists">{playerLists}</div>;

@@ -1,7 +1,8 @@
-import { List } from "@mui/material";
+import { ButtonGroup } from "@mui/material";
 import PlayerItem from "./PlayerItem";
 
 interface Props {
+  groupId: number;
   players: Player[];
 }
 
@@ -10,18 +11,24 @@ interface Player {
   id: number;
 }
 
-export default function PlayerList({ players }: Props) {
+export default function PlayerList({ players, groupId }: Props) {
   let items = [];
 
   for (let i = 0; i < players.length; i++) {
     items.push(
       <PlayerItem
-        key={players[i].id}
+        key={i}
         name={players[i].name}
         id={players[i].id}
+        index={i}
+        groupId={groupId}
       />
     );
   }
 
-  return <List className="player_list">{items}</List>;
+  return (
+    <ButtonGroup className="player_list" variant="text" orientation="vertical">
+      {items}
+    </ButtonGroup>
+  );
 }
