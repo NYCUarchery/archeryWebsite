@@ -45,3 +45,8 @@ func ClearAuthSession(c *gin.Context) {
     session.Clear()
     session.Save()
 }
+
+func QuerySession(c *gin.Context, item string) interface{}{
+	session := sessions.Default(c)
+	return session.Get(item)
+}

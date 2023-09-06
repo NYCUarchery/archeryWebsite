@@ -3,9 +3,10 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"fmt"
+	//"fmt"
 	"time"
 	"backend/model"
+	"backend/pkg"
 )
 
 func CreateCompetition(c *gin.Context) {
@@ -22,13 +23,12 @@ func CreateCompetition(c *gin.Context) {
 	var err error = nil
 
 	comp.Name = name
-	fmt.Println(date)
 	loc := time.FixedZone("UTC+8", +8*60*60)
 	if comp.Date, err = time.ParseInLocation("2006-01-02", date, loc); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "cannot parse date string"})
-		fmt.Println(err)
 		return
 	}
+	comp.HostID = pkg.QuerySession(c, "id").(uint)
 	comp.MenRecurve = false
 	comp.WomenRecurve = false
 	comp.MenCompound = false

@@ -61,3 +61,6 @@ func Logout(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
 
+func ModifyInfo(c *gin.Context) {
+	
+}
