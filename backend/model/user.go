@@ -12,3 +12,7 @@ func UserInfoByName(name string) (user User, err error){
 	err = DB.Where("name = ?", name).First(&user).Error
 	return
 }
+
+func SaveUserInfo(user *User) {
+	DB.Save(user)
+}
