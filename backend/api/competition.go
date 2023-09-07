@@ -3,10 +3,10 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
-	//"fmt"
 	"time"
 	"backend/model"
 	"backend/pkg"
+	"strconv"
 )
 
 func CreateCompetition(c *gin.Context) {
@@ -29,6 +29,8 @@ func CreateCompetition(c *gin.Context) {
 		return
 	}
 	comp.HostID = pkg.QuerySession(c, "id").(uint)
+	comp.ScoreboardURL = c.PostForm("scoreboardURL")
+	comp.Overview = c.PostForm("overview")
 	comp.MenRecurve = false
 	comp.WomenRecurve = false
 	comp.MenCompound = false
@@ -50,5 +52,36 @@ func CreateCompetition(c *gin.Context) {
 	}
 	model.AddCompetition(&comp)
 	
+	c.JSON(http.StatusOK, gin.H{"result": "success"})
+}
+
+func JoinInCompetition(c *gin.Context) {
+	userID := pkg.QuerySession(c, "id").(uint)
+	compIDu64, err := strconv.ParseUint(c.PostForm("competitionID"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "cannot parse competitionID"})
+		return
+	}
+	compID := uint(compIDu64)
+
+	var user model.User
+	if user, _ = model.UserInfoByID(userID); user.ID == 0 {
+		c.JSON(http.StatusOK, gin.H{"result": "cannot find the user"})
+		return
+	}
+
+	if comp, _ := model.CompetitionInfoByID(compID); comp.ID == 0 {
+		c.JSON(http.StatusOK, gin.H{"result": "cannot find the competition"})
+		return
+	}
+
+	if _, err := model.ParticipantInfoBy2ID(userID, compID); err == nil {
+		c.JSON(http.StatusOK, gin.H{"result": "participant exists"})
+		return
+	}
+	var par model.Participant
+	par.UserID, par.CompetitionID = userID, compID
+	
+	model.AddParticipant(&par)
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }

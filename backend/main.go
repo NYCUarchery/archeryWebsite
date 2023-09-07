@@ -34,6 +34,7 @@ func routerSetup() *gin.Engine {
 		ssr := sr.Group("/competition", pkg.AuthSessionMiddleware())
 		{
 			ssr.POST("/create", api.CreateCompetition)
+			ssr.POST("/join", api.JoinInCompetition)
 		}
 	}
 

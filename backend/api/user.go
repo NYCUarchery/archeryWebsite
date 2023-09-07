@@ -23,6 +23,7 @@ func Register(c *gin.Context) {
 	}
 
 	user.Password = pkg.EncryptPassword(c.PostForm("password"))
+	user.Organization = c.PostForm("Organization")
 
 	model.AddUser(&user)
 

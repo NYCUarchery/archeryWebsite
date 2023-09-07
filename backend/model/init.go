@@ -9,20 +9,23 @@ import (
 )
 
 type User struct {
-	ID       uint   `gorm:"primaryKey;autoIncrement"`
-	Name     string `gorm:"unique;not null"`
-	Password string `gorm:"not null"`
+	ID       	 uint   `gorm:"primaryKey;autoIncrement"`
+	Name     	 string `gorm:"unique;not null"`
+	Password 	 string `gorm:"not null"`
+	Organization string 
 }
 
 type Competition struct {
-	ID   uint   `gorm:"primaryKey;autoIncrement"`
-	Name string `gorm:"unique;not null"`
-	Date time.Time `gorm:"not null"`
-	HostID uint `gorm:"not null"`
-	MenRecurve bool
-	WomenRecurve bool
-	MenCompound bool
-	WomenCompound bool
+	ID   			uint   `gorm:"primaryKey;autoIncrement"`
+	Name 			string `gorm:"unique;not null"`
+	Date 			time.Time `gorm:"not null"`
+	HostID 			uint `gorm:"not null"`
+	ScoreboardURL	string
+	Overview		string
+	MenRecurve 		bool
+	WomenRecurve 	bool
+	MenCompound 	bool
+	WomenCompound 	bool
 }
 
 type Participant struct {
