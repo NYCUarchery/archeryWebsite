@@ -11,6 +11,7 @@ import { participantsReducer } from "../features/AdministrationBoard/Participant
 import { adminBoardListReducer } from "../features/Screen/SubGameBar/AdminList/adminBoardListSlice";
 import { groupsBoardReducer } from "../features/AdministrationBoard/GroupsBoard/groupsBoardSlice";
 import { groupSelectorReducer } from "../features/AdministrationBoard/GroupsBoard/GroupSelector/groupSelectorSlice";
+import { gameStructureBoardReducer } from "../features/AdministrationBoard/GameStructureBoard/gameStructureBoardSlice";
 
 const store = configureStore({
   reducer: {
@@ -25,6 +26,7 @@ const store = configureStore({
     adminBoardList: adminBoardListReducer,
     groupsBoard: groupsBoardReducer,
     groupSelector: groupSelectorReducer,
+    gameStructureBoard: gameStructureBoardReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(ReduxLogger),
