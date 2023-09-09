@@ -52,7 +52,7 @@ func getdsn() {
 
 func testdsn() {
 	DSN.username = "root"
-	DSN.password = "PikaPika1228"
+	DSN.password = "099092099092"
 	DSN.host = "127.0.0.1"
 	DSN.port = "3306"
 	DSN.database = "Demo"

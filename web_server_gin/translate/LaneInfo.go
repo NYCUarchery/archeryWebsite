@@ -1,6 +1,14 @@
 package translate
 
-/*
+import (
+	"fmt"
+	"net/http"
+	"strconv"
+	"web_server_gin/database"
+
+	"github.com/gin-gonic/gin"
+)
+
 func convert2int(c *gin.Context, name string) int {
 	dataStr := c.Param(name)
 
@@ -12,6 +20,7 @@ func convert2int(c *gin.Context, name string) int {
 	return data
 }
 
+/*
 func convert2bool(c *gin.Context, name string) bool {
 	dataStr := c.Param(name)
 
@@ -22,6 +31,7 @@ func convert2bool(c *gin.Context, name string) bool {
 	}
 	return data
 }
+*/
 
 func GetLaneInfoByID(context *gin.Context) {
 	data := database.GetLaneInfoByID(convert2int(context, "id"))
@@ -33,6 +43,7 @@ func GetLaneInfoByID(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, data)
 }
 
+/*
 func PostLaneInfo(context *gin.Context) {
 	data := database.LaneData{}
 	err := context.BindJSON(&data)

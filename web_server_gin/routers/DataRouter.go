@@ -17,13 +17,14 @@ func AddDataRouter(data *gin.RouterGroup) {
 	data.GET("/qualificationInfo/:gameName", translate.GetQualificationInfo)
 	data.GET("/teamEliminationInfo/:gameName", translate.GetTeamEliminationInfo)
 	data.GET("/userInfo/:userName", translate.GetUserInfo)
+
+	data.GET("/laneinfo/:id", translate.GetLaneInfoByID)
 	/*
-		data.GET("/LaneInfo/:id", translate.GetLaneInfoByID)
-		data.POST("/LaneInfo/", translate.PostLaneInfo)
-		data.PUT("/LaneInfo/whole/:id", translate.UpdateLaneInfo)
-		data.PUT("/LaneInfo/score/:id/:who/:index/:score", translate.UpdataLaneScore)
-		data.PUT("/LaneInfo/confirm/:id/:who/:confirm", translate.UpdataLaneConfirm)
-		data.DELETE("/LaneInfo/:id", translate.DeleteLaneInfoByID)
+		data.POST("/laneinfo/", translate.PostLaneInfo)
+		data.PUT("/laneinfo/whole/:id", translate.UpdateLaneInfo)
+		data.PUT("/l aneinfo/score/:id/:who/:index/:score", translate.UpdataLaneScore)
+		data.PUT("/laneinfo/confirm/:id/:who/:confirm", translate.UpdataLaneConfirm)
+		data.DELETE("/laneinfo/:id", translate.DeleteLaneInfoByID)
 	*/
 	data.GET("/", translate.FindAllUsers)
 	data.GET("/:id", translate.FindByUserID)

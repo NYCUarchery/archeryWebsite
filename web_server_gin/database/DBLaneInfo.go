@@ -1,45 +1,48 @@
 package database
 
+import "gorm.io/gorm/clause"
+
 type LaneData struct { // DB : lane_data
-	ID        int   `json:"id"         gorm:"primary_key"`
-	LaneNum   uint  `json:"lane_num"`
-	UserNames Array `json:"user_names"`
-	ScoreNum  uint  `json:"score_num"`
-	StageNum  uint  `json:"stage_num"`
+	ID         int          `json:"id"         gorm:"primary_key"`
+	LaneNum    uint         `json:"lane_num"`
+	LaneUser   []*LaneUser  `json:"lane_user"`
+	UserNames  Array        `json:"user_names"`
+	ScoreNum   uint         `json:"score_num"`
+	StageNum   uint         `json:"stage_num"`
+	LaneStages []*LaneStage `json:"lane_stages"`
 }
 type LaneUser struct {
-	ID         int      `json:"id"            gorm:"primary_key"`
-	LaneDataID int      `json:"lane_data_id"`
-	LaneData   LaneData `json:"lane_data"     gorm:"foreignkey:LaneDataID"`
-	UserIndex  int      `json:"user_index"`
-	UserId     string   `json:"user_id"`
+	ID         int    `json:"id"            gorm:"primary_key"`
+	LaneDataID int    `json:"lane_data_id"`
+	UserIndex  int    `json:"user_index"`
+	UserId     string `json:"user_id"`
 }
 type LaneStage struct { // DB : land_stage
-	ID         int      `json:"id"            gorm:"primary_key"`
-	LaneDataID int      `json:"lane_data_id"`
-	LaneData   LaneData `json:"lane_data"     gorm:"foreignkey:LaneDataID"`
-	Status     string   `json:"status"`
+	ID            int             `json:"id"            gorm:"primary_key"`
+	LaneDataID    int             `json:"lane_data_id"`
+	Status        string          `json:"status"`
+	AllScores     []*AllScore     `json:"all_scores"`
+	Totals        []*TotalScore   `json:"totals"`
+	Confirmations []*Confirmation `json:"confirmations"`
 }
 type AllScore struct { // DB: all_score
-	ID          int       `json:"all_scores_id"`
-	LaneStageID int       `json:"lane_stage_id"`
-	LaneStage   LaneStage `json:"lane_stage"      gorm:"foreignkey:LaneStageID"`
-	UserIndex   int       `json:"user_index"`
-	ArrowIndex  int       `json:"arrow_index"`
-	Score       int       `json:"score"`
+	ID          int `json:"all_scores_id"`
+	LaneStageID int `json:"lane_stage_id"`
+	UserIndex   int `json:"user_index"`
+	ArrowIndex  int `json:"arrow_index"`
+	Score       int `json:"score"`
 }
 type TotalScore struct { // DB : total_score
-	ID          int       `json:"total_score_id"`
-	LaneStageID int       `json:"lane_stags_id"`
-	LaneStage   LaneStage `json:"lane_stage"      gorm:"foreignkey:LaneStageID"`
-	UserIndex   int       `json:"user_index"`
-	Score       int       `json:"score"`
+	ID          int `json:"total_score_id"`
+	LaneStageID int `json:"lane_stags_id"`
+	UserIndex   int `json:"user_index"`
+	Score       int `json:"score"`
 }
-type Confirmations struct { // DB : confirmations
-	ID          int       `json:"confirmations_id"`
-	LaneStageID int       `json:"lane_stage_id"`
-	LaneStage   LaneStage `json:"lane_stage"       gorm:"foreignkey:LaneStageID"`
-	Confirm     bool      `json:"confirm"`
+type Confirmation struct { // DB : confirmations
+	ID          int  `json:"confirmations_id"`
+	LaneStageID int  `json:"lane_stage_id"`
+	UserIndex   int  `json:"user_index"`
+	Confirm     bool `json:"confirm"`
 }
 
 func InitLaneInfo() {
@@ -49,16 +52,16 @@ func InitLaneInfo() {
 	DB.AutoMigrate(&LaneStage{})
 	DB.AutoMigrate(&AllScore{})
 	DB.AutoMigrate(&TotalScore{})
-	DB.AutoMigrate(&Confirmations{})
+	DB.AutoMigrate(&Confirmation{})
 }
 
-/*
 func GetLaneInfoByID(ID int) LaneData {
 	var data LaneData
-	DB.Model(&LaneData{}).Where("id =?", ID).First(&data)
+	DB.Preload("LaneStages."+clause.Associations).Preload(clause.Associations).Model(&LaneData{}).Where("id =?", ID).First(&data)
 	return data
 }
 
+/*
 // create complete data
 func PostLaneInfo(data LaneData) LaneData {
 	DB.Model(&LaneData{}).Create(&data)
