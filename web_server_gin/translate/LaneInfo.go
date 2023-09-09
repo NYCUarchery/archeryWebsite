@@ -9,14 +9,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type LaneData struct {
+	LaneNum uint  `json:"lane_num"`
+	UserIds []int `json:"user_ids"`
+}
+
 func convert2int(c *gin.Context, name string) int {
 	dataStr := c.Param(name)
-
 	data, err := strconv.Atoi(dataStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "unvalid " + name + " parameter"})
 		return 0
 	}
+
 	return data
 }
 
@@ -40,10 +45,10 @@ func GetLaneInfoByID(context *gin.Context) {
 		return
 	}
 	fmt.Println("LaneInfo with ID(", context.Param("id"), ") -> ", data)
+
 	context.IndentedJSON(http.StatusOK, data)
 }
 
-/*
 func PostLaneInfo(context *gin.Context) {
 	data := database.LaneData{}
 	err := context.BindJSON(&data)
@@ -70,6 +75,7 @@ func UpdateLaneInfo(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, newdata)
 }
 
+/*
 func UpdataLaneScore(context *gin.Context) {
 	data := database.LaneData{}
 	err := context.BindJSON(&data)

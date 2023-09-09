@@ -17,7 +17,7 @@ func main() {
 	routers.AddViewsRouter(views, router)
 	routers.AddDataRouter(data)
 
-	router.Run("0.0.0.0:8080") // attach the router to an http.Server and start the server
-	// router.Run("127.0.0.1:8080") // for localhost test
+	// router.Run("0.0.0.0:8080") // attach the router to an http.Server and start the server
+	router.Run("127.0.0.1:8080") // for localhost test
 
 }
