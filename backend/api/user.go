@@ -23,6 +23,7 @@ func Register(c *gin.Context) {
 	}
 
 	user.Password = pkg.EncryptPassword(c.PostForm("password"))
+	user.Overview = c.PostForm("Overview")
 	user.Organization = c.PostForm("Organization")
 
 	model.AddUser(&user)
@@ -66,6 +67,8 @@ func ModifyInfo(c *gin.Context) {
 	username := c.PostForm("username")
 	oriPassword := c.PostForm("oriPassword")
 	modPassword := c.PostForm("modPassword")
+	modOverview := c.PostForm("overview")
+	modOrganization := c.PostForm("organization")
 
 	if username == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "username can't be empty"})
@@ -95,12 +98,16 @@ func ModifyInfo(c *gin.Context) {
 		return 
 	}
 
-	if err := pkg.Compare(user.Password, modPassword); err == nil {
-		c.JSON(http.StatusOK, gin.H{"result": "original password is the same as the modified one"})
-		return 
+	if modPassword != "" {
+		if err := pkg.Compare(user.Password, modPassword); err == nil {
+			c.JSON(http.StatusOK, gin.H{"result": "original password is the same as the modified one"})
+			return 
+		}
+		user.Password = pkg.EncryptPassword(modPassword)
 	}
+	user.Overview = modOverview
+	user.Organization = modOrganization
 
-	user.Password = pkg.EncryptPassword(modPassword)
 	model.SaveUserInfo(&user)
 
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
