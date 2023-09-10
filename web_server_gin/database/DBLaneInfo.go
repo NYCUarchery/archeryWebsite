@@ -1,6 +1,8 @@
 package database
 
-import "gorm.io/gorm/clause"
+import (
+	"gorm.io/gorm/clause"
+)
 
 type LaneData struct { // DB : lane_data
 	ID        int          `json:"-"         gorm:"primary_key"`
@@ -28,6 +30,8 @@ type LaneStage struct { // DB : land_stage
 type AllScore struct { // DB: all_score
 	ID          int `json:"-"`
 	LaneStageID int `json:"-"`
+	LaneDataID  int `json:"-"`
+	StageIndex  int `json:"stage_index"`
 	UserIndex   int `json:"user_index"`
 	ArrowIndex  int `json:"arrow_index"`
 	Score       int `json:"score"`
@@ -73,13 +77,12 @@ func UpdateLaneInfo(ID int, data LaneData) LaneData {
 	return data
 }
 
-/*
 // edit score
-func UpdataLaneScore(ID int, who int, index int, score int) LaneData {
+func UpdataLaneScore(ID int, stageindex int, userindex int, arrowindex int, score int) LaneData {
+	DB.Model(&AllScore{}).Where("lane_data_id=? AND stage_index=? AND user_index=? AND arrow_index=?", ID, stageindex, userindex, arrowindex).Update("score", score)
+
 	var retrievedLaneData LaneData
-	DB.Model(&LaneData{}).Where("id =?", ID).First(&retrievedLaneData)
-	retrievedLaneData
-	DB.Model(&LaneData{}).Where("id =?", ID).Update()
+	DB.Preload("Stages."+clause.Associations).Preload(clause.Associations).Model(&LaneData{}).Where("id =?", ID).First(&retrievedLaneData)
 	return retrievedLaneData
 }
 

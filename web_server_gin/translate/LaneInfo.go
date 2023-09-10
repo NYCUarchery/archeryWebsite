@@ -77,7 +77,6 @@ func UpdateLaneInfo(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, newdata)
 }
 
-/*
 func UpdataLaneScore(context *gin.Context) {
 	data := database.LaneData{}
 	err := context.BindJSON(&data)
@@ -85,7 +84,7 @@ func UpdataLaneScore(context *gin.Context) {
 		context.IndentedJSON(http.StatusBadRequest, "Error")
 		return
 	}
-	newdata := database.UpdataLaneScore(convert2int(context, "id"), convert2int(context, "who"), convert2int(context, "index"), convert2int(context, "score"))
+	newdata := database.UpdataLaneScore(convert2int(context, "id"), convert2int(context, "stageindex"), convert2int(context, "userindex"), convert2int(context, "arrowindex"), convert2int(context, "score"))
 	if newdata.ID == 0 {
 		context.IndentedJSON(http.StatusNotFound, "Error")
 		return
@@ -93,6 +92,7 @@ func UpdataLaneScore(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, newdata)
 }
 
+/*
 func UpdataLaneConfirm(context *gin.Context) {
 	data := database.LaneData{}
 	err := context.BindJSON(&data)
