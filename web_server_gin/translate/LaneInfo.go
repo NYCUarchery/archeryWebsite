@@ -68,10 +68,12 @@ func UpdateLaneInfo(context *gin.Context) {
 		return
 	}
 	newdata := database.UpdateLaneInfo(convert2int(context, "id"), data)
+	/* 暫時的struct還沒建立id
 	if newdata.ID == 0 {
 		context.IndentedJSON(http.StatusNotFound, "Error")
 		return
 	}
+	*/
 	context.IndentedJSON(http.StatusOK, newdata)
 }
 

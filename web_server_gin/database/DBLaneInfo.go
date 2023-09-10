@@ -69,7 +69,7 @@ func PostLaneInfo(data LaneData) LaneData {
 
 // edit whole data
 func UpdateLaneInfo(ID int, data LaneData) LaneData {
-	DB.Model(&LaneData{}).Where("id =?", ID).Save(&data)
+	DB.Model(&LaneData{}).Where("id =?", ID).Updates(&data)
 	return data
 }
 
@@ -78,11 +78,12 @@ func UpdateLaneInfo(ID int, data LaneData) LaneData {
 func UpdataLaneScore(ID int, who int, index int, score int) LaneData {
 	var retrievedLaneData LaneData
 	DB.Model(&LaneData{}).Where("id =?", ID).First(&retrievedLaneData)
-	retrievedLaneData.Stages[0].AllScores[who*6+index] = score
-	DB.Model(&LaneData{}).Where("id =?", ID).Save(&retrievedLaneData)
+	retrievedLaneData
+	DB.Model(&LaneData{}).Where("id =?", ID).Update()
 	return retrievedLaneData
 }
 
+/*
 // edit comfirmation
 func UpdataLaneConfirm(ID int, who int, confirmation bool) LaneData {
 	var retrievedLaneData LaneData
