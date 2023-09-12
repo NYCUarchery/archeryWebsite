@@ -30,6 +30,8 @@ func routerSetup() *gin.Engine {
 		sr.POST("/login", api.Login)
 		sr.GET("/logout", api.Logout)
 		sr.POST("/modifyInfo", pkg.AuthSessionMiddleware(), api.ModifyInfo)
+		sr.GET("/getUsername", pkg.AuthSessionMiddleware(), api.GetUsername)
+		sr.POST("userInfo", api.UserInfo)
 
 		ssr := sr.Group("/competition", pkg.AuthSessionMiddleware())
 		{

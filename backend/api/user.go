@@ -112,3 +112,29 @@ func ModifyInfo(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
+
+func GetUsername(c *gin.Context) {
+	name := pkg.QuerySession(c, "username")
+	c.JSON(http.StatusOK, gin.H{"username": name})
+}
+
+func UserInfo(c *gin.Context) {
+	name := c.PostForm("username")
+	if name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "need username"})
+		return
+	}
+
+	user, _ := model.UserInfoByName(name)
+	if user.ID == 0 {
+		c.JSON(http.StatusOK, gin.H{"result": "no user found"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"result": "success",
+		"username": user.Name,
+		"organization": user.Organization,
+		"overview": user.Overview,
+	})
+}

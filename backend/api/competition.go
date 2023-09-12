@@ -84,3 +84,8 @@ func JoinInCompetition(c *gin.Context) {
 	model.AddParticipant(&par)
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
+
+
+func CompetitionInfo(c *gin.Context) {
+	
+}

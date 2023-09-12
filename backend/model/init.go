@@ -12,8 +12,8 @@ type User struct {
 	ID       	 uint   `gorm:"primaryKey;autoIncrement"`
 	Name     	 string `gorm:"unique;not null"`
 	Password 	 string `gorm:"not null"`
-	Overview	 string
-	Organization string 
+	Organization string
+	Overview	 string 
 }
 
 type Competition struct {
@@ -38,8 +38,10 @@ var DB *gorm.DB
 
 func init() {
 	var err error
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		DBuser, DBpasswd, DBip, DBport, DBname)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local")
+
+    
+
 
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
