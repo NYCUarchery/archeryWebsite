@@ -4,8 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	//"fmt"
-	"backend/pkg"
-	"backend/model"
+	"backend/internal/pkg"
+	"backend/internal/model"
 )
 
 func Register(c *gin.Context) {
