@@ -5,7 +5,9 @@ import (
 	"time"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	//"log"
+	"gopkg.in/yaml.v2"
+    "io/ioutil"
+	"log"
 )
 
 type User struct {
@@ -34,11 +36,34 @@ type Participant struct {
 	CompetitionID uint `gorm:"not null"`
 }
 
+type conf struct {
+    DBuser 		string `yaml:"DBuser"`
+	DBpasswd 	string `yaml:"DBpasswd"`
+	DBip 		string `yaml:"DBip"`
+	DBport 		string `yaml:"DBport"`
+	DBname 		string `yaml:"DBname"`
+}
+
+func getConf(c *conf) {
+    yamlFile, err := ioutil.ReadFile("config/db.yaml")
+    if err != nil {
+        log.Printf("yamlFile.Get err   #%v ", err)
+    }
+    err = yaml.Unmarshal(yamlFile, c)
+    if err != nil {
+        log.Fatalf("Unmarshal: %v", err)
+    }
+}
+
 var DB *gorm.DB
 
 func init() {
+	var c conf 
+	getConf(&c)
+
 	var err error
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local")
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+		c.DBuser, c.DBpasswd, c.DBip, c.DBport, c.DBname)
 
     
 
@@ -57,3 +82,5 @@ func init() {
 	DB.AutoMigrate(&Competition{})
 	DB.AutoMigrate(&Participant{})
 }
+
+

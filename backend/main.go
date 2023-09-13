@@ -4,7 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"backend/api"
-	"backend/pkg"
+	"backend/internal/pkg"
 )
 
 func main() {

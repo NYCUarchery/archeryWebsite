@@ -5,10 +5,30 @@ import (
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"gopkg.in/yaml.v2"
+    "io/ioutil"
+	"log"
 )
 
+type SessionConf struct {
+	SessionKey string `yaml:"SessionKey"`
+}
+
+func getConf(c *SessionConf) {
+    yamlFile, err := ioutil.ReadFile("config/session.yaml")
+    if err != nil {
+        log.Printf("yamlFile.Get err   #%v ", err)
+    }
+    err = yaml.Unmarshal(yamlFile, c)
+    if err != nil {
+        log.Fatalf("Unmarshal: %v", err)
+    }
+}
+
 func EnableCookieSessionMiddleware() gin.HandlerFunc {
-    store := cookie.NewStore([]byte(SessionKey))
+	var c SessionConf
+	getConf(&c)
+    store := cookie.NewStore([]byte(c.SessionKey))
     return sessions.Sessions("mysession", store)
 }
 

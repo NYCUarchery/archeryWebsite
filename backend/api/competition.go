@@ -4,8 +4,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"time"
-	"backend/model"
-	"backend/pkg"
+	"backend/internal/model"
+	"backend/internal/pkg"
 	"strconv"
 )
 
