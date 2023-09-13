@@ -1,0 +1,193 @@
+{
+  "lane_num": 1,
+  "user_ids": [
+    {
+      "user_index": 0,
+      "user_id": "1"
+    },
+    {
+      "user_index": 1,
+      "user_id": "2"
+    },
+    {
+      "user_index": 2,
+      "user_id": "3"
+    },
+    {
+      "user_index": 3,
+      "user_id": "4"
+    }
+  ],
+  "user_names": ["王逸蓁", "楊維寧", "洪凱昕", "陳鈞鈴"],
+  "score_num": 6,
+  "stage_num": 2,
+  "stages": [
+    {
+      "status": "ended",
+      "all_scores": [
+        {
+          "user_index": 0,
+          "arrow_index": 0,
+          "score": 9
+        },
+        {
+          "user_index": 0,
+          "arrow_index": 1,
+          "score": 9
+        },
+        {
+          "user_index": 0,
+          "arrow_index": 2,
+          "score": 7
+        },
+        {
+          "user_index": 0,
+          "arrow_index": 3,
+          "score": 6
+        },
+        {
+          "user_index": 0,
+          "arrow_index": 4,
+          "score": 5
+        },
+        {
+          "user_index": 0,
+          "arrow_index": 5,
+          "score": 0
+        },
+        {
+          "user_index": 1,
+          "arrow_index": 0,
+          "score": 9
+        },
+        {
+          "user_index": 1,
+          "arrow_index": 1,
+          "score": 8
+        },
+        {
+          "user_index": 1,
+          "arrow_index": 2,
+          "score": 7
+        },
+        {
+          "user_index": 1,
+          "arrow_index": 3,
+          "score": 6
+        },
+        {
+          "user_index": 1,
+          "arrow_index": 4,
+          "score": 3
+        },
+        {
+          "user_index": 1,
+          "arrow_index": 5,
+          "score": 2
+        },
+        {
+          "user_index": 2,
+          "arrow_index": 0,
+          "score": 8
+        },
+        {
+          "user_index": 2,
+          "arrow_index": 1,
+          "score": 7
+        },
+        {
+          "user_index": 2,
+          "arrow_index": 2,
+          "score": 4
+        },
+        {
+          "user_index": 2,
+          "arrow_index": 3,
+          "score": 4
+        },
+        {
+          "user_index": 2,
+          "arrow_index": 4,
+          "score": 2
+        },
+        {
+          "user_index": 2,
+          "arrow_index": 5,
+          "score": 2
+        },
+        {
+          "user_index": 3,
+          "arrow_index": 0,
+          "score": 11
+        },
+        {
+          "user_index": 3,
+          "arrow_index": 1,
+          "score": 9
+        },
+        {
+          "user_index": 3,
+          "arrow_index": 2,
+          "score": 8
+        },
+        {
+          "user_index": 3,
+          "arrow_index": 3,
+          "score": 7
+        },
+        {
+          "user_index": 3,
+          "arrow_index": 4,
+          "score": 6
+        },
+        {
+          "user_index": 3,
+          "arrow_index": 5,
+          "score": 5
+        }
+      ],
+      "totals": [
+        {
+          "user_index": 0,
+          "score": 36
+        },
+        {
+          "user_index": 1,
+          "score": 35
+        },
+        {
+          "user_index": 2,
+          "score": 27
+        },
+        {
+          "user_index": 3,
+          "score": 45
+        }
+      ],
+      "confirmations": [
+        {
+          "user_index": 0,
+          "confirm": true
+        },
+        {
+          "user_index": 1,
+          "confirm": true
+        },
+        {
+          "user_index": 2,
+          "confirm": true
+        },
+        {
+          "user_index": 3,
+          "confirm": true
+        }
+      ]
+    },
+    {
+      "status": "ongoing",
+      "all_scores": [],
+      "totals": [],
+      "confirmations": []
+    }
+  ]
+}
