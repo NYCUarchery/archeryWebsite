@@ -9,11 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type LaneData struct {
-	LaneNum uint  `json:"lane_num"`
-	UserIds []int `json:"user_ids"`
-}
-
 func convert2int(c *gin.Context, name string) int {
 	dataStr := c.Param(name)
 	data, err := strconv.Atoi(dataStr)
@@ -56,8 +51,26 @@ func PostLaneInfo(context *gin.Context) {
 		context.IndentedJSON(http.StatusNotAcceptable, "Error : "+err.Error())
 		return
 	}
+	/* save UserIds indexing */
+	for index, user := range data.UserIds {
+		user.UserIndex = index
+	}
+	/* save LaneStage indexing*/
+	for index, laneStage := range data.Stages {
+		laneStage.StageIndex = index
+		/*save LaneStage.Totals*/
+		for total_index, total := range laneStage.Totals {
+			total.UserIndex = total_index
+		}
+		/*save LaneStage.Comfirmations*/
+		for confirm_index, confirm := range laneStage.Confirmations {
+			confirm.UserIndex = confirm_index
+		}
+	}
+
 	newData := database.PostLaneInfo(data)
 	context.IndentedJSON(http.StatusOK, newData)
+
 }
 
 func UpdateLaneInfo(context *gin.Context) {
@@ -93,20 +106,20 @@ func UpdataLaneScore(context *gin.Context) {
 }
 
 /*
-func UpdataLaneConfirm(context *gin.Context) {
-	data := database.LaneData{}
-	err := context.BindJSON(&data)
-	if err != nil {
-		context.IndentedJSON(http.StatusBadRequest, "Error")
-		return
+	func UpdataLaneConfirm(context *gin.Context) {
+		data := database.LaneData{}
+		err := context.BindJSON(&data)
+		if err != nil {
+			context.IndentedJSON(http.StatusBadRequest, "Error")
+			return
+		}
+		newdata := database.UpdataLaneConfirm(convert2int(context, "id"), convert2int(context, "who"), convert2bool((context), "confirm"))
+		if newdata.ID == 0 {
+			context.IndentedJSON(http.StatusNotFound, "Error")
+			return
+		}
+		context.IndentedJSON(http.StatusOK, newdata)
 	}
-	newdata := database.UpdataLaneConfirm(convert2int(context, "id"), convert2int(context, "who"), convert2bool((context), "confirm"))
-	if newdata.ID == 0 {
-		context.IndentedJSON(http.StatusNotFound, "Error")
-		return
-	}
-	context.IndentedJSON(http.StatusOK, newdata)
-}
 
 func DeleteLaneInfoByID(context *gin.Context) {
 	if !database.DeleteLaneInfoByID(convert2int(context, "id")) {

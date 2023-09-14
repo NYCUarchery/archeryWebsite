@@ -21,3 +21,21 @@ func main() {
 	router.Run("127.0.0.1:8080") // for localhost test
 
 }
+
+/*
+原來
+"all_scores": [
+        [9, 9, 7, 6, 5, 0],
+        [9, 8, 7, 6, 3, 2],
+        [8, 7, 4, 4, 2, 2],
+        [11, 9, 8, 7, 6, 5]
+      ],
+
+應該會做出來這樣
+"all_scores": [
+        {"player":[{score:9}, {score:9}, {score:7}, {score:6}, {score:5}, {score:0}]},
+        {"player":[{score:9}, {score:9}, {score:7}, {score:6}, {score:5}, {score:0}]},
+        {"player":[{score:9}, {score:9}, {score:7}, {score:6}, {score:5}, {score:0}]},
+        {"player":[{score:9}, {score:9}, {score:7}, {score:6}, {score:5}, {score:0}]}
+      ],
+*/

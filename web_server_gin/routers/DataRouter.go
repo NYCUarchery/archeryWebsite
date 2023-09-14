@@ -22,10 +22,9 @@ func AddDataRouter(data *gin.RouterGroup) {
 	data.POST("/laneinfo/", translate.PostLaneInfo)
 	data.PUT("/laneinfo/whole/:id", translate.UpdateLaneInfo)
 	data.PUT("/laneinfo/score/:id/:stageindex/:userindex/:arrowindex/:score", translate.UpdataLaneScore)
-	/*
-		data.PUT("/laneinfo/confirm/:id/:who/:confirm", translate.UpdataLaneConfirm)
-		data.DELETE("/laneinfo/:id", translate.DeleteLaneInfoByID)
-	*/
+	//data.PUT("/laneinfo/confirm/:id/:who/:confirm", translate.UpdataLaneConfirm)
+	//data.DELETE("/laneinfo/:id", translate.DeleteLaneInfoByID)
+
 	data.GET("/", translate.FindAllUsers)
 	data.GET("/:id", translate.FindByUserID)
 	data.POST("/", translate.PostUser)
