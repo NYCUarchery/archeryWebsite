@@ -2,7 +2,7 @@ import { useSelector } from "react-redux/es/hooks/useSelector";
 import GroupList from "./GroupList/GroupList";
 import PhaseList from "./PhaseList/PhaseList";
 import GroupPhaseTag from "./GroupPhaseTag";
-import AdminBoardList from "./AdminList/AdminBoardList";
+import AdminBoardTabs from "./AdminBoardTabs/AdminBoardTabs";
 
 function SubGamesBar() {
   const boardShown = useSelector((state: any) => state.boardSwitch.boardShown);
@@ -21,7 +21,7 @@ function SubGamesBar() {
       content = <GroupPhaseTag></GroupPhaseTag>;
       break;
     case "administration":
-      content = <AdminBoardList></AdminBoardList>;
+      content = <AdminBoardTabs></AdminBoardTabs>;
   }
 
   return <div className="sub_game_bar">{content}</div>;

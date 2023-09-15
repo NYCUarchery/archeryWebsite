@@ -8,13 +8,13 @@ import { useSelector } from "react-redux";
 
 export default function AdministrationBoard() {
   const adminBoardShown = useSelector(
-    (state: any) => state.adminBoardList.adminBoardShown
+    (state: any) => state.adminBoardTabs.adminBoardShown
   );
-  const adminBoardList = useSelector(
-    (state: any) => state.adminBoardList.adminBoardList
+  const adminBoardTabs = useSelector(
+    (state: any) => state.adminBoardTabs.adminBoardTabs
   );
 
-  let board = specifyBoard(adminBoardList[adminBoardShown]);
+  let board = specifyBoard(adminBoardTabs[adminBoardShown]);
 
   return <div className="administration_board">{board}</div>;
 }
