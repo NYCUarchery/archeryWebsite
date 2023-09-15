@@ -22,22 +22,22 @@ export default function AdministrationBoard() {
 function specifyBoard(boardName: string) {
   let board;
   switch (boardName) {
-    case "main":
+    case "Main":
       board = <MainBoard></MainBoard>;
       break;
-    case "participants":
+    case "Participants":
       board = <ParticipantsBoard></ParticipantsBoard>;
       break;
-    case "groups":
+    case "Groups":
       board = <GroupsBoard></GroupsBoard>;
       break;
-    case "gameStructure":
+    case "Game Structure":
       board = <GameStructureBoard></GameStructureBoard>;
       break;
-    case "phases":
+    case "Phases":
       board = <PhasesBoard></PhasesBoard>;
       break;
-    case "scoreEdition":
+    case "Score Edition":
       board = <ScoreEditionBoard></ScoreEditionBoard>;
       break;
   }
