@@ -8,7 +8,7 @@ const initialState = {
     "Groups",
     "Game Structure",
     "Phases",
-    "ScoreEdition",
+    "Score Edition",
   ],
   adminBoardTabsIsHidden: true,
 };
