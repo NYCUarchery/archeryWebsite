@@ -7,12 +7,14 @@ import (
 	"backend/internal/model"
 	"backend/internal/pkg"
 	"strconv"
+	//"fmt"
+	"encoding/json"
 )
 
 func CreateCompetition(c *gin.Context) {
 	name := c.PostForm("name")
 	date := c.PostForm("date")
-	groups := c.PostFormArray("groups")
+	categories := c.PostFormArray("categories")
 	
 	if findComp, _ := model.CompetitionInfoByName(name); findComp.ID != 0 {
 		c.JSON(http.StatusOK, gin.H{"result": "competition name exists"})
@@ -31,26 +33,28 @@ func CreateCompetition(c *gin.Context) {
 	comp.HostID = pkg.QuerySession(c, "id").(uint)
 	comp.ScoreboardURL = c.PostForm("scoreboardURL")
 	comp.Overview = c.PostForm("overview")
-	comp.MenRecurve = false
-	comp.WomenRecurve = false
-	comp.MenCompound = false
-	comp.WomenCompound = false
-	for _, group := range groups {
-		switch group {
-			case "MR":
-				comp.MenRecurve = true
-			case "WR":
-				comp.WomenRecurve = true
-			case "MC":
-				comp.MenCompound = true
-			case "WC":
-				comp.WomenCompound = true
-			default:
-				c.JSON(http.StatusBadRequest, gin.H{"result": "unrecognizable group"})
-				return
-		}
+
+	err = model.AddCompetition(&comp)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"result": "DB error"})
+		return
 	}
-	model.AddCompetition(&comp)
+	
+	for _, catstr := range categories {
+		cat := struct {
+			Des string `json:"des"`
+			Dis int32 `json:"dis"`
+		}{}
+		if err = json.Unmarshal([]byte(catstr), &cat); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"result": "invalid categories"})
+			return
+		}
+		var compcat model.CompetitionCategory
+		compcat.CompetitionID = comp.ID
+		compcat.Description = cat.Des
+		compcat.Distance = cat.Dis
+		model.AddCompCategory(&compcat)
+	}
 	
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
@@ -84,8 +88,4 @@ func JoinInCompetition(c *gin.Context) {
 	
 	model.AddParticipant(&par)
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
-}
-
-func CompetitionInfo(c *gin.Context) {
-	
 }

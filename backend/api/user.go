@@ -26,7 +26,11 @@ func Register(c *gin.Context) {
 	user.Overview = c.PostForm("Overview")
 	user.Organization = c.PostForm("Organization")
 
-	model.AddUser(&user)
+	err := model.AddUser(&user)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"result": "db error"})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }

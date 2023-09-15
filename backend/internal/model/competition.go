@@ -1,7 +1,8 @@
 package model
 
-func AddCompetition(comp *Competition) {
-	DB.Create(comp)
+func AddCompetition(comp *Competition) (err error) {
+	err = DB.Create(comp).Error
+	return
 }
 
 func CompetitionInfoByName(name string) (comp *Competition, err error){
@@ -28,5 +29,10 @@ func AddParticipant(par *Participant) {
 
 func ParticipantInfoBy2ID(userID uint, compID uint) (par *Participant, err error){
 	err = DB.Where("user_id = ? AND competition_id = ?", userID, compID).First(&par).Error
+	return
+}
+
+func AddCompCategory(cat *CompetitionCategory) (err error) {
+	err = DB.Create(cat).Error
 	return
 }

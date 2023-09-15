@@ -1,7 +1,8 @@
 package model
 
-func AddUser(user *User) {
-	DB.Create(user)
+func AddUser(user *User) (err error) {
+	err = DB.Create(user).Error
+	return
 }
 
 func UserInfoByName(name string) (user User, err error){
