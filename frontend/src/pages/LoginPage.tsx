@@ -64,37 +64,38 @@ const LoginPage: FC<LoginPageProps> = ({setAuthorized, setPath}) => {
 								password: Yup.string().max(255).required('Password is required')
 							})}
 							onSubmit={(values, { setErrors, setStatus, setSubmitting }) => {
-								try {
+								
 									
-									// const passwordCy = AES.encrypt(values.password, 'trytocypher').toString();
-									const body = new FormData();
-									body.append("username", values.username);
-									body.append("password", values.password);
-									fetch("http://localhost:8080/api/login", {
-										method: "POST",
-										body,
-										// body: JSON.stringify({
-										// 	"username": values.username,
-										// 	"password": passwordCy,
-										// }),
-										// credentials: 'include',
-									})
-									.then((res) => {
-										return res.json();
-									})
-									.then((resjson) => {
-										console.log(resjson);
-										if (resjson["result"] && resjson["result"] === "success") {
-											console.log("Log In Success");
-											setAuthorized(true);
-											navigate("/");
-										} else {
-											window.alert("有人帳號或密碼打錯囉");
-										}
-									});
-								} catch (err) {
-									console.log(err);
-								}
+								// const passwordCy = AES.encrypt(values.password, 'trytocypher').toString();
+								const body = new FormData();
+								body.append("username", values.username);
+								body.append("password", values.password);
+								fetch("http://localhost:8080/api/login", {
+									method: "POST",
+									body,
+									// body: JSON.stringify({
+									// 	"username": values.username,
+									// 	"password": passwordCy,
+									// }),
+									// credentials: 'include',
+								})
+								.then((res) => {
+									return res.json();
+								})
+								.then((resjson) => {
+									console.log(resjson);
+									if (resjson["result"] && resjson["result"] === "success") {
+										console.log("Log In Success");
+										setAuthorized(true);
+										navigate("/");
+									} else {
+										window.alert("有人帳號或密碼打錯囉");
+									}
+								})
+								.catch((err) => {
+									console.log(err)
+								});
+								
 							}}
 						>
 							{({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (

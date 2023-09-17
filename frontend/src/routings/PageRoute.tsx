@@ -15,6 +15,7 @@ const PageRoute = () => {
 			<Route path={'/Contests'} element={<ContestPage/>}/>
 			<Route path={'/ChangeInfo'} element={<ChangeInfo/>}/>
 			<Route path={'/CreateContest'} element={<CreateContestPage/>}/>
+			{/* <Route path={'/CreateContest'} element={<CreateContestPage/>}/> */}
 		</Routes>
 	)
 }

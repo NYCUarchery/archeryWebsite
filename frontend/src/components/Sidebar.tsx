@@ -7,6 +7,10 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
 import Grow from '@mui/material/Grow';
 import Collapse from '@mui/material/Collapse';
+
+import ExpandLess from '@mui/icons-material/ExpandLess';
+import ExpandMore from '@mui/icons-material/ExpandMore';
+
 import { useNavigate } from 'react-router-dom';
 
 import { ClickAwayListener } from '@mui/material';
@@ -38,14 +42,21 @@ const SidebarItem: FC<sidebarItemProps> = ({item, navigate}) => {
 
 	return (
 		<Box>
-			<ListItem disablePadding>
+			<ListItem
+				disablePadding
+				// onMouseOver={() => {
+				// 	setOpen(!open);
+				// }}
+			>
 				<ListItemButton
 					onClick={() => {
 						item.subitem? setOpen(!open):
 						navigate(item.route)
+						// navigate(item.route)
 					}}
 				>
-					<ListItemText primary={item.label} />
+					<ListItemText primary={item.label}/>
+					{item.subitem && (open ? <ExpandLess /> : <ExpandMore />)}
 				</ListItemButton>
 			</ListItem>
 			{(item.subitem && <Collapse in={open} timeout="auto" unmountOnExit>
