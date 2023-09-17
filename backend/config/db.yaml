@@ -1,5 +1,0 @@
-DBuser: yourDBuser
-DBpasswd: yourDBpasswd
-DBip: 127.0.0.1
-DBport: 3306
-DBname: yourDBname

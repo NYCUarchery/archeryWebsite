@@ -25,18 +25,22 @@ func routerSetup() *gin.Engine {
 		sr.GET("/", pkg.AuthSessionMiddleware(), func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"result": "ok"});
 		})
-
-		sr.POST("/register", api.Register)
-		sr.POST("/login", api.Login)
-		sr.GET("/logout", api.Logout)
-		sr.POST("/modifyInfo", pkg.AuthSessionMiddleware(), api.ModifyInfo)
-		sr.GET("/getUsername", pkg.AuthSessionMiddleware(), api.GetUsername)
-		sr.POST("userInfo", api.UserInfo)
-
-		ssr := sr.Group("/competition", pkg.AuthSessionMiddleware())
+		
+		userssr := sr.Group("/user")
 		{
-			ssr.POST("/create", api.CreateCompetition)
-			ssr.POST("/join", api.JoinInCompetition)
+			userssr.POST("/register", api.Register)
+			userssr.POST("/login", api.Login)
+			userssr.GET("/logout", api.Logout)
+			userssr.PUT("/modifyInfo", pkg.AuthSessionMiddleware(), api.ModifyInfo)
+			userssr.GET("/getUserID", pkg.AuthSessionMiddleware(), api.GetUserID)
+			userssr.GET("/info/:id", api.UserInfo)
+		}
+
+		compssr := sr.Group("/competition")
+		{
+			compssr.POST("/create", api.CreateCompetition, pkg.AuthSessionMiddleware())
+			compssr.POST("/join", api.JoinInCompetition, pkg.AuthSessionMiddleware())
+			compssr.GET("/info/:id", api.CompetitionInfo)
 		}
 	}
 

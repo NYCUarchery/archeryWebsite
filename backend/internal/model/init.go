@@ -25,15 +25,17 @@ type Competition struct {
 	HostID 			uint `gorm:"not null"`
 	ScoreboardURL	string
 	Overview		string
-	MenRecurve 		bool
-	WomenRecurve 	bool
-	MenCompound 	bool
-	WomenCompound 	bool
+}
+
+type CompetitionCategory struct {
+	CompetitionID 	uint `gorm:"not null"`
+	Description 	string  `gorm:"not null"`
+	Distance 		int32 `gorm:"not null"`
 }
 
 type Participant struct {
-	UserID uint `gorm:"primaryKey"`
-	CompetitionID uint `gorm:"not null"`
+	UserID 			uint `gorm:"not null"`
+	CompetitionID 	uint `gorm:"not null"`
 }
 
 type conf struct {
@@ -65,9 +67,6 @@ func init() {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 		c.DBuser, c.DBpasswd, c.DBip, c.DBport, c.DBname)
 
-    
-
-
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 
 	if err != nil {
@@ -81,6 +80,7 @@ func init() {
     DB.AutoMigrate(&User{})
 	DB.AutoMigrate(&Competition{})
 	DB.AutoMigrate(&Participant{})
+	DB.AutoMigrate(&CompetitionCategory{})
 }
 
 

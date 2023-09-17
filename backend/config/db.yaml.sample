@@ -1,0 +1,5 @@
+DBuser: your_DBuser
+DBpasswd: your_DBpasswd
+DBip: 127.0.0.1
+DBport: 3306
+DBname: your_DBname
