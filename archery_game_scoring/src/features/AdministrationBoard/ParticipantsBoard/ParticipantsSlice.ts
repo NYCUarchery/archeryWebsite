@@ -22,10 +22,16 @@ const participantsSlice = createSlice({
     confirmPlayer: (state, action) => {
       state.players.push(state.playerApplications[action.payload as number]);
       state.playerApplications.splice(action.payload as number, 1);
+      state.players.sort((a, b) => {
+        return a.id - b.id;
+      });
     },
     confirmAdmin: (state, action) => {
       state.admins.push(state.adminApplications[action.payload as number]);
       state.adminApplications.splice(action.payload as number, 1);
+      state.admins.sort((a, b) => {
+        return a.id - b.id;
+      });
     },
 
     deletePlayer: (state, action) => {

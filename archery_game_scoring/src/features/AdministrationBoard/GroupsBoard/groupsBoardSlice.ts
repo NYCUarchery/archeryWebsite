@@ -37,6 +37,9 @@ const groupsBoardSlice = createSlice({
       let player = state.groups[fromGroupId][playerIndex];
       state.groups[fromGroupId].splice(playerIndex, 1);
       state.groups[toGroupId].push(player);
+      state.groups[toGroupId].sort((a, b) => {
+        return a.id - b.id;
+      });
     },
   },
 });
