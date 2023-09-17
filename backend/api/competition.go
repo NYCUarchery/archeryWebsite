@@ -23,8 +23,7 @@ func CreateCompetition(c *gin.Context) {
 	var err error = nil
 
 	comp.Name = name
-	loc := time.FixedZone("UTC+8", +8*60*60)
-	if comp.Date, err = time.ParseInLocation("2006-01-02", date, loc); err != nil {
+	if comp.Date, err = time.Parse("2006-01-02T15:04:05+08:00", date); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "cannot parse date string"})
 		return
 	}
@@ -85,6 +84,7 @@ func JoinInCompetition(c *gin.Context) {
 	model.AddParticipant(&par)
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
+
 
 func CompetitionInfo(c *gin.Context) {
 	
