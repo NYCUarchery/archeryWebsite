@@ -144,7 +144,7 @@ func UserInfo(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"result": "success",
-		"username": user.Name,
+		"name": user.Name,
 		"organization": user.Organization,
 		"overview": user.Overview,
 	})

@@ -34,7 +34,7 @@ type CompetitionCategory struct {
 }
 
 type Participant struct {
-	UserID 			uint `gorm:"primaryKey"`
+	UserID 			uint `gorm:"not null"`
 	CompetitionID 	uint `gorm:"not null"`
 }
 

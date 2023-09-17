@@ -7,7 +7,6 @@ import (
 	"backend/internal/model"
 	"backend/internal/pkg"
 	"strconv"
-	//"fmt"
 	"encoding/json"
 )
 
@@ -56,7 +55,10 @@ func CreateCompetition(c *gin.Context) {
 		model.AddCompCategory(&compcat)
 	}
 	
-	c.JSON(http.StatusOK, gin.H{"result": "success"})
+	c.JSON(http.StatusOK, gin.H{
+		"result": "success",
+		"compID": comp.ID,
+	})
 }
 
 func JoinInCompetition(c *gin.Context) {
@@ -79,7 +81,7 @@ func JoinInCompetition(c *gin.Context) {
 		return
 	}
 
-	if _, err := model.ParticipantInfoBy2ID(userID, compID); err == nil {
+	if model.CheckParticipantExist(userID, compID) {
 		c.JSON(http.StatusOK, gin.H{"result": "participant exists"})
 		return
 	}
@@ -88,4 +90,58 @@ func JoinInCompetition(c *gin.Context) {
 	
 	model.AddParticipant(&par)
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
+}
+
+func CompetitionInfo(c *gin.Context) {
+	cidstr := c.Param("id")
+	if cidstr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "need competition id"})
+		return
+	}
+
+	cid, err := strconv.Atoi(cidstr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "invalid competition id"})
+		return
+	}
+
+	comp, _ := model.CompetitionInfoByID(uint(cid))
+	if comp.ID == 0 {
+		c.JSON(http.StatusOK, gin.H{"result": "no competition found"})
+		return
+	}
+
+	var pars []model.Participant
+	pars, err = model.CompetitionParticipants(uint(cid))
+	var parids []uint
+	for _, par := range pars {
+		parids = append(parids, par.UserID)
+	}
+
+	var cats []model.CompetitionCategory
+	cats, err = model.CompetitionCategories(uint(cid))
+	var pairs []struct{
+		Des string
+		Dis int32
+	}
+	for _, cat := range cats {
+		pairs = append(pairs, struct{
+			Des string
+			Dis int32
+		}{
+			Des: cat.Description,
+			Dis: cat.Distance,
+		})
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"result": "success",
+		"name": comp.Name,
+		"date": comp.Date,
+		"hostID": comp.HostID,
+		"scoreboardURL": comp.ScoreboardURL,
+		"overview": comp.Overview,
+		"categories": pairs,
+		"participants": parids,
+	})
 }
