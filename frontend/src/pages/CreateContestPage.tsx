@@ -66,28 +66,25 @@ const CreateContestPage = () => {
 								// body.append("groups", JSON.stringify(values.groups));
 								console.log("body: ", body)
 
-								try {
-									fetch("http://localhost:8080/api/competition/create", {
-										method: "POST",
-										credentials: "include",
-										body,
-									})
-									.then((res) => {
-										return res.json();
-									})
-									.then((resjson) => {
+								fetch("http://localhost:8080/api/competition/create", {
+									method: "POST",
+									credentials: "include",
+									body,
+								})
+								.then((res) => {
+									return res.json();
+								})
+								.then((resjson) => {
 
-										console.log(resjson);
-										if (resjson["result"] && resjson["result"] === "success") {
-											console.log("Create Success");
-										} else {
-											console.log("Too bad QQ");
-											console.log("resjson['result']:", resjson["result"])
-										}
-									});
-								} catch (err) {
-									console.log(err);
-								}
+									console.log(resjson);
+									if (resjson["result"] && resjson["result"] === "success") {
+										console.log("Create Success");
+									} else {
+										console.log("Too bad QQ");
+										console.log("resjson['result']:", resjson["result"])
+									}
+								})
+								.catch((err) => console.log(err));
 							}}
 						>
 							{({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values, setFieldValue }) => {

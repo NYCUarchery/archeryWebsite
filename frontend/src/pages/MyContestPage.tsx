@@ -3,7 +3,7 @@ import CardContent from '@mui/material/CardContent';
 import { useNavigate } from 'react-router-dom';
 
 
-const ContestPage = () => {
+const MyContestPage = () => {
 	const navigate = useNavigate();
 	return (
 		
@@ -15,4 +15,4 @@ const ContestPage = () => {
 	)
 }
 
-export default ContestPage;
+export default MyContestPage;

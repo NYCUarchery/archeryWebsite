@@ -56,7 +56,8 @@ import { useNavigate } from 'react-router-dom';
 			"date": "2017-04-23 10:30",
 			"dashboard": "https://google.com/",
 			"participate": "未報名",
-			"state": "可報名"
+			"state": "可報名",
+			"canParticipate": true,
 		},
 		{
 			"id": "2",
@@ -65,7 +66,8 @@ import { useNavigate } from 'react-router-dom';
 			"date": "2017-04-24 10:30",
 			"dashboard": "contest/2",
 			"participate": "已報名",
-			"state": "報名截止"
+			"state": "報名截止",
+			"canParticipate": false,
 		},
 		{
 			"id": "3",
@@ -73,7 +75,8 @@ import { useNavigate } from 'react-router-dom';
 			"holder": "隔壁校射箭隊",
 			"date": "2017-04-25 10:30",
 			"participate": "未報名",
-			"state": "進行中"
+			"state": "進行中",
+			"canParticipate": false,
 		},
 		{
 			"id": "4",
@@ -81,7 +84,8 @@ import { useNavigate } from 'react-router-dom';
 			"holder": "隔壁校射箭隊",
 			"date": "2017-04-26 10:30",
 			"participate": "未報名",
-			"state": "已結束"
+			"state": "已結束",
+			"canParticipate": false,
 		},
 		{
 			"id": "5",
@@ -89,7 +93,8 @@ import { useNavigate } from 'react-router-dom';
 			"holder": "隔壁校射箭隊",
 			"date": "2017-04-27 10:30",
 			"participate": "未報名",
-			"state": "延期"
+			"state": "延期",
+			"canParticipate": true,
 		},
 		{
 			"id": "6",
@@ -97,7 +102,8 @@ import { useNavigate } from 'react-router-dom';
 			"holder": "隔壁校射箭隊",
 			"date": "2017-04-28 10:30",
 			"participate": "未報名",
-			"state": "已取消"
+			"state": "已取消",
+			"canParticipate": false,
 		},
 		{
 			"id": "7",
@@ -105,7 +111,8 @@ import { useNavigate } from 'react-router-dom';
 			"holder": "隔壁校射箭隊",
 			"date": "2017-04-29 10:30",
 			"participate": "未報名",
-			"state": "協辦單位拿錢跑了"
+			"state": "協辦單位拿錢跑了",
+			"canParticipate": false,
 		},
 		{
 			"id": "8",
@@ -113,7 +120,8 @@ import { useNavigate } from 'react-router-dom';
 			"holder": "隔壁校射箭隊",
 			"date": "2017-04-30 10:30",
 			"participate": "未報名",
-			"state": "氣態"
+			"state": "氣態",
+			"canParticipate": false,
 		},
 	];
 
@@ -234,7 +242,7 @@ const ContestPage = () => {
 					<Grid container justifyContent="center">
 						<Grid item>
 							<Typography variant="h5" component="div">
-								比賽
+								近期比賽
 							</Typography>
 						</Grid>
 					</Grid>
@@ -242,8 +250,6 @@ const ContestPage = () => {
 				{rows.map((v, i) => {
 					return (
 						<Box key={i} sx={{mb: 2}}>
-						{/* <Paper> */}
-							
 							<Divider/>
 							<Typography variant="body1" component="div" sx={{fontSize: 18}}>
 								{v.name}
@@ -252,8 +258,15 @@ const ContestPage = () => {
 								{v.holder} {v.date}
 							</Typography>
 							<Button
-							 variant="text"
-							 onClick={() => {}}
+								variant="text"
+								onClick={() => {
+									if (v.dashboard) 
+										if(v.dashboard.slice(0, 4) == "http") {
+											window.location.href = v.dashboard;
+										} else {
+											navigate(v.dashboard);
+										}
+								}}
 							>
 								<Typography variant="body2">
 									查看記分板: {v.dashboard}
@@ -263,7 +276,44 @@ const ContestPage = () => {
 							<Typography variant="body2" component="div">
 								比賽狀況: {v.state}
 							</Typography>
-						{/* </Paper> */}
+
+							<Grid container justifyContent="center">
+								<Grid item sx={{width: "70%"}}>
+									<Button 
+										variant="text"
+										sx={{ color: "#2074d4", width: "100%" }}
+										onClick={() => {
+											const body = new FormData();
+											body.append("competitionID", "aaaa");
+
+											fetch("http://localhost:8080/api/competition/join", {
+												method: "POST",
+												credentials: "include",
+												body: body,
+											})
+											.then((res) => {
+												return res.json();
+											})
+											.then((resjson) => {
+		
+												console.log(resjson);
+												if (resjson["result"] && resjson["result"] === "success") {
+													console.log("Create Success");
+												} else {
+													console.log("Too bad QQ");
+													console.log("resjson['result']:", resjson["result"])
+												}
+											})
+											.catch((err) => console.log(err));
+										}}
+										disabled={!v.canParticipate}
+									>
+										<Typography variant="body1" component="div">
+											立即報名
+										</Typography>
+									</Button>
+								</Grid>
+							</Grid>
 						</Box>
 					)
 				})}
