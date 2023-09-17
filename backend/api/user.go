@@ -6,6 +6,7 @@ import (
 	//"fmt"
 	"backend/internal/pkg"
 	"backend/internal/model"
+	"strconv"
 )
 
 func Register(c *gin.Context) {
@@ -117,19 +118,25 @@ func ModifyInfo(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
 
-func GetUsername(c *gin.Context) {
-	name := pkg.QuerySession(c, "username")
-	c.JSON(http.StatusOK, gin.H{"username": name})
+func GetUserID(c *gin.Context) {
+	name := pkg.QuerySession(c, "id")
+	c.JSON(http.StatusOK, gin.H{"uid": name})
 }
 
 func UserInfo(c *gin.Context) {
-	name := c.Param("username")
-	if name == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"result": "need username"})
+	uidstr := c.Param("id")
+	if uidstr == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "need user id"})
 		return
 	}
 
-	user, _ := model.UserInfoByName(name)
+	uid, err := strconv.Atoi(uidstr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "invalid user id"})
+		return
+	}
+
+	user, _ := model.UserInfoByID(uint(uid))
 	if user.ID == 0 {
 		c.JSON(http.StatusOK, gin.H{"result": "no user found"})
 		return
