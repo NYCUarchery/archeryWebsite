@@ -28,6 +28,14 @@ interface sidebarItemProps {
 const SidebarItem: FC<sidebarItemProps> = ({item, navigate}) => {
 	const [open, setOpen] = useState(false);
 
+	const subitemMap = (v: any, i: number) => (
+		<List key={i} component="div" disablePadding>
+			<ListItemButton sx={{ pl: 4 }} onClick={() => navigate(v.route)}>
+				<ListItemText primary={v.label} />
+			</ListItemButton>
+		</List>
+	)
+
 	return (
 		<Box>
 			<ListItem disablePadding>
@@ -41,11 +49,7 @@ const SidebarItem: FC<sidebarItemProps> = ({item, navigate}) => {
 				</ListItemButton>
 			</ListItem>
 			{(item.subitem && <Collapse in={open} timeout="auto" unmountOnExit>
-				<List component="div" disablePadding>
-					<ListItemButton sx={{ pl: 4 }} onClick={() => navigate(item.route)}>
-						<ListItemText primary="我的比賽" />
-					</ListItemButton>
-				</List>
+				{item.subitem.map(subitemMap)}
 			</Collapse>)}
 		</Box>
 	)
@@ -61,22 +65,26 @@ const Sidebar: FC<SidebarProps> = ({ sideBarOpen, setSideBarOpen }) => {
 	const menuItems = [
 		{
 			label: '首頁',
-			route: '/'
+			route: '/',
 		},
 		{
 			label: '比賽',
 			route: '/Contests',
 			subitem: [
 				{
+					label: '近期比賽',
+					route: '/Contests',
+				},
+				{
 					label: '我的比賽',
 					route: '/Contests',
-				}
+				},
 			],
 		},
 		{
 			label: '關於',
-			route: '/Abouts'
-		}
+			route: '/Abouts',
+		},
 	]
 
   const list = () => (
