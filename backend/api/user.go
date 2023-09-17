@@ -123,7 +123,7 @@ func GetUsername(c *gin.Context) {
 }
 
 func UserInfo(c *gin.Context) {
-	name := c.PostForm("username")
+	name := c.Param("username")
 	if name == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "need username"})
 		return
