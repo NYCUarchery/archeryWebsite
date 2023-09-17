@@ -1,5 +1,6 @@
-DBuser: jasontu
-DBpasswd: Kar98Pro?
+DBuser: your_DBuser
+DBpasswd: your_DBpasswd
 DBip: 127.0.0.1
 DBport: 3306
-DBname: test
+DBname: your_DBname
+
