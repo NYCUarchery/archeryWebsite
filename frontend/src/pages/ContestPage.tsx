@@ -241,7 +241,7 @@ const ContestPage = () => {
 				</Box>
 				{rows.map((v, i) => {
 					return (
-						<Box sx={{mb: 2}}>
+						<Box key={i} sx={{mb: 2}}>
 						{/* <Paper> */}
 							
 							<Divider/>
@@ -253,7 +253,7 @@ const ContestPage = () => {
 							</Typography>
 							<Button
 							 variant="text"
-							 onClick={() => console.log("hello")}
+							 onClick={() => {}}
 							>
 								<Typography variant="body2">
 									查看記分板: {v.dashboard}

@@ -141,10 +141,10 @@ const ChangeInfo = () => {
 													endAdornment: (
 														<InputAdornment position="end">
 															<IconButton
-																	aria-label="toggle password visibility"
-																	onClick={handleClickShowPassword}
-																	onMouseDown={handleMouseDownPassword}
-																	edge="end"
+																aria-label="toggle password visibility"
+																onClick={handleClickShowPassword}
+																onMouseDown={handleMouseDownPassword}
+																edge="end"
 															>
 																{showPassword ? <Visibility /> : <VisibilityOff />}
 															</IconButton>
@@ -179,6 +179,21 @@ const ChangeInfo = () => {
 												}}
 											/>
 										</FormControl>
+									</Grid>
+									<Grid item xs={12} sx={{mt: 2}} container alignItems="center" justifyContent="center">
+										<Grid item xs={4}>
+											<Button
+												// disableElevation
+												// disabled={isSubmitting}
+												size="large"
+												type="submit"
+												variant="contained"
+												color="secondary"
+												sx={{whiteSpace: "nowrap", minWidth: "auto",}}
+											>
+												儲存設定
+											</Button>
+										</Grid>
 									</Grid>
 								</Grid>
 							</Grid>
