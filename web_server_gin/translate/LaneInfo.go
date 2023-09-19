@@ -66,6 +66,14 @@ func PostLaneInfo(context *gin.Context) {
 		for confirm_index, confirm := range laneStage.Confirmations {
 			confirm.UserIndex = confirm_index
 		}
+		/*save LaneStage.EndScores*/
+		for end_index, end := range laneStage.EndScores {
+			end.UserIndex = end_index
+			/*save EndScores.AllScres */
+			for all_index, all := range end.AllScores {
+				all.ArrowIndex = all_index
+			}
+		}
 	}
 
 	newData := database.PostLaneInfo(data)

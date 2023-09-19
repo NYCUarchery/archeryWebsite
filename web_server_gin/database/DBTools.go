@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-/*讓我可以存取[]string型別的東西*/
+/*讓我可以存取[]string型別的東西,我還是不知道他怎麼運作的*/
 
 type Array []string
 
