@@ -18,16 +18,25 @@ type LaneUser struct {
 	ID         int    `json:"-"            gorm:"primary_key"`
 	LaneDataID int    `json:"-"`
 	UserIndex  int    `json:"-"`
-	UserId     int    `json:"user_id"`
+	UserId     string `json:"user_id"`
 }
 type LaneStage struct { // DB : land_stage
 	ID            int             `json:"-"            gorm:"primary_key"`
 	LaneDataID    int             `json:"-"`
 	Status        string          `json:"status"`
 	StageIndex    int             `json:"-"`
-	EndScores     []*EndScore     `json:"all_scores"`
+	AllScores     []*AllScore     `json:"all_scores"`
 	Totals        []*TotalScore   `json:"totals"`
-	Confirmations []*Confirmation `json:"is_confirmed"`
+	Confirmations []*Confirmation `json:"confirmations"`
+}
+type AllScore struct { // DB: all_score
+	ID          int `json:"-"`
+	LaneStageID int `json:"-"`
+	LaneDataID  int `json:"-"`
+	StageIndex  int `json:"stage_index"`
+	UserIndex   int `json:"user_index"`
+	ArrowIndex  int `json:"arrow_index"`
+	Score       int `json:"score"`
 }
 type TotalScore struct { // DB : total_score
 	ID          int `json:"-"`
@@ -41,29 +50,15 @@ type Confirmation struct { // DB : confirmations
 	UserIndex   int  `json:"-"`
 	Confirm     bool `json:"confirm"`
 }
-type EndScore struct {
-	ID 		int `json:"-"`
-	LaneStageID  int `json:"-"`
-	UserIndex int `json:"-"`
-	AllScores []*AllScore `json:"player"`
-}
-type AllScore struct { // DB: all_score
-	ID          int `json:"-"`
-	EndScoreID int `json:"-"`
-	ArrowIndex  int `json:"-"`
-	Score       int `json:"score"`
-}
 
 func InitLaneInfo() {
 	DB.AutoMigrate(&LaneData{})
 	DB.AutoMigrate(&LaneUser{})
 
 	DB.AutoMigrate(&LaneStage{})
+	DB.AutoMigrate(&AllScore{})
 	DB.AutoMigrate(&TotalScore{})
 	DB.AutoMigrate(&Confirmation{})
-
-	DB.AutoMigrate(&AllScore{})
-	DB.AutoMigrate(&EndScore{})
 }
 
 func GetLaneInfoByID(ID int) LaneData {
@@ -73,12 +68,9 @@ func GetLaneInfoByID(ID int) LaneData {
 		Preload("UserIds", func(*gorm.DB) *gorm.DB { return DB.Order("user_index asc") }).
 		Preload("Stages", func(*gorm.DB) *gorm.DB {
 			return DB.Order("stage_index asc").
-			Preload("EndScores", func(*gorm.DB) *gorm.DB { 
-				return DB.Order("user_index asc").
-				Preload("AllScores", func(*gorm.DB) *gorm.DB { return DB.Order("arrow_index asc") })
-			}).
-			Preload("Totals", func(*gorm.DB) *gorm.DB { return DB.Order("user_index asc") }).
-			Preload("Confirmations", func(*gorm.DB) *gorm.DB { return DB.Order("user_index asc") })
+				Preload("AllScores").
+				Preload("Totals", func(*gorm.DB) *gorm.DB { return DB.Order("user_index asc") }).
+				Preload("Confirmations", func(*gorm.DB) *gorm.DB { return DB.Order("user_index asc") })
 		}).
 		Model(&LaneData{}).
 		Where("id =?", ID).
@@ -100,7 +92,7 @@ func UpdateLaneInfo(ID int, data LaneData) LaneData {
 }
 
 // edit score
-func UpdataLaneScore(ID int, stageindex int, userindex int, arrowindex int, score int, allscore int) LaneData {
+func UpdataLaneScore(ID int, stageindex int, userindex int, arrowindex int, score int) LaneData {
 	DB.Model(&AllScore{}).Where("lane_data_id=? AND stage_index=? AND user_index=? AND arrow_index=?", ID, stageindex, userindex, arrowindex).Update("score", score)
 
 	var retrievedLaneData LaneData
