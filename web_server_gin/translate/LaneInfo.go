@@ -22,14 +22,14 @@ func convert2int(c *gin.Context, name string) int {
 
 /*
 func convert2bool(c *gin.Context, name string) bool {
-	dataStr := c.Param(name)
+    dataStr := c.Param(name)
 
-	data, err := strconv.ParseBool(dataStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "unvalid " + name + " parameter"})
-		return data
-	}
-	return data
+    data, err := strconv.ParseBool(dataStr)
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "unvalid " + name + " parameter"})
+        return data
+    }
+    return data
 }
 */
 
@@ -66,6 +66,14 @@ func PostLaneInfo(context *gin.Context) {
 		for confirm_index, confirm := range laneStage.Confirmations {
 			confirm.UserIndex = confirm_index
 		}
+		/*save LaneStage.EndScores*/
+		for end_index, end := range laneStage.EndScores {
+			end.UserIndex = end_index
+			/*save EndScores.AllScres */
+			for all_index, all := range end.AllScores {
+				all.ArrowIndex = all_index
+			}
+		}
 	}
 
 	newData := database.PostLaneInfo(data)
@@ -97,7 +105,7 @@ func UpdataLaneScore(context *gin.Context) {
 		context.IndentedJSON(http.StatusBadRequest, "Error")
 		return
 	}
-	newdata := database.UpdataLaneScore(convert2int(context, "id"), convert2int(context, "stageindex"), convert2int(context, "userindex"), convert2int(context, "arrowindex"), convert2int(context, "score"))
+	newdata := database.UpdataLaneScore(convert2int(context, "id"), convert2int(context, "stageindex"), convert2int(context, "userindex"), convert2int(context, "arrowindex"), convert2int(context, "score"), convert2int(context, "totalscore"))
 	if newdata.ID == 0 {
 		context.IndentedJSON(http.StatusNotFound, "Error")
 		return
@@ -105,27 +113,31 @@ func UpdataLaneScore(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, newdata)
 }
 
+func conver2int(context *gin.Context, s string) {
+	panic("unimplemented")
+}
+
 /*
-	func UpdataLaneConfirm(context *gin.Context) {
-		data := database.LaneData{}
-		err := context.BindJSON(&data)
-		if err != nil {
-			context.IndentedJSON(http.StatusBadRequest, "Error")
-			return
-		}
-		newdata := database.UpdataLaneConfirm(convert2int(context, "id"), convert2int(context, "who"), convert2bool((context), "confirm"))
-		if newdata.ID == 0 {
-			context.IndentedJSON(http.StatusNotFound, "Error")
-			return
-		}
-		context.IndentedJSON(http.StatusOK, newdata)
-	}
+    func UpdataLaneConfirm(context *gin.Context) {
+        data := database.LaneData{}
+        err := context.BindJSON(&data)
+        if err != nil {
+            context.IndentedJSON(http.StatusBadRequest, "Error")
+            return
+        }
+        newdata := database.UpdataLaneConfirm(convert2int(context, "id"), convert2int(context, "who"), convert2bool((context), "confirm"))
+        if newdata.ID == 0 {
+            context.IndentedJSON(http.StatusNotFound, "Error")
+            return
+        }
+        context.IndentedJSON(http.StatusOK, newdata)
+    }
 
 func DeleteLaneInfoByID(context *gin.Context) {
-	if !database.DeleteLaneInfoByID(convert2int(context, "id")) {
-		context.IndentedJSON(http.StatusNotFound, "Error")
-		return
-	}
-	context.IndentedJSON(http.StatusOK, "Successfully")
+    if !database.DeleteLaneInfoByID(convert2int(context, "id")) {
+        context.IndentedJSON(http.StatusNotFound, "Error")
+        return
+    }
+    context.IndentedJSON(http.StatusOK, "Successfully")
 }
 */

@@ -1,44 +1,44 @@
-package translate 
+package translate
 
 import (
-	"fmt"
-	"strings"
-    "net/http"
-	"os"
 	"bufio"
-	"path/filepath"
+	"fmt"
 	"log"
+	"net/http"
+	"os"
+	"path/filepath"
+	"strings"
 
-    "github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin"
 )
 
 // 對抗賽資料
-func GetEliminationInfo (context *gin.Context) {
+func GetEliminationInfo(context *gin.Context) {
 	gameName := context.Param("gameName")
 	fmt.Printf("GetEliminationInfo worked, return info of %s", gameName)
 	// phase（項目名字）
 	// groups （所有人的資訊）
-	//// players 
+	//// players
 	////// name
 	////// rank
 	////// score
 	//// stages (八強、四強、季殿、冠亞)
 	////// matches （兩個對打）
-	//////// players 
-	////////// name 
-	////////// scores 
-	////////// points 
-	////////// is_winner 
-	//// result 
-	////// players 
-	//////// name 
-	//////// medal 
+	//////// players
+	////////// name
+	////////// scores
+	////////// points
+	////////// is_winner
+	//// result
+	////// players
+	//////// name
+	//////// medal
 }
 
 // 比賽資訊
-func GetGameInfo (context *gin.Context) {
+func GetGameInfo(context *gin.Context) {
 	gameName := context.Param("gameName")
-	fmt.Printf("GetGameInfo worked, return info of %s", gameName)	
+	fmt.Printf("GetGameInfo worked, return info of %s", gameName)
 	// title 比賽名字
 	// sub_title 比賽第幾屆
 	// current_phase 現在的項目
@@ -47,105 +47,105 @@ func GetGameInfo (context *gin.Context) {
 }
 
 // 項目資訊
-func GetGroupInfo (context *gin.Context) {
+func GetGroupInfo(context *gin.Context) {
 	gameName := context.Param("gameName")
-	fmt.Printf("GetGroupInfo worked, return info of %s", gameName)		
+	fmt.Printf("GetGroupInfo worked, return info of %s", gameName)
 	// groups 比賽有的各個項目的名字
 }
 
 // 對抗、資格、團體
-func GetPhaseInfo (context *gin.Context) {
+func GetPhaseInfo(context *gin.Context) {
 	gameName := context.Param("gameName")
-	fmt.Printf("GetPhaseInfo worked, return info of %s", gameName)		
+	fmt.Printf("GetPhaseInfo worked, return info of %s", gameName)
 	// phases 對抗、資格、團體
-	// phase_kinds 類別 
+	// phase_kinds 類別
 }
 
 // 資格賽
-func GetQualificationInfo (context *gin.Context) {
+func GetQualificationInfo(context *gin.Context) {
 	gameName := context.Param("gameName")
-	fmt.Printf("GetQualificationInfo worked, return info of %s", gameName)	
+	fmt.Printf("GetQualificationInfo worked, return info of %s", gameName)
 	// phase 項目名
 	// groups (新生 公開 大專)
 	//// name 類別名
 	//// player_num 總人數
-	//// qualfication_num 篩選人數 
-	//// players 
+	//// qualfication_num 篩選人數
+	//// players
 	////// rank 排名
 	////// target 靶道
-	////// name 
+	////// name
 	////// institution
-	////// score 	
+	////// score
 }
 
 // 團體賽
-func GetTeamEliminationInfo (context *gin.Context) {
+func GetTeamEliminationInfo(context *gin.Context) {
 	gameName := context.Param("gameName")
-	fmt.Printf("GetTeamEliminationInfo worked, return info of %s", gameName)	
-	// phase 
+	fmt.Printf("GetTeamEliminationInfo worked, return info of %s", gameName)
+	// phase
 	// groups （新生 大專 公開）
-	//// playsers 
+	//// playsers
 	////// name 隊伍名字
 	////// rank 隊伍排名
 	////// score 隊伍總分
-	//// stages 
+	//// stages
 	////// matches 比賽四強
 	////// matches 冠亞
 	////// matches 季殿
-	//// result 
-	////// playsers 
-	//////// name 
-	//////// medal 
+	//// result
+	////// playsers
+	//////// name
+	//////// medal
 }
 
 // 使用者資料
-func GetUserInfo (context *gin.Context) {
+func GetUserInfo(context *gin.Context) {
 	userName := context.Param("userName")
-	fmt.Printf("GetUserInfo worked, return info of %s", userName)	
-	// id 
-	// name 
-	// role 
-	// group 
-	// lane 
-	// target 
+	fmt.Printf("GetUserInfo worked, return info of %s", userName)
+	// id
+	// name
+	// role
+	// group
+	// lane
+	// target
 }
 
 // 'json:"name"' specify what a field’s name should be when the struct’s contents are serialized into JSON
 type Album struct {
-	Ranking int64 `json:"rank"`
-	Target string `json:"target"`
-	Name string `json:"name"`
+	Ranking     int64  `json:"rank"`
+	Target      string `json:"target"`
+	Name        string `json:"name"`
 	Institution string `json:"institution"`
-	Score int64 `json:"score"`
+	Score       int64  `json:"score"`
 }
 
-// back side dummy data #for test  
-var dummyAlbums = []Album {
-	{Ranking:1, Target:"11C", Name:"A", Institution:"NYCU", Score:340}, 
-	{Ranking:2, Target:"1A", Name:"B", Institution:"NTHU", Score:240}, 
-	{Ranking:3, Target:"5B", Name:"C", Institution:"NUU?", Score:140}, 
+// back side dummy data #for test
+var dummyAlbums = []Album{
+	{Ranking: 1, Target: "11C", Name: "A", Institution: "NYCU", Score: 340},
+	{Ranking: 2, Target: "1A", Name: "B", Institution: "NTHU", Score: 240},
+	{Ranking: 3, Target: "5B", Name: "C", Institution: "NUU?", Score: 140},
 }
 
-// response dummy data in JSON #for test 
-func GetAlbums (context *gin.Context) {
-	context.IndentedJSON (http.StatusOK, dummyAlbums)
+// response dummy data in JSON #for test
+func GetAlbums(context *gin.Context) {
+	context.IndentedJSON(http.StatusOK, dummyAlbums)
 	// the output 20 indicates OK in net/http package.
 	// "constent.IdentedJSON is more easier to debug and size is smaller than content.JSON"
 }
 
-// response normal data in JSON 
-func GetHTTPData (context *gin.Context) {
+// response normal data in JSON
+func GetHTTPData(context *gin.Context) {
 	FileName := context.Param("dataName") // 取api的dataName部分
 	/*讀絕對路徑檔案*/
 	Pwd, _ := os.Getwd()
 	//LastFile := path.Dir(Pwd)
 	FilePath := filepath.Join(Pwd, "translate")
 	FilePath = filepath.Join(FilePath, FileName)
-	ArrayName, data, err := readAlbumsFromFile(FilePath) 
+	ArrayName, data, err := readAlbumsFromFile(FilePath)
 	if err != nil { // 如果不存在FileName資料
 		log.Fatalln("找不到檔案路徑:", FilePath, err)
 	} else { //如果存在FileName資料
-		context.IndentedJSON (http.StatusOK, gin.H{*ArrayName:data,})
+		context.IndentedJSON(http.StatusOK, gin.H{*ArrayName: data})
 	}
 }
 
@@ -164,7 +164,7 @@ func readAlbumsFromFile(FilePath string) (*string, []Album, error) {
 	for scanner.Scan() {
 		line := scanner.Text()
 		if firstIteration == 0 {
-			firstIteration = 1 
+			firstIteration = 1
 			ArrayName = line
 		} else {
 			album, err := parseAlbum(line)

@@ -29,7 +29,7 @@ func main() {
         [9, 8, 7, 6, 3, 2],
         [8, 7, 4, 4, 2, 2],
         [11, 9, 8, 7, 6, 5]
-      ],
+],
 
 應該會做出來這樣
 "all_scores": [
@@ -37,5 +37,5 @@ func main() {
         {"player":[{score:9}, {score:9}, {score:7}, {score:6}, {score:5}, {score:0}]},
         {"player":[{score:9}, {score:9}, {score:7}, {score:6}, {score:5}, {score:0}]},
         {"player":[{score:9}, {score:9}, {score:7}, {score:6}, {score:5}, {score:0}]}
-      ],
+],
 */

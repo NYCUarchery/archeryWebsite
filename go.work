@@ -1,0 +1,6 @@
+go 1.20
+
+use (
+	./archery_game_scoring/pkg/mod/gorm.io/gorm@v1.25.4
+	./web_server_gin
+)
