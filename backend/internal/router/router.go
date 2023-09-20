@@ -22,19 +22,27 @@ func RouterSetup() *gin.Engine {
 		
 		userssr := sr.Group("/user")
 		{
-			userssr.POST("/register", api.Register)
-			userssr.POST("/login", api.Login)
-			userssr.GET("/logout", api.Logout)
-			userssr.PUT("/modifyInfo", pkg.AuthSessionMiddleware(), api.ModifyInfo)
-			userssr.GET("/getUserID", pkg.AuthSessionMiddleware(), api.GetUserID)
-			userssr.GET("/info/:id", api.UserInfo)
+			userssr.POST("/", api.Register)
+			userssr.PUT("/:id", pkg.AuthSessionMiddleware(), api.ModifyInfo)
+			userssr.GET("/me", pkg.AuthSessionMiddleware(), api.GetUserID)
+			userssr.GET("/:id", api.UserInfo)
+		}
+
+		sessionssr := sr.Group("/session")
+		{
+			sessionssr.POST("/", api.Login)
+			sessionssr.DELETE("/", api.Logout)
 		}
 
 		compssr := sr.Group("/competition")
 		{
-			compssr.POST("/create", api.CreateCompetition, pkg.AuthSessionMiddleware())
-			compssr.POST("/join", api.JoinInCompetition, pkg.AuthSessionMiddleware())
-			compssr.GET("/info/:id", api.CompetitionInfo)
+			compssr.POST("/", pkg.AuthSessionMiddleware(), api.CreateCompetition)
+			compssr.GET("/:id", api.CompetitionInfo)
+		}
+
+		parssr := sr.Group("/participant")
+		{
+			parssr.POST("/", pkg.AuthSessionMiddleware(), api.JoinInCompetition)
 		}
 	}
 
