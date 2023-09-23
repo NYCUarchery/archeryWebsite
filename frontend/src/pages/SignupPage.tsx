@@ -23,6 +23,7 @@ import { Formik } from 'formik';
 import { FormControl } from '@mui/material';
 
 import api from '../util/api';
+import routing from '../util/routing';
 
 interface SignupPageProps {
 	setPath: Dispatch<SetStateAction<string>>;
@@ -95,11 +96,11 @@ const SignupPage: FC<SignupPageProps> = ({setPath, setAuthorized}) => {
 								.then((resjson) => {
 									if (resjson["result"] && (resjson["result"] === "success")) {
 										setPath("/Login")
-										navigate("/Login");
+										navigate(routing.Login);
 									} else {
 										console.log("here3");
 										window.alert("使用者帳號已存在");
-										navigate("/Signup");
+										navigate(routing.Signup);
 									}
 									console.log("Here2")
 								});
@@ -221,7 +222,7 @@ const SignupPage: FC<SignupPageProps> = ({setPath, setAuthorized}) => {
 												component={Button}
 												onClick={() => {
 													setPath("/Login");
-													navigate("/Login");
+													navigate(routing.Login);
 												}}
 												// component={Link}
 												// to={props.login ? '/pages/forgot-password/forgot-password' + props.login : '#'}

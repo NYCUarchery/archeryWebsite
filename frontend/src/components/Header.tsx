@@ -25,6 +25,7 @@ import { useNavigate } from 'react-router-dom';
 
 import Avatar from '@mui/material/Avatar';
 import api from '../util/api';
+import routing from '../util/routing';
 
 interface HeaderProps {
   setSideBarOpen: Dispatch<SetStateAction<boolean>>;
@@ -68,7 +69,7 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen, setAuthorized }) => {
           >
             <MenuIcon />
           </IconButton>
-          <Button variant="text" sx={{ color: "white"}} onClick={() => navigate("/")}>
+          <Button variant="text" sx={{ color: "white"}} onClick={() => navigate(routing.Home)}>
             <Typography variant="h6" component="div">
               Archery
             </Typography>
@@ -98,7 +99,7 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen, setAuthorized }) => {
                     >
                       <Card>
                         <CardContent sx={{display: "flex", flexFlow: "column", alignItems: "center"}}>
-                          <img src={avatar} alt="My Avatar" width="100px" style={{cursor: "pointer"}} onClick={() => navigate("/PersonalPage")}/>
+                          <img src={avatar} alt="My Avatar" width="100px" style={{cursor: "pointer"}} onClick={() => navigate(routing.Personal)}/>
                           <Box component="div" sx={{display: "flex", flexFlow: "column", mt: "10px"}}>
                             <MenuList>
 
@@ -106,7 +107,7 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen, setAuthorized }) => {
                                 aria-label="personal page"
                                 onClick={() => {
                                   handleClose();
-                                  navigate("/PersonalPage");
+                                  navigate(routing.Personal);
                                 }}
                               >
                                 個人頁面
@@ -127,7 +128,7 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen, setAuthorized }) => {
                                     console.log(resjson);
                                     if (resjson["result"] && resjson["result"] === "success") {
                                       console.log("Log Out Success");
-                                      navigate("/login");
+                                      navigate(routing.Login);
                                     } else {
                                       window.alert("");
                                     }

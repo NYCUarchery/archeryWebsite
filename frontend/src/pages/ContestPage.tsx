@@ -13,6 +13,7 @@ import Divider from '@mui/material/Divider';
 
 import { useNavigate } from 'react-router-dom';
 import api from '../util/api';
+import routing from '../util/routing';
 // import Button from '@mui/material/Button';
 
 // const ContestPage = () => {
@@ -321,7 +322,7 @@ const ContestPage = () => {
 				<Box sx={{mt: 2}}>
 					<Grid container justifyContent="center">
 						<Grid item>
-							<Button variant="text" onClick={() => navigate("/CreateContest")} sx={{ color: "#2074d4" }}>
+							<Button variant="text" onClick={() => navigate(routing.Contests)} sx={{ color: "#2074d4" }}>
 								<Typography variant="h6" component="div">
 									創建新的比賽
 								</Typography>

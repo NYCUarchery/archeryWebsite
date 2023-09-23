@@ -17,6 +17,10 @@ import Box from '@mui/material/Box';
 
 import Divider from '@mui/material/Divider';
 import api from '../util/api';
+import routing from '../util/routing';
+
+
+import { useNavigate } from 'react-router-dom';
 
 
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -34,6 +38,7 @@ import * as Yup from 'yup';
 
 const CreateContestPage = () => {
 	// date: new Date(),
+	const navigate = useNavigate();
 	return (
 		<Card sx={{p: 2, mb: 2}}>
 			<CardContent>
@@ -79,6 +84,7 @@ const CreateContestPage = () => {
 									console.log(resjson);
 									if (resjson["result"] && resjson["result"] === "success") {
 										console.log("Create Success");
+										navigate(routing.Contests)
 									} else {
 										console.log("Too bad QQ");
 										console.log("resjson['result']:", resjson["result"])

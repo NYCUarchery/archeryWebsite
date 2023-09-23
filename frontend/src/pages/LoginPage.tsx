@@ -25,6 +25,7 @@ import { Formik } from 'formik';
 import FormControl from '@mui/material/FormControl';
 
 import api from '../util/api';
+import routing from '../util/routing';
 
 interface LoginPageProps {
   setAuthorized: Dispatch<SetStateAction<boolean>>;
@@ -56,7 +57,7 @@ const LoginPage: FC<LoginPageProps> = ({setAuthorized, setPath}) => {
     console.log(resjson);
     if (resjson["uid"]) {
       setAuthorized(true);
-			navigate("/");
+			navigate(routing.Home);
     }
   });
 
@@ -86,6 +87,7 @@ const LoginPage: FC<LoginPageProps> = ({setAuthorized, setPath}) => {
 								fetch(`http://localhost:8080/${api.user.login}`, {
 									method: "POST",
 									body,
+									credentials: "include",
 									// body: JSON.stringify({
 									// 	"username": values.username,
 									// 	"password": passwordCy,
@@ -101,7 +103,7 @@ const LoginPage: FC<LoginPageProps> = ({setAuthorized, setPath}) => {
 									if (resjson["result"] && resjson["result"] === "success") {
 										console.log("Log In Success");
 										setAuthorized(true);
-										navigate("/");
+										navigate(routing.Home);
 									} else {
 										window.alert("有人帳號或密碼打錯囉");
 									}
@@ -214,7 +216,7 @@ const LoginPage: FC<LoginPageProps> = ({setAuthorized, setPath}) => {
 												component={Button}
 												onClick={() => {
 													setPath("/Signup");
-													navigate("/Signup");
+													navigate(routing.Signup);
 												}}
 												// component={Link}
 												// to={props.login ? '/pages/forgot-password/forgot-password' + props.login : '#'}

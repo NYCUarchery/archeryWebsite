@@ -15,6 +15,8 @@ import { useNavigate } from 'react-router-dom';
 
 import { ClickAwayListener } from '@mui/material';
 
+import routing from '../util/routing';
+
 interface SidebarProps {
   setSideBarOpen: Dispatch<SetStateAction<boolean>>;
   sideBarOpen: boolean,
@@ -76,25 +78,25 @@ const Sidebar: FC<SidebarProps> = ({ sideBarOpen, setSideBarOpen }) => {
 	const menuItems = [
 		{
 			label: '首頁',
-			route: '/',
+			route: routing.Home,
 		},
 		{
 			label: '比賽',
-			route: '/Contests',
+			route: routing.Contests,
 			subitem: [
 				{
 					label: '近期比賽',
-					route: '/Contests',
+					route: routing.Contests,
 				},
 				{
 					label: '我的比賽',
-					route: '/Contests',
+					route: routing.Contests,
 				},
 			],
 		},
 		{
 			label: '關於',
-			route: '/Abouts',
+			route: routing.About,
 		},
 	]
 

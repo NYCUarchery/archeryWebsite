@@ -4,7 +4,7 @@ import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import { useNavigate } from 'react-router-dom';
+import { redirect, useNavigate } from 'react-router-dom';
 import avatar from "../assets/images/avatar.jpg";
 import FormControl from '@mui/material/FormControl';
 
@@ -15,19 +15,25 @@ import IconButton from '@mui/material/IconButton';
 
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-
+import api from '../util/api';
+import routing from '../util/routing';
 import { useState } from 'react';
 
 const ChangeInfo = () => {
 	const navigate = useNavigate();
 	const [showPassword, setShowPassword] = useState(false);
 	const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+	const [showOriPassword, setShowOriPassword] = useState(false);
 	const handleClickShowPassword = () => {
 		setShowPassword(!showPassword);
 	};
 
 	const handleClickShowPasswordConfirm = () => {
 		setShowPasswordConfirm(!showPasswordConfirm);
+	};
+
+	const handleClickShowOriPassword = () => {
+		setShowOriPassword(!showOriPassword);
 	};
 
 	const handleMouseDownPassword = (e: any) => {
@@ -37,40 +43,68 @@ const ChangeInfo = () => {
 	const handleMouseDownPasswordConfirm = (e: any) => {
 		e.preventDefault();
 	};
+
+	const handleMouseDownOriPassword = (e: any) => {
+		e.preventDefault();
+	};
 	return (
 		<Card sx={{p: 2, mb: 2}}>
 			<CardContent>
 				<Formik
 					initialValues={{
 						nickname: "Godtone",
-						intro: "你以為你躲起來就找不到你了嗎，沒有用的。你是那樣拉風的男人，不管在什麼地方，就好像漆黑中的螢火蟲一樣，是那樣的鮮明，那樣的出眾。你那憂鬱的眼神，唏噓的鬍渣子，隨意叼著的牙籤，還有那杯 dry martine ，都深深的迷住了我。張嘉航,你真是電競界的罪人,你害怕你強大的天賦會蓋過其他人,選擇在接觸遊戲十年後再出道,而放棄與你的宿敵 FAKER 競爭神的寶座,今年該是你奪回神寶座的時候了。",
+						overview: "你以為你躲起來就找不到你了嗎，沒有用的。你是那樣拉風的男人，不管在什麼地方，就好像漆黑中的螢火蟲一樣，是那樣的鮮明，那樣的出眾。你那憂鬱的眼神，唏噓的鬍渣子，隨意叼著的牙籤，還有那杯 dry martine ，都深深的迷住了我。張嘉航,你真是電競界的罪人,你害怕你強大的天賦會蓋過其他人,選擇在接觸遊戲十年後再出道,而放棄與你的宿敵 FAKER 競爭神的寶座,今年該是你奪回神寶座的時候了。",
+						oriPassword: "",
 						password: "",
 						passwordConfirm: "",
+						organization: "",
 					}}
-					onSubmit={(values, { setErrors, setStatus, setSubmitting }) => {
+					onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
 						const body = new FormData();
-						body.append("nickname", values.nickname);
-						body.append("intro", values.intro);
-						console.log("body: ", body)
-						try {
-							fetch("http://localhost:8080/api/createContest", {
-								method: "POST",
-								body,
-							})
-							.then((res) => {
-								return res.json();
-							})
-							.then((resjson) => {
-								console.log(resjson);
-								if (resjson["result"] && resjson["result"] === "success") {
-									console.log("Log In Success");
-								} else {
-									console.log("Too bad QQ");
-								}
-							});
-						} catch (err) {
-							console.log(err);
-						}
+						
+						// body.append("nickname", values.nickname);
+						body.append("overview", values.overview);
+						body.append("oriPassword", values.oriPassword);
+						body.append("organization", values.organization);
+						console.log("body: ", body);
+						var id;
+						await fetch(`http://localhost:8080/${api.user.getUserID}`, {
+							method: "GET",
+							credentials: "include",
+						})
+						.then((res) => res.json())
+						.then((resjson) => {
+							if (resjson["uid"]) {
+								id = resjson["uid"];
+							}
+						});
+						await fetch(`http://localhost:8080/${api.user.info}/${id}`, {
+							method: "GET",
+							credentials: "include",
+						})
+						.then((res) => res.json())
+						.then((resjson) => {
+							if (resjson["result"] && resjson["result"] == "success") {
+								body.append("username", resjson["name"]);
+							}
+						});
+						await fetch(`http://localhost:8080/${api.user.modifyInfo}`, {
+							method: "PUT",
+							credentials: "include",
+							body,
+						})
+						.then((res) => {
+							return res.json();
+						})
+						.then((resjson) => {
+							console.log(resjson);
+							if (resjson["result"] && resjson["result"] === "success") {
+								console.log("Change Success");
+								navigate(routing.Personal)
+							} else {
+								console.log("Too bad QQ");
+							}
+						});
 					}}
 				>
 					{({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values, setFieldValue }) => (
@@ -99,8 +133,8 @@ const ChangeInfo = () => {
 												component={() => (
 													<TextField
 														label="自我介紹"
-														value={values.intro}
-														name="intro"
+														value={values.overview}
+														name="overview"
 														onChange={handleChange}
 														onBlur={handleBlur}
 														multiline
@@ -109,14 +143,6 @@ const ChangeInfo = () => {
 															'&::-webkit-scrollbar': {
 																width: '1px'
 															}, 
-															// '&::-webkit-scrollbar-track': {
-															// 	boxShadow: 'inset 0 0 1px #000',
-															// 	webkitBoxShadow: 'inset 0 0 1px #000'
-															// },
-															// '&::-webkit-scrollbar-thumb': {
-															// 	backgroundColor: '#2074d410',
-															// 	outline: '3px solid #2074d4'
-															// },
 															"& label": {
 																mt: 0.8
 															},
@@ -125,6 +151,32 @@ const ChangeInfo = () => {
 														}}
 													/>
 												)}
+											/>
+										</FormControl>
+									</Grid>
+									<Grid item xs={12} sx={{mt: 2}}>
+										<FormControl sx={{width: "300px"}}>
+											<TextField
+												type={showOriPassword ? 'text' : 'password'}
+												label="請輸入原本密碼"
+												value={values.oriPassword}
+												name="oriPassword" // input
+												onChange={handleChange}
+												onBlur={handleBlur}
+												InputProps={{
+													endAdornment: (
+														<InputAdornment position="end">
+															<IconButton
+																aria-label="toggle password visibility"
+																onClick={handleClickShowOriPassword}
+																onMouseDown={handleMouseDownOriPassword}
+																edge="end"
+															>
+																{showOriPassword ? <Visibility /> : <VisibilityOff />}
+															</IconButton>
+														</InputAdornment>
+													)
+												}}
 											/>
 										</FormControl>
 									</Grid>

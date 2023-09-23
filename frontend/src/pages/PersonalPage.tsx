@@ -11,6 +11,8 @@ import Button from '@mui/material/Button';
 import { useNavigate } from 'react-router-dom';
 import avatar from "../assets/images/avatar.jpg";
 
+import routing from '../util/routing';
+
 const PersonalPage = () => {
 	const navigate = useNavigate();
 	return (
@@ -48,7 +50,7 @@ const PersonalPage = () => {
 								</Typography>
 							</Grid>
 							<Grid item xs={2} sx={{mt: 2}}>
-								<Button variant="text" onClick={() => navigate("/ChangeInfo")} sx={{ color: "#2074d4" }}>
+								<Button variant="text" onClick={() => navigate(routing.ChangeInfo)} sx={{ color: "#2074d4" }}>
 									<Typography variant="body1" component="div">
 										修改個人資料
 									</Typography>
