@@ -10,6 +10,11 @@ const initialState = {
   currentStage: GameInfo.current_stage,
   phases: PhaseInfo.phases,
   groupNames: GroupInfo.group_names,
+
+  qualificationIsActive: GameInfo.qualification_is_active,
+  eliminationIsActive: GameInfo.elimination_is_active,
+  teamEliminationIsActive: GameInfo.team_elimination_is_active,
+  mixedEliminationIsActive: GameInfo.mixed_elimination_is_active,
 };
 
 const gameSlice = createSlice({
@@ -28,6 +33,22 @@ const gameSlice = createSlice({
     regressStage: (state) => {
       state.currentStage--;
     },
+    activatePhase: (state, action) => {
+      switch (action.payload as string) {
+        case "Qualification":
+          state.qualificationIsActive = true;
+          break;
+        case "Elimination":
+          state.eliminationIsActive = true;
+          break;
+        case "Team Elimination":
+          state.teamEliminationIsActive = true;
+          break;
+        case "Mixed Elimination":
+          state.mixedEliminationIsActive = true;
+          break;
+      }
+    },
   },
 });
 
@@ -36,3 +57,4 @@ export const progressPhase = gameSlice.actions.progressPhase;
 export const regressPhase = gameSlice.actions.regressPhase;
 export const progressStage = gameSlice.actions.progressStage;
 export const regressStage = gameSlice.actions.regressStage;
+export const activatePhase = gameSlice.actions.activatePhase;

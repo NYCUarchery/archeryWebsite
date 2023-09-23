@@ -1,6 +1,6 @@
 import SubboardController from "./SubboardController/SubboardController";
 import { useSelector } from "react-redux";
-import ActivationBoard from "./ActivationBoard";
+import ActivationBoard from "./ActivationBoard/ActivationBoard";
 import QualifcationBoard from "./QualificationBoard";
 import EliminationBoard from "./EliminationBoard";
 import GroupEliminationBoard from "./GroupEliminationBoard";

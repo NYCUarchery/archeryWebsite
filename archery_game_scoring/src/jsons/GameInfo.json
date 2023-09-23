@@ -5,5 +5,10 @@
 
   "current_phase": 0,
   "current_phase_kind": "Qualification",
+  "qualification_is_active": true,
+  "elimination_is_active": false,
+  "team_elimination_is_active": false,
+  "mixed_elimination_is_active": false,
+
   "current_stage": 1
 }
