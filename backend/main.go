@@ -51,6 +51,11 @@ func allowCORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
 		c.Header("Access-Control-Allow-Credentials", "true")
+		c.Header("Access-Control-Allow-Methods", "OPTIONS, PUT")
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204) // or 400 or..., need a HTTP StatusOK
+			return
+		}
 		c.Next()
 	}
 }
