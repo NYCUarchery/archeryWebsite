@@ -9,6 +9,20 @@ import (
 	"strconv"
 )
 
+// Register godoc
+// @Summary      register a user
+// @Description  add a user to db
+// @Tags         user
+// @Accept       json
+// @Produce      json
+// @Param   	 username formData string true "user's name"
+// @Param   	 password formData string true "password"
+// @Param   	 overview formData string false "overview"
+// @Param   	 organization formData string false "organization"
+// @Success      200  {object}  model.Response "success"
+// @Failure      400  {object}  model.Response "username exists | password & confirmPassword not consistent"
+// @Failure 	 500  {object}  model.Response "db error"
+// @Router       /user [post]
 func Register(c *gin.Context) {
 	var user model.User
 	user.Name = c.PostForm("username")
@@ -24,8 +38,8 @@ func Register(c *gin.Context) {
 	}
 
 	user.Password = pkg.EncryptPassword(c.PostForm("password"))
-	user.Overview = c.PostForm("Overview")
-	user.Organization = c.PostForm("Organization")
+	user.Overview = c.PostForm("overview")
+	user.Organization = c.PostForm("organization")
 
 	err := model.AddUser(&user)
 	if err != nil {
@@ -36,6 +50,17 @@ func Register(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
 
+// Login godoc
+// @Summary      login
+// @Description  get a session
+// @Tags         session
+// @Accept       json
+// @Produce      json
+// @Param   	 username formData string true "user's name"
+// @Param   	 password formData string true "password"
+// @Success      200  {object}  model.Response "success | has loginned"
+// @Failure      404  {object}  model.Response "no user found | wrong password"
+// @Router       /session [post]
 func Login(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
@@ -50,12 +75,12 @@ func Login(c *gin.Context) {
 	user, err = model.UserInfoByName(username)
 
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"result": "fail"})
+		c.JSON(http.StatusNotFound, gin.H{"result": "no user found"})
 		return
 	}
 
 	if err := pkg.Compare(user.Password, password); err != nil {
-		c.JSON(http.StatusOK, gin.H{"result": "wrong password"})
+		c.JSON(http.StatusNotFound, gin.H{"result": "wrong password"})
 		return 
 	}
 
@@ -63,11 +88,34 @@ func Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
 
+// Logout godoc
+// @Summary      logout
+// @Description  delete the session
+// @Tags         session
+// @Produce      json
+// @Success      200  {object}  model.Response "success"
+// @Router       /session [delete]
 func Logout(c *gin.Context) {
 	pkg.ClearAuthSession(c)
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
 
+// ModifyInfo godoc
+// @Summary      modify user's information
+// @Description  modify username, password, overview, and organization
+// @Tags         user
+// @Accept       json
+// @Produce      json
+// @Param   	 id 	  	 path 	   string true "user's id"
+// @Param   	 username 	 formData string true "modified user's name"
+// @Param   	 oriPassword formData string true "original password"
+// @Param   	 modPassword formData string false "modified password"
+// @Param   	 overview formData string false "modified overview"
+// @Param   	 organization formData string false "modified organization"
+// @Success      200  {object}  model.Response "success"
+// @Failure      400  {object}  model.Response "need user id | invalid modified information"
+// @Failure      403  {object}  model.Response "id does not match the one in the session"
+// @Router       /user/{id} [post]
 func ModifyInfo(c *gin.Context) {
 	uidstr := c.Param("id")
 	if uidstr == "" {
@@ -98,7 +146,7 @@ func ModifyInfo(c *gin.Context) {
 	}
 
 	findUser, _ := model.UserInfoByName(username)
-	if findUser.ID != 0 {
+	if findUser.ID != 0 && findUser.ID != uint(uid) {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "username exists"})
 		return
 	}
@@ -136,11 +184,29 @@ func ModifyInfo(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
 
+// GetUserID godoc
+// @Summary      get my uid
+// @Description  get my uid in the session
+// @Tags         user
+// @Produce      json
+// @Success      200  {object}  model.UIDResponse "success"
+// @Router       /user/me [get]
 func GetUserID(c *gin.Context) {
-	name := pkg.QuerySession(c, "id")
-	c.JSON(http.StatusOK, gin.H{"uid": name})
+	id := pkg.QuerySession(c, "id")
+	c.JSON(http.StatusOK, gin.H{"uid": id})
 }
 
+// UserInfo godoc
+// @Summary      modify user's information
+// @Description  modify username, password, overview, and organization
+// @Tags         user
+// @Accept       json
+// @Produce      json
+// @Param   	 id 	  	 path 	  string true "user's id"
+// @Success      200  {object}  model.Response "success"
+// @Failure      400  {object}  model.Response "invalid userid"
+// @Failure      404  {object}  model.Response "no user found"
+// @Router       /user/{id} [get]
 func UserInfo(c *gin.Context) {
 	uidstr := c.Param("id")
 	if uidstr == "" {
@@ -156,7 +222,7 @@ func UserInfo(c *gin.Context) {
 
 	user, _ := model.UserInfoByID(uint(uid))
 	if user.ID == 0 {
-		c.JSON(http.StatusOK, gin.H{"result": "no user found"})
+		c.JSON(http.StatusNotFound, gin.H{"result": "no user found"})
 		return
 	}
 

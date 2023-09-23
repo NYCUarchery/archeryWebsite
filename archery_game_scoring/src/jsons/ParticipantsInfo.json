@@ -1,0 +1,112 @@
+{
+  "players": [
+    {
+      "id": 0,
+      "name": "王逸蓁",
+      "group": 0
+    },
+    {
+      "id": 1,
+      "name": "楊維寧",
+      "group": 0
+    },
+    {
+      "id": 2,
+      "name": "洪凱昕",
+      "group": 0
+    },
+    {
+      "id": 3,
+      "name": "陳鈞鈴",
+      "group": 0
+    },
+    {
+      "id": 10,
+      "name": "劉冠亨",
+      "group": 1
+    },
+    {
+      "id": 11,
+      "name": "林寶琳",
+      "group": 1
+    },
+    {
+      "id": 12,
+      "name": "蔡毅龍",
+      "group": 1
+    },
+    {
+      "id": 13,
+      "name": "梁永熹",
+      "group": 1
+    },
+    {
+      "id": 14,
+      "name": "蘇凌",
+      "group": 1
+    },
+    {
+      "id": 15,
+      "name": "曾子瑀",
+      "group": 2
+    },
+    {
+      "id": 16,
+      "name": "朱星蓉",
+      "group": 2
+    },
+    {
+      "id": 17,
+      "name": "蘇佑勝",
+      "group": 2
+    },
+    {
+      "id": 18,
+      "name": "許博鈞",
+      "group": 3
+    },
+    {
+      "id": 19,
+      "name": "陳崇玄",
+      "group": 3
+    },
+    {
+      "id": 20,
+      "name": "鄞意東",
+      "group": 4
+    }
+  ],
+  "player_applications": [
+    {
+      "id": 21,
+      "name": "Player 21",
+      "group": 1
+    },
+    {
+      "id": 20,
+      "name": "Player 20",
+      "group": 0
+    }
+  ],
+
+  "admins": [
+    {
+      "id": 8,
+      "name": "宋承諺"
+    },
+    {
+      "id": 9,
+      "name": "Admin 9"
+    }
+  ],
+  "admin_applications": [
+    {
+      "id": 10,
+      "name": "Admin 10"
+    },
+    {
+      "id": 11,
+      "name": "Admin 11"
+    }
+  ]
+}

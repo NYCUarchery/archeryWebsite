@@ -38,6 +38,30 @@ type Participant struct {
 	CompetitionID 	uint `gorm:"not null"`
 }
 
+type Response struct {
+	Result string `json:"result" example:"result description"`
+}
+
+type UIDResponse struct {
+	UID string `json:"uid" example:"your uid"`
+}
+
+type CompResponse struct {
+	Result string `json:"result" example:"result description"`
+	CompID int `json:"compID" example:"87"`
+}
+
+type CompInfoResponse struct {
+	Result string `json:"result" example:"result description"`
+	Name string `json:"name" example:"competition name"`
+	Date string `json:"date" example:"2023-09-23"`
+	HostID string`json:"hostID" example:"87"`
+	ScoreboardURL string `json:"scoreboardURL" example:"Scoreboard URL"`
+	Overview string `json:"overview" example:"overview"`
+	Categories string `json:"categories" example:"[{des: "des", dis: 50}, ...]"`
+	Participants string `json:"participants" example:"[1, 2, 3, 87]"`
+}
+
 type conf struct {
     DBuser 		string `yaml:"DBuser"`
 	DBpasswd 	string `yaml:"DBpasswd"`

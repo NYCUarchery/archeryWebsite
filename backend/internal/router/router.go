@@ -6,6 +6,9 @@ import (
 
 	"backend/api"
 	"backend/internal/pkg"
+
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func RouterSetup() *gin.Engine {
@@ -45,6 +48,8 @@ func RouterSetup() *gin.Engine {
 			parssr.POST("/", pkg.AuthSessionMiddleware(), api.JoinInCompetition)
 		}
 	}
+
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	return router
 }
