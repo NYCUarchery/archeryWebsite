@@ -24,7 +24,7 @@ import * as Yup from 'yup';
 import { Formik } from 'formik';
 import FormControl from '@mui/material/FormControl';
 
-import * as AES from 'crypto-js/aes';
+import api from '../util/api';
 
 interface LoginPageProps {
   setAuthorized: Dispatch<SetStateAction<boolean>>;
@@ -43,6 +43,22 @@ const LoginPage: FC<LoginPageProps> = ({setAuthorized, setPath}) => {
 	};
 
 	const navigate = useNavigate();
+
+	fetch(`http://localhost:8080/${api.user.getUserID}`, {
+    method: "GET",
+    credentials: "include",
+  })
+  .then((res) => {
+		// console.log("res: ", res)
+    return res.json();
+  })
+  .then((resjson) => {
+    console.log(resjson);
+    if (resjson["uid"]) {
+      setAuthorized(true);
+			navigate("/");
+    }
+  });
 
 	return (
 		<Card sx={{p: 2, mb: 2}}>
@@ -64,13 +80,10 @@ const LoginPage: FC<LoginPageProps> = ({setAuthorized, setPath}) => {
 								password: Yup.string().max(255).required('Password is required')
 							})}
 							onSubmit={(values, { setErrors, setStatus, setSubmitting }) => {
-								
-									
-								// const passwordCy = AES.encrypt(values.password, 'trytocypher').toString();
 								const body = new FormData();
 								body.append("username", values.username);
 								body.append("password", values.password);
-								fetch("http://localhost:8080/api/login", {
+								fetch(`http://localhost:8080/${api.user.login}`, {
 									method: "POST",
 									body,
 									// body: JSON.stringify({
@@ -80,6 +93,7 @@ const LoginPage: FC<LoginPageProps> = ({setAuthorized, setPath}) => {
 									// credentials: 'include',
 								})
 								.then((res) => {
+									console.log("res: ", res)
 									return res.json();
 								})
 								.then((resjson) => {

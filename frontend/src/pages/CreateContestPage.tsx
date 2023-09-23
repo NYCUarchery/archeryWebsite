@@ -16,6 +16,7 @@ import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 
 import Divider from '@mui/material/Divider';
+import api from '../util/api';
 
 
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -66,7 +67,7 @@ const CreateContestPage = () => {
 								// body.append("groups", JSON.stringify(values.groups));
 								console.log("body: ", body)
 
-								fetch("http://localhost:8080/api/competition/create", {
+								fetch(`http://localhost:8080/${api.competition.create}`, {
 									method: "POST",
 									credentials: "include",
 									body,
@@ -75,7 +76,6 @@ const CreateContestPage = () => {
 									return res.json();
 								})
 								.then((resjson) => {
-
 									console.log(resjson);
 									if (resjson["result"] && resjson["result"] === "success") {
 										console.log("Create Success");

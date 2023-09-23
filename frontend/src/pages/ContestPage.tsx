@@ -12,6 +12,7 @@ import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 
 import { useNavigate } from 'react-router-dom';
+import api from '../util/api';
 // import Button from '@mui/material/Button';
 
 // const ContestPage = () => {
@@ -286,7 +287,7 @@ const ContestPage = () => {
 											const body = new FormData();
 											body.append("competitionID", "aaaa");
 
-											fetch("http://localhost:8080/api/competition/join", {
+											fetch(`http://localhost:8080/${api.competition.join}`, {
 												method: "POST",
 												credentials: "include",
 												body: body,

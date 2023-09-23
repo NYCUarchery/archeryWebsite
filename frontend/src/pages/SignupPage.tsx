@@ -22,7 +22,7 @@ import * as Yup from 'yup';
 import { Formik } from 'formik';
 import { FormControl } from '@mui/material';
 
-import * as AES from 'crypto-js/aes';
+import api from '../util/api';
 
 interface SignupPageProps {
 	setPath: Dispatch<SetStateAction<string>>;
@@ -75,14 +75,11 @@ const SignupPage: FC<SignupPageProps> = ({setPath, setAuthorized}) => {
 							})}
 							onSubmit={(values, { setErrors, setStatus, setSubmitting }) => {
 								console.log("try to send");
-								// const passwordCy = AES.encrypt(values.password, 'trytocypher').toString();
-								// const passwordConfirmCy = AES.encrypt(values.passwordConfirm, 'trytocypher').toString();
-								// console.log("passwordCy: ", passwordCy, " passwordConfirmCy: ", passwordConfirmCy)
 								const body = new FormData();
 								body.append("username", values.username);
 								body.append("password", values.password);
 								body.append("confirmPassword", values.passwordConfirm);
-								fetch("http://localhost:8080/api/register", {
+								fetch(`http://localhost:8080/${api.user.register}`, {
 									method: "POST",
 									body,
 									// body: JSON.stringify({

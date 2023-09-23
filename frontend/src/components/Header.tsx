@@ -24,6 +24,7 @@ import { useNavigate } from 'react-router-dom';
 // import { create } from 'domain';
 
 import Avatar from '@mui/material/Avatar';
+import api from '../util/api';
 
 interface HeaderProps {
   setSideBarOpen: Dispatch<SetStateAction<boolean>>;
@@ -114,11 +115,12 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen, setAuthorized }) => {
                                 onClick={() => {
                                   handleClose();
                                   setAuthorized(false);
-                                  fetch("http://localhost:8080/api/logout", {
+                                  fetch(`http://localhost:8080/${api.user.logout}`, {
                                     method: "GET",
+                                    credentials: "include",
                                   })
                                   .then((res) => {
-
+                                    console.log("res: ", res)
                                     return res.json()
                                   })
                                   .then((resjson) => {
