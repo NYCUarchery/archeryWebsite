@@ -18,16 +18,21 @@ func AddDataRouter(data *gin.RouterGroup) {
 	data.GET("/teamEliminationInfo/:gameName", translate.GetTeamEliminationInfo)
 	data.GET("/userInfo/:userName", translate.GetUserInfo)
 
-	data.GET("/laneinfo/:id", translate.GetLaneInfoByID)
-	data.POST("/laneinfo/", translate.PostLaneInfo)
-	data.PUT("/laneinfo/whole/:id", translate.UpdateLaneInfo)
-	data.PUT("/laneinfo/score/:id/:stageindex/:userindex/:arrowindex/:score", translate.UpdataLaneScore)
-	//data.PUT("/laneinfo/confirm/:id/:who/:confirm", translate.UpdataLaneConfirm)
-	//data.DELETE("/laneinfo/:id", translate.DeleteLaneInfoByID)
+	laneinfo := data.Group("laneinfo")
+	laneInfoRouter(laneinfo)
 
 	data.GET("/", translate.FindAllUsers)
 	data.GET("/:id", translate.FindByUserID)
 	data.POST("/", translate.PostUser)
 	data.DELETE("/:id", translate.DeleteUser)
 	data.PUT("/:id", translate.UpdataUser)
+}
+
+func laneInfoRouter(data *gin.RouterGroup) {
+	data.GET("/:id", translate.GetLaneInfoByID)
+	data.POST("/", translate.PostLaneInfo)
+	data.PUT("/whole/:id", translate.UpdateLaneInfo)
+	data.PUT("/score/:id/:stageindex/:userindex/:arrowindex/:score", translate.UpdataLaneScore)
+	data.PUT("/confirm/:id/:stageindex/:userindex/:confirm", translate.UpdataLaneConfirm)
+	data.DELETE("/:id", translate.DeleteLaneInfoByID)
 }
