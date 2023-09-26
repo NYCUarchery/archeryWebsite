@@ -6,3 +6,12 @@ test.ts
 ```
 # unecessary files
 views
+dist/
+package-lock.json
+pkg/mod/
+node_modules/
+FakeLaneInfo.json
+go.mod
+go.sum
+go.work
+go.work.sum

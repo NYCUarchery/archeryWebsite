@@ -17,7 +17,9 @@ npm run build 會建立起整個前端的整合檔案./archery_game_scoring/dist
 在web_server_gin目錄中
 terminal 輸入 go mod init web_server_gin（應該會出現go.mod）
 然後輸入 go mod tidy（應該會出現go.sum）
-在然後輸入 go work init （應該會出現go.work）
+
+在archeyWebsite目錄中
+terminal 輸入 go work init web_server_gin（應該會出現go.work）
 
 之後在archeryWebsite目錄中
 建立dsn_config.txt檔
