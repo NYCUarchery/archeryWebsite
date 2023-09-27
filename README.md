@@ -30,6 +30,10 @@ terminal 輸入 go work init web_server_gin（應該會出現go.work）
 注意：DB.go裡面不能是本地測試模式
 注意：main.go要是用0.0.0.0得ip去運行
 
+## api 註解
+如果更新了gin swag的註解
+在運行前需要在terminal中輸入 swag init （應該會出現doc檔案）
+
 ## 運行
 在web_server_gin目錄中
 terminal輸入go run main.go

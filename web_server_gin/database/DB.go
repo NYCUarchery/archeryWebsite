@@ -58,7 +58,7 @@ func testdsn() {
 	DSN.database = "Demo"
 }
 
-func Database_Initial() {
+func connectDB() {
 	// 建立資料庫連線
 	// reference https://github.com/go-sql-driver/mysql#dsn-data-source-name
 	getdsn()
@@ -70,7 +70,9 @@ func Database_Initial() {
 	if err != nil {
 		fmt.Println("資料庫徹底連線失敗：", err)
 	}
+}
 
+func DatabaseInitial() {
+	connectDB()
 	InitLaneInfo()
-
 }

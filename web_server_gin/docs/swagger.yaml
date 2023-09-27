@@ -1,0 +1,12 @@
+host: localhost:8080
+info:
+  contact:
+    name: NYCUArchery
+    url: https://github.com/NYCUarchery
+  description: Gin swagger
+  license:
+    name: ??
+  title: Gin swagger
+  version: "1.0"
+paths: {}
+swagger: "2.0"
