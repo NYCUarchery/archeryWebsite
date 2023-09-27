@@ -20,7 +20,7 @@ import (
 // @Param   	 overview formData string false "overview"
 // @Param   	 organization formData string false "organization"
 // @Success      200  {object}  model.Response "success"
-// @Failure      400  {object}  model.Response "username exists | password & confirmPassword not consistent"
+// @Failure      400  {object}  model.Response "username exists"
 // @Failure 	 500  {object}  model.Response "db error"
 // @Router       /user [post]
 func Register(c *gin.Context) {
@@ -28,12 +28,7 @@ func Register(c *gin.Context) {
 	user.Name = c.PostForm("username")
 
 	if findUser, _ := model.UserInfoByName(user.Name); findUser.ID != 0 {
-		c.JSON(http.StatusOK, gin.H{"result": "username exists"})
-		return
-	}
-
-	if c.PostForm("password") != c.PostForm("confirmPassword") {
-		c.JSON(http.StatusOK, gin.H{"result": "not consistent"})
+		c.JSON(http.StatusBadRequest, gin.H{"result": "username exists"})
 		return
 	}
 
@@ -115,7 +110,7 @@ func Logout(c *gin.Context) {
 // @Success      200  {object}  model.Response "success"
 // @Failure      400  {object}  model.Response "need user id | invalid modified information"
 // @Failure      403  {object}  model.Response "id does not match the one in the session"
-// @Router       /user/{id} [post]
+// @Router       /user/{id} [put]
 func ModifyInfo(c *gin.Context) {
 	uidstr := c.Param("id")
 	if uidstr == "" {
@@ -159,7 +154,7 @@ func ModifyInfo(c *gin.Context) {
 	var user model.User
 	user, err = model.UserInfoByID(uint(uid))
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"result": "fail"})
+		c.JSON(http.StatusNotFound, gin.H{"result": "no user found"})
 		return
 	}
 

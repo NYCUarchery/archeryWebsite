@@ -29,12 +29,12 @@ func JoinInCompetition(c *gin.Context) {
 
 	var user model.User
 	if user, _ = model.UserInfoByID(userID); user.ID == 0 {
-		c.JSON(http.StatusBadRequest, gin.H{"result": "cannot find the user"})
+		c.JSON(http.StatusNotFound, gin.H{"result": "cannot find the user"})
 		return
 	}
 
 	if comp, _ := model.CompetitionInfoByID(compID); comp.ID == 0 {
-		c.JSON(http.StatusOK, gin.H{"result": "cannot find the competition"})
+		c.JSON(http.StatusNotFound, gin.H{"result": "cannot find the competition"})
 		return
 	}
 
