@@ -16,7 +16,8 @@ import (
 // @Produce      json
 // @Param   	 competitionID 	 formData int true "competition id"
 // @Success      200  {object}  model.Response "success"
-// @Failure      400  {object}  model.Response "cannot parse competitionID | cannot find the user/competition | participant exists"
+// @Failure      400  {object}  model.Response "cannot parse competitionID | participant exists"
+// @Failure      400  {object}  model.Response "no user/competition found"
 // @Router       /participant/ [post]
 func JoinInCompetition(c *gin.Context) {
 	userID := pkg.QuerySession(c, "id").(uint)
@@ -29,12 +30,12 @@ func JoinInCompetition(c *gin.Context) {
 
 	var user model.User
 	if user, _ = model.UserInfoByID(userID); user.ID == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"result": "cannot find the user"})
+		c.JSON(http.StatusNotFound, gin.H{"result": "no user found"})
 		return
 	}
 
 	if comp, _ := model.CompetitionInfoByID(compID); comp.ID == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"result": "cannot find the competition"})
+		c.JSON(http.StatusNotFound, gin.H{"result": "no competition found"})
 		return
 	}
 

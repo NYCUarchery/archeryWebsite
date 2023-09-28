@@ -54,7 +54,7 @@ func Register(c *gin.Context) {
 // @Param   	 username formData string true "user's name"
 // @Param   	 password formData string true "password"
 // @Success      200  {object}  model.Response "success | has loginned"
-// @Failure      404  {object}  model.Response "no user found | wrong password"
+// @Failure      404  {object}  model.Response "wrong username or password"
 // @Router       /session [post]
 func Login(c *gin.Context) {
 	username := c.PostForm("username")
@@ -70,12 +70,12 @@ func Login(c *gin.Context) {
 	user, err = model.UserInfoByName(username)
 
 	if err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"result": "no user found"})
+		c.JSON(http.StatusUnorthorized, gin.H{"result": "wrong username or password"})
 		return
 	}
 
 	if err := pkg.Compare(user.Password, password); err != nil {
-		c.JSON(http.StatusNotFound, gin.H{"result": "wrong password"})
+		c.JSON(http.StatusUnorthorized, gin.H{"result": "wrong username or password"})
 		return 
 	}
 
@@ -101,15 +101,15 @@ func Logout(c *gin.Context) {
 // @Tags         user
 // @Accept       json
 // @Produce      json
-// @Param   	 id 	  	 path 	   string true "user's id"
-// @Param   	 username 	 formData string true "modified user's name"
-// @Param   	 oriPassword formData string true "original password"
-// @Param   	 modPassword formData string false "modified password"
-// @Param   	 overview formData string false "modified overview"
-// @Param   	 organization formData string false "modified organization"
+// @Param   	 id 	  	 	path 	   string true "user's id"
+// @Param   	 username 	 	formData string true "modified user's name"
+// @Param   	 oriPassword 	formData string true "original password"
+// @Param   	 modPassword 	formData string false "modified password"
+// @Param   	 overview 		formData string false "modified overview"
+// @Param   	 organization 	formData string false "modified organization"
 // @Success      200  {object}  model.Response "success"
 // @Failure      400  {object}  model.Response "need user id | invalid modified information"
-// @Failure      403  {object}  model.Response "id does not match the one in the session"
+// @Failure      403  {object}  model.Response "id does not match the one in the session | wrong original password"
 // @Router       /user/{id} [put]
 func ModifyInfo(c *gin.Context) {
 	uidstr := c.Param("id")
@@ -125,7 +125,7 @@ func ModifyInfo(c *gin.Context) {
 	}
 
 	if pkg.QuerySession(c, "id") != uint(uid) {
-		c.JSON(http.StatusForbidden, gin.H{"result": "cannot change other's info"})
+		c.JSON(http.StatusForbidden, gin.H{"result": "id does not match the one in the session"})
 		return
 	}
 
@@ -159,7 +159,7 @@ func ModifyInfo(c *gin.Context) {
 	}
 
 	if err := pkg.Compare(user.Password, oriPassword); err != nil {
-		c.JSON(http.StatusOK, gin.H{"result": "wrong original password"})
+		c.JSON(http.StatusForbidden, gin.H{"result": "wrong original password"})
 		return 
 	}
 
@@ -199,7 +199,7 @@ func GetUserID(c *gin.Context) {
 // @Produce      json
 // @Param   	 id 	  	 path 	  string true "user's id"
 // @Success      200  {object}  model.Response "success"
-// @Failure      400  {object}  model.Response "invalid userid"
+// @Failure      400  {object}  model.Response "invalid user id"
 // @Failure      404  {object}  model.Response "no user found"
 // @Router       /user/{id} [get]
 func UserInfo(c *gin.Context) {

@@ -1,0 +1,345 @@
+basePath: /api/
+definitions:
+  model.CompInfoResponse:
+    properties:
+      categories:
+        example: '[{des: '
+        type: string
+      date:
+        example: "2023-09-23"
+        type: string
+      hostID:
+        example: "87"
+        type: string
+      name:
+        example: competition name
+        type: string
+      overview:
+        example: overview
+        type: string
+      participants:
+        example: '[1, 2, 3, 87]'
+        type: string
+      result:
+        example: result description
+        type: string
+      scoreboardURL:
+        example: Scoreboard URL
+        type: string
+    type: object
+  model.CompResponse:
+    properties:
+      compID:
+        example: 87
+        type: integer
+      result:
+        example: result description
+        type: string
+    type: object
+  model.Response:
+    properties:
+      result:
+        example: result description
+        type: string
+    type: object
+  model.UIDResponse:
+    properties:
+      uid:
+        example: your uid
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    email: ???
+    name: NYCU archery
+    url: https://github.com/NYCUarchery
+  description: A gin server
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Archery backend API
+  version: "1.0"
+paths:
+  /competitioin/:
+    post:
+      consumes:
+      - application/json
+      description: create a competition and set the person as the host
+      parameters:
+      - description: competition name
+        in: formData
+        name: name
+        required: true
+        type: string
+      - description: date
+        in: formData
+        name: date
+        required: true
+        type: string
+      - description: a list of categories
+        in: formData
+        name: categories
+        required: true
+        type: string
+      - description: overview
+        in: formData
+        name: overview
+        type: string
+      - description: organization
+        in: formData
+        name: organization
+        type: string
+      - description: Scoreboard URL
+        in: formData
+        name: scoreboardURL
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/model.CompResponse'
+        "400":
+          description: competition name exists | cannot parse date string | invalid
+            info
+          schema:
+            $ref: '#/definitions/model.Response'
+        "500":
+          description: db error
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: create a competition
+      tags:
+      - competitioin
+  /competitioin/{id}:
+    get:
+      description: get info, categories, participants of the competition
+      parameters:
+      - description: competition id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/model.CompInfoResponse'
+        "400":
+          description: invalid competition id
+          schema:
+            $ref: '#/definitions/model.Response'
+        "404":
+          description: no competition found
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: get information of the competition
+      tags:
+      - competitioin
+  /participant/:
+    post:
+      consumes:
+      - application/json
+      description: add a particpant to the competition
+      parameters:
+      - description: competition id
+        in: formData
+        name: competitionID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: cannot parse competitionID | cannot find the user/competition
+            | participant exists
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: join in a competition
+      tags:
+      - participant
+  /session:
+    delete:
+      description: delete the session
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: logout
+      tags:
+      - session
+    post:
+      consumes:
+      - application/json
+      description: get a session
+      parameters:
+      - description: user's name
+        in: formData
+        name: username
+        required: true
+        type: string
+      - description: password
+        in: formData
+        name: password
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success | has loginned
+          schema:
+            $ref: '#/definitions/model.Response'
+        "404":
+          description: no user found | wrong password
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: login
+      tags:
+      - session
+  /user:
+    post:
+      consumes:
+      - application/json
+      description: add a user to db
+      parameters:
+      - description: user's name
+        in: formData
+        name: username
+        required: true
+        type: string
+      - description: password
+        in: formData
+        name: password
+        required: true
+        type: string
+      - description: overview
+        in: formData
+        name: overview
+        type: string
+      - description: organization
+        in: formData
+        name: organization
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: username exists | password & confirmPassword not consistent
+          schema:
+            $ref: '#/definitions/model.Response'
+        "500":
+          description: db error
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: register a user
+      tags:
+      - user
+  /user/{id}:
+    get:
+      consumes:
+      - application/json
+      description: modify username, password, overview, and organization
+      parameters:
+      - description: user's id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: invalid userid
+          schema:
+            $ref: '#/definitions/model.Response'
+        "404":
+          description: no user found
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: modify user's information
+      tags:
+      - user
+    post:
+      consumes:
+      - application/json
+      description: modify username, password, overview, and organization
+      parameters:
+      - description: user's id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: modified user's name
+        in: formData
+        name: username
+        required: true
+        type: string
+      - description: original password
+        in: formData
+        name: oriPassword
+        required: true
+        type: string
+      - description: modified password
+        in: formData
+        name: modPassword
+        type: string
+      - description: modified overview
+        in: formData
+        name: overview
+        type: string
+      - description: modified organization
+        in: formData
+        name: organization
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/model.Response'
+        "400":
+          description: need user id | invalid modified information
+          schema:
+            $ref: '#/definitions/model.Response'
+        "403":
+          description: id does not match the one in the session
+          schema:
+            $ref: '#/definitions/model.Response'
+      summary: modify user's information
+      tags:
+      - user
+  /user/me:
+    get:
+      description: get my uid in the session
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/model.UIDResponse'
+      summary: get my uid
+      tags:
+      - user
+swagger: "2.0"
