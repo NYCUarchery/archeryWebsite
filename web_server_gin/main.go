@@ -21,13 +21,22 @@ import (
 // schemes http
 func main() {
 	server := gin.Default() // initialize a Gin router
-	// ip := "0.0.0.0" // attach the router to an http.Server and start the server
-	ip := "127.0.0.1" // for localhost test
+	ip := getIp()
 	port := "8080"
 
 	database.DatabaseInitial()
 	routers.SetUpRouter(server, ip, port)
 
 	server.Run(fmt.Sprintf("%s:%s", ip, port))
+}
 
+func getIp() string {
+	switch gin.Mode() {
+	case "release":
+		return "0.0.0.0" // attach the router to an http.Server and start the server
+	case "debug":
+		return "127.0.0.1" // for localhost test
+	default:
+		return "127.0.0.1"
+	}
 }
