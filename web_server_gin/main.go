@@ -21,7 +21,7 @@ import (
 // schemes http
 func main() {
 	server := gin.Default() // initialize a Gin router
-	ip := getIp()
+	ip := getIpByMode()
 	port := "8080"
 
 	database.DatabaseInitial()
@@ -30,7 +30,7 @@ func main() {
 	server.Run(fmt.Sprintf("%s:%s", ip, port))
 }
 
-func getIp() string {
+func getIpByMode() string {
 	switch gin.Mode() {
 	case "release":
 		return "0.0.0.0" // attach the router to an http.Server and start the server
