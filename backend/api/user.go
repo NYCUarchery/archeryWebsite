@@ -108,7 +108,7 @@ func Logout(c *gin.Context) {
 // @Param   	 overview 		formData string false "modified overview"
 // @Param   	 organization 	formData string false "modified organization"
 // @Success      200  {object}  model.Response "success"
-// @Failure      400  {object}  model.Response "need user id | invalid modified information"
+// @Failure      400  {object}  model.Response "empty/invalid user id | invalid modified information"
 // @Failure      403  {object}  model.Response "id does not match the one in the session | wrong original password"
 // @Router       /user/{id} [put]
 func ModifyInfo(c *gin.Context) {

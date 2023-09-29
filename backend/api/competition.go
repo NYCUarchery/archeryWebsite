@@ -16,15 +16,15 @@ import (
 // @Tags         competitioin
 // @Accept       json
 // @Produce      json
-// @Param   	 name 	 	 formData string true "competition name"
-// @Param   	 date 		 formData string true "date"
-// @Param   	 categories  formData string true "a list of categories"
-// @Param   	 overview 	 formData string false "overview"
-// @Param   	 organization formData string false "organization"
-// @Param   	 scoreboardURL formData string false "Scoreboard URL"
+// @Param   	 name 	 	 	formData string true "competition name"
+// @Param   	 date 		 	formData string true "date"
+// @Param   	 categories  	formData string true "a list of categories"
+// @Param   	 overview 	 	formData string false "overview"
+// @Param   	 organization 	formData string false "organization"
+// @Param   	 scoreboardURL 	formData string false "Scoreboard URL"
 // @Success      200  {object}  model.CompResponse "success"
 // @Failure      400  {object}  model.Response "competition name exists | cannot parse date string | invalid info"
-// @Failure      500  {object}  model.Response "db error"
+// @Failure      500  {object}  model.Response "DB error"
 // @Router       /competitioin/ [post]
 func CreateCompetition(c *gin.Context) {
 	name := c.PostForm("name")
@@ -83,7 +83,7 @@ func CreateCompetition(c *gin.Context) {
 // @Produce      json
 // @Param   	 id 	 	 path int true "competition id"
 // @Success      200  {object}  model.CompInfoResponse "success"
-// @Failure      400  {object}  model.Response "invalid competition id"
+// @Failure      400  {object}  model.Response "empty/invalid competition id"
 // @Failure      404  {object}  model.Response "no competition found"
 // @Router       /competitioin/{id} [get]
 func CompetitionInfo(c *gin.Context) {
