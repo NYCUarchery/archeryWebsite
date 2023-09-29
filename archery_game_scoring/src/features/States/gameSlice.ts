@@ -9,9 +9,12 @@ const initialState = {
   currentPhaseKind: GameInfo.current_phase_kind,
   currentStage: GameInfo.current_stage,
   phases: PhaseInfo.phases,
+  groupsNum: GroupInfo.groups_num,
   groupNames: GroupInfo.group_names,
+  lanesNum: GameInfo.lanes_num,
 
   qualificationIsActive: GameInfo.qualification_is_active,
+  qualification: GameInfo.qualification,
   eliminationIsActive: GameInfo.elimination_is_active,
   teamEliminationIsActive: GameInfo.team_elimination_is_active,
   mixedEliminationIsActive: GameInfo.mixed_elimination_is_active,

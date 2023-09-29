@@ -12,6 +12,7 @@ import { adminBoardTabsReducer } from "../features/Screen/SubGameBar/AdminBoardT
 import { groupsBoardReducer } from "../features/AdministrationBoard/GroupsBoard/groupsBoardSlice";
 import { groupSelectorReducer } from "../features/AdministrationBoard/GroupsBoard/GroupSelector/groupSelectorSlice";
 import { gameStructureBoardReducer } from "../features/AdministrationBoard/GameStructureBoard/gameStructureBoardSlice";
+import { qualificationStructureGroupMenuReducer } from "../features/AdministrationBoard/GameStructureBoard/QualificationBoard/GroupsMenu/groupsMenuSlice";
 
 const store = configureStore({
   reducer: {
@@ -27,6 +28,7 @@ const store = configureStore({
     groupsBoard: groupsBoardReducer,
     groupSelector: groupSelectorReducer,
     gameStructureBoard: gameStructureBoardReducer,
+    qualificationStructureGroupMenu: qualificationStructureGroupMenuReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(ReduxLogger),

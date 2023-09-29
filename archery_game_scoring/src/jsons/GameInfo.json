@@ -3,9 +3,38 @@
   "sub_title": "第二十五屆",
   "host_id": 8,
 
+  "groups_num": 5,
+  "lanes_num": 18,
+
   "current_phase": 0,
   "current_phase_kind": "Qualification",
   "qualification_is_active": true,
+  "qualification": {
+    "rounds_num": 2,
+    "ends_num": 6,
+    "groups": [
+      {
+        "start_lane": 1,
+        "end_lane": 4,
+        "advancing_num": 0
+      },
+      {
+        "start_lane": 5,
+        "end_lane": 10,
+        "advancing_num": 0
+      },
+      {
+        "start_lane": 11,
+        "end_lane": 14,
+        "advancing_num": 0
+      },
+      {
+        "start_lane": 15,
+        "end_lane": 18,
+        "advancing_num": 0
+      }
+    ]
+  },
   "elimination_is_active": false,
   "team_elimination_is_active": false,
   "mixed_elimination_is_active": false,
