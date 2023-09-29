@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	routers "web_server_gin/Routers"
 	"web_server_gin/database"
+	routers "web_server_gin/routers"
 
 	"github.com/gin-gonic/gin"
 )
