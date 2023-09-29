@@ -109,7 +109,7 @@ func Logout(c *gin.Context) {
 // @Param   	 organization 	formData string false "modified organization"
 // @Success      200  {object}  model.Response "success"
 // @Failure      400  {object}  model.Response "empty/invalid user id | invalid modified information"
-// @Failure      403  {object}  model.Response "id does not match the one in the session | wrong original password"
+// @Failure      403  {object}  model.Response "cannot change other's info | wrong original password"
 // @Router       /user/{id} [put]
 func ModifyInfo(c *gin.Context) {
 	uidstr := c.Param("id")
@@ -125,7 +125,7 @@ func ModifyInfo(c *gin.Context) {
 	}
 
 	if pkg.QuerySession(c, "id") != uint(uid) {
-		c.JSON(http.StatusForbidden, gin.H{"result": "id does not match the one in the session"})
+		c.JSON(http.StatusForbidden, gin.H{"result": "cannot change other's info"})
 		return
 	}
 
