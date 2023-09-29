@@ -33,6 +33,8 @@ func getDSNFileByMode() string {
 		return "../dsn_config.txt"
 	case "debug":
 		return "../test_dsn_config.txt"
+	case "test":
+		return "../dsn_config.txt"
 	default:
 		return "../text_dsn_config.txt"
 	}
