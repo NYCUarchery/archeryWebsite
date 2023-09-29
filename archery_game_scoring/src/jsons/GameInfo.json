@@ -12,7 +12,14 @@
   "qualification": {
     "rounds_num": 2,
     "ends_num": 6,
+    "arrows_num_per_end": 6,
     "groups": [
+      {
+        "start_lane": 0,
+        "end_lane": 0,
+        "advancing_num": 0
+      },
+
       {
         "start_lane": 1,
         "end_lane": 4,

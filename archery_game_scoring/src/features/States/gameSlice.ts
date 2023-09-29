@@ -52,6 +52,21 @@ const gameSlice = createSlice({
           break;
       }
     },
+    setQualificationEndsNum: (state, action) => {
+      state.qualification.ends_num = action.payload;
+    },
+    setQualificationRoundsNum: (state, action) => {
+      state.qualification.rounds_num = action.payload;
+    },
+    setQualificationArrowsNumPerEnd: (state, action) => {
+      state.qualification.arrows_num_per_end = action.payload;
+    },
+    setQualificationLanes: (state, action) => {
+      state.qualification.groups[action.payload.groupId].end_lane =
+        action.payload.endLane;
+      state.qualification.groups[action.payload.groupId].start_lane =
+        action.payload.startLane;
+    },
   },
 });
 
@@ -61,3 +76,10 @@ export const regressPhase = gameSlice.actions.regressPhase;
 export const progressStage = gameSlice.actions.progressStage;
 export const regressStage = gameSlice.actions.regressStage;
 export const activatePhase = gameSlice.actions.activatePhase;
+export const setQualificationEndsNum =
+  gameSlice.actions.setQualificationEndsNum;
+export const setQualificationRoundsNum =
+  gameSlice.actions.setQualificationRoundsNum;
+export const setQualificationArrowsNumPerEnd =
+  gameSlice.actions.setQualificationArrowsNumPerEnd;
+export const setQualificationLanes = gameSlice.actions.setQualificationLanes;

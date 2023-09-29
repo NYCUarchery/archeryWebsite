@@ -2,9 +2,9 @@ import { createSlice } from "@reduxjs/toolkit";
 import GroupInfo from "../../../jsons/GroupInfo.json";
 
 const initialState = {
-  groupsNum: GroupInfo.group_num,
+  groupsNum: GroupInfo.groups_num,
   groupNames: GroupInfo.group_names,
-  groups: create2DArray(GroupInfo.group_num),
+  groups: create2DArray(GroupInfo.groups_num),
 };
 
 const groupsBoardSlice = createSlice({

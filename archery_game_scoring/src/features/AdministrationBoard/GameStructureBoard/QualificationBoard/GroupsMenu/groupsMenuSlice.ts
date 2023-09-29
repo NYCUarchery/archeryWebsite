@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import GroupInfo from "../../../../../jsons/GroupInfo.json";
 
 const initialState = {
   isOpen: false,
