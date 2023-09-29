@@ -6,7 +6,7 @@ definitions:
         example: '[{des: '
         type: string
       date:
-        example: "2023-09-23"
+        example: "2006-01-02T15:04:05+08:00"
         type: string
       hostID:
         example: "87"
@@ -107,7 +107,7 @@ paths:
           schema:
             $ref: '#/definitions/model.Response'
         "500":
-          description: db error
+          description: DB error
           schema:
             $ref: '#/definitions/model.Response'
       summary: create a competition
@@ -130,7 +130,7 @@ paths:
           schema:
             $ref: '#/definitions/model.CompInfoResponse'
         "400":
-          description: invalid competition id
+          description: empty/invalid competition id
           schema:
             $ref: '#/definitions/model.Response'
         "404":
@@ -159,8 +159,7 @@ paths:
           schema:
             $ref: '#/definitions/model.Response'
         "400":
-          description: cannot parse competitionID | cannot find the user/competition
-            | participant exists
+          description: no user/competition found
           schema:
             $ref: '#/definitions/model.Response'
       summary: join in a competition
@@ -202,7 +201,7 @@ paths:
           schema:
             $ref: '#/definitions/model.Response'
         "404":
-          description: no user found | wrong password
+          description: wrong username or password
           schema:
             $ref: '#/definitions/model.Response'
       summary: login
@@ -240,7 +239,7 @@ paths:
           schema:
             $ref: '#/definitions/model.Response'
         "400":
-          description: username exists | password & confirmPassword not consistent
+          description: username exists
           schema:
             $ref: '#/definitions/model.Response'
         "500":
@@ -269,7 +268,7 @@ paths:
           schema:
             $ref: '#/definitions/model.Response'
         "400":
-          description: invalid userid
+          description: invalid user id
           schema:
             $ref: '#/definitions/model.Response'
         "404":
@@ -279,7 +278,7 @@ paths:
       summary: modify user's information
       tags:
       - user
-    post:
+    put:
       consumes:
       - application/json
       description: modify username, password, overview, and organization
@@ -319,11 +318,11 @@ paths:
           schema:
             $ref: '#/definitions/model.Response'
         "400":
-          description: need user id | invalid modified information
+          description: empty/invalid user id | invalid modified information
           schema:
             $ref: '#/definitions/model.Response'
         "403":
-          description: id does not match the one in the session
+          description: cannot change other's info | wrong original password
           schema:
             $ref: '#/definitions/model.Response'
       summary: modify user's information

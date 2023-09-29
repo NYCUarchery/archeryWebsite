@@ -91,7 +91,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "db error",
+                        "description": "DB error",
                         "schema": {
                             "$ref": "#/definitions/model.Response"
                         }
@@ -126,7 +126,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "invalid competition id",
+                        "description": "empty/invalid competition id",
                         "schema": {
                             "$ref": "#/definitions/model.Response"
                         }
@@ -170,7 +170,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "cannot parse competitionID | cannot find the user/competition | participant exists",
+                        "description": "no user/competition found",
                         "schema": {
                             "$ref": "#/definitions/model.Response"
                         }
@@ -215,7 +215,7 @@ const docTemplate = `{
                         }
                     },
                     "404": {
-                        "description": "no user found | wrong password",
+                        "description": "wrong username or password",
                         "schema": {
                             "$ref": "#/definitions/model.Response"
                         }
@@ -290,7 +290,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "username exists | password \u0026 confirmPassword not consistent",
+                        "description": "username exists",
                         "schema": {
                             "$ref": "#/definitions/model.Response"
                         }
@@ -354,7 +354,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "invalid userid",
+                        "description": "invalid user id",
                         "schema": {
                             "$ref": "#/definitions/model.Response"
                         }
@@ -367,7 +367,7 @@ const docTemplate = `{
                     }
                 }
             },
-            "post": {
+            "put": {
                 "description": "modify username, password, overview, and organization",
                 "consumes": [
                     "application/json"
@@ -428,13 +428,13 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "need user id | invalid modified information",
+                        "description": "empty/invalid user id | invalid modified information",
                         "schema": {
                             "$ref": "#/definitions/model.Response"
                         }
                     },
                     "403": {
-                        "description": "id does not match the one in the session",
+                        "description": "cannot change other's info | wrong original password",
                         "schema": {
                             "$ref": "#/definitions/model.Response"
                         }
@@ -453,7 +453,7 @@ const docTemplate = `{
                 },
                 "date": {
                     "type": "string",
-                    "example": "2023-09-23"
+                    "example": "2006-01-02T15:04:05+08:00"
                 },
                 "hostID": {
                     "type": "string",

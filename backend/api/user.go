@@ -70,12 +70,12 @@ func Login(c *gin.Context) {
 	user, err = model.UserInfoByName(username)
 
 	if err != nil {
-		c.JSON(http.StatusUnorthorized, gin.H{"result": "wrong username or password"})
+		c.JSON(http.StatusUnauthorized, gin.H{"result": "wrong username or password"})
 		return
 	}
 
 	if err := pkg.Compare(user.Password, password); err != nil {
-		c.JSON(http.StatusUnorthorized, gin.H{"result": "wrong username or password"})
+		c.JSON(http.StatusUnauthorized, gin.H{"result": "wrong username or password"})
 		return 
 	}
 
