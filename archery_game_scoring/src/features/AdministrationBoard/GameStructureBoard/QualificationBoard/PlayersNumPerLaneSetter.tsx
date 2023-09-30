@@ -31,7 +31,7 @@ export default function PlayersNumPerLaneSetter() {
           dispatch(
             setQualificationPlayersNumPerLane({
               groupId: groupShown,
-              playersNumPerlane: newValue as number,
+              playersNumPerLane: newValue as number,
             })
           );
         }}
