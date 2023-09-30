@@ -1,9 +1,7 @@
 
 import Grid from '@mui/material/Grid';
-import Box from '@mui/material/Box';
 
 import Card from '@mui/material/Card';
-import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -12,9 +10,46 @@ import { useNavigate } from 'react-router-dom';
 import avatar from "../assets/images/avatar.jpg";
 
 import routing from '../util/routing';
+import UserContext from '../util/userContext';
+import { useContext, useEffect, useState } from 'react';
+import { api, host } from '../util/api';
+
+interface UserInfo {
+  overview: string;
+	organization: string;
+	name: string;
+}
 
 const PersonalPage = () => {
 	const navigate = useNavigate();
+	const { uid } = useContext(UserContext);
+	const [ userinfo, setUserinfo ] = useState<UserInfo | undefined>(undefined);
+	useEffect(() => {
+		fetch(`${host}/${api.user.info}/${uid}`, {
+			method: "GET",
+			credentials: "include",
+		})
+		.then((res) => {
+			console.log("res: ", res);
+			switch(res.status) {
+				case 200:
+					break;
+				case 400:
+					window.alert("不正確的 uid");
+					break;
+				case 404:
+					window.alert("查無此人ㄛ");
+					break;
+			}
+			return res.json();
+		})
+		.then((resjson) => {
+			console.log("resjson: ", resjson);
+			setUserinfo(resjson);
+		})
+		.catch((err) => console.log(err));
+	}, [])
+	
 	return (
 		<Card sx={{p: 2, mb: 2}}>
 			<CardContent>
@@ -27,7 +62,12 @@ const PersonalPage = () => {
 						<Grid container direction="column" alignItems="stretch" justifyContent="center">
 							<Grid item xs={2}>
 								<Typography variant="h6" component="div">
-									Godtone
+									{userinfo?.name}
+								</Typography>
+							</Grid>
+							<Grid item xs={2}>
+								<Typography variant="h6" component="div">
+									{userinfo?.organization}
 								</Typography>
 							</Grid>
 							<Grid item xs={2} sx={{mt: 2}}>
@@ -45,8 +85,7 @@ const PersonalPage = () => {
 									},
 									'userSelect': 'none',
 								}}>
-									你以為你躲起來就找不到你了嗎，沒有用的。你是那樣拉風的男人，不管在什麼地方，就好像漆黑中的螢火蟲一樣，是那樣的鮮明，那樣的出眾。你那憂鬱的眼神，唏噓的鬍渣子，隨意叼著的牙籤，還有那杯 dry martine ，都深深的迷住了我。
-									張嘉航,你真是電競界的罪人,你害怕你強大的天賦會蓋過其他人,選擇在接觸遊戲十年後再出道,而放棄與你的宿敵 FAKER 競爭神的寶座,今年該是你奪回神寶座的時候了。
+									{userinfo?.overview}
 								</Typography>
 							</Grid>
 							<Grid item xs={2} sx={{mt: 2}}>

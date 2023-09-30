@@ -1,16 +1,21 @@
 const api = {
 	user: {
-		login: "api/user/login",
-		logout: "api/user/logout",
-		modifyInfo: "api/user/modifyInfo",
-		register: "api/user/register",
-		getUserID: "api/user/getUserID",
-		info: "api/user/info",
+		login: "api/session/",
+		logout: "api/session/",
+		modifyInfo: "api/user",
+		register: "api/user/",
+		getUserID: "api/user/me",
+		info: "api/user",
 	},
 	competition: {
-		create: "api/competition/create",
+		create: "api/competition/",
 		join: "api/competition/join",
 	},
-}
+};
 
-export default api;
+const host = "http://127.0.0.1:8080";
+
+
+export { host, api };
+
+// export default api;

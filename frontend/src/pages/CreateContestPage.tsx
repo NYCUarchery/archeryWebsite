@@ -1,43 +1,34 @@
-
 import Grid from '@mui/material/Grid';
-
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
-import { Formik, FieldArray, Field } from 'formik';
-
 import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
 import FormHelperText from '@mui/material/FormHelperText';
-
-import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
-
 import Divider from '@mui/material/Divider';
-import api from '../util/api';
-import routing from '../util/routing';
-
-
-import { useNavigate } from 'react-router-dom';
-
-
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-
 import DeleteIcon from '@mui/icons-material/Delete';
 
-
-import parse from 'date-fns/parse';
+import { useNavigate } from 'react-router-dom';
+import { Formik, FieldArray, Field } from 'formik';
 import formatISO from 'date-fns/formatISO';
-
 import * as Yup from 'yup';
+
+import OneLineField from '../components/formFields/OneLineField';
+import MultiLineInput from '../components/formFields/MultiLineField';
+import NumberField from '../components/formFields/NumberField';
+
+
+import { host, api } from '../util/api';
+import routing from '../util/routing';
 
 
 const CreateContestPage = () => {
-	// date: new Date(),
 	const navigate = useNavigate();
 	return (
 		<Card sx={{p: 2, mb: 2}}>
@@ -50,6 +41,12 @@ const CreateContestPage = () => {
 								overview: "",
 								date: new Date(),
 								groups: ["", ],
+								scoreboardURL: "",
+								categories: [{"des": "", "dis": 70}, ],
+								organization: "",
+
+								description: "",
+								distance: "70",
 							}}
 							validationSchema={Yup.object().shape({
 								name: Yup.string().max(255).required('請填入名稱'),
@@ -58,36 +55,49 @@ const CreateContestPage = () => {
 							onSubmit={(values, { setErrors, setStatus, setSubmitting }) => {
 								const dateString = formatISO(values.date);
 								const body = new FormData();
-								// body: {
-								// 	name: "",
-								// 	date: "",
-								// 	groups: ["", "",  ...], (stringify)
-								// }
 								body.append("name", values.name);
-								body.append("overview", values.overview);
 								body.append("date", dateString);
-								values.groups.map((v, i) => {
-									body.append("groups", v);
+								body.append("overview", values.overview);
+								body.append("organization", values.organization);
+								body.append("scoreboardURL", values.scoreboardURL);
+
+								values.categories.map((v, i) => {
+									body.append("categories", JSON.stringify(v));
 								})
-								// body.append("groups", JSON.stringify(values.groups));
 								console.log("body: ", body)
 
-								fetch(`http://localhost:8080/${api.competition.create}`, {
+								fetch(`${host}/${api.competition.create}`, {
 									method: "POST",
 									credentials: "include",
 									body,
 								})
 								.then((res) => {
+									console.log("res: ", res);
+									if (res.status === 200) {
+										// window.alert("創造成功");
+									} else if (res.status === 400) {
+										// window.alert("名稱、日期、資訊有誤");
+									} else if (res.status === 500) {
+										window.alert("後端好像壞啦ouo 怕爆><");
+									}
 									return res.json();
 								})
 								.then((resjson) => {
-									console.log(resjson);
-									if (resjson["result"] && resjson["result"] === "success") {
-										console.log("Create Success");
-										navigate(routing.Contests)
-									} else {
-										console.log("Too bad QQ");
-										console.log("resjson['result']:", resjson["result"])
+									resjson["result"] && console.log("result: ", resjson["result"])
+									if (!resjson["result"]) {return;}
+									switch(resjson["result"]) {
+										case "competition name exists":
+											window.alert("比賽名稱已存在");
+											break;
+										case "cannot parse date string":
+											window.alert("日期字串有誤（我的問題）");
+											break;
+										case "invalid categories":
+											window.alert("組別資料有誤（還是我的問題）");
+											break;
+										case "success":
+											window.alert(`大成功 id= ${resjson["compID"]}`);
+											break;
 									}
 								})
 								.catch((err) => console.log(err));
@@ -98,46 +108,29 @@ const CreateContestPage = () => {
 									<form noValidate onSubmit={handleSubmit}>
 										<Grid container direction="column" alignItems="stretch" justifyContent="center" spacing={2}>
 											<Grid item xs={2}>
-												<FormControl sx={{width: "300px"}} error={Boolean(touched.name && touched.date && touched.groups)}>
-													<TextField
-														required
-														label="名稱"
-														value={values.name}
-														name="name"
-														onChange={handleChange}
-														onBlur={handleBlur}
-													/>
-
-													{touched.name && errors.name && (
-														<FormHelperText error>
-															{' '}
-															{errors.name}{' '}
-														</FormHelperText>
-													)}
-												</FormControl>
+												<OneLineField
+													touched={touched.name}
+													error={errors.name}
+													handleChange={handleChange}
+													handleBlur={handleBlur}
+													name={"name"}
+													label={"名稱"}
+													value={values.name}
+												/>
 											</Grid>
 											<Grid item xs={2}>
-												<FormControl sx={{width: "300px"}} error={Boolean(touched.date && touched.groups && touched.name)}>
-													<TextField
-														required
-														label="敘述"
-														value={values.overview}
-														name="overview"
-														onChange={handleChange}
-														onBlur={handleBlur}
-														multiline
-													/>
-
-													{touched.overview && errors.overview && (
-														<FormHelperText error>
-															{' '}
-															{errors.overview}{' '}
-														</FormHelperText>
-													)}
-												</FormControl>
+												<MultiLineInput
+													touched={touched.overview}
+													error={errors.overview}
+													handleChange={handleChange}
+													handleBlur={handleBlur}
+													name={"overview"}
+													label={"敘述"}
+													value={values.overview}
+												/>
 											</Grid>
 											<Grid item xs={2}>
-												<FormControl required sx={{minWidth: "100px"}} error={Boolean(touched.name && touched.date && touched.groups)}>
+												<FormControl required sx={{width: "300px"}} error={Boolean(touched.name && touched.date && touched.groups && touched.overview && touched.distance && touched.description)}>
 													<LocalizationProvider dateAdapter={AdapterDateFns}>
 														<DatePicker
 															label="日期"
@@ -158,50 +151,79 @@ const CreateContestPage = () => {
 												</FormControl>
 											</Grid>
 											<Grid item xs={2}>
-											{/* <Grid item xs={2} sx={{background: "aqua"}}> */}
+												<OneLineField
+													touched={touched.organization}
+													error={errors.organization}
+													handleChange={handleChange}
+													handleBlur={handleBlur}
+													name={"organization"}
+													label={"所屬組織"}
+													value={values.organization}
+												/>
+											</Grid>
+											<Grid item xs={2}>
+												<OneLineField
+													touched={touched.scoreboardURL}
+													error={errors.scoreboardURL}
+													handleChange={handleChange}
+													handleBlur={handleBlur}
+													name={"scoreboardURL"}
+													label={"記分板"}
+													value={values.scoreboardURL}
+												/>
+											</Grid>
+											<Grid item xs={2}>
 												<FieldArray
-													name="groups"
+													name="categories"
 													render={(arrayHelpers: any) => (
-														// <Grid container flexDirection="column" alignItems="flexstart" justifyContent="flexstart" sx={{background: "gray"}}>
-														<Grid container flexDirection="column" alignItems="flexstart" justifyContent="flexstart">
-															{/* <Grid item xs={10} container flexDirection="row" alignItems="center" justifyContent="flexstart" sx={{background: "Bisque"}}> */}
-															<Grid item xs={10} container flexDirection="row" alignItems="center" justifyContent="flexstart">
-																{values.groups && values.groups.length > 0 && (values.groups.map((v, i) => (
-																	<FormControl required error={Boolean(touched.name && touched.date && touched.groups)}>
-																	{/* <Grid key={i} item xs={12} sm={6} container alignItems="center" justifyContent="center" sx={{p: 0, m: 2, minWidth: "250px", background: "blue"}}> */}
-																		<Grid key={i} item xs={12} sm={6} container alignItems="center" justifyContent="center" sx={{p: 0, m: 2, minWidth: "250px"}}>
-																			<Grid item xs="auto" sx={{minWidth: "200px"}}>
-																				<Field
-																					name={`groups[${i}]`}
-																					value={values.groups[i]}
-																					placeholder="50公尺複合弓"
-																					type="text"
-																					fullWidth
-																					sx={{minWidth: "200px", maxWidth: "200px"}}
-																					as={TextField} // use as to render a textfield, using 'component' need to handle the focus problem
+														<Grid container flexDirection="column" alignItems="flexstart" justifyContent="flexstart" gap={2}>
+															<Grid item xs={10} container flexDirection="row" alignItems="center" justifyContent="flexstart" gap={2}>
+																{values.categories && values.categories.length > 0 && (values.categories.map((v, i) => (
+																	<Grid key={i} item sx={{minWidth: "300px", maxWidth: "300px"}} container flexDirection="row" justifyContent="center" alignItems="center">
+																		<Grid item xs={8} container flexDirection="column" gap={1}>
+																			<Grid item xs={2}>
+																				<OneLineField
+																					sx={{width: "200px"}}
+																					touched={touched.categories}
+																					error={errors.categories}
+																					handleChange={handleChange}
+																					handleBlur={handleBlur}
+																					name={`categories[${i}]["des"]`}
+																					label={"敘述"}
+																					value={values.categories[i]["des"]}
 																				/>
 																			</Grid>
-																			{/* <Grid item sx={{maxWidth: "30px", p: 0, background: "yellow"}}> */}
-																			<Grid item sx={{maxWidth: "30px", p: 0}}>
-																				<Button
-																					onClick={() => {
-																						arrayHelpers.remove(i);
-																						console.log("i: ", i)
+																			<Grid item xs={2}>
+																				<NumberField
+																					sx={{width: "200px"}}
+																					touched={touched.categories}
+																					error={errors.categories}
+																					handleChange={handleChange}
+																					handleBlur={handleBlur}
+																					name={`categories[${i}]["dis"]`}
+																					label={"距離"}
+																					value={values.categories[i]["dis"]}
+																					numberprop={{
+																						step: "5",
+																						max: "150",
+																						min: "20",
 																					}}
-																					sx={{maxWidth: "10px", pl: 0, pr: 0}}
-																				>
-																					<DeleteIcon fontSize="small" sx={{pl: -2, pr: -2}}/>
-																				</Button>
+																				/>
 																			</Grid>
-
 																		</Grid>
-																		{touched.groups && errors.groups && (
-																			<FormHelperText error>
-																				{' '}
-																				{errors.groups}{' '}
-																			</FormHelperText>
-																		)}
-																	</FormControl>
+																		<Grid item sx={{maxWidth: "64px", width: "64px", p: 0}}>
+																			<Button
+																				onClick={() => {
+																					arrayHelpers.remove(i);
+																					console.log("i: ", i)
+																				}}
+																				// sx={{maxWidth: "64px", width: "64px", pl: 0, pr: 0, background: "Gray"}}
+																				sx={{maxWidth: "64px", width: "64px", pl: 0, pr: 0}}
+																			>
+																				<DeleteIcon fontSize="small" sx={{pl: -2, pr: -2,}}/>
+																			</Button>
+																		</Grid>
+																	</Grid>
 																)))}
 															</Grid>
 															<Grid item xs={2}>
@@ -209,9 +231,10 @@ const CreateContestPage = () => {
 																	// disableElevation
 																	// disabled={isSubmitting}
 																	size="large"
-																	// type=""
 																	onClick={() => {
-																		arrayHelpers.push('');
+																		arrayHelpers.push({"des": "", "dis": 70});
+
+																		console.log("values: ", values)
 																	}}
 																	variant="contained"
 																	color="secondary"

@@ -1,30 +1,22 @@
 
+import { useState, Dispatch, SetStateAction, FC } from 'react';
+
 import Card from '@mui/material/Card';
-import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
 import Box from '@mui/material/Box';
-import { useState, Dispatch, SetStateAction, FC } from 'react';
-import TextField from '@mui/material/TextField';
-
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-
-import FormHelperText from '@mui/material/FormHelperText';
-import InputAdornment from '@mui/material/InputAdornment';
-import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
-
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
 import { useNavigate } from 'react-router-dom';
 
-
 import * as Yup from 'yup';
 import { Formik } from 'formik';
-import FormControl from '@mui/material/FormControl';
 
-import api from '../util/api';
+import OneLineField from '../components/formFields/OneLineField';
+import SecretField from '../components/formFields/SecretField';
+
+import { host, api } from '../util/api';
 import routing from '../util/routing';
 
 interface LoginPageProps {
@@ -45,21 +37,21 @@ const LoginPage: FC<LoginPageProps> = ({setAuthorized, setPath}) => {
 
 	const navigate = useNavigate();
 
-	fetch(`http://localhost:8080/${api.user.getUserID}`, {
-    method: "GET",
-    credentials: "include",
-  })
-  .then((res) => {
-		// console.log("res: ", res)
-    return res.json();
-  })
-  .then((resjson) => {
-    console.log(resjson);
-    if (resjson["uid"]) {
-      setAuthorized(true);
-			navigate(routing.Home);
-    }
-  });
+	// fetch(`${host}/${api.user.getUserID}`, {
+  //   method: "GET",
+  //   credentials: "include",
+  // })
+  // .then((res) => {
+	// 	// console.log("res: ", res)
+  //   return res.json();
+  // })
+  // .then((resjson) => {
+  //   console.log(resjson);
+  //   if (resjson["uid"]) {
+  //     setAuthorized(true);
+	// 		navigate(routing.Home);
+  //   }
+  // });
 
 	return (
 		<Card sx={{p: 2, mb: 2}}>
@@ -84,29 +76,25 @@ const LoginPage: FC<LoginPageProps> = ({setAuthorized, setPath}) => {
 								const body = new FormData();
 								body.append("username", values.username);
 								body.append("password", values.password);
-								fetch(`http://localhost:8080/${api.user.login}`, {
+								fetch(`${host}/${api.user.login}`, {
 									method: "POST",
 									body,
 									credentials: "include",
-									// body: JSON.stringify({
-									// 	"username": values.username,
-									// 	"password": passwordCy,
-									// }),
-									// credentials: 'include',
 								})
 								.then((res) => {
-									console.log("res: ", res)
+									console.log("res: ", res);
+									switch(res.status) {
+										case 200:
+											setAuthorized(true);
+											navigate(routing.Home);
+											break;
+										case 401:
+											window.alert("有人帳號或密碼打錯囉");
+											break;
+									}
 									return res.json();
 								})
 								.then((resjson) => {
-									console.log(resjson);
-									if (resjson["result"] && resjson["result"] === "success") {
-										console.log("Log In Success");
-										setAuthorized(true);
-										navigate(routing.Home);
-									} else {
-										window.alert("有人帳號或密碼打錯囉");
-									}
 								})
 								.catch((err) => {
 									console.log(err)
@@ -119,57 +107,31 @@ const LoginPage: FC<LoginPageProps> = ({setAuthorized, setPath}) => {
 
 									<Grid container direction="column" alignItems="center" justifyContent="center" spacing={2}>
 										<Grid item xs={2}>
-											<FormControl sx={{width: "300px"}} error={Boolean(touched.username && touched.password)}>
-												<TextField
-													required
-													label="帳號"
-													value={values.username}
-													name="username" // input
-													onChange={handleChange}
-													onBlur={handleBlur}
-												/>
-
-												{touched.username && errors.username && (
-													<FormHelperText error id="standard-weight-helper-text-email-login">
-														{' '}
-														{errors.username}{' '}
-													</FormHelperText>
-												)}
-											</FormControl>
+											<OneLineField
+												touched={touched.username && touched.password}
+												error={errors.username}
+												handleChange={handleChange}
+												handleBlur={handleBlur}
+												name={"username"}
+												label={"帳號"}
+												value={values.username}
+											/>
 										</Grid>
 										<Grid item xs={2}>
-											<FormControl sx={{width: "300px"}} error={Boolean(touched.username && touched.password)}>
-												<TextField
-													required
-													type={showPassword ? 'text' : 'password'}
-													label="密碼"
-													value={values.password}
-													name="password" // input
-													onChange={handleChange}
-													onBlur={handleBlur}
-													InputProps={{
-														endAdornment: (
-															<InputAdornment position="end">
-																<IconButton
-																	aria-label="toggle password visibility"
-																	onClick={handleClickShowPassword}
-																	onMouseDown={handleMouseDownPassword}
-																	edge="end"
-																>
-																	{showPassword ? <Visibility /> : <VisibilityOff />}
-																</IconButton>
-															</InputAdornment>
-														)
-													}}
-												/>
-
-												{touched.password && errors.password && (
-													<FormHelperText error id="standard-weight-helper-text-email-login">
-														{' '}
-														{errors.password}{' '}
-													</FormHelperText>
-												)}
-											</FormControl>
+											<SecretField
+												touched={touched.username && touched.password}
+												error={errors.password}
+												handleChange={handleChange}
+												handleBlur={handleBlur}
+												name={"password"}
+												label={"密碼"}
+												value={values.password}
+												secret={{
+													click: handleClickShowPassword,
+													mousedown: handleMouseDownPassword,
+													show: showPassword,
+												}}
+											/>
 										</Grid>
 										<Grid item xs={1}>
 											<Grid container justifyContent="flex-end">
@@ -180,8 +142,6 @@ const LoginPage: FC<LoginPageProps> = ({setAuthorized, setPath}) => {
 														onClick={() => {
 															window.alert("Try to figure out by yourself")
 														}}
-														// component={Link}
-														// to={props.login ? '/pages/forgot-password/forgot-password' + props.login : '#'}
 														color="secondary"
 														noWrap={true}
 														sx={{ textDecoration: 'none', maxWidth: "20px"}}

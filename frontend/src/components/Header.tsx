@@ -21,10 +21,9 @@ import Grow from '@mui/material/Grow';
 
 import avatar from "../assets/images/avatar.jpg";
 import { useNavigate } from 'react-router-dom';
-// import { create } from 'domain';
 
 import Avatar from '@mui/material/Avatar';
-import api from '../util/api';
+import { host, api } from '../util/api';
 import routing from '../util/routing';
 
 interface HeaderProps {
@@ -116,8 +115,8 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen, setAuthorized }) => {
                                 onClick={() => {
                                   handleClose();
                                   setAuthorized(false);
-                                  fetch(`http://localhost:8080/${api.user.logout}`, {
-                                    method: "GET",
+                                  fetch(`${host}/${api.user.logout}`, {
+                                    method: "DELETE",
                                     credentials: "include",
                                   })
                                   .then((res) => {
