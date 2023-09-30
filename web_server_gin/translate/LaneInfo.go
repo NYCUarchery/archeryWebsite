@@ -79,7 +79,7 @@ func UpdateLaneInfo(context *gin.Context) {
 	loadLaneInfo(&data)
 	newdata := database.UpdateLaneInfo(convert2int(context, "id"), data)
 	if newdata.UserIds == nil {
-		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Failed to update data"})
+		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "更新失敗"})
 		return
 	}
 	context.IndentedJSON(http.StatusOK, newdata)
@@ -127,7 +127,7 @@ func UpdataLaneConfirm(context *gin.Context) {
 
 func DeleteLaneInfoByID(context *gin.Context) {
 	if !database.DeleteLaneInfoByID(convert2int(context, "id")) {
-		context.IndentedJSON(http.StatusNotFound, "Error")
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
 		return
 	}
 	context.IndentedJSON(http.StatusOK, "Successfully")

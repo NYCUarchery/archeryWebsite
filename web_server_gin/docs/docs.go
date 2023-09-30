@@ -61,6 +61,155 @@ const docTemplate = `{
                 }
             }
         },
+        "/data/laneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm}": {
+            "put": {
+                "description": "Put one LaneInfo confirm by index and id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "LaneInfo"
+                ],
+                "summary": "update one LaneInfo confirmation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "LaneInfo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "LaneInfo stage index",
+                        "name": "stageindex",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "LaneInfo user index of the stage",
+                        "name": "userindex",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "confirmation of the user",
+                        "name": "confirm",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/laneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score}": {
+            "put": {
+                "description": "Put one LaneInfo score by index and id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "LaneInfo"
+                ],
+                "summary": "update one LaneInfo Score",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "LaneInfo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "LaneInfo stage index",
+                        "name": "stageindex",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "LaneInfo user index of the stage",
+                        "name": "userindex",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "LaneInfo arrow index of the user",
+                        "name": "arrowindex",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "score of the arrow",
+                        "name": "score",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/data/laneinfo/whole/{id}": {
             "put": {
                 "description": "Put whole new LaneInfo and overwrite with the id",
@@ -73,7 +222,7 @@ const docTemplate = `{
                 "tags": [
                     "LaneInfo"
                 ],
-                "summary": "Put one LaneInfo",
+                "summary": "update one LaneInfo",
                 "parameters": [
                     {
                         "type": "string",
@@ -110,6 +259,12 @@ const docTemplate = `{
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 }
             }
@@ -142,6 +297,48 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "delete one LaneInfo by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "LaneInfo"
+                ],
+                "summary": "delete one LaneInfo",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "LaneInfo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "type": "string"
                         }
