@@ -33,7 +33,8 @@ export default function GroupBoard() {
   for (let i = 0; i < group.length; i++) {
     if (
       group[i].lane === 0 ||
-      group[i].lane - startLane >= endLane - startLane + 1
+      group[i].lane - startLane >= endLane - startLane + 1 ||
+      group[i].lane - startLane < 0
     ) {
       noLanePlayers.push(group[i]);
       continue;
