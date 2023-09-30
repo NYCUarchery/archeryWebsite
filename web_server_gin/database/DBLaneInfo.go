@@ -125,7 +125,6 @@ func UpdateLaneInfo(ID int, data LaneData) LaneData {
 	return data
 }
 
-// edit score
 func UpdataLaneScore(ID int, stageindex int, userindex int, arrowindex int, score int) bool {
 	sql := "UPDATE `Demo`.all_scores INNER JOIN `Demo`.end_scores ON `Demo`.all_scores.end_score_id = `Demo`.end_scores.id INNER JOIN `Demo`.lane_stages ON `Demo`.end_scores.lane_stage_id = `Demo`.lane_stages.id INNER JOIN `Demo`.lane_data ON `Demo`.lane_stages.lane_data_id = `Demo`.lane_data.id SET `Demo`.all_scores.score = ? WHERE `Demo`.lane_data.id = ? AND `Demo`.lane_stages.stage_index = ? AND `Demo`.end_scores.user_index = ? AND `Demo`.all_scores.arrow_index = ? ;"
 	result := DB.Exec(sql, score, ID, stageindex, userindex, arrowindex)

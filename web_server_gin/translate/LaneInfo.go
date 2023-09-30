@@ -23,24 +23,7 @@ func convert2bool(c *gin.Context, name string) bool {
 	return data
 }
 
-func GetLaneInfoByID(context *gin.Context) {
-	data := database.GetLaneInfoByID(convert2int(context, "id"))
-	if data.ID == 0 {
-		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
-		return
-	}
-	fmt.Println("LaneInfo with ID(", context.Param("id"), ") -> ", data)
-
-	context.IndentedJSON(http.StatusOK, data)
-}
-
-func PostLaneInfo(context *gin.Context) {
-	data := database.LaneData{}
-	err := context.BindJSON(&data)
-	if err != nil {
-		context.IndentedJSON(http.StatusBadRequest, "Error : "+err.Error())
-		return
-	}
+func loadLaneInfo(data *database.LaneData) {
 	/* save UserIds indexing */
 	for index, user := range data.UserIds {
 		user.UserIndex = uint(index)
@@ -61,7 +44,27 @@ func PostLaneInfo(context *gin.Context) {
 			confirm.UserIndex = uint(confirm_index)
 		}
 	}
+}
 
+func GetLaneInfoByID(context *gin.Context) {
+	data := database.GetLaneInfoByID(convert2int(context, "id"))
+	if data.ID == 0 {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
+		return
+	}
+	fmt.Println("LaneInfo with ID(", context.Param("id"), ") -> ", data)
+
+	context.IndentedJSON(http.StatusOK, data)
+}
+
+func PostLaneInfo(context *gin.Context) {
+	data := database.LaneData{}
+	err := context.BindJSON(&data)
+	if err != nil {
+		context.IndentedJSON(http.StatusBadRequest, "error : "+err.Error())
+		return
+	}
+	loadLaneInfo(&data)
 	newData := database.PostLaneInfo(data)
 	context.IndentedJSON(http.StatusOK, newData)
 }
@@ -70,10 +73,15 @@ func UpdateLaneInfo(context *gin.Context) {
 	data := database.LaneData{}
 	err := context.BindJSON(&data)
 	if err != nil {
-		context.IndentedJSON(http.StatusBadRequest, "Error")
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
+	loadLaneInfo(&data)
 	newdata := database.UpdateLaneInfo(convert2int(context, "id"), data)
+	if newdata.UserIds == nil {
+		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "Failed to update data"})
+		return
+	}
 	context.IndentedJSON(http.StatusOK, newdata)
 }
 
