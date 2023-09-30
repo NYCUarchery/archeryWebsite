@@ -2,7 +2,7 @@ import { Slider } from "@mui/material";
 import { useSelector, useDispatch } from "react-redux";
 import { setQualificationArrowsNumPerEnd } from "../../../States/gameSlice";
 
-export default function ArrowsPerEndsSetter() {
+export default function ArrowsNumPerEndSetter() {
   const arrowsNumPerEnds = useSelector(
     (state: any) => state.game.qualification.arrows_num_per_end
   );

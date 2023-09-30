@@ -15,8 +15,8 @@ export default function LanesSetter() {
   );
   const dispatch = useDispatch();
   const marks = [
-    { value: 1, label: "1號把道" },
-    { value: lanesNum, label: lanesNum + "號把道" },
+    { value: 1, label: "1號靶道" },
+    { value: lanesNum, label: lanesNum + "號靶道" },
   ];
 
   return (

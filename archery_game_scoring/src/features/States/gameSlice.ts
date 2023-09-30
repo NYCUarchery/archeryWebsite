@@ -67,6 +67,10 @@ const gameSlice = createSlice({
       state.qualification.groups[action.payload.groupId].start_lane =
         action.payload.startLane;
     },
+    setQualificationPlayersNumPerLane: (state, action) => {
+      state.qualification.groups[action.payload.groupId].players_num_per_lane =
+        action.payload.playersNumPerLane;
+    },
   },
 });
 
@@ -83,3 +87,5 @@ export const setQualificationRoundsNum =
 export const setQualificationArrowsNumPerEnd =
   gameSlice.actions.setQualificationArrowsNumPerEnd;
 export const setQualificationLanes = gameSlice.actions.setQualificationLanes;
+export const setQualificationPlayersNumPerLane =
+  gameSlice.actions.setQualificationPlayersNumPerLane;

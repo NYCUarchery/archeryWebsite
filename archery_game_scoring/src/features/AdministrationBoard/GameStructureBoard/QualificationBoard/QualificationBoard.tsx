@@ -1,7 +1,8 @@
-import ArrowsPerEndsSetter from "./ArrowsPerEndSetter";
+import ArrowsNumPerEndSetter from "./ArrowsNumPerEndSetter";
 import EndsSetter from "./EndsSetter";
 import GroupsMenu from "./GroupsMenu/GroupsMenu";
 import LanesSetter from "./LanesSetter";
+import PlayersNumPerLaneSetter from "./PlayersNumPerLaneSetter";
 import RoundSetter from "./RoundsSetter";
 
 export default function QualifcationBoard() {
@@ -10,8 +11,9 @@ export default function QualifcationBoard() {
       <GroupsMenu />
       <RoundSetter />
       <EndsSetter />
-      <ArrowsPerEndsSetter />
+      <ArrowsNumPerEndSetter />
       <LanesSetter />
+      <PlayersNumPerLaneSetter />
     </div>
   );
 }
