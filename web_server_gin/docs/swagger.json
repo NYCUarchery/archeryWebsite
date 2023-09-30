@@ -8,10 +8,176 @@
             "url": "https://github.com/NYCUarchery"
         },
         "license": {
-            "name": "??"
+            "name": "no license yet"
         },
         "version": "1.0"
     },
     "host": "localhost:8080",
-    "paths": {}
+    "paths": {
+        "/data/laneinfo": {
+            "post": {
+                "description": "Post one new LaneInfo data with new id, and return the new LaneInfo data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "LaneInfo"
+                ],
+                "summary": "Create one LaneInfo",
+                "parameters": [
+                    {
+                        "description": "LaneData",
+                        "name": "LaneData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/laneinfo/whole/{id}": {
+            "put": {
+                "description": "Put whole new LaneInfo and overwrite with the id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "LaneInfo"
+                ],
+                "summary": "Put one LaneInfo",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "LaneInfo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "LaneData",
+                        "name": "LaneData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/laneinfo/{id}": {
+            "get": {
+                "description": "Get one LaneInfo by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "LaneInfo"
+                ],
+                "summary": "Show one LaneInfo",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "LaneInfo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/swagger/doc.json": {
+            "get": {
+                "description": "get Api docs in json",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "docs"
+                ],
+                "summary": "Show Api Docs in json",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/views/home": {
+            "get": {
+                "description": "show home page",
+                "tags": [
+                    "views"
+                ],
+                "summary": "Show home page",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

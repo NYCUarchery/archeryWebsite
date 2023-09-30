@@ -44,11 +44,11 @@ func getDSN() {
 	Pwd, _ := os.Getwd()
 	FilePath := filepath.Join(Pwd, getDSNFileByMode())
 	file, err := os.Open(FilePath)
-	defer file.Close()
 	if err != nil {
 		fmt.Println("Error opening file:", err)
 		return
 	}
+	defer file.Close()
 	scanner := bufio.NewScanner(file)
 	if scanner.Scan() {
 		line := scanner.Text()

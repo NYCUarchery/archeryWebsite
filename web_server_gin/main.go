@@ -15,7 +15,7 @@ import (
 // @contact.name NYCUArchery
 // @contact.url https://github.com/NYCUarchery
 
-// @license.name ??
+// @license.name no license yet
 
 // @host localhost:8080
 // schemes http
@@ -35,7 +35,7 @@ func getIpByMode() string {
 	case "release":
 		return "0.0.0.0" // attach the router to an http.Server and start the server
 	case "debug":
-		return "127.0.0.1" // for localhost test
+		return "localhost" // for localhost test
 	case "test":
 		return "0.0.0.0"
 	default:

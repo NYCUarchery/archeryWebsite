@@ -77,20 +77,49 @@ func preloadLane(ID int, data *LaneData) *LaneData {
 	return data
 }
 
+// Get LaneInfo By ID godoc
+// @Summary Show one LaneInfo
+// @Description Get one LaneInfo by id
+// @Tags LaneInfo
+// @Produce json
+// @Param id path int true "LaneInfo ID"
+// @Success 200 string string
+// @Failure 400 string string
+// @Router /data/laneinfo/{id} [get]
 func GetLaneInfoByID(ID int) LaneData {
 	var data LaneData
 	preloadLane(ID, &data)
 	return data
 }
 
-// create complete data
+// Post LaneInfo godoc
+// @Summary Create one LaneInfo
+// @Description Post one new LaneInfo data with new id, and return the new LaneInfo data
+// @Tags LaneInfo
+// @Accept json
+// @Produce json
+// @Param LaneData body string true "LaneData"
+// @Success 200 string string
+// @Failure 400 string string
+// @Router /data/laneinfo [post]
 func PostLaneInfo(data LaneData) LaneData {
 	DB.Model(&LaneData{}).Create(&data)
 	// function read the position of user_id to write user_index in data
 	return data
 }
 
-// edit whole data
+// Update LaneInfo godoc
+// @Summary Put one LaneInfo
+// @Description Put whole new LaneInfo and overwrite with the id
+// @Tags LaneInfo
+// @Accept json
+// @Produce json
+// @Param id path string true "LaneInfo ID"
+// @Param LaneData body string true "LaneData"
+// @Success 200 string string
+// @Failure 400 string string
+// @Failure 404 string string
+// @Router /data/laneinfo/whole/{id} [put]
 func UpdateLaneInfo(ID int, data LaneData) LaneData {
 	DB.Model(&LaneData{}).Where("id =?", ID).Updates(&data)
 	return data

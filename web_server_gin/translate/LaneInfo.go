@@ -11,11 +11,7 @@ import (
 
 func convert2int(c *gin.Context, name string) int {
 	dataStr := c.Param(name)
-	data, err := strconv.Atoi(dataStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "unvalid " + name + " parameter"})
-		return 0
-	}
+	data, _ := strconv.Atoi(dataStr)
 
 	return data
 }
@@ -23,11 +19,7 @@ func convert2int(c *gin.Context, name string) int {
 func convert2bool(c *gin.Context, name string) bool {
 	dataStr := c.Param(name)
 
-	data, err := strconv.ParseBool(dataStr)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "unvalid " + name + " parameter"})
-		return data
-	}
+	data, _ := strconv.ParseBool(dataStr)
 	return data
 }
 
@@ -46,7 +38,7 @@ func PostLaneInfo(context *gin.Context) {
 	data := database.LaneData{}
 	err := context.BindJSON(&data)
 	if err != nil {
-		context.IndentedJSON(http.StatusNotAcceptable, "Error : "+err.Error())
+		context.IndentedJSON(http.StatusBadRequest, "Error : "+err.Error())
 		return
 	}
 	/* save UserIds indexing */
@@ -56,10 +48,6 @@ func PostLaneInfo(context *gin.Context) {
 	/* save LaneStage indexing*/
 	for index, laneStage := range data.Stages {
 		laneStage.StageIndex = uint(index)
-		/*save LaneStage.Comfirmations*/
-		for confirm_index, confirm := range laneStage.Confirmations {
-			confirm.UserIndex = uint(confirm_index)
-		}
 		/*save LaneStage.EndScores*/
 		for end_index, end := range laneStage.EndScores {
 			end.UserIndex = uint(end_index)
@@ -68,11 +56,14 @@ func PostLaneInfo(context *gin.Context) {
 				all.ArrowIndex = uint(all_index)
 			}
 		}
+		/*save LaneStage.Comfirmations*/
+		for confirm_index, confirm := range laneStage.Confirmations {
+			confirm.UserIndex = uint(confirm_index)
+		}
 	}
 
 	newData := database.PostLaneInfo(data)
 	context.IndentedJSON(http.StatusOK, newData)
-
 }
 
 func UpdateLaneInfo(context *gin.Context) {
