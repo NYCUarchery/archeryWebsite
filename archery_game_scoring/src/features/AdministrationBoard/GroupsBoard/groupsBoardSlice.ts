@@ -41,6 +41,16 @@ const groupsBoardSlice = createSlice({
         return a.id - b.id;
       });
     },
+    setPlayerLane: (state, action) => {
+      for (let i = 0; i < state.groups[action.payload.groupId].length; i++) {
+        if (
+          state.groups[action.payload.groupId][i].id === action.payload.playerId
+        ) {
+          state.groups[action.payload.groupId][i].lane = action.payload.lane;
+          break;
+        }
+      }
+    },
   },
 });
 
@@ -57,3 +67,4 @@ export const addGroup = groupsBoardSlice.actions.addGroup;
 export const removeGroup = groupsBoardSlice.actions.removeGroup;
 export const setGroups = groupsBoardSlice.actions.setGroups;
 export const movePlayer = groupsBoardSlice.actions.movePlayer;
+export const setPlayerLane = groupsBoardSlice.actions.setPlayerLane;

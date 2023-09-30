@@ -3,77 +3,93 @@
     {
       "id": 0,
       "name": "王逸蓁",
-      "group": 0
+      "group": 0,
+      "lane": 0
     },
     {
       "id": 1,
       "name": "楊維寧",
-      "group": 0
+      "group": 0,
+      "lane": 0
     },
     {
       "id": 2,
       "name": "洪凱昕",
-      "group": 0
+      "group": 0,
+      "lane": 0
     },
     {
       "id": 3,
       "name": "陳鈞鈴",
-      "group": 0
+      "group": 0,
+      "lane": 0
     },
     {
       "id": 10,
       "name": "劉冠亨",
-      "group": 1
+      "group": 1,
+      "lane": 0
     },
     {
       "id": 11,
       "name": "林寶琳",
-      "group": 1
+      "group": 1,
+      "lane": 1
     },
     {
       "id": 12,
       "name": "蔡毅龍",
-      "group": 1
+      "group": 1,
+      "lane": 1
     },
     {
       "id": 13,
       "name": "梁永熹",
-      "group": 1
+      "group": 1,
+      "lane": 1
     },
     {
       "id": 14,
       "name": "蘇凌",
-      "group": 1
+      "group": 1,
+      "lane": 2
     },
     {
       "id": 15,
       "name": "曾子瑀",
-      "group": 2
+      "group": 2,
+      "lane": 5
     },
     {
       "id": 16,
       "name": "朱星蓉",
-      "group": 2
+      "group": 2,
+      "lane": 5
     },
     {
       "id": 17,
       "name": "蘇佑勝",
-      "group": 2
+      "group": 2,
+      "lane": 6
     },
     {
       "id": 18,
       "name": "許博鈞",
-      "group": 3
+      "group": 3,
+      "lane": 11
     },
     {
       "id": 19,
       "name": "陳崇玄",
-      "group": 3
+      "group": 3,
+      "lane": 12
     },
     {
       "id": 20,
       "name": "鄞意東",
-      "group": 4
+      "group": 4,
+
+      "lane": 15
     }
   ],
   "player_applications": [

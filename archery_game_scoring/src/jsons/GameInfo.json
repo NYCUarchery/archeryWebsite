@@ -30,6 +30,7 @@
       {
         "start_lane": 5,
         "end_lane": 10,
+        "players_num_per_lane": 4,
         "advancing_num": 0
       },
       {

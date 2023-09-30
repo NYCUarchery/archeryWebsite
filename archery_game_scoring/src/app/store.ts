@@ -13,6 +13,7 @@ import { groupsBoardReducer } from "../features/AdministrationBoard/GroupsBoard/
 import { groupSelectorReducer } from "../features/AdministrationBoard/GroupsBoard/GroupSelector/groupSelectorSlice";
 import { gameStructureBoardReducer } from "../features/AdministrationBoard/GameStructureBoard/gameStructureBoardSlice";
 import { qualificationStructureGroupMenuReducer } from "../features/AdministrationBoard/GameStructureBoard/QualificationBoard/GroupsMenu/groupsMenuSlice";
+import { qualificationStructureGroupBoardReducer } from "../features/AdministrationBoard/GameStructureBoard/QualificationBoard/GroupBoard/groupBoardSlice";
 
 const store = configureStore({
   reducer: {
@@ -25,10 +26,13 @@ const store = configureStore({
     user: userReducer,
     participants: participantsReducer,
     adminBoardTabs: adminBoardTabsReducer,
+
     groupsBoard: groupsBoardReducer,
     groupSelector: groupSelectorReducer,
+
     gameStructureBoard: gameStructureBoardReducer,
     qualificationStructureGroupMenu: qualificationStructureGroupMenuReducer,
+    qualificationStructureGroupBoard: qualificationStructureGroupBoardReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(ReduxLogger),
