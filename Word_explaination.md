@@ -8,9 +8,11 @@ groups: 選手的組別：新生、大專 30m 等。
 phase: 比賽的型態：資格賽、對抗賽
 stage:
 當前型態的比賽的階段
-資格賽：第幾波的射擊
 對抗賽：第幾輪的對抗
+end：資格賽的波
+round：資格賽的局
 qualification: 資格賽（排名賽）
+advancing number: 晉級人數
 elimination: 對抗賽
 team elimination:團體對抗賽
 
