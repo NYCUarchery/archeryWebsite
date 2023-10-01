@@ -114,7 +114,7 @@ func Logout(c *gin.Context) {
 func ModifyInfo(c *gin.Context) {
 	uidstr := c.Param("id")
 	if uidstr == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"result": "need user id"})
+		c.JSON(http.StatusBadRequest, gin.H{"result": "empty user id"})
 		return
 	}
 
@@ -199,13 +199,13 @@ func GetUserID(c *gin.Context) {
 // @Produce      json
 // @Param   	 id 	  	 path 	  string true "user's id"
 // @Success      200  {object}  model.Response "success"
-// @Failure      400  {object}  model.Response "invalid user id"
+// @Failure      400  {object}  model.Response "empty/invalid user id"
 // @Failure      404  {object}  model.Response "no user found"
 // @Router       /user/{id} [get]
 func UserInfo(c *gin.Context) {
 	uidstr := c.Param("id")
 	if uidstr == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"result": "need user id"})
+		c.JSON(http.StatusBadRequest, gin.H{"result": "empty user id"})
 		return
 	}
 

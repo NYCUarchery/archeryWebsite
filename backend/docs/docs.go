@@ -354,7 +354,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "invalid user id",
+                        "description": "empty/invalid user id",
                         "schema": {
                             "$ref": "#/definitions/model.Response"
                         }

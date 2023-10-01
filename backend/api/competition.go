@@ -89,7 +89,7 @@ func CreateCompetition(c *gin.Context) {
 func CompetitionInfo(c *gin.Context) {
 	cidstr := c.Param("id")
 	if cidstr == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"result": "need competition id"})
+		c.JSON(http.StatusBadRequest, gin.H{"result": "empty competition id"})
 		return
 	}
 
