@@ -61,7 +61,7 @@ info:
   title: Archery backend API
   version: "1.0"
 paths:
-  /competitioin/:
+  /competition/:
     post:
       consumes:
       - application/json
@@ -103,7 +103,7 @@ paths:
             $ref: '#/definitions/model.CompResponse'
         "400":
           description: competition name exists | cannot parse date string | invalid
-            info
+            info/categories
           schema:
             $ref: '#/definitions/model.Response'
         "500":
@@ -112,8 +112,8 @@ paths:
             $ref: '#/definitions/model.Response'
       summary: create a competition
       tags:
-      - competitioin
-  /competitioin/{id}:
+      - competition
+  /competition/{id}:
     get:
       description: get info, categories, participants of the competition
       parameters:
@@ -139,7 +139,7 @@ paths:
             $ref: '#/definitions/model.Response'
       summary: get information of the competition
       tags:
-      - competitioin
+      - competition
   /participant/:
     post:
       consumes:

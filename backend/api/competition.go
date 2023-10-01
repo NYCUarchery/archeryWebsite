@@ -13,7 +13,7 @@ import (
 // CreateCompetition godoc
 // @Summary      create a competition
 // @Description  create a competition and set the person as the host
-// @Tags         competitioin
+// @Tags         competition
 // @Accept       json
 // @Produce      json
 // @Param   	 name 	 	 	formData string true "competition name"
@@ -23,9 +23,9 @@ import (
 // @Param   	 organization 	formData string false "organization"
 // @Param   	 scoreboardURL 	formData string false "Scoreboard URL"
 // @Success      200  {object}  model.CompResponse "success"
-// @Failure      400  {object}  model.Response "competition name exists | cannot parse date string | invalid info"
+// @Failure      400  {object}  model.Response "competition name exists | cannot parse date string | invalid info/categories"
 // @Failure      500  {object}  model.Response "DB error"
-// @Router       /competitioin/ [post]
+// @Router       /competition/ [post]
 func CreateCompetition(c *gin.Context) {
 	name := c.PostForm("name")
 	date := c.PostForm("date")
@@ -79,13 +79,13 @@ func CreateCompetition(c *gin.Context) {
 // CompetitionInfo godoc
 // @Summary      get information of the competition
 // @Description  get info, categories, participants of the competition
-// @Tags         competitioin
+// @Tags         competition
 // @Produce      json
 // @Param   	 id 	 	 path int true "competition id"
 // @Success      200  {object}  model.CompInfoResponse "success"
 // @Failure      400  {object}  model.Response "empty/invalid competition id"
 // @Failure      404  {object}  model.Response "no competition found"
-// @Router       /competitioin/{id} [get]
+// @Router       /competition/{id} [get]
 func CompetitionInfo(c *gin.Context) {
 	cidstr := c.Param("id")
 	if cidstr == "" {

@@ -23,7 +23,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/competitioin/": {
+        "/competition/": {
             "post": {
                 "description": "create a competition and set the person as the host",
                 "consumes": [
@@ -33,7 +33,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "competitioin"
+                    "competition"
                 ],
                 "summary": "create a competition",
                 "parameters": [
@@ -85,7 +85,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "competition name exists | cannot parse date string | invalid info",
+                        "description": "competition name exists | cannot parse date string | invalid info/categories",
                         "schema": {
                             "$ref": "#/definitions/model.Response"
                         }
@@ -99,14 +99,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/competitioin/{id}": {
+        "/competition/{id}": {
             "get": {
                 "description": "get info, categories, participants of the competition",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "competitioin"
+                    "competition"
                 ],
                 "summary": "get information of the competition",
                 "parameters": [
