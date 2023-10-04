@@ -10,13 +10,29 @@ import (
 	"encoding/json"
 )
 
+// CreateCompetition godoc
+// @Summary      create a competition
+// @Description  create a competition and set the person as the host
+// @Tags         competition
+// @Accept       json
+// @Produce      json
+// @Param   	 name 	 	 	formData string true "competition name"
+// @Param   	 date 		 	formData string true "date"
+// @Param   	 categories  	formData string true "a list of categories"
+// @Param   	 overview 	 	formData string false "overview"
+// @Param   	 organization 	formData string false "organization"
+// @Param   	 scoreboardURL 	formData string false "Scoreboard URL"
+// @Success      200  {object}  model.CompResponse "success"
+// @Failure      400  {object}  model.Response "competition name exists | cannot parse date string | invalid info/categories"
+// @Failure      500  {object}  model.Response "DB error"
+// @Router       /competition/ [post]
 func CreateCompetition(c *gin.Context) {
 	name := c.PostForm("name")
 	date := c.PostForm("date")
 	categories := c.PostFormArray("categories")
 	
 	if findComp, _ := model.CompetitionInfoByName(name); findComp.ID != 0 {
-		c.JSON(http.StatusOK, gin.H{"result": "competition name exists"})
+		c.JSON(http.StatusBadRequest, gin.H{"result": "competition name exists"})
 		return
 	}
 
@@ -60,41 +76,20 @@ func CreateCompetition(c *gin.Context) {
 	})
 }
 
-func JoinInCompetition(c *gin.Context) {
-	userID := pkg.QuerySession(c, "id").(uint)
-	compIDu64, err := strconv.ParseUint(c.PostForm("competitionID"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"result": "cannot parse competitionID"})
-		return
-	}
-	compID := uint(compIDu64)
-
-	var user model.User
-	if user, _ = model.UserInfoByID(userID); user.ID == 0 {
-		c.JSON(http.StatusOK, gin.H{"result": "cannot find the user"})
-		return
-	}
-
-	if comp, _ := model.CompetitionInfoByID(compID); comp.ID == 0 {
-		c.JSON(http.StatusOK, gin.H{"result": "cannot find the competition"})
-		return
-	}
-
-	if model.CheckParticipantExist(userID, compID) {
-		c.JSON(http.StatusOK, gin.H{"result": "participant exists"})
-		return
-	}
-	var par model.Participant
-	par.UserID, par.CompetitionID = userID, compID
-	
-	model.AddParticipant(&par)
-	c.JSON(http.StatusOK, gin.H{"result": "success"})
-}
-
+// CompetitionInfo godoc
+// @Summary      get information of the competition
+// @Description  get info, categories, participants of the competition
+// @Tags         competition
+// @Produce      json
+// @Param   	 id 	 	 path int true "competition id"
+// @Success      200  {object}  model.CompInfoResponse "success"
+// @Failure      400  {object}  model.Response "empty/invalid competition id"
+// @Failure      404  {object}  model.Response "no competition found"
+// @Router       /competition/{id} [get]
 func CompetitionInfo(c *gin.Context) {
 	cidstr := c.Param("id")
 	if cidstr == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"result": "need competition id"})
+		c.JSON(http.StatusBadRequest, gin.H{"result": "empty competition id"})
 		return
 	}
 
@@ -106,7 +101,7 @@ func CompetitionInfo(c *gin.Context) {
 
 	comp, _ := model.CompetitionInfoByID(uint(cid))
 	if comp.ID == 0 {
-		c.JSON(http.StatusOK, gin.H{"result": "no competition found"})
+		c.JSON(http.StatusNotFound, gin.H{"result": "no competition found"})
 		return
 	}
 
@@ -120,13 +115,13 @@ func CompetitionInfo(c *gin.Context) {
 	var cats []model.CompetitionCategory
 	cats, err = model.CompetitionCategories(uint(cid))
 	var pairs []struct{
-		Des string
-		Dis int32
+		Des string `json:"des"`
+		Dis int32 `json:"dis"`
 	}
 	for _, cat := range cats {
 		pairs = append(pairs, struct{
-			Des string
-			Dis int32
+			Des string `json:"des"`
+			Dis int32 `json:"dis"`
 		}{
 			Des: cat.Description,
 			Dis: cat.Distance,
