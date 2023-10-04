@@ -7,7 +7,7 @@ import NoLanePlayerList from "./NoLanePlayerList";
 
 export default function GroupBoard() {
   const groupShown = useSelector(
-    (state: any) => state.qualificationStructureGroupMenu.groupShown
+    (state: any) => state.gameStructureGroupMenu.groupShown
   );
   const group = useSelector(
     (state: any) => state.groupsBoard.groups[groupShown]

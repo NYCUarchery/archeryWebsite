@@ -4,7 +4,7 @@ import { setQualificationLanes } from "../../../States/gameSlice";
 
 export default function LanesSetter() {
   const groupShown = useSelector(
-    (state: any) => state.qualificationStructureGroupMenu.groupShown
+    (state: any) => state.gameStructureGroupMenu.groupShown
   );
   const lanesNum: number = useSelector((state: any) => state.game.lanesNum);
   const startLane = useSelector(

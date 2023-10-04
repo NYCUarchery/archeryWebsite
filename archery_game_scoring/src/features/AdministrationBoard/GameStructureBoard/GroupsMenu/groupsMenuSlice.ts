@@ -6,7 +6,7 @@ const initialState = {
 };
 
 const groupMenuSlice = createSlice({
-  name: "qualificationStructureGroupMenu",
+  name: "gameStructureGroupMenu",
   initialState: initialState,
   reducers: {
     setGroupShown: (state, action) => {
@@ -22,7 +22,7 @@ const groupMenuSlice = createSlice({
   },
 });
 
-export const qualificationStructureGroupMenuReducer = groupMenuSlice.reducer;
+export const gameStructureGroupMenuReducer = groupMenuSlice.reducer;
 export const setGroupShown = groupMenuSlice.actions.setGroupShown;
 export const toggleMenu = groupMenuSlice.actions.toggleMenu;
 export const closeMenu = groupMenuSlice.actions.closeMenu;

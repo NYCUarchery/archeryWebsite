@@ -4,7 +4,7 @@ import { setQualificationPlayersNumPerLane } from "../../../States/gameSlice";
 
 export default function PlayersNumPerLaneSetter() {
   const groupShown = useSelector(
-    (state: any) => state.qualificationStructureGroupMenu.groupShown
+    (state: any) => state.gameStructureGroupMenu.groupShown
   );
   const playersNumPerlane = useSelector(
     (state: any) =>

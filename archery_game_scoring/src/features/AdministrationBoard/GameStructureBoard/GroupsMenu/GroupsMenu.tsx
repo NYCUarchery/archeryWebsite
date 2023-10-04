@@ -5,10 +5,10 @@ import { useState } from "react";
 
 export default function GroupsMenu() {
   const isOpen = useSelector(
-    (state: any) => state.qualificationStructureGroupMenu.isOpen
+    (state: any) => state.gameStructureGroupMenu.isOpen
   );
   const groupShown = useSelector(
-    (state: any) => state.qualificationStructureGroupMenu.groupShown
+    (state: any) => state.gameStructureGroupMenu.groupShown
   );
   const groupNames = useSelector((state: any) => state.game.groupNames);
   const groupsNum = useSelector((state: any) => state.game.groupsNum);

@@ -25,25 +25,178 @@
         "start_lane": 1,
         "end_lane": 4,
         "players_num_per_lane": 4,
-        "advancing_num": 0
+        "advancing_num": 0,
+        "no_lane_players": [
+          { "id": 10, "name": "劉冠亨", "group": 1, "lane": 0 }
+        ],
+        "lanes": [
+          {
+            "lane_num": 1,
+            "players": [
+              {
+                "id": 11,
+                "name": "林寶琳",
+                "group": 1,
+                "lane": 1
+              },
+              {
+                "id": 12,
+                "name": "蔡毅龍",
+                "group": 1,
+                "lane": 1
+              },
+              {
+                "id": 13,
+                "name": "梁永熹",
+                "group": 1,
+                "lane": 1
+              }
+            ]
+          },
+          {
+            "lane_num": 2,
+            "players": [
+              {
+                "id": 14,
+                "name": "蘇凌",
+                "group": 1,
+                "lane": 2
+              }
+            ]
+          },
+          {
+            "lane_num": 3,
+            "players": []
+          },
+          {
+            "lane_num": 4,
+            "players": []
+          }
+        ]
       },
       {
         "start_lane": 5,
         "end_lane": 10,
         "players_num_per_lane": 4,
-        "advancing_num": 0
+        "advancing_num": 0,
+        "no_lane_players": [],
+        "lanes": [
+          {
+            "lane_num": 5,
+            "players": [
+              {
+                "id": 15,
+                "name": "曾子瑀",
+                "group": 2,
+                "lane": 5
+              },
+              {
+                "id": 16,
+                "name": "朱星蓉",
+                "group": 2,
+                "lane": 5
+              }
+            ]
+          },
+          {
+            "lane_num": 6,
+            "players": [
+              {
+                "id": 17,
+                "name": "蘇佑勝",
+                "group": 2,
+                "lane": 6
+              }
+            ]
+          },
+          {
+            "lane_num": 7,
+            "players": []
+          },
+          {
+            "lane_num": 8,
+            "players": []
+          },
+          {
+            "lane_num": 9,
+            "players": []
+          },
+          {
+            "lane_num": 10,
+            "players": []
+          }
+        ]
       },
       {
         "start_lane": 11,
         "end_lane": 14,
         "players_num_per_lane": 4,
-        "advancing_num": 0
+        "advancing_num": 0,
+        "no_lane_players": [],
+        "lanes": [
+          {
+            "lane_num": 11,
+            "players": [
+              {
+                "id": 18,
+                "name": "許博鈞",
+                "group": 3,
+                "lane": 11
+              }
+            ]
+          },
+          {
+            "lane_num": 12,
+            "players": [
+              {
+                "id": 19,
+                "name": "陳崇玄",
+                "group": 3,
+                "lane": 12
+              }
+            ]
+          },
+          {
+            "lane_num": 13,
+            "players": []
+          },
+          {
+            "lane_num": 14,
+            "players": []
+          }
+        ]
       },
       {
         "start_lane": 15,
         "end_lane": 18,
         "players_num_per_lane": 2,
-        "advancing_num": 0
+        "advancing_num": 0,
+        "no_lane_players": [],
+        "lanes": [
+          {
+            "lane_num": 15,
+            "players": [
+              {
+                "id": 20,
+                "name": "鄞意東",
+                "group": 4,
+                "lane": 15
+              }
+            ]
+          },
+          {
+            "lane_num": 16,
+            "players": []
+          },
+          {
+            "lane_num": 17,
+            "players": []
+          },
+          {
+            "lane_num": 18,
+            "players": []
+          }
+        ]
       }
     ]
   },

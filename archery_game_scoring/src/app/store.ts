@@ -12,7 +12,7 @@ import { adminBoardTabsReducer } from "../features/Screen/SubGameBar/AdminBoardT
 import { groupsBoardReducer } from "../features/AdministrationBoard/GroupsBoard/groupsBoardSlice";
 import { groupSelectorReducer } from "../features/AdministrationBoard/GroupsBoard/GroupSelector/groupSelectorSlice";
 import { gameStructureBoardReducer } from "../features/AdministrationBoard/GameStructureBoard/gameStructureBoardSlice";
-import { qualificationStructureGroupMenuReducer } from "../features/AdministrationBoard/GameStructureBoard/QualificationBoard/GroupsMenu/groupsMenuSlice";
+import { gameStructureGroupMenuReducer } from "../features/AdministrationBoard/GameStructureBoard/GroupsMenu/groupsMenuSlice";
 import { qualificationStructureGroupBoardReducer } from "../features/AdministrationBoard/GameStructureBoard/QualificationBoard/GroupBoard/groupBoardSlice";
 
 const store = configureStore({
@@ -31,7 +31,7 @@ const store = configureStore({
     groupSelector: groupSelectorReducer,
 
     gameStructureBoard: gameStructureBoardReducer,
-    qualificationStructureGroupMenu: qualificationStructureGroupMenuReducer,
+    gameStructureGroupMenu: gameStructureGroupMenuReducer,
     qualificationStructureGroupBoard: qualificationStructureGroupBoardReducer,
   },
   middleware: (getDefaultMiddleware) =>

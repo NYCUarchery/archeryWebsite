@@ -17,7 +17,7 @@ export default function NoLanePlayerList({ players }: Props) {
     (state: any) => state.qualificationStructureGroupBoard.selectedPlayerId
   );
   const groupShown = useSelector(
-    (state: any) => state.qualificationStructureGroupMenu.groupShown
+    (state: any) => state.gameStructureGroupMenu.groupShown
   );
 
   const handleClick = (_event: React.MouseEvent) => {
