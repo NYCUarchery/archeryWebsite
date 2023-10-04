@@ -19,9 +19,9 @@ import (
 // @Param   	 password formData string true "password"
 // @Param   	 overview formData string false "overview"
 // @Param   	 organization formData string false "organization"
-// @Success      200  {object}  model.Response "success"
-// @Failure      400  {object}  model.Response "username exists"
-// @Failure 	 500  {object}  model.Response "db error"
+// @Success      200  {object}  response.Response "success"
+// @Failure      400  {object}  response.Response "username exists"
+// @Failure 	 500  {object}  response.Response "db error"
 // @Router       /user [post]
 func Register(c *gin.Context) {
 	var user model.User
@@ -53,8 +53,8 @@ func Register(c *gin.Context) {
 // @Produce      json
 // @Param   	 username formData string true "user's name"
 // @Param   	 password formData string true "password"
-// @Success      200  {object}  model.Response "success | has loginned"
-// @Failure      401  {object}  model.Response "wrong username or password"
+// @Success      200  {object}  response.Response "success | has loginned"
+// @Failure      401  {object}  response.Response "wrong username or password"
 // @Router       /session [post]
 func Login(c *gin.Context) {
 	username := c.PostForm("username")
@@ -88,7 +88,7 @@ func Login(c *gin.Context) {
 // @Description  delete the session
 // @Tags         session
 // @Produce      json
-// @Success      200  {object}  model.Response "success"
+// @Success      200  {object}  response.Response "success"
 // @Router       /session [delete]
 func Logout(c *gin.Context) {
 	pkg.ClearAuthSession(c)
@@ -107,9 +107,9 @@ func Logout(c *gin.Context) {
 // @Param   	 modPassword 	formData string false "modified password"
 // @Param   	 overview 		formData string false "modified overview"
 // @Param   	 organization 	formData string false "modified organization"
-// @Success      200  {object}  model.Response "success"
-// @Failure      400  {object}  model.Response "empty/invalid user id | invalid modified information"
-// @Failure      403  {object}  model.Response "cannot change other's info | wrong original password"
+// @Success      200  {object}  response.Response "success"
+// @Failure      400  {object}  response.Response "empty/invalid user id | invalid modified information"
+// @Failure      403  {object}  response.Response "cannot change other's info | wrong original password"
 // @Router       /user/{id} [put]
 func ModifyInfo(c *gin.Context) {
 	uidstr := c.Param("id")
@@ -184,7 +184,7 @@ func ModifyInfo(c *gin.Context) {
 // @Description  get my uid in the session
 // @Tags         user
 // @Produce      json
-// @Success      200  {object}  model.UIDResponse "success"
+// @Success      200  {object}  response.UIDResponse "success"
 // @Router       /user/me [get]
 func GetUserID(c *gin.Context) {
 	id := pkg.QuerySession(c, "id")
@@ -198,9 +198,9 @@ func GetUserID(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param   	 id 	  	 path 	  string true "user's id"
-// @Success      200  {object}  model.Response "success"
-// @Failure      400  {object}  model.Response "empty/invalid user id"
-// @Failure      404  {object}  model.Response "no user found"
+// @Success      200  {object}  response.Response "success"
+// @Failure      400  {object}  response.Response "empty/invalid user id"
+// @Failure      404  {object}  response.Response "no user found"
 // @Router       /user/{id} [get]
 func UserInfo(c *gin.Context) {
 	uidstr := c.Param("id")

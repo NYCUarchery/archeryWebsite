@@ -81,19 +81,19 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/model.CompResponse"
+                            "$ref": "#/definitions/response.CompResponse"
                         }
                     },
                     "400": {
                         "description": "competition name exists | cannot parse date string | invalid info/categories",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "500": {
                         "description": "DB error",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -122,19 +122,19 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/model.CompInfoResponse"
+                            "$ref": "#/definitions/response.CompInfoResponse"
                         }
                     },
                     "400": {
                         "description": "empty/invalid competition id",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "404": {
                         "description": "no competition found",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -166,13 +166,13 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "400": {
                         "description": "no user/competition found",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -211,13 +211,13 @@ const docTemplate = `{
                     "200": {
                         "description": "success | has loginned",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "401": {
                         "description": "wrong username or password",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -235,7 +235,7 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -286,19 +286,19 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "400": {
                         "description": "username exists",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "500": {
                         "description": "db error",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -318,7 +318,7 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/model.UIDResponse"
+                            "$ref": "#/definitions/response.UIDResponse"
                         }
                     }
                 }
@@ -350,19 +350,19 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "400": {
                         "description": "empty/invalid user id",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "404": {
                         "description": "no user found",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -424,19 +424,19 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "400": {
                         "description": "empty/invalid user id | invalid modified information",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "403": {
                         "description": "cannot change other's info | wrong original password",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -444,12 +444,12 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "model.CompInfoResponse": {
+        "response.CompInfoResponse": {
             "type": "object",
             "properties": {
                 "categories": {
                     "type": "string",
-                    "example": "[{des: "
+                    "example": "[{'des': '...', 'dis': 50}, ...]"
                 },
                 "date": {
                     "type": "string",
@@ -481,7 +481,7 @@ const docTemplate = `{
                 }
             }
         },
-        "model.CompResponse": {
+        "response.CompResponse": {
             "type": "object",
             "properties": {
                 "compID": {
@@ -494,7 +494,7 @@ const docTemplate = `{
                 }
             }
         },
-        "model.Response": {
+        "response.Response": {
             "type": "object",
             "properties": {
                 "result": {
@@ -503,7 +503,7 @@ const docTemplate = `{
                 }
             }
         },
-        "model.UIDResponse": {
+        "response.UIDResponse": {
             "type": "object",
             "properties": {
                 "uid": {

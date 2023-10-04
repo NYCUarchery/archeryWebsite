@@ -1,9 +1,9 @@
 basePath: /api/
 definitions:
-  model.CompInfoResponse:
+  response.CompInfoResponse:
     properties:
       categories:
-        example: '[{des: '
+        example: '[{''des'': ''...'', ''dis'': 50}, ...]'
         type: string
       date:
         example: "2006-01-02T15:04:05+08:00"
@@ -27,7 +27,7 @@ definitions:
         example: Scoreboard URL
         type: string
     type: object
-  model.CompResponse:
+  response.CompResponse:
     properties:
       compID:
         example: 87
@@ -36,13 +36,13 @@ definitions:
         example: result description
         type: string
     type: object
-  model.Response:
+  response.Response:
     properties:
       result:
         example: result description
         type: string
     type: object
-  model.UIDResponse:
+  response.UIDResponse:
     properties:
       uid:
         example: your uid
@@ -100,16 +100,16 @@ paths:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/model.CompResponse'
+            $ref: '#/definitions/response.CompResponse'
         "400":
           description: competition name exists | cannot parse date string | invalid
             info/categories
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
         "500":
           description: DB error
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
       summary: create a competition
       tags:
       - competition
@@ -128,15 +128,15 @@ paths:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/model.CompInfoResponse'
+            $ref: '#/definitions/response.CompInfoResponse'
         "400":
           description: empty/invalid competition id
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
         "404":
           description: no competition found
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
       summary: get information of the competition
       tags:
       - competition
@@ -157,11 +157,11 @@ paths:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
         "400":
           description: no user/competition found
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
       summary: join in a competition
       tags:
       - participant
@@ -174,7 +174,7 @@ paths:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
       summary: logout
       tags:
       - session
@@ -199,11 +199,11 @@ paths:
         "200":
           description: success | has loginned
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
         "401":
           description: wrong username or password
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
       summary: login
       tags:
       - session
@@ -237,15 +237,15 @@ paths:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
         "400":
           description: username exists
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
         "500":
           description: db error
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
       summary: register a user
       tags:
       - user
@@ -266,15 +266,15 @@ paths:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
         "400":
           description: empty/invalid user id
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
         "404":
           description: no user found
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
       summary: get a user's information
       tags:
       - user
@@ -316,15 +316,15 @@ paths:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
         "400":
           description: empty/invalid user id | invalid modified information
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
         "403":
           description: cannot change other's info | wrong original password
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
       summary: modify user's information
       tags:
       - user
@@ -337,7 +337,7 @@ paths:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/model.UIDResponse'
+            $ref: '#/definitions/response.UIDResponse'
       summary: get my uid
       tags:
       - user

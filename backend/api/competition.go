@@ -22,9 +22,9 @@ import (
 // @Param   	 overview 	 	formData string false "overview"
 // @Param   	 organization 	formData string false "organization"
 // @Param   	 scoreboardURL 	formData string false "Scoreboard URL"
-// @Success      200  {object}  model.CompResponse "success"
-// @Failure      400  {object}  model.Response "competition name exists | cannot parse date string | invalid info/categories"
-// @Failure      500  {object}  model.Response "DB error"
+// @Success      200  {object}  response.CompResponse "success"
+// @Failure      400  {object}  response.Response "competition name exists | cannot parse date string | invalid info/categories"
+// @Failure      500  {object}  response.Response "DB error"
 // @Router       /competition/ [post]
 func CreateCompetition(c *gin.Context) {
 	name := c.PostForm("name")
@@ -82,9 +82,9 @@ func CreateCompetition(c *gin.Context) {
 // @Tags         competition
 // @Produce      json
 // @Param   	 id 	 	 path int true "competition id"
-// @Success      200  {object}  model.CompInfoResponse "success"
-// @Failure      400  {object}  model.Response "empty/invalid competition id"
-// @Failure      404  {object}  model.Response "no competition found"
+// @Success      200  {object}  response.CompInfoResponse "success"
+// @Failure      400  {object}  response.Response "empty/invalid competition id"
+// @Failure      404  {object}  response.Response "no competition found"
 // @Router       /competition/{id} [get]
 func CompetitionInfo(c *gin.Context) {
 	cidstr := c.Param("id")
