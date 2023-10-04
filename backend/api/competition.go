@@ -47,13 +47,8 @@ func CreateCompetition(c *gin.Context) {
 	comp.HostID = pkg.QuerySession(c, "id").(uint)
 	comp.ScoreboardURL = c.PostForm("scoreboardURL")
 	comp.Overview = c.PostForm("overview")
-
-	err = model.AddCompetition(&comp)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"result": "DB error"})
-		return
-	}
 	
+	var compcats []model.CompetitionCategory
 	for _, catstr := range categories {
 		cat := struct {
 			Des string `json:"des"`
@@ -64,9 +59,20 @@ func CreateCompetition(c *gin.Context) {
 			return
 		}
 		var compcat model.CompetitionCategory
-		compcat.CompetitionID = comp.ID
+		compcat.CompetitionID = 0
 		compcat.Description = cat.Des
 		compcat.Distance = cat.Dis
+		compcats = append(compcats, compcat)
+	}
+
+	err = model.AddCompetition(&comp)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"result": "DB error"})
+		return
+	}
+
+	for _, compcat := range compcats {
+		compcat.CompetitionID = comp.ID
 		model.AddCompCategory(&compcat)
 	}
 	
