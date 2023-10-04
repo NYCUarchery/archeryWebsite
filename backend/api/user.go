@@ -54,7 +54,7 @@ func Register(c *gin.Context) {
 // @Param   	 username formData string true "user's name"
 // @Param   	 password formData string true "password"
 // @Success      200  {object}  model.Response "success | has loginned"
-// @Failure      404  {object}  model.Response "wrong username or password"
+// @Failure      401  {object}  model.Response "wrong username or password"
 // @Router       /session [post]
 func Login(c *gin.Context) {
 	username := c.PostForm("username")
@@ -192,8 +192,8 @@ func GetUserID(c *gin.Context) {
 }
 
 // UserInfo godoc
-// @Summary      modify user's information
-// @Description  modify username, password, overview, and organization
+// @Summary      get a user's information
+// @Description  get a user's username, overview, and organization
 // @Tags         user
 // @Accept       json
 // @Produce      json

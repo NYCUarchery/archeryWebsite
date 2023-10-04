@@ -200,7 +200,7 @@ paths:
           description: success | has loginned
           schema:
             $ref: '#/definitions/model.Response'
-        "404":
+        "401":
           description: wrong username or password
           schema:
             $ref: '#/definitions/model.Response'
@@ -253,7 +253,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: modify username, password, overview, and organization
+      description: get a user's username, overview, and organization
       parameters:
       - description: user's id
         in: path
@@ -275,7 +275,7 @@ paths:
           description: no user found
           schema:
             $ref: '#/definitions/model.Response'
-      summary: modify user's information
+      summary: get a user's information
       tags:
       - user
     put:

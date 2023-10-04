@@ -214,7 +214,7 @@ const docTemplate = `{
                             "$ref": "#/definitions/model.Response"
                         }
                     },
-                    "404": {
+                    "401": {
                         "description": "wrong username or password",
                         "schema": {
                             "$ref": "#/definitions/model.Response"
@@ -326,7 +326,7 @@ const docTemplate = `{
         },
         "/user/{id}": {
             "get": {
-                "description": "modify username, password, overview, and organization",
+                "description": "get a user's username, overview, and organization",
                 "consumes": [
                     "application/json"
                 ],
@@ -336,7 +336,7 @@ const docTemplate = `{
                 "tags": [
                     "user"
                 ],
-                "summary": "modify user's information",
+                "summary": "get a user's information",
                 "parameters": [
                     {
                         "type": "string",
