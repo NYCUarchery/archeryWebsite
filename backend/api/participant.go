@@ -34,7 +34,7 @@ func JoinInCompetition(c *gin.Context) {
 		return
 	}
 
-	if comp, _ := model.CompetitionInfoByID(compID); comp.ID == 0 {
+	if comp := model.CompetitionInfoByID(compID); comp.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"result": "no competition found"})
 		return
 	}
@@ -44,7 +44,9 @@ func JoinInCompetition(c *gin.Context) {
 		return
 	}
 	var par model.Participant
-	par.UserID, par.CompetitionID = userID, compID
+	par.UserID = userID
+	par.CompetitionID = compID
+	par.Status = "pending"
 	
 	model.AddParticipant(&par)
 	c.JSON(http.StatusOK, gin.H{"result": "success"})

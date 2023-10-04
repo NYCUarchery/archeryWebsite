@@ -29,14 +29,22 @@ type Competition struct {
 }
 
 type CompetitionCategory struct {
-	CompetitionID 	uint `gorm:"not null"`
-	Description 	string  `gorm:"not null"`
-	Distance 		int32 `gorm:"not null"`
+	ID 				uint   `gorm:"primaryKey;autoIncrement"`
+	CompetitionID 	uint   `gorm:"not null"`
+	Description 	string `gorm:"not null"`
+	Distance 		int32  `gorm:"not null"`
 }
 
 type Participant struct {
-	UserID 			uint `gorm:"not null"`
-	CompetitionID 	uint `gorm:"not null"`
+	ID 				uint   `gorm:"primaryKey;autoIncrement"`
+	UserID 			uint   `gorm:"not null"`
+	CompetitionID 	uint   `gorm:"not null"`
+	Status 			string `gorm:"not null"`
+}
+
+type ParticipantCategory struct {
+	ParticipantID uint `gorm:"not null"`
+	CategoryID    uint `gorm:"not null"`
 }
 
 type conf struct {
@@ -82,6 +90,7 @@ func init() {
 	DB.AutoMigrate(&Competition{})
 	DB.AutoMigrate(&Participant{})
 	DB.AutoMigrate(&CompetitionCategory{})
+	DB.AutoMigrate(&ParticipantCategory{})
 }
 
 

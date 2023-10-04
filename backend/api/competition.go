@@ -31,7 +31,7 @@ func CreateCompetition(c *gin.Context) {
 	date := c.PostForm("date")
 	categories := c.PostFormArray("categories")
 	
-	if findComp, _ := model.CompetitionInfoByName(name); findComp.ID != 0 {
+	if findComp := model.CompetitionInfoByName(name); findComp.ID != 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "competition name exists"})
 		return
 	}
@@ -99,7 +99,7 @@ func CompetitionInfo(c *gin.Context) {
 		return
 	}
 
-	comp, _ := model.CompetitionInfoByID(uint(cid))
+	comp := model.CompetitionInfoByID(uint(cid))
 	if comp.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"result": "no competition found"})
 		return
