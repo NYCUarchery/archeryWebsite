@@ -271,6 +271,13 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "email",
+                        "name": "email",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "overview",
                         "name": "overview",
                         "in": "formData"
@@ -290,7 +297,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "username exists",
+                        "description": "username/email exists | empty username/password/email",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }
@@ -350,7 +357,7 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/response.Response"
+                            "$ref": "#/definitions/response.UserInfoResponse"
                         }
                     },
                     "400": {
@@ -389,13 +396,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "modified user's name",
-                        "name": "username",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "original password",
                         "name": "oriPassword",
                         "in": "formData",
@@ -405,6 +405,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "modified password",
                         "name": "modPassword",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "modified email",
+                        "name": "email",
                         "in": "formData"
                     },
                     {
@@ -473,7 +479,7 @@ const docTemplate = `{
                 },
                 "result": {
                     "type": "string",
-                    "example": "result description"
+                    "example": "success"
                 },
                 "scoreboardURL": {
                     "type": "string",
@@ -509,6 +515,31 @@ const docTemplate = `{
                 "uid": {
                     "type": "string",
                     "example": "your uid"
+                }
+            }
+        },
+        "response.UserInfoResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "user email"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "user name"
+                },
+                "organization": {
+                    "type": "string",
+                    "example": "user organization"
+                },
+                "overview": {
+                    "type": "string",
+                    "example": "user overview"
+                },
+                "result": {
+                    "type": "string",
+                    "example": "success"
                 }
             }
         }

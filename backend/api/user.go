@@ -15,24 +15,43 @@ import (
 // @Tags         user
 // @Accept       json
 // @Produce      json
-// @Param   	 username formData string true "user's name"
-// @Param   	 password formData string true "password"
-// @Param   	 overview formData string false "overview"
+// @Param   	 username 	  formData string true "user's name"
+// @Param   	 password 	  formData string true "password"
+// @Param   	 email 	  	  formData string true "email"
+// @Param   	 overview 	  formData string false "overview"
 // @Param   	 organization formData string false "organization"
 // @Success      200  {object}  response.Response "success"
-// @Failure      400  {object}  response.Response "username exists"
+// @Failure      400  {object}  response.Response "username/email exists | empty username/password/email"
 // @Failure 	 500  {object}  response.Response "db error"
 // @Router       /user [post]
 func Register(c *gin.Context) {
 	var user model.User
 	user.Name = c.PostForm("username")
 
-	if findUser, _ := model.UserInfoByName(user.Name); findUser.ID != 0 {
+	if user.Name == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "empty username"})
+		return
+	}
+
+	if findUser := model.UserInfoByName(user.Name); findUser.ID != 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "username exists"})
 		return
 	}
 
 	user.Password = pkg.EncryptPassword(c.PostForm("password"))
+	if user.Password == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "empty password"})
+		return
+	}
+	user.Email = c.PostForm("email")
+	if user.Email == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "empty email"})
+		return
+	}
+	if model.CheckEmailExist(user.Email) {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "email exists"})
+		return
+	}
 	user.Overview = c.PostForm("overview")
 	user.Organization = c.PostForm("organization")
 
@@ -65,15 +84,16 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	var err error
 	var user model.User
-	user, err = model.UserInfoByName(username)
+	user = model.UserInfoByName(username)
 
-	if err != nil {
+	// No user found
+	if user.ID == 0 {
 		c.JSON(http.StatusUnauthorized, gin.H{"result": "wrong username or password"})
 		return
 	}
 
+	// Wrong password
 	if err := pkg.Compare(user.Password, password); err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"result": "wrong username or password"})
 		return 
@@ -102,9 +122,9 @@ func Logout(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param   	 id 	  	 	path 	   string true "user's id"
-// @Param   	 username 	 	formData string true "modified user's name"
 // @Param   	 oriPassword 	formData string true "original password"
 // @Param   	 modPassword 	formData string false "modified password"
+// @Param   	 email		 	formData string false "modified email"
 // @Param   	 overview 		formData string false "modified overview"
 // @Param   	 organization 	formData string false "modified organization"
 // @Success      200  {object}  response.Response "success"
@@ -129,31 +149,30 @@ func ModifyInfo(c *gin.Context) {
 		return
 	}
 
-	username := c.PostForm("username")
 	oriPassword := c.PostForm("oriPassword")
 	modPassword := c.PostForm("modPassword")
+	modEmail := c.PostForm("email")
 	modOverview := c.PostForm("overview")
 	modOrganization := c.PostForm("organization")
 
-	if username == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"result": "username can't be empty"})
-		return
-	}
-
-	findUser, _ := model.UserInfoByName(username)
-	if findUser.ID != 0 && findUser.ID != uint(uid) {
-		c.JSON(http.StatusBadRequest, gin.H{"result": "username exists"})
-		return
-	}
-
 	if oriPassword == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"result": "original password can't be empty"})
+		c.JSON(http.StatusBadRequest, gin.H{"result": "empty original password"})
+		return
+	}
+
+	if modEmail == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "empty email"})
+		return
+	}
+
+	if model.CheckEmailExist(modEmail) {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "email exists"})
 		return
 	}
 
 	var user model.User
-	user, err = model.UserInfoByID(uint(uid))
-	if err != nil {
+	user = model.UserInfoByID(uint(uid))
+	if user.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"result": "no user found"})
 		return
 	}
@@ -170,7 +189,8 @@ func ModifyInfo(c *gin.Context) {
 		}
 		user.Password = pkg.EncryptPassword(modPassword)
 	}
-	user.Name = username
+	
+	user.Email = modEmail
 	user.Overview = modOverview
 	user.Organization = modOrganization
 
@@ -198,7 +218,7 @@ func GetUserID(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param   	 id 	  	 path 	  string true "user's id"
-// @Success      200  {object}  response.Response "success"
+// @Success      200  {object}  response.UserInfoResponse "success"
 // @Failure      400  {object}  response.Response "empty/invalid user id"
 // @Failure      404  {object}  response.Response "no user found"
 // @Router       /user/{id} [get]
@@ -215,7 +235,7 @@ func UserInfo(c *gin.Context) {
 		return
 	}
 
-	user, _ := model.UserInfoByID(uint(uid))
+	user := model.UserInfoByID(uint(uid))
 	if user.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"result": "no user found"})
 		return
@@ -224,6 +244,7 @@ func UserInfo(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"result": "success",
 		"name": user.Name,
+		"email": user.Email,
 		"organization": user.Organization,
 		"overview": user.Overview,
 	})

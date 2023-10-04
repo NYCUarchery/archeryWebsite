@@ -29,7 +29,7 @@ func JoinInCompetition(c *gin.Context) {
 	compID := uint(compIDu64)
 
 	var user model.User
-	if user, _ = model.UserInfoByID(userID); user.ID == 0 {
+	if user = model.UserInfoByID(userID); user.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"result": "no user found"})
 		return
 	}

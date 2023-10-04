@@ -21,7 +21,7 @@ definitions:
         example: '[1, 2, 3, 87]'
         type: string
       result:
-        example: result description
+        example: success
         type: string
       scoreboardURL:
         example: Scoreboard URL
@@ -46,6 +46,24 @@ definitions:
     properties:
       uid:
         example: your uid
+        type: string
+    type: object
+  response.UserInfoResponse:
+    properties:
+      email:
+        example: user email
+        type: string
+      name:
+        example: user name
+        type: string
+      organization:
+        example: user organization
+        type: string
+      overview:
+        example: user overview
+        type: string
+      result:
+        example: success
         type: string
     type: object
 host: localhost:8080
@@ -223,6 +241,11 @@ paths:
         name: password
         required: true
         type: string
+      - description: email
+        in: formData
+        name: email
+        required: true
+        type: string
       - description: overview
         in: formData
         name: overview
@@ -239,7 +262,7 @@ paths:
           schema:
             $ref: '#/definitions/response.Response'
         "400":
-          description: username exists
+          description: username/email exists | empty username/password/email
           schema:
             $ref: '#/definitions/response.Response'
         "500":
@@ -266,7 +289,7 @@ paths:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/response.Response'
+            $ref: '#/definitions/response.UserInfoResponse'
         "400":
           description: empty/invalid user id
           schema:
@@ -288,11 +311,6 @@ paths:
         name: id
         required: true
         type: string
-      - description: modified user's name
-        in: formData
-        name: username
-        required: true
-        type: string
       - description: original password
         in: formData
         name: oriPassword
@@ -301,6 +319,10 @@ paths:
       - description: modified password
         in: formData
         name: modPassword
+        type: string
+      - description: modified email
+        in: formData
+        name: email
         type: string
       - description: modified overview
         in: formData
