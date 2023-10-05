@@ -1,3 +1,2 @@
-backend/**/*.yaml
-backend/model/*
-backend/pkg/*
+backend/config/db.yaml
+backend/config/session.yaml
