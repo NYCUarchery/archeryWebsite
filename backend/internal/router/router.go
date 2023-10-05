@@ -14,7 +14,6 @@ import (
 func RouterSetup() *gin.Engine {
 	router := gin.Default()
 
-	router.Use(allowCORSMiddleware())
 	router.Use(pkg.EnableCookieSessionMiddleware())
 
 	sr := router.Group("/api")
@@ -52,12 +51,4 @@ func RouterSetup() *gin.Engine {
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	return router
-}
-
-func allowCORSMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", "http://localhost:3000")
-		c.Header("Access-Control-Allow-Credentials", "true")
-		c.Next()
-	}
 }

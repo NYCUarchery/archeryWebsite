@@ -1,19 +1,19 @@
 const api = {
 	user: {
-		login: "api/session/",
-		logout: "api/session/",
-		modifyInfo: "api/user",
-		register: "api/user/",
-		getUserID: "api/user/me",
-		info: "api/user",
+		login: "session",
+		logout: "session",
+		modifyInfo: "user",
+		register: "user",
+		getUserID: "user/me",
+		info: "user",
 	},
 	competition: {
-		create: "api/competition/",
-		join: "api/competition/join",
+		create: "competition",
+		join: "competition/join",
 	},
 };
 
-const host = "http://127.0.0.1:8080";
+const host = "http://"+window.location.host+"/api";
 
 
 export { host, api };
