@@ -1,28 +1,22 @@
+import { useState, Dispatch, SetStateAction, FC } from 'react';
 
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import Box from '@mui/material/Box';
-import { useState, Dispatch, SetStateAction, FC } from 'react';
-import TextField from '@mui/material/TextField';
-
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-
-import FormHelperText from '@mui/material/FormHelperText';
-import InputAdornment from '@mui/material/InputAdornment';
-import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
 
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
-
 import { useNavigate } from 'react-router-dom';
-
 import * as Yup from 'yup';
 import { Formik } from 'formik';
-import { FormControl } from '@mui/material';
 
-import * as AES from 'crypto-js/aes';
+import OneLineField from '../components/formFields/OneLineField';
+import SecretField from '../components/formFields/SecretField';
+import MultiLineInput from '../components/formFields/MultiLineField';
+
+import { host, api } from '../util/api';
+import routing from '../util/routing';
 
 interface SignupPageProps {
 	setPath: Dispatch<SetStateAction<string>>;
@@ -67,6 +61,8 @@ const SignupPage: FC<SignupPageProps> = ({setPath, setAuthorized}) => {
 								username: "",
 								password: "",
 								passwordConfirm: "",
+								overview: "",
+								organization: "",
 							}}
 							validationSchema={Yup.object().shape({
 								username: Yup.string().max(255).required('Username is required'),
@@ -75,37 +71,34 @@ const SignupPage: FC<SignupPageProps> = ({setPath, setAuthorized}) => {
 							})}
 							onSubmit={(values, { setErrors, setStatus, setSubmitting }) => {
 								console.log("try to send");
-								// const passwordCy = AES.encrypt(values.password, 'trytocypher').toString();
-								// const passwordConfirmCy = AES.encrypt(values.passwordConfirm, 'trytocypher').toString();
-								// console.log("passwordCy: ", passwordCy, " passwordConfirmCy: ", passwordConfirmCy)
 								const body = new FormData();
 								body.append("username", values.username);
 								body.append("password", values.password);
-								body.append("confirmPassword", values.passwordConfirm);
-								fetch("http://localhost:8080/api/register", {
+								body.append("overview", values.overview);
+								body.append("organization", values.organization);
+								// body.append("confirmPassword", values.passwordConfirm);
+								fetch(`${host}/${api.user.register}`, {
 									method: "POST",
 									body,
-									// body: JSON.stringify({
-									// 	"username": values.username,
-									// 	"password": passwordCy,
-									// 	"confirmPassword": passwordConfirmCy,
-									// }),
-									// credentials: 'include',
 								})
 								.then((res) => {
+									console.log("res: ", res);
+									if (res.status === 200) {
+										window.alert("成功註冊 讚");
+										setPath("/Login")
+										navigate(routing.Login);
+									} else if (res.status === 400) {
+										window.alert("此帳號已存在");
+									} else if (res.status === 500) {
+										window.alert("後端好像壞啦ouo 怕爆><");
+									}
 									return res.json();
 								})
 								.then((resjson) => {
-									if (resjson["result"] && (resjson["result"] === "success")) {
-										setPath("/Login")
-										navigate("/Login");
-									} else {
-										console.log("here3");
-										window.alert("使用者帳號已存在");
-										navigate("/Signup");
-									}
-									console.log("Here2")
-								});
+								})
+								.catch((err) => {
+									console.log(err)
+								});;
 						}}
 						>
 							{({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
@@ -113,91 +106,69 @@ const SignupPage: FC<SignupPageProps> = ({setPath, setAuthorized}) => {
 
 									<Grid container direction="column" alignItems="center" justifyContent="center" spacing={2}>
 										<Grid item xs={2}>
-											<FormControl sx={{width: "300px"}} error={Boolean(touched.username && touched.password && touched.passwordConfirm)}>
-												<TextField
-													required
-													label="帳號"
-													value={values.username}
-													name="username" // input and display, check initialValues
-													onChange={handleChange}
-													onBlur={handleBlur}
-												/>
-
-												{touched.username && errors.username && (
-														<FormHelperText error id="standard-weight-helper-text-email-login">
-																{' '}
-																{errors.username}{' '}
-														</FormHelperText>
-												)}
-											</FormControl>
+											<OneLineField
+												touched={touched.username && touched.password && touched.passwordConfirm}
+												error={errors.username}
+												handleChange={handleChange}
+												handleBlur={handleBlur}
+												name={"username"}
+												label={"帳號"}
+												value={values.username}
+											/>
 										</Grid>
 										<Grid item xs={2}>
-											<FormControl sx={{width: "300px"}} error={Boolean(touched.username && touched.password && touched.passwordConfirm)}>
-												<TextField
-													required
-													type={showPassword ? 'text' : 'password'}
-													label="密碼"
-													value={values.password}
-													name="password" // input
-													onChange={handleChange}
-													onBlur={handleBlur}
-													InputProps={{
-														endAdornment: (
-															<InputAdornment position="end">
-																<IconButton
-																		aria-label="toggle password visibility"
-																		onClick={handleClickShowPassword}
-																		onMouseDown={handleMouseDownPassword}
-																		edge="end"
-																>
-																	{showPassword ? <Visibility /> : <VisibilityOff />}
-																</IconButton>
-															</InputAdornment>
-														)
-													}}
-												/>
-
-												{touched.password && errors.password && (
-														<FormHelperText error id="standard-weight-helper-text-email-login">
-																{' '}
-																{errors.password}{' '}
-														</FormHelperText>
-												)}
-											</FormControl>
+											<SecretField
+												touched={touched.username && touched.password && touched.passwordConfirm}
+												error={errors.password}
+												handleChange={handleChange}
+												handleBlur={handleBlur}
+												name={"password"}
+												label={"密碼"}
+												value={values.password}
+												secret={{
+													click: handleClickShowPassword,
+													mousedown: handleMouseDownPassword,
+													show: showPassword,
+												}}
+											/>
 										</Grid>
 										<Grid item xs={2}>
-											<FormControl sx={{width: "300px"}} error={Boolean(touched.username && touched.password && touched.passwordConfirm)}>
-												<TextField
-													required
-													type={showPasswordConfirm ? 'text' : 'password'}
-													label="再輸入一次密碼"
-													value={values.passwordConfirm}
-													name="passwordConfirm" // input
-													onChange={handleChange}
-													onBlur={handleBlur}
-													InputProps={{
-														endAdornment: (
-															<InputAdornment position="end">
-																<IconButton
-																	aria-label="toggle confirm password visibility"
-																	onClick={handleClickShowPasswordConfirm}
-																	onMouseDown={handleMouseDownPasswordConfirm}
-																	edge="end"
-																>
-																	{showPasswordConfirm ? <Visibility /> : <VisibilityOff />}
-																</IconButton>
-															</InputAdornment>
-														)
-													}}
-												/>
-
-												{touched.passwordConfirm && errors.passwordConfirm && (
-													<FormHelperText error id="standard-weight-helper-text-email-login">
-														{' '}
-														{errors.passwordConfirm}{' '}
-													</FormHelperText>
-												)}
-											</FormControl>
+											<SecretField
+												touched={touched.username && touched.password && touched.passwordConfirm}
+												error={errors.passwordConfirm}
+												handleChange={handleChange}
+												handleBlur={handleBlur}
+												name={"passwordConfirm"}
+												label={"再輸入一次密碼"}
+												value={values.passwordConfirm}
+												secret={{
+													click: handleClickShowPasswordConfirm,
+													mousedown: handleMouseDownPasswordConfirm,
+													show: showPasswordConfirm,
+												}}
+											/>
+										</Grid>
+										<Grid item xs={2}>
+											<OneLineField
+												touched={touched.username && touched.password && touched.passwordConfirm}
+												error={errors.organization}
+												handleChange={handleChange}
+												handleBlur={handleBlur}
+												name={"organization"}
+												label={"所屬組織"}
+												value={values.organization}
+											/>
+										</Grid>
+										<Grid item xs={2}>
+											<MultiLineInput
+												touched={touched.username && touched.password && touched.passwordConfirm}
+												error={errors.overview}
+												handleChange={handleChange}
+												handleBlur={handleBlur}
+												name={"overview"}
+												label={"自我介紹"}
+												value={values.overview}
+											/>
 										</Grid>
 										<Grid item xs={2}>
 											<Box
@@ -224,10 +195,8 @@ const SignupPage: FC<SignupPageProps> = ({setPath, setAuthorized}) => {
 												component={Button}
 												onClick={() => {
 													setPath("/Login");
-													navigate("/Login");
+													navigate(routing.Login);
 												}}
-												// component={Link}
-												// to={props.login ? '/pages/forgot-password/forgot-password' + props.login : '#'}
 												color="secondary"
 												noWrap={true}
 												sx={{ textDecoration: 'none'}}

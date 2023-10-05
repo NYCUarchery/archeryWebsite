@@ -21,9 +21,10 @@ import Grow from '@mui/material/Grow';
 
 import avatar from "../assets/images/avatar.jpg";
 import { useNavigate } from 'react-router-dom';
-// import { create } from 'domain';
 
 import Avatar from '@mui/material/Avatar';
+import { host, api } from '../util/api';
+import routing from '../util/routing';
 
 interface HeaderProps {
   setSideBarOpen: Dispatch<SetStateAction<boolean>>;
@@ -67,7 +68,7 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen, setAuthorized }) => {
           >
             <MenuIcon />
           </IconButton>
-          <Button variant="text" sx={{ color: "white"}} onClick={() => navigate("/")}>
+          <Button variant="text" sx={{ color: "white"}} onClick={() => navigate(routing.Home)}>
             <Typography variant="h6" component="div">
               Archery
             </Typography>
@@ -97,7 +98,7 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen, setAuthorized }) => {
                     >
                       <Card>
                         <CardContent sx={{display: "flex", flexFlow: "column", alignItems: "center"}}>
-                          <img src={avatar} alt="My Avatar" width="100px" style={{cursor: "pointer"}} onClick={() => navigate("/PersonalPage")}/>
+                          <img src={avatar} alt="My Avatar" width="100px" style={{cursor: "pointer"}} onClick={() => navigate(routing.Personal)}/>
                           <Box component="div" sx={{display: "flex", flexFlow: "column", mt: "10px"}}>
                             <MenuList>
 
@@ -105,7 +106,7 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen, setAuthorized }) => {
                                 aria-label="personal page"
                                 onClick={() => {
                                   handleClose();
-                                  navigate("/PersonalPage");
+                                  navigate(routing.Personal);
                                 }}
                               >
                                 個人頁面
@@ -114,18 +115,19 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen, setAuthorized }) => {
                                 onClick={() => {
                                   handleClose();
                                   setAuthorized(false);
-                                  fetch("http://localhost:8080/api/logout", {
-                                    method: "GET",
+                                  fetch(`${host}/${api.user.logout}`, {
+                                    method: "DELETE",
+                                    credentials: "include",
                                   })
                                   .then((res) => {
-
+                                    console.log("res: ", res)
                                     return res.json()
                                   })
                                   .then((resjson) => {
                                     console.log(resjson);
                                     if (resjson["result"] && resjson["result"] === "success") {
                                       console.log("Log Out Success");
-                                      navigate("/login");
+                                      navigate(routing.Login);
                                     } else {
                                       window.alert("");
                                     }

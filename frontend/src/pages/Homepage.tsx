@@ -48,11 +48,6 @@ const Homepage = () => {
 				<Box sx={{mt: 2}}>
 					<TableContainer component={Paper}>
 						<Table aria-label="table">
-							{/* <TableHead>
-								<TableRow>
-									<TableCell></TableCell>
-								</TableRow>
-							</TableHead> */}
 							<TableBody>
 								{rows.map((v, i) => (
 									<TableRow
