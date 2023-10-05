@@ -25,7 +25,7 @@ import (
 // @Success      200  {object}  response.CompResponse "success"
 // @Failure      400  {object}  response.Response "competition name exists | cannot parse date string | invalid info/categories"
 // @Failure      500  {object}  response.Response "DB error"
-// @Router       /competition/ [post]
+// @Router       /competition [post]
 func CreateCompetition(c *gin.Context) {
 	name := c.PostForm("name")
 	date := c.PostForm("date")
@@ -143,6 +143,22 @@ func CompetitionInfo(c *gin.Context) {
 		"overview": comp.Overview,
 		"categories": pairs,
 		"participants": parids,
+	})
+}
+
+// AllCompetitionInfo godoc
+// @Summary      get information of all the competition
+// @Description  get id, name, date, hostID, scoreboardURL, and overview only
+// @Tags         competition
+// @Produce      json
+// @Success      200  {object}  response.AllCompInfoResponse "success"
+// @Router       /competition [get]
+func AllCompetitionInfo(c *gin.Context) {
+	comps := model.AllCompetitionInfo()
+
+	c.JSON(http.StatusOK, gin.H{
+		"result": "success",
+		"competitions": comps,
 	})
 }
 

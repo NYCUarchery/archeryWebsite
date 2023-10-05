@@ -23,7 +23,25 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/competition/": {
+        "/competition": {
+            "get": {
+                "description": "get id, name, date, hostID, scoreboardURL, and overview only",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "competition"
+                ],
+                "summary": "get information of all the competition",
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/response.AllCompInfoResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "create a competition and set the person as the host",
                 "consumes": [
@@ -450,12 +468,42 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "response.AllCompInfoResponse": {
+            "type": "object",
+            "properties": {
+                "competitions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.Competition"
+                    }
+                },
+                "result": {
+                    "type": "string",
+                    "example": "success"
+                }
+            }
+        },
+        "response.Category": {
+            "type": "object",
+            "properties": {
+                "des": {
+                    "type": "string",
+                    "example": "wc"
+                },
+                "dis": {
+                    "type": "string",
+                    "example": "50"
+                }
+            }
+        },
         "response.CompInfoResponse": {
             "type": "object",
             "properties": {
                 "categories": {
-                    "type": "string",
-                    "example": "[{'des': '...', 'dis': 50}, ...]"
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.Category"
+                    }
                 },
                 "date": {
                     "type": "string",
@@ -497,6 +545,31 @@ const docTemplate = `{
                 "result": {
                     "type": "string",
                     "example": "result description"
+                }
+            }
+        },
+        "response.Competition": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string",
+                    "example": "2006-01-02T15:04:05+08:00"
+                },
+                "hostID": {
+                    "type": "string",
+                    "example": "87"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "competition name"
+                },
+                "overview": {
+                    "type": "string",
+                    "example": "overview"
+                },
+                "scoreboardURL": {
+                    "type": "string",
+                    "example": "Scoreboard URL"
                 }
             }
         },

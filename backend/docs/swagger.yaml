@@ -1,10 +1,30 @@
 basePath: /api/
 definitions:
+  response.AllCompInfoResponse:
+    properties:
+      competitions:
+        items:
+          $ref: '#/definitions/response.Competition'
+        type: array
+      result:
+        example: success
+        type: string
+    type: object
+  response.Category:
+    properties:
+      des:
+        example: wc
+        type: string
+      dis:
+        example: "50"
+        type: string
+    type: object
   response.CompInfoResponse:
     properties:
       categories:
-        example: '[{''des'': ''...'', ''dis'': 50}, ...]'
-        type: string
+        items:
+          $ref: '#/definitions/response.Category'
+        type: array
       date:
         example: "2006-01-02T15:04:05+08:00"
         type: string
@@ -34,6 +54,24 @@ definitions:
         type: integer
       result:
         example: result description
+        type: string
+    type: object
+  response.Competition:
+    properties:
+      date:
+        example: "2006-01-02T15:04:05+08:00"
+        type: string
+      hostID:
+        example: "87"
+        type: string
+      name:
+        example: competition name
+        type: string
+      overview:
+        example: overview
+        type: string
+      scoreboardURL:
+        example: Scoreboard URL
         type: string
     type: object
   response.Response:
@@ -79,7 +117,19 @@ info:
   title: Archery backend API
   version: "1.0"
 paths:
-  /competition/:
+  /competition:
+    get:
+      description: get id, name, date, hostID, scoreboardURL, and overview only
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/response.AllCompInfoResponse'
+      summary: get information of all the competition
+      tags:
+      - competition
     post:
       consumes:
       - application/json

@@ -23,6 +23,11 @@ func CompetitionInfoByID(id uint) (comp Competition){
 	return
 }
 
+func AllCompetitionInfo() (comps []Competition){
+	DB.Find(&comps)
+	return
+}
+
 func AddParticipant(par *Participant) {
 	DB.Create(par)
 }
