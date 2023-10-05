@@ -18,3 +18,10 @@ services:
     restart: always
     volumes:
       - ./data/db_data:/var/lib/mysql
+  backend:
+    build: ./backend
+    restart: always
+    ports:
+      - 8080:8080
+    depends_on:
+      - mysql
