@@ -1,0 +1,34 @@
+version: '3.9'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile-dev
+    restart: always
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+  mysql:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    restart: always
+    # volumes:
+    #   - ./data/db_data:/var/lib/mysql
+  backend:
+    build: ./backend
+    restart: always
+    depends_on:
+      - mysql
+  reverse-proxy:
+    build: ./reverse-proxy
+    restart: always
+    ports:
+      - 6969:80
+    depends_on:
+      - frontend
+      - backend
