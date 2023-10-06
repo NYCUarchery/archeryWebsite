@@ -20,7 +20,14 @@ const participantsSlice = createSlice({
     },
 
     confirmPlayer: (state, action) => {
-      state.players.push(state.playerApplications[action.payload as number]);
+      const application = state.playerApplications[action.payload as number];
+      const player = {
+        id: application.id,
+        name: application.name,
+        group: application.group,
+        lane: 0,
+      };
+      state.players.push(player);
       state.playerApplications.splice(action.payload as number, 1);
       state.players.sort((a, b) => {
         return a.id - b.id;

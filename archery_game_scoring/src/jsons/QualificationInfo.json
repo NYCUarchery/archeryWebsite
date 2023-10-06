@@ -4,7 +4,7 @@
     {
       "name": "新生",
       "player_num": 40,
-      "qualification_num": 16,
+      "advancing_num": 16,
       "players": [
         {
           "rank": "1",
@@ -291,7 +291,7 @@
     {
       "name": "大專30m",
       "player_num": 12,
-      "qualification_num": 8,
+      "advancing_num": 8,
       "players": [
         {
           "rank": "1",
@@ -382,7 +382,7 @@
     {
       "name": "公開30m",
       "player_num": 27,
-      "qualification_num": 16,
+      "advancing_num": 16,
       "players": [
         {
           "rank": "1",
@@ -578,7 +578,7 @@
     {
       "name": "公開70m",
       "player_num": 16,
-      "qualification_num": 8,
+      "advancing_num": 8,
       "players": [
         {
           "rank": "1",
