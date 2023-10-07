@@ -38,8 +38,8 @@ func UpdateGameInfo(context *gin.Context) {
 		return
 	}
 	newData := database.UpdateGameInfo(convert2int(context, "id"), data)
-	if newData.ID == 0 {
-		context.IndentedJSON(http.StatusBadRequest, "error : "+err.Error())
+	if newData.Title == "" {
+		context.IndentedJSON(http.StatusInternalServerError, "error : "+err.Error())
 		return
 	}
 	context.IndentedJSON(http.StatusOK, newData)

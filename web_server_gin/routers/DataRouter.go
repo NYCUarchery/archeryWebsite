@@ -11,7 +11,6 @@ func AddDataRouter(data *gin.RouterGroup) {
 	data.GET("/txt/:dataName", translate.GetHTTPData) // response "name".txt data file with /translate/2JSON method
 
 	data.GET("/eliminationInfo/:gameName", translate.GetEliminationInfo)
-	data.GET("/gameInfo/:gameName", translate.GetGameInfo)
 	data.GET("/groupInfo/:gameName", translate.GetGroupInfo)
 	data.GET("/phaseInfo/:gameName", translate.GetPhaseInfo)
 	data.GET("/qualificationInfo/:gameName", translate.GetQualificationInfo)
@@ -20,6 +19,9 @@ func AddDataRouter(data *gin.RouterGroup) {
 
 	laneinfo := data.Group("laneinfo")
 	laneInfoRouter(laneinfo)
+
+	gameinfo := data.Group("gameinfo")
+	gameInfoRouter(gameinfo)
 
 	data.GET("/", translate.FindAllUsers)
 	data.GET("/:id", translate.FindByUserID)
@@ -35,4 +37,11 @@ func laneInfoRouter(data *gin.RouterGroup) {
 	data.PUT("/score/:id/:stageindex/:userindex/:arrowindex/:score", translate.UpdataLaneScore)
 	data.PUT("/confirm/:id/:stageindex/:userindex/:confirm", translate.UpdataLaneConfirm)
 	data.DELETE("/:id", translate.DeleteLaneInfoByID)
+}
+
+func gameInfoRouter(data *gin.RouterGroup) {
+	data.GET("/:id", translate.GetGameInfoByID)
+	data.POST("/", translate.PostGameInfo)
+	data.PUT("/whole/:id", translate.UpdateGameInfo)
+	data.DELETE("/:id", translate.DeleteGameInfo)
 }

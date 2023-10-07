@@ -4,11 +4,11 @@ type GameInfo struct { // DB : game_info
 	ID               uint   `json:"-"        gorm:"primary_key"`
 	Title            string `json:"title"`
 	SubTitle         string `json:"sub_title"`
-	Script           string `json:"script"`
 	HostId           uint   `json:"host_id"`
-	CurrentPhase     string `json:"current_phase"`
+	CurrentPhase     int    `json:"current_phase"`
 	CurrentPhaseKind string `json:"current_phase_kind"`
 	CurrentStage     uint   `json:"current_stage"`
+	Script           string `json:"script"`
 }
 
 func InitGameInfo() {
@@ -60,7 +60,7 @@ func PostGameInfo(data GameInfo) GameInfo {
 //	@Failure		400			string	string
 //	@Failure		404			string	string
 //	@Failure		500			string	string
-//	@Router			/data/GameInfo/{id} [put]
+//	@Router			/data/gameinfo/whole/{id} [put]
 func UpdateGameInfo(ID int, data GameInfo) GameInfo {
 	DB.Model(&GameInfo{}).Where("id = ?", ID).Updates(&data)
 	return data
@@ -77,8 +77,8 @@ func UpdateGameInfo(ID int, data GameInfo) GameInfo {
 //	@Success		200	string	string
 //	@Failure		400	string	string
 //	@Failure		404	string	string
-//	@Router			/data/GameInfo/{id} [delete]
+//	@Router			/data/gameinfo/{id} [delete]
 func DeleteGameInfo(ID int) bool {
-	result := DB.Model(&GameInfo{}).Delete(ID)
+	result := DB.Delete(&GameInfo{}, "id =?", ID)
 	return result.RowsAffected != 0
 }
