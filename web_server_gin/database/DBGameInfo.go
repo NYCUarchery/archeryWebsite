@@ -78,6 +78,7 @@ func UpdateGameInfo(ID int, data GameInfo) GameInfo {
 //	@Failure		400	string	string
 //	@Failure		404	string	string
 //	@Router			/data/GameInfo/{id} [delete]
-func DeleteGameInfo(ID int) {
-	DB.Model(&GameInfo{}).Delete(ID)
+func DeleteGameInfo(ID int) bool {
+	result := DB.Model(&GameInfo{}).Delete(ID)
+	return result.RowsAffected != 0
 }

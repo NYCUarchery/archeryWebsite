@@ -112,7 +112,7 @@ func UpdataLaneConfirm(context *gin.Context) {
 
 func DeleteLaneInfoByID(context *gin.Context) {
 	if !database.DeleteLaneInfoByID(convert2int(context, "id")) {
-		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID 或 格式錯誤 "})
 		return
 	}
 	context.IndentedJSON(http.StatusOK, "Successfully")
