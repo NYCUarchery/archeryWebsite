@@ -1,8 +1,17 @@
 # 內含dsn隱密資訊
 # 格式：DBname    UserName   PassWord     HostName     PortNumber 
 dsn_config.txt
+test_dsn_config.txt
 # 測試檔案
 test.ts
 ```
 # unecessary files
 views
+pkg/mod/
+dist/
+node_modules/
+package-lock.json
+.DS_Store
+FakeLaneInfo.json
+go.work
+go.work.sum

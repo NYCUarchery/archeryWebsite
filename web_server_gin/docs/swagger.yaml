@@ -1,0 +1,254 @@
+host: localhost:8080
+info:
+  contact:
+    name: NYCUArchery
+    url: https://github.com/NYCUarchery
+  description: Gin swagger
+  license:
+    name: no license yet
+  title: Gin swagger
+  version: "1.0"
+paths:
+  /data/laneinfo:
+    post:
+      consumes:
+      - application/json
+      description: Post one new LaneInfo data with new id, and return the new LaneInfo
+        data
+      parameters:
+      - description: LaneData
+        in: body
+        name: LaneData
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Create one LaneInfo
+      tags:
+      - LaneInfo
+  /data/laneinfo/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete one LaneInfo by id
+      parameters:
+      - description: LaneInfo ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+      summary: delete one LaneInfo
+      tags:
+      - LaneInfo
+    get:
+      description: Get one LaneInfo by id
+      parameters:
+      - description: LaneInfo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one LaneInfo
+      tags:
+      - LaneInfo
+  /data/laneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm}:
+    put:
+      consumes:
+      - application/json
+      description: Put one LaneInfo confirm by index and id
+      parameters:
+      - description: LaneInfo ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: LaneInfo stage index
+        in: path
+        name: stageindex
+        required: true
+        type: string
+      - description: LaneInfo user index of the stage
+        in: path
+        name: userindex
+        required: true
+        type: string
+      - description: confirmation of the user
+        in: path
+        name: confirm
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: update one LaneInfo confirmation
+      tags:
+      - LaneInfo
+  /data/laneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score}:
+    put:
+      consumes:
+      - application/json
+      description: Put one LaneInfo score by index and id
+      parameters:
+      - description: LaneInfo ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: LaneInfo stage index
+        in: path
+        name: stageindex
+        required: true
+        type: string
+      - description: LaneInfo user index of the stage
+        in: path
+        name: userindex
+        required: true
+        type: string
+      - description: LaneInfo arrow index of the user
+        in: path
+        name: arrowindex
+        required: true
+        type: string
+      - description: score of the arrow
+        in: path
+        name: score
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: update one LaneInfo Score
+      tags:
+      - LaneInfo
+  /data/laneinfo/whole/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Put whole new LaneInfo and overwrite with the id
+      parameters:
+      - description: LaneInfo ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: LaneData
+        in: body
+        name: LaneData
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: update one LaneInfo
+      tags:
+      - LaneInfo
+  /swagger/doc.json:
+    get:
+      description: get Api docs in json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Show Api Docs in json
+      tags:
+      - docs
+  /views/home:
+    get:
+      description: show home page
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Show home page
+      tags:
+      - views
+swagger: "2.0"
