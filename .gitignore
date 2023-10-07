@@ -13,5 +13,3 @@ node_modules/
 package-lock.json
 .DS_Store
 FakeLaneInfo.json
-go.work
-go.work.sum
