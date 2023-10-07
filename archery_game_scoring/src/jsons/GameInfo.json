@@ -27,7 +27,7 @@
         "players_num_per_lane": 4,
         "advancing_num": 0,
         "no_lane_players": [
-          { "id": 10, "name": "劉冠亨", "group": 1, "lane": 0 }
+          { "id": 10, "name": "劉冠亨", "group": 1, "lane": 0, "order": 0 }
         ],
         "lanes": [
           {
@@ -37,19 +37,22 @@
                 "id": 11,
                 "name": "林寶琳",
                 "group": 1,
-                "lane": 1
+                "lane": 1,
+                "order": 3
               },
               {
                 "id": 12,
                 "name": "蔡毅龍",
                 "group": 1,
-                "lane": 1
+                "lane": 1,
+                "order": 1
               },
               {
                 "id": 13,
                 "name": "梁永熹",
                 "group": 1,
-                "lane": 1
+                "lane": 1,
+                "order": 2
               }
             ]
           },
@@ -60,7 +63,8 @@
                 "id": 14,
                 "name": "蘇凌",
                 "group": 1,
-                "lane": 2
+                "lane": 2,
+                "order": 1
               }
             ]
           },
@@ -88,13 +92,15 @@
                 "id": 15,
                 "name": "曾子瑀",
                 "group": 2,
-                "lane": 5
+                "lane": 5,
+                "order": 1
               },
               {
                 "id": 16,
                 "name": "朱星蓉",
                 "group": 2,
-                "lane": 5
+                "lane": 5,
+                "order": 0
               }
             ]
           },
@@ -141,7 +147,8 @@
                 "id": 18,
                 "name": "許博鈞",
                 "group": 3,
-                "lane": 11
+                "lane": 11,
+                "order": 2
               }
             ]
           },
@@ -152,7 +159,8 @@
                 "id": 19,
                 "name": "陳崇玄",
                 "group": 3,
-                "lane": 12
+                "lane": 12,
+                "order": 3
               }
             ]
           },
@@ -180,7 +188,8 @@
                 "id": 20,
                 "name": "鄞意東",
                 "group": 4,
-                "lane": 15
+                "lane": 15,
+                "order": 1
               }
             ]
           },
