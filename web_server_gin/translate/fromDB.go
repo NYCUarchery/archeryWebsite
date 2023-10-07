@@ -1,6 +1,6 @@
 package translate
 
-import (
+import(
 	"fmt"
 	"net/http"
 	"web_server_gin/database"
@@ -13,8 +13,7 @@ func FindAllUsers(context *gin.Context) {
 	users := database.FindAllUsers()
 	context.IndentedJSON(http.StatusOK, users)
 }
-
-// Get User by ID
+// Get User by ID 
 func FindByUserID(context *gin.Context) {
 	user := database.FindByUserID(context.Param("id"))
 	if user.ID == 0 {
@@ -24,19 +23,17 @@ func FindByUserID(context *gin.Context) {
 	fmt.Println("User ->", user)
 	context.IndentedJSON(http.StatusOK, user)
 }
-
 /* post new user data */
-func PostUser(context *gin.Context) {
+func PostUser (context *gin.Context)  {
 	user := database.User{}
 	err := context.BindJSON(&user)
 	if err != nil {
-		context.IndentedJSON(http.StatusNotAcceptable, "Error : "+err.Error())
+		context.IndentedJSON(http.StatusNotAcceptable,"Error : " + err.Error())
 		return
 	}
 	newUser := database.CreateUser(user)
 	context.IndentedJSON(http.StatusOK, newUser)
 }
-
 /*delete user by ID*/
 func DeleteUser(context *gin.Context) {
 	if !database.DeleteUser(context.Param("id")) {
@@ -45,9 +42,8 @@ func DeleteUser(context *gin.Context) {
 	}
 	context.IndentedJSON(http.StatusOK, "Successfully")
 }
-
 /*updata user*/
-func UpdataUser(context *gin.Context) {
+func UpdataUser (context *gin.Context)  {
 	user := database.User{}
 	err := context.BindJSON(&user)
 	if err != nil {
