@@ -5,21 +5,26 @@ func AddCompetition(comp *Competition) (err error) {
 	return
 }
 
-func CompetitionInfoByName(name string) (comp *Competition, err error){
+func CompetitionInfoByName(name string) (comp Competition){
 	/* 
 	if the competition exists, then return the competition info
 	else return a competition with user.ID == 0
 	*/
-	err = DB.Where("name = ?", name).First(&comp).Error
+	DB.Where("name = ?", name).Limit(1).First(&comp)
 	return
 }
 
-func CompetitionInfoByID(id uint) (comp *Competition, err error){
+func CompetitionInfoByID(id uint) (comp Competition){
 	/* 
 	if the competition exists, then return the competition info
 	else return a competition with user.ID == 0
 	*/
-	err = DB.Where("id = ?", id).First(&comp).Error
+	DB.Where("id = ?", id).Limit(1).First(&comp)
+	return
+}
+
+func AllCompetitionInfo() (comps []Competition){
+	DB.Find(&comps)
 	return
 }
 

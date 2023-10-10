@@ -22,16 +22,16 @@ import (
 // @Param   	 overview 	 	formData string false "overview"
 // @Param   	 organization 	formData string false "organization"
 // @Param   	 scoreboardURL 	formData string false "Scoreboard URL"
-// @Success      200  {object}  model.CompResponse "success"
-// @Failure      400  {object}  model.Response "competition name exists | cannot parse date string | invalid info/categories"
-// @Failure      500  {object}  model.Response "DB error"
-// @Router       /competition/ [post]
+// @Success      200  {object}  response.CompResponse "success"
+// @Failure      400  {object}  response.Response "competition name exists | cannot parse date string | invalid info/categories"
+// @Failure      500  {object}  response.Response "DB error"
+// @Router       /competition [post]
 func CreateCompetition(c *gin.Context) {
 	name := c.PostForm("name")
 	date := c.PostForm("date")
 	categories := c.PostFormArray("categories")
 	
-	if findComp, _ := model.CompetitionInfoByName(name); findComp.ID != 0 {
+	if findComp := model.CompetitionInfoByName(name); findComp.ID != 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "competition name exists"})
 		return
 	}
@@ -47,13 +47,8 @@ func CreateCompetition(c *gin.Context) {
 	comp.HostID = pkg.QuerySession(c, "id").(uint)
 	comp.ScoreboardURL = c.PostForm("scoreboardURL")
 	comp.Overview = c.PostForm("overview")
-
-	err = model.AddCompetition(&comp)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"result": "DB error"})
-		return
-	}
 	
+	var compcats []model.CompetitionCategory
 	for _, catstr := range categories {
 		cat := struct {
 			Des string `json:"des"`
@@ -64,9 +59,20 @@ func CreateCompetition(c *gin.Context) {
 			return
 		}
 		var compcat model.CompetitionCategory
-		compcat.CompetitionID = comp.ID
+		compcat.CompetitionID = 0
 		compcat.Description = cat.Des
 		compcat.Distance = cat.Dis
+		compcats = append(compcats, compcat)
+	}
+
+	err = model.AddCompetition(&comp)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"result": "DB error"})
+		return
+	}
+
+	for _, compcat := range compcats {
+		compcat.CompetitionID = comp.ID
 		model.AddCompCategory(&compcat)
 	}
 	
@@ -82,9 +88,9 @@ func CreateCompetition(c *gin.Context) {
 // @Tags         competition
 // @Produce      json
 // @Param   	 id 	 	 path int true "competition id"
-// @Success      200  {object}  model.CompInfoResponse "success"
-// @Failure      400  {object}  model.Response "empty/invalid competition id"
-// @Failure      404  {object}  model.Response "no competition found"
+// @Success      200  {object}  response.CompInfoResponse "success"
+// @Failure      400  {object}  response.Response "empty/invalid competition id"
+// @Failure      404  {object}  response.Response "no competition found"
 // @Router       /competition/{id} [get]
 func CompetitionInfo(c *gin.Context) {
 	cidstr := c.Param("id")
@@ -99,7 +105,7 @@ func CompetitionInfo(c *gin.Context) {
 		return
 	}
 
-	comp, _ := model.CompetitionInfoByID(uint(cid))
+	comp := model.CompetitionInfoByID(uint(cid))
 	if comp.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"result": "no competition found"})
 		return
@@ -137,6 +143,22 @@ func CompetitionInfo(c *gin.Context) {
 		"overview": comp.Overview,
 		"categories": pairs,
 		"participants": parids,
+	})
+}
+
+// AllCompetitionInfo godoc
+// @Summary      get information of all the competition
+// @Description  get id, name, date, hostID, scoreboardURL, and overview only
+// @Tags         competition
+// @Produce      json
+// @Success      200  {object}  response.AllCompInfoResponse "success"
+// @Router       /competition [get]
+func AllCompetitionInfo(c *gin.Context) {
+	comps := model.AllCompetitionInfo()
+
+	c.JSON(http.StatusOK, gin.H{
+		"result": "success",
+		"competitions": comps,
 	})
 }
 

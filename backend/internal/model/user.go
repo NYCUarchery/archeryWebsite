@@ -5,22 +5,28 @@ func AddUser(user *User) (err error) {
 	return
 }
 
-func UserInfoByName(name string) (user User, err error){
+func UserInfoByName(name string) (user User){
 	/* 
 	if the user exists, then return the user info
 	else return a user with user.ID == 0
 	*/
-	err = DB.Where("name = ?", name).First(&user).Error
+	DB.Where("name = ?", name).Limit(1).First(&user)
 	return
 }
 
-func UserInfoByID(id uint) (user User, err error){
+func UserInfoByID(id uint) (user User){
 	/* 
 	if the user exists, then return the user info
 	else return a user with user.ID == 0
 	*/
-	err = DB.Where("id = ?", id).First(&user).Error
+	DB.Where("id = ?", id).Limit(1).First(&user)
 	return
+}
+
+func CheckEmailExistExclude(email string, uid uint) bool {
+	var user User
+	DB.Where("email = ?", email).Limit(1).First(&user)
+	return user.ID != 0 && user.ID != uid
 }
 
 func SaveUserInfo(user *User) {

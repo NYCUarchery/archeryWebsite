@@ -14,6 +14,7 @@ type User struct {
 	ID       	 uint   `gorm:"primaryKey;autoIncrement"`
 	Name     	 string `gorm:"unique;not null"`
 	Password 	 string `gorm:"not null"`
+	Email 		 string `gorm:"unique;not null"`
 	Organization string
 	Overview	 string 
 }
@@ -28,38 +29,22 @@ type Competition struct {
 }
 
 type CompetitionCategory struct {
-	CompetitionID 	uint `gorm:"not null"`
-	Description 	string  `gorm:"not null"`
-	Distance 		int32 `gorm:"not null"`
+	ID 				uint   `gorm:"primaryKey;autoIncrement"`
+	CompetitionID 	uint   `gorm:"not null"`
+	Description 	string `gorm:"not null"`
+	Distance 		int32  `gorm:"not null"`
 }
 
 type Participant struct {
-	UserID 			uint `gorm:"not null"`
-	CompetitionID 	uint `gorm:"not null"`
+	ID 				uint   `gorm:"primaryKey;autoIncrement"`
+	UserID 			uint   `gorm:"not null"`
+	CompetitionID 	uint   `gorm:"not null"`
+	Status 			string `gorm:"not null"`
 }
 
-type Response struct {
-	Result string `json:"result" example:"result description"`
-}
-
-type UIDResponse struct {
-	UID string `json:"uid" example:"your uid"`
-}
-
-type CompResponse struct {
-	Result string `json:"result" example:"result description"`
-	CompID int `json:"compID" example:"87"`
-}
-
-type CompInfoResponse struct {
-	Result 			string `json:"result" example:"result description"`
-	Name 			string `json:"name" example:"competition name"`
-	Date 			string `json:"date" example:"2006-01-02T15:04:05+08:00"`
-	HostID 			string`json:"hostID" example:"87"`
-	ScoreboardURL 	string `json:"scoreboardURL" example:"Scoreboard URL"`
-	Overview 		string `json:"overview" example:"overview"`
-	Categories 		string `json:"categories" example:"[{des: "des", dis: 50}, ...]"`
-	Participants 	string `json:"participants" example:"[1, 2, 3, 87]"`
+type ParticipantCategory struct {
+	ParticipantID uint `gorm:"not null"`
+	CategoryID    uint `gorm:"not null"`
 }
 
 type conf struct {
@@ -105,6 +90,7 @@ func init() {
 	DB.AutoMigrate(&Competition{})
 	DB.AutoMigrate(&Participant{})
 	DB.AutoMigrate(&CompetitionCategory{})
+	DB.AutoMigrate(&ParticipantCategory{})
 }
 
 

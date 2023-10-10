@@ -39,6 +39,7 @@ func RouterSetup() *gin.Engine {
 		compssr := sr.Group("/competition")
 		{
 			compssr.POST("/", pkg.AuthSessionMiddleware(), api.CreateCompetition)
+			compssr.GET("/", api.AllCompetitionInfo)
 			compssr.GET("/:id", api.CompetitionInfo)
 		}
 

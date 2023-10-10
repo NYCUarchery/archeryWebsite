@@ -23,7 +23,25 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/competition/": {
+        "/competition": {
+            "get": {
+                "description": "get id, name, date, hostID, scoreboardURL, and overview only",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "competition"
+                ],
+                "summary": "get information of all the competition",
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/response.AllCompInfoResponse"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "create a competition and set the person as the host",
                 "consumes": [
@@ -81,19 +99,19 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/model.CompResponse"
+                            "$ref": "#/definitions/response.CompResponse"
                         }
                     },
                     "400": {
                         "description": "competition name exists | cannot parse date string | invalid info/categories",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "500": {
                         "description": "DB error",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -122,19 +140,19 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/model.CompInfoResponse"
+                            "$ref": "#/definitions/response.CompInfoResponse"
                         }
                     },
                     "400": {
                         "description": "empty/invalid competition id",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "404": {
                         "description": "no competition found",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -166,13 +184,13 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "400": {
                         "description": "no user/competition found",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -211,13 +229,13 @@ const docTemplate = `{
                     "200": {
                         "description": "success | has loginned",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "401": {
                         "description": "wrong username or password",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -235,7 +253,7 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -271,6 +289,13 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
+                        "description": "email",
+                        "name": "email",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "overview",
                         "name": "overview",
                         "in": "formData"
@@ -286,19 +311,19 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "400": {
-                        "description": "username exists",
+                        "description": "username/email exists | empty username/password/email",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "500": {
                         "description": "db error",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -318,7 +343,7 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/model.UIDResponse"
+                            "$ref": "#/definitions/response.UIDResponse"
                         }
                     }
                 }
@@ -350,19 +375,19 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.UserInfoResponse"
                         }
                     },
                     "400": {
                         "description": "empty/invalid user id",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "404": {
                         "description": "no user found",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -389,13 +414,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "modified user's name",
-                        "name": "username",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "original password",
                         "name": "oriPassword",
                         "in": "formData",
@@ -405,6 +423,12 @@ const docTemplate = `{
                         "type": "string",
                         "description": "modified password",
                         "name": "modPassword",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "modified email",
+                        "name": "email",
                         "in": "formData"
                     },
                     {
@@ -424,19 +448,19 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "400": {
                         "description": "empty/invalid user id | invalid modified information",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "403": {
                         "description": "cannot change other's info | wrong original password",
                         "schema": {
-                            "$ref": "#/definitions/model.Response"
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -444,12 +468,42 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "model.CompInfoResponse": {
+        "response.AllCompInfoResponse": {
+            "type": "object",
+            "properties": {
+                "competitions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.Competition"
+                    }
+                },
+                "result": {
+                    "type": "string",
+                    "example": "success"
+                }
+            }
+        },
+        "response.Category": {
+            "type": "object",
+            "properties": {
+                "des": {
+                    "type": "string",
+                    "example": "wc"
+                },
+                "dis": {
+                    "type": "string",
+                    "example": "50"
+                }
+            }
+        },
+        "response.CompInfoResponse": {
             "type": "object",
             "properties": {
                 "categories": {
-                    "type": "string",
-                    "example": "[{des: "
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.Category"
+                    }
                 },
                 "date": {
                     "type": "string",
@@ -473,7 +527,7 @@ const docTemplate = `{
                 },
                 "result": {
                     "type": "string",
-                    "example": "result description"
+                    "example": "success"
                 },
                 "scoreboardURL": {
                     "type": "string",
@@ -481,7 +535,7 @@ const docTemplate = `{
                 }
             }
         },
-        "model.CompResponse": {
+        "response.CompResponse": {
             "type": "object",
             "properties": {
                 "compID": {
@@ -494,7 +548,32 @@ const docTemplate = `{
                 }
             }
         },
-        "model.Response": {
+        "response.Competition": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string",
+                    "example": "2006-01-02T15:04:05+08:00"
+                },
+                "hostID": {
+                    "type": "string",
+                    "example": "87"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "competition name"
+                },
+                "overview": {
+                    "type": "string",
+                    "example": "overview"
+                },
+                "scoreboardURL": {
+                    "type": "string",
+                    "example": "Scoreboard URL"
+                }
+            }
+        },
+        "response.Response": {
             "type": "object",
             "properties": {
                 "result": {
@@ -503,12 +582,37 @@ const docTemplate = `{
                 }
             }
         },
-        "model.UIDResponse": {
+        "response.UIDResponse": {
             "type": "object",
             "properties": {
                 "uid": {
                     "type": "string",
                     "example": "your uid"
+                }
+            }
+        },
+        "response.UserInfoResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "user email"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "user name"
+                },
+                "organization": {
+                    "type": "string",
+                    "example": "user organization"
+                },
+                "overview": {
+                    "type": "string",
+                    "example": "user overview"
+                },
+                "result": {
+                    "type": "string",
+                    "example": "success"
                 }
             }
         }

@@ -1,10 +1,30 @@
 basePath: /api/
 definitions:
-  model.CompInfoResponse:
+  response.AllCompInfoResponse:
+    properties:
+      competitions:
+        items:
+          $ref: '#/definitions/response.Competition'
+        type: array
+      result:
+        example: success
+        type: string
+    type: object
+  response.Category:
+    properties:
+      des:
+        example: wc
+        type: string
+      dis:
+        example: "50"
+        type: string
+    type: object
+  response.CompInfoResponse:
     properties:
       categories:
-        example: '[{des: '
-        type: string
+        items:
+          $ref: '#/definitions/response.Category'
+        type: array
       date:
         example: "2006-01-02T15:04:05+08:00"
         type: string
@@ -21,13 +41,13 @@ definitions:
         example: '[1, 2, 3, 87]'
         type: string
       result:
-        example: result description
+        example: success
         type: string
       scoreboardURL:
         example: Scoreboard URL
         type: string
     type: object
-  model.CompResponse:
+  response.CompResponse:
     properties:
       compID:
         example: 87
@@ -36,16 +56,52 @@ definitions:
         example: result description
         type: string
     type: object
-  model.Response:
+  response.Competition:
+    properties:
+      date:
+        example: "2006-01-02T15:04:05+08:00"
+        type: string
+      hostID:
+        example: "87"
+        type: string
+      name:
+        example: competition name
+        type: string
+      overview:
+        example: overview
+        type: string
+      scoreboardURL:
+        example: Scoreboard URL
+        type: string
+    type: object
+  response.Response:
     properties:
       result:
         example: result description
         type: string
     type: object
-  model.UIDResponse:
+  response.UIDResponse:
     properties:
       uid:
         example: your uid
+        type: string
+    type: object
+  response.UserInfoResponse:
+    properties:
+      email:
+        example: user email
+        type: string
+      name:
+        example: user name
+        type: string
+      organization:
+        example: user organization
+        type: string
+      overview:
+        example: user overview
+        type: string
+      result:
+        example: success
         type: string
     type: object
 host: localhost:8080
@@ -61,7 +117,19 @@ info:
   title: Archery backend API
   version: "1.0"
 paths:
-  /competition/:
+  /competition:
+    get:
+      description: get id, name, date, hostID, scoreboardURL, and overview only
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/response.AllCompInfoResponse'
+      summary: get information of all the competition
+      tags:
+      - competition
     post:
       consumes:
       - application/json
@@ -100,16 +168,16 @@ paths:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/model.CompResponse'
+            $ref: '#/definitions/response.CompResponse'
         "400":
           description: competition name exists | cannot parse date string | invalid
             info/categories
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
         "500":
           description: DB error
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
       summary: create a competition
       tags:
       - competition
@@ -128,15 +196,15 @@ paths:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/model.CompInfoResponse'
+            $ref: '#/definitions/response.CompInfoResponse'
         "400":
           description: empty/invalid competition id
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
         "404":
           description: no competition found
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
       summary: get information of the competition
       tags:
       - competition
@@ -157,11 +225,11 @@ paths:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
         "400":
           description: no user/competition found
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
       summary: join in a competition
       tags:
       - participant
@@ -174,7 +242,7 @@ paths:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
       summary: logout
       tags:
       - session
@@ -199,11 +267,11 @@ paths:
         "200":
           description: success | has loginned
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
         "401":
           description: wrong username or password
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
       summary: login
       tags:
       - session
@@ -223,6 +291,11 @@ paths:
         name: password
         required: true
         type: string
+      - description: email
+        in: formData
+        name: email
+        required: true
+        type: string
       - description: overview
         in: formData
         name: overview
@@ -237,15 +310,15 @@ paths:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
         "400":
-          description: username exists
+          description: username/email exists | empty username/password/email
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
         "500":
           description: db error
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
       summary: register a user
       tags:
       - user
@@ -266,15 +339,15 @@ paths:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.UserInfoResponse'
         "400":
           description: empty/invalid user id
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
         "404":
           description: no user found
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
       summary: get a user's information
       tags:
       - user
@@ -288,11 +361,6 @@ paths:
         name: id
         required: true
         type: string
-      - description: modified user's name
-        in: formData
-        name: username
-        required: true
-        type: string
       - description: original password
         in: formData
         name: oriPassword
@@ -301,6 +369,10 @@ paths:
       - description: modified password
         in: formData
         name: modPassword
+        type: string
+      - description: modified email
+        in: formData
+        name: email
         type: string
       - description: modified overview
         in: formData
@@ -316,15 +388,15 @@ paths:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
         "400":
           description: empty/invalid user id | invalid modified information
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
         "403":
           description: cannot change other's info | wrong original password
           schema:
-            $ref: '#/definitions/model.Response'
+            $ref: '#/definitions/response.Response'
       summary: modify user's information
       tags:
       - user
@@ -337,7 +409,7 @@ paths:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/model.UIDResponse'
+            $ref: '#/definitions/response.UIDResponse'
       summary: get my uid
       tags:
       - user
