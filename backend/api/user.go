@@ -48,7 +48,7 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "empty email"})
 		return
 	}
-	if model.CheckEmailExist(user.Email) {
+	if model.CheckEmailExistExclude(user.Email, 0) {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "email exists"})
 		return
 	}
@@ -165,7 +165,7 @@ func ModifyInfo(c *gin.Context) {
 		return
 	}
 
-	if model.CheckEmailExist(modEmail) {
+	if model.CheckEmailExistExclude(modEmail, uint(uid)) {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "email exists"})
 		return
 	}

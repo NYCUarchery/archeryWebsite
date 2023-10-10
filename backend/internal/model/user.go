@@ -23,10 +23,10 @@ func UserInfoByID(id uint) (user User){
 	return
 }
 
-func CheckEmailExist(email string) bool {
+func CheckEmailExistExclude(email string, uid uint) bool {
 	var user User
 	DB.Where("email = ?", email).Limit(1).First(&user)
-	return user.ID != 0
+	return user.ID != 0 && user.ID != uid
 }
 
 func SaveUserInfo(user *User) {
