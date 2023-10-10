@@ -10,24 +10,15 @@ definitions:
         example: success
         type: string
     type: object
-  response.Category:
-    properties:
-      des:
-        example: wc
-        type: string
-      dis:
-        example: "50"
-        type: string
-    type: object
   response.CompInfoResponse:
     properties:
-      categories:
-        items:
-          $ref: '#/definitions/response.Category'
-        type: array
       date:
         example: "2006-01-02T15:04:05+08:00"
         type: string
+      groups:
+        items:
+          $ref: '#/definitions/response.Group'
+        type: array
       hostID:
         example: "87"
         type: string
@@ -74,6 +65,24 @@ definitions:
         example: Scoreboard URL
         type: string
     type: object
+  response.Group:
+    properties:
+      bow_type:
+        example: bow type
+        type: string
+      competition_id:
+        example: 87
+        type: integer
+      game_range:
+        example: 50
+        type: integer
+      group_name:
+        example: group name
+        type: string
+      id:
+        example: 87
+        type: integer
+    type: object
   response.Response:
     properties:
       result:
@@ -91,11 +100,11 @@ definitions:
       email:
         example: user email
         type: string
+      institutionID:
+        example: user institution id
+        type: string
       name:
         example: user name
-        type: string
-      organization:
-        example: user organization
         type: string
       overview:
         example: user overview
@@ -127,7 +136,7 @@ paths:
           description: success
           schema:
             $ref: '#/definitions/response.AllCompInfoResponse'
-      summary: get information of all the competition
+      summary: get information of all the competitions
       tags:
       - competition
     post:
@@ -145,18 +154,14 @@ paths:
         name: date
         required: true
         type: string
-      - description: a list of categories
+      - description: a list of groups
         in: formData
-        name: categories
+        name: groups
         required: true
         type: string
       - description: overview
         in: formData
         name: overview
-        type: string
-      - description: organization
-        in: formData
-        name: organization
         type: string
       - description: Scoreboard URL
         in: formData
@@ -171,7 +176,7 @@ paths:
             $ref: '#/definitions/response.CompResponse'
         "400":
           description: competition name exists | cannot parse date string | invalid
-            info/categories
+            info/groups
           schema:
             $ref: '#/definitions/response.Response'
         "500":
@@ -183,7 +188,7 @@ paths:
       - competition
   /competition/{id}:
     get:
-      description: get info, categories, participants of the competition
+      description: get info, groups, participants of the competition
       parameters:
       - description: competition id
         in: path
@@ -300,9 +305,9 @@ paths:
         in: formData
         name: overview
         type: string
-      - description: organization
+      - description: institution ID
         in: formData
-        name: organization
+        name: institutionID
         type: string
       produces:
       - application/json
@@ -312,7 +317,8 @@ paths:
           schema:
             $ref: '#/definitions/response.Response'
         "400":
-          description: username/email exists | empty username/password/email
+          description: username/email exists | empty username/password/email | invalid
+            info
           schema:
             $ref: '#/definitions/response.Response'
         "500":
@@ -326,7 +332,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: get a user's username, overview, and organization
+      description: get a user's username, overview, and institution id
       parameters:
       - description: user's id
         in: path
@@ -354,7 +360,7 @@ paths:
     put:
       consumes:
       - application/json
-      description: modify username, password, overview, and organization
+      description: modify username, password, overview, and institution_id
       parameters:
       - description: user's id
         in: path
@@ -378,9 +384,9 @@ paths:
         in: formData
         name: overview
         type: string
-      - description: modified organization
+      - description: modified institution ID
         in: formData
-        name: organization
+        name: institutionID
         type: string
       produces:
       - application/json

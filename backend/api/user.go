@@ -15,13 +15,13 @@ import (
 // @Tags         user
 // @Accept       json
 // @Produce      json
-// @Param   	 username 	  formData string true "user's name"
-// @Param   	 password 	  formData string true "password"
-// @Param   	 email 	  	  formData string true "email"
-// @Param   	 overview 	  formData string false "overview"
-// @Param   	 organization formData string false "organization"
+// @Param   	 username 	  	formData string true "user's name"
+// @Param   	 password 	  	formData string true "password"
+// @Param   	 email 	  	  	formData string true "email"
+// @Param   	 overview 	  	formData string false "overview"
+// @Param   	 institutionID 	formData string false "institution ID"
 // @Success      200  {object}  response.Response "success"
-// @Failure      400  {object}  response.Response "username/email exists | empty username/password/email"
+// @Failure      400  {object}  response.Response "username/email exists | empty username/password/email | invalid info"
 // @Failure 	 500  {object}  response.Response "db error"
 // @Router       /user [post]
 func Register(c *gin.Context) {
@@ -53,7 +53,17 @@ func Register(c *gin.Context) {
 		return
 	}
 	user.Overview = c.PostForm("overview")
-	user.Organization = c.PostForm("organization")
+	insIDStr := c.PostForm("institutionID")
+	if insIDStr == "" {
+		user.InstitutionID = 1
+	} else {
+		insID, err := strconv.Atoi(insIDStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"result": "invalid institution ID"})
+			return
+		}
+		user.InstitutionID = uint(insID)
+	}
 
 	err := model.AddUser(&user)
 	if err != nil {
@@ -117,7 +127,7 @@ func Logout(c *gin.Context) {
 
 // ModifyInfo godoc
 // @Summary      modify user's information
-// @Description  modify username, password, overview, and organization
+// @Description  modify username, password, overview, and institution_id
 // @Tags         user
 // @Accept       json
 // @Produce      json
@@ -126,7 +136,7 @@ func Logout(c *gin.Context) {
 // @Param   	 modPassword 	formData string false "modified password"
 // @Param   	 email		 	formData string false "modified email"
 // @Param   	 overview 		formData string false "modified overview"
-// @Param   	 organization 	formData string false "modified organization"
+// @Param   	 institutionID 	formData string false "modified institution ID"
 // @Success      200  {object}  response.Response "success"
 // @Failure      400  {object}  response.Response "empty/invalid user id | invalid modified information"
 // @Failure      403  {object}  response.Response "cannot change other's info | wrong original password"
@@ -153,7 +163,17 @@ func ModifyInfo(c *gin.Context) {
 	modPassword := c.PostForm("modPassword")
 	modEmail := c.PostForm("email")
 	modOverview := c.PostForm("overview")
-	modOrganization := c.PostForm("organization")
+
+	modInstitutionID := uint(1)
+	insIDStr := c.PostForm("institutionID")
+	if insIDStr != "" {
+		insID, err := strconv.Atoi(insIDStr)
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"result": "invalid institution ID"})
+			return
+		}
+		modInstitutionID = uint(insID)
+	}
 
 	if oriPassword == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "empty original password"})
@@ -192,7 +212,7 @@ func ModifyInfo(c *gin.Context) {
 	
 	user.Email = modEmail
 	user.Overview = modOverview
-	user.Organization = modOrganization
+	user.InstitutionID = modInstitutionID
 
 	model.SaveUserInfo(&user)
 
@@ -213,7 +233,7 @@ func GetUserID(c *gin.Context) {
 
 // UserInfo godoc
 // @Summary      get a user's information
-// @Description  get a user's username, overview, and organization
+// @Description  get a user's username, overview, and institution id
 // @Tags         user
 // @Accept       json
 // @Produce      json
@@ -245,7 +265,7 @@ func UserInfo(c *gin.Context) {
 		"result": "success",
 		"name": user.Name,
 		"email": user.Email,
-		"organization": user.Organization,
+		"institutionID": user.InstitutionID,
 		"overview": user.Overview,
 	})
 }

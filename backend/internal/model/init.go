@@ -11,40 +11,47 @@ import (
 )
 
 type User struct {
-	ID       	 uint   `gorm:"primaryKey;autoIncrement"`
-	Name     	 string `gorm:"unique;not null"`
-	Password 	 string `gorm:"not null"`
-	Email 		 string `gorm:"unique;not null"`
-	Organization string
-	Overview	 string 
+	ID       	 	uint   `gorm:"primaryKey;autoIncrement"`
+	Name     	 	string `gorm:"unique;not null"`
+	Password 	 	string `gorm:"not null"`
+	Email 		 	string `gorm:"unique;not null"`
+	InstitutionID 	uint 
+	Overview	 	string 
 }
 
 type Competition struct {
-	ID   			uint   `gorm:"primaryKey;autoIncrement"`
-	Name 			string `gorm:"unique;not null"`
-	Date 			time.Time `gorm:"not null"`
-	HostID 			uint `gorm:"not null"`
+	ID   			uint   		`gorm:"primaryKey;autoIncrement"`
+	Name 			string 		`gorm:"unique;not null"`
+	Date 			time.Time 	`gorm:"not null"`
+	HostID 			uint 		`gorm:"not null"`
 	ScoreboardURL	string
 	Overview		string
 }
 
-type CompetitionCategory struct {
+type Group struct {
 	ID 				uint   `gorm:"primaryKey;autoIncrement"`
 	CompetitionID 	uint   `gorm:"not null"`
-	Description 	string `gorm:"not null"`
-	Distance 		int32  `gorm:"not null"`
+	GroupName		string 
+	BowType		 	string 
+	GameRange 		int	   
 }
 
 type Participant struct {
 	ID 				uint   `gorm:"primaryKey;autoIncrement"`
 	UserID 			uint   `gorm:"not null"`
 	CompetitionID 	uint   `gorm:"not null"`
+	Role 			string `gorm:"not null"`
 	Status 			string `gorm:"not null"`
 }
 
-type ParticipantCategory struct {
+type ParticipantGroup struct {
 	ParticipantID uint `gorm:"not null"`
-	CategoryID    uint `gorm:"not null"`
+	GroupID    uint `gorm:"not null"`
+}
+
+type Institution struct {
+	ID 		uint 	`gorm:"primaryKey;autoIncrement"`
+	Name 	string 	`gorm:"not null"`
 }
 
 type conf struct {
@@ -89,8 +96,9 @@ func init() {
     DB.AutoMigrate(&User{})
 	DB.AutoMigrate(&Competition{})
 	DB.AutoMigrate(&Participant{})
-	DB.AutoMigrate(&CompetitionCategory{})
-	DB.AutoMigrate(&ParticipantCategory{})
+	DB.AutoMigrate(&Group{})
+	DB.AutoMigrate(&ParticipantGroup{})
+	DB.AutoMigrate(&Institution{})
 }
 
 

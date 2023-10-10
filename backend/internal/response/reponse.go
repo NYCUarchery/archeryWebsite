@@ -17,13 +17,16 @@ type UserInfoResponse struct {
 	Result 			string `json:"result" example:"success"`
 	Name 			string `json:"name" example:"user name"`
 	Email 			string `json:"email" example:"user email"`
-	Organization	string `json:"organization" example:"user organization"`
+	InstitutionID	string `json:"institutionID" example:"user institution id"`
 	Overview		string `json:"overview" example:"user overview"`
 }
 
-type Category struct {
-	Des   string `json:"des" example:"wc"`
-	Dis   string `json:"dis" example:"50"`
+type Group struct {
+	ID 				uint   `json:"id" example:"87"`
+	CompetitionID 	uint   `json:"competition_id" example:"87"`
+	GroupName		string `json:"group_name" example:"group name"`
+	BowType		 	string `json:"bow_type" example:"bow type"`
+	GameRange 		int	   `json:"game_range" example:"50"`
 }
 
 type CompInfoResponse struct {
@@ -33,7 +36,7 @@ type CompInfoResponse struct {
 	HostID 			string 		`json:"hostID" example:"87"`
 	ScoreboardURL 	string 		`json:"scoreboardURL" example:"Scoreboard URL"`
 	Overview 		string 		`json:"overview" example:"overview"`
-	Categories      []Category 	`json:"categories"`
+	Groups      	[]Group 	`json:"groups"`
 	Participants 	string 		`json:"participants" example:"[1, 2, 3, 87]"`
 }
 

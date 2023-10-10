@@ -32,7 +32,7 @@ const docTemplate = `{
                 "tags": [
                     "competition"
                 ],
-                "summary": "get information of all the competition",
+                "summary": "get information of all the competitions",
                 "responses": {
                     "200": {
                         "description": "success",
@@ -71,8 +71,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "a list of categories",
-                        "name": "categories",
+                        "description": "a list of groups",
+                        "name": "groups",
                         "in": "formData",
                         "required": true
                     },
@@ -80,12 +80,6 @@ const docTemplate = `{
                         "type": "string",
                         "description": "overview",
                         "name": "overview",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "description": "organization",
-                        "name": "organization",
                         "in": "formData"
                     },
                     {
@@ -103,7 +97,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "competition name exists | cannot parse date string | invalid info/categories",
+                        "description": "competition name exists | cannot parse date string | invalid info/groups",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }
@@ -119,7 +113,7 @@ const docTemplate = `{
         },
         "/competition/{id}": {
             "get": {
-                "description": "get info, categories, participants of the competition",
+                "description": "get info, groups, participants of the competition",
                 "produces": [
                     "application/json"
                 ],
@@ -302,8 +296,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "organization",
-                        "name": "organization",
+                        "description": "institution ID",
+                        "name": "institutionID",
                         "in": "formData"
                     }
                 ],
@@ -315,7 +309,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "username/email exists | empty username/password/email",
+                        "description": "username/email exists | empty username/password/email | invalid info",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }
@@ -351,7 +345,7 @@ const docTemplate = `{
         },
         "/user/{id}": {
             "get": {
-                "description": "get a user's username, overview, and organization",
+                "description": "get a user's username, overview, and institution id",
                 "consumes": [
                     "application/json"
                 ],
@@ -393,7 +387,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "modify username, password, overview, and organization",
+                "description": "modify username, password, overview, and institution_id",
                 "consumes": [
                     "application/json"
                 ],
@@ -439,8 +433,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "modified organization",
-                        "name": "organization",
+                        "description": "modified institution ID",
+                        "name": "institutionID",
                         "in": "formData"
                     }
                 ],
@@ -483,31 +477,18 @@ const docTemplate = `{
                 }
             }
         },
-        "response.Category": {
-            "type": "object",
-            "properties": {
-                "des": {
-                    "type": "string",
-                    "example": "wc"
-                },
-                "dis": {
-                    "type": "string",
-                    "example": "50"
-                }
-            }
-        },
         "response.CompInfoResponse": {
             "type": "object",
             "properties": {
-                "categories": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/response.Category"
-                    }
-                },
                 "date": {
                     "type": "string",
                     "example": "2006-01-02T15:04:05+08:00"
+                },
+                "groups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.Group"
+                    }
                 },
                 "hostID": {
                     "type": "string",
@@ -573,6 +554,31 @@ const docTemplate = `{
                 }
             }
         },
+        "response.Group": {
+            "type": "object",
+            "properties": {
+                "bow_type": {
+                    "type": "string",
+                    "example": "bow type"
+                },
+                "competition_id": {
+                    "type": "integer",
+                    "example": 87
+                },
+                "game_range": {
+                    "type": "integer",
+                    "example": 50
+                },
+                "group_name": {
+                    "type": "string",
+                    "example": "group name"
+                },
+                "id": {
+                    "type": "integer",
+                    "example": 87
+                }
+            }
+        },
         "response.Response": {
             "type": "object",
             "properties": {
@@ -598,13 +604,13 @@ const docTemplate = `{
                     "type": "string",
                     "example": "user email"
                 },
+                "institutionID": {
+                    "type": "string",
+                    "example": "user institution id"
+                },
                 "name": {
                     "type": "string",
                     "example": "user name"
-                },
-                "organization": {
-                    "type": "string",
-                    "example": "user organization"
                 },
                 "overview": {
                     "type": "string",

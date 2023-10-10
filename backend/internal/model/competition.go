@@ -48,13 +48,13 @@ func CompetitionParticipants(compID uint) (pars []Participant, err error) {
 	return
 }
 
-func AddCompCategory(cat *CompetitionCategory) (err error) {
-	err = DB.Create(cat).Error
+func AddGroup(gr *Group) (err error) {
+	err = DB.Create(gr).Error
 	return
 }
 
-func CompetitionCategories(compID uint) (cats []CompetitionCategory, err error) {
-	result := DB.Where("competition_id = ?", compID).Find(&cats)
+func CompetitionGroups(compID uint) (groups []Group, err error) {
+	result := DB.Where("competition_id = ?", compID).Find(&groups)
 	
 	if result.Error != nil {
 		err = result.Error
