@@ -24,9 +24,9 @@ type UserInfoResponse struct {
 type Group struct {
 	ID 				uint   `json:"id" example:"87"`
 	CompetitionID 	uint   `json:"competition_id" example:"87"`
-	GroupName		string `json:"group_name" example:"group name"`
-	BowType		 	string `json:"bow_type" example:"bow type"`
-	GameRange 		int	   `json:"game_range" example:"50"`
+	GroupName		string `json:"groupName" example:"group name"`
+	BowType		 	string `json:"bowType" example:"bow type"`
+	GameRange 		int	   `json:"gameRange" example:"50"`
 }
 
 type CompInfoResponse struct {

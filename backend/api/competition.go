@@ -51,9 +51,9 @@ func CreateCompetition(c *gin.Context) {
 	var compGroups []model.Group
 	for _, grstr := range groups {
 		gr := struct {
-			GroupName 	string `json:"group_name"`
-			BowType 	string `json:"bow_type"`
-			GameRange   int	   `json:"game_range"`
+			GroupName 	string `json:"groupName"`
+			BowType 	string `json:"bowType"`
+			GameRange   int	   `json:"gameRange"`
 		}{}
 		if err = json.Unmarshal([]byte(grstr), &gr); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"result": "invalid groups"})

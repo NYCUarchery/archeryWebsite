@@ -557,7 +557,7 @@ const docTemplate = `{
         "response.Group": {
             "type": "object",
             "properties": {
-                "bow_type": {
+                "bowType": {
                     "type": "string",
                     "example": "bow type"
                 },
@@ -565,11 +565,11 @@ const docTemplate = `{
                     "type": "integer",
                     "example": 87
                 },
-                "game_range": {
+                "gameRange": {
                     "type": "integer",
                     "example": 50
                 },
-                "group_name": {
+                "groupName": {
                     "type": "string",
                     "example": "group name"
                 },

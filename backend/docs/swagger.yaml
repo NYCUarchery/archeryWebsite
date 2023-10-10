@@ -67,16 +67,16 @@ definitions:
     type: object
   response.Group:
     properties:
-      bow_type:
+      bowType:
         example: bow type
         type: string
       competition_id:
         example: 87
         type: integer
-      game_range:
+      gameRange:
         example: 50
         type: integer
-      group_name:
+      groupName:
         example: group name
         type: string
       id:
