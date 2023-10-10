@@ -12,11 +12,11 @@ func loadThree(router *gin.Engine) {
 }
 
 // HomePage godoc
-// @Summary      Show home page
-// @Description  show home page
-// @Tags         views
-// @Success 200 string string
-// @Router       /views/home [get]
+//	@Summary		Show home page
+//	@Description	show home page
+//	@Tags			views
+//	@Success		200	string	string
+//	@Router			/views/home [get]
 func AddViewsRouter(views *gin.RouterGroup, r *gin.Engine) {
 	views.GET("/home", translate.GetHTML)
 	loadThree(r)

@@ -9,6 +9,123 @@ info:
   title: Gin swagger
   version: "1.0"
 paths:
+  /data/gameinfo:
+    post:
+      consumes:
+      - application/json
+      description: Post one new GameInfo data with new id, and return the new GameInfo
+        data
+      parameters:
+      - description: GaeInfo
+        in: body
+        name: GameInfo
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Create one GameInfo
+      tags:
+      - GameInfo
+  /data/gameinfo/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete one GameInfo by id
+      parameters:
+      - description: GameInfo ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+      summary: delete one GameInfo
+      tags:
+      - GameInfo
+    get:
+      description: Get one GameInfo by id
+      parameters:
+      - description: GameInfo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one GameInfo
+      tags:
+      - GameInfo
+  /data/gameinfo/whole/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Put whole new GameInfo and overwrite with the id
+      parameters:
+      - description: GameInfo ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: GameInfo
+        in: body
+        name: GameInfo
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: update one GameInfo
+      tags:
+      - GameInfo
   /data/laneinfo:
     post:
       consumes:

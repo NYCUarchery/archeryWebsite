@@ -3,25 +3,10 @@ package translate
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 	"web_server_gin/database"
 
 	"github.com/gin-gonic/gin"
 )
-
-func convert2int(c *gin.Context, name string) int {
-	dataStr := c.Param(name)
-	data, _ := strconv.Atoi(dataStr)
-
-	return data
-}
-
-func convert2bool(c *gin.Context, name string) bool {
-	dataStr := c.Param(name)
-
-	data, _ := strconv.ParseBool(dataStr)
-	return data
-}
 
 func loadLaneInfo(data *database.LaneData) {
 	/* save UserIds indexing */
@@ -127,7 +112,7 @@ func UpdataLaneConfirm(context *gin.Context) {
 
 func DeleteLaneInfoByID(context *gin.Context) {
 	if !database.DeleteLaneInfoByID(convert2int(context, "id")) {
-		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID 或 格式錯誤 "})
 		return
 	}
 	context.IndentedJSON(http.StatusOK, "Successfully")

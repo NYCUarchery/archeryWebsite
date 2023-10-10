@@ -8,16 +8,16 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// @title Gin swagger
-// @version 1.0
-// @description Gin swagger
+//	@title			Gin swagger
+//	@version		1.0
+//	@description	Gin swagger
 
-// @contact.name NYCUArchery
-// @contact.url https://github.com/NYCUarchery
+//	@contact.name	NYCUArchery
+//	@contact.url	https://github.com/NYCUarchery
 
-// @license.name no license yet
+//	@license.name	no license yet
 
-// @host localhost:8080
+//	@host	localhost:8080
 // schemes http
 func main() {
 	server := gin.Default() // initialize a Gin router
