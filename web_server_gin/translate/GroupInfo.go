@@ -10,7 +10,7 @@ import (
 
 func GetGroupInfoByID(context *gin.Context) {
 	id := convert2int(context, "id")
-	data, error := database.GetGroupInfo(id)
+	data, error := database.GetGroupInfoById(id)
 	if data.ID == 0 {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
 		return

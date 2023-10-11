@@ -190,6 +190,182 @@
                 }
             }
         },
+        "/data/groupinfo": {
+            "post": {
+                "description": "Post one new GroupInfo data with new id, and return the new GroupInfo data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GroupInfo"
+                ],
+                "summary": "Create one GroupInfo",
+                "parameters": [
+                    {
+                        "description": "LaneData",
+                        "name": "GroupInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/groupinfo/whole/{id}": {
+            "put": {
+                "description": "Put whole new GroupInfo and overwrite with the id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GroupInfo"
+                ],
+                "summary": "update one GroupInfo",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "GroupInfo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "GroupInfo",
+                        "name": "GroupInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/groupinfo/{id}": {
+            "get": {
+                "description": "Get one GroupInfo by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GroupInfo"
+                ],
+                "summary": "Show one GroupInfo",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "LaneInfo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "delete one GroupInfo by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GroupInfo"
+                ],
+                "summary": "delete one GroupInfo",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "GroupInfo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/data/laneinfo": {
             "post": {
                 "description": "Post one new LaneInfo data with new id, and return the new LaneInfo data",
