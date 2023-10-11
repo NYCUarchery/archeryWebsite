@@ -12,7 +12,7 @@ type GameInfo struct { // DB : game_info
 }
 
 func InitGameInfo() {
-	DB.AutoMigrate(&GameInfo{})
+	DB.Table("competitions").AutoMigrate(&GameInfo{})
 }
 
 // Get GameInfo By ID godoc
