@@ -80,4 +80,5 @@ func DatabaseInitial() {
 	connectDB()
 	InitLaneInfo()
 	InitGameInfo()
+	InitGroupInfo()
 }

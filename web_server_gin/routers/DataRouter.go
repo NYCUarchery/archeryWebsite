@@ -11,23 +11,40 @@ func AddDataRouter(data *gin.RouterGroup) {
 	data.GET("/txt/:dataName", translate.GetHTTPData) // response "name".txt data file with /translate/2JSON method
 
 	data.GET("/eliminationInfo/:gameName", translate.GetEliminationInfo)
-	data.GET("/groupInfo/:gameName", translate.GetGroupInfo)
 	data.GET("/phaseInfo/:gameName", translate.GetPhaseInfo)
 	data.GET("/qualificationInfo/:gameName", translate.GetQualificationInfo)
 	data.GET("/teamEliminationInfo/:gameName", translate.GetTeamEliminationInfo)
 	data.GET("/userInfo/:userName", translate.GetUserInfo)
 
-	laneinfo := data.Group("laneinfo")
-	laneInfoRouter(laneinfo)
-
 	gameinfo := data.Group("gameinfo")
 	gameInfoRouter(gameinfo)
+
+	groupinfo := data.Group("groupinfo")
+	groupInfoRouter(groupinfo)
+
+	laneinfo := data.Group("laneinfo")
+	laneInfoRouter(laneinfo)
 
 	data.GET("/", translate.FindAllUsers)
 	data.GET("/:id", translate.FindByUserID)
 	data.POST("/", translate.PostUser)
 	data.DELETE("/:id", translate.DeleteUser)
 	data.PUT("/:id", translate.UpdataUser)
+}
+
+func gameInfoRouter(data *gin.RouterGroup) {
+	data.GET("/:id", translate.GetGameInfoByID)
+	data.POST("/", translate.PostGameInfo)
+	data.PUT("/whole/:id", translate.UpdateGameInfo)
+	data.DELETE("/:id", translate.DeleteGameInfo)
+}
+
+func groupInfoRouter(data *gin.RouterGroup) {
+	data.GET("/:id", translate.GetGroupInfoByID)
+	//data.GET("/competition/:id", translate.GetGroupInfosByCompetitionID)
+	data.POST("/", translate.PostGroupInfo)
+	data.PUT("/whole/:id", translate.UpdateGroupInfo)
+	data.DELETE("/:id", translate.DeleteGroupInfo)
 }
 
 func laneInfoRouter(data *gin.RouterGroup) {
@@ -37,11 +54,4 @@ func laneInfoRouter(data *gin.RouterGroup) {
 	data.PUT("/score/:id/:stageindex/:userindex/:arrowindex/:score", translate.UpdataLaneScore)
 	data.PUT("/confirm/:id/:stageindex/:userindex/:confirm", translate.UpdataLaneConfirm)
 	data.DELETE("/:id", translate.DeleteLaneInfoByID)
-}
-
-func gameInfoRouter(data *gin.RouterGroup) {
-	data.GET("/:id", translate.GetGameInfoByID)
-	data.POST("/", translate.PostGameInfo)
-	data.PUT("/whole/:id", translate.UpdateGameInfo)
-	data.DELETE("/:id", translate.DeleteGameInfo)
 }

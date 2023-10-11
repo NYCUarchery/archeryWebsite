@@ -12,13 +12,13 @@ func InitGroupInfo() {
 	DB.Table("groups").AutoMigrate(&GroupInfo{})
 }
 
-func GetGroupInfo(id uint) (GroupInfo, error) {
+func GetGroupInfo(id int) (GroupInfo, error) {
 	var group GroupInfo
 	result := DB.Table("groups").Where("id = ?", id).First(&group)
 	return group, result.Error
 }
 
-func GetGroupInfos(CompetitionID uint) ([]GroupInfo, error) {
+func GetGroupInfos(CompetitionID int) ([]GroupInfo, error) {
 	var groups []GroupInfo
 	result := DB.Table("groups").Find(&groups)
 	return groups, result.Error
@@ -29,12 +29,12 @@ func CreateGroupInfo(group GroupInfo) (GroupInfo, error) {
 	return group, result.Error
 }
 
-func UpdateGroupInfo(id uint, group GroupInfo) (GroupInfo, error) {
+func UpdateGroupInfo(id int, group GroupInfo) (GroupInfo, error) {
 	result := DB.Table("groups").Where("id = ?", id).Updates(&group)
 	return group, result.Error
 }
 
-func DeleteGroupInfo(id uint) error {
-	result := DB.Delete(&GroupInfo{}, "id = ?", id)
-	return result.Error
+func DeleteGroupInfo(id int) (bool, error) {
+	result := DB.Table("groups").Where("id = ?", id).Delete(&GroupInfo{})
+	return result.RowsAffected != 0, result.Error
 }
