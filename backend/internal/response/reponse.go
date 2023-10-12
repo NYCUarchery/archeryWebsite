@@ -52,3 +52,4 @@ type AllCompInfoResponse struct {
 	Result  		string 			`json:"result" example:"success"`
 	Competitions 	[]Competition 	`json:"competitions"`
 }
+

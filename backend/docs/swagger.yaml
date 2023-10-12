@@ -1,5 +1,12 @@
 basePath: /api/
 definitions:
+  model.Institution:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
   response.AllCompInfoResponse:
     properties:
       competitions:
@@ -213,6 +220,55 @@ paths:
       summary: get information of the competition
       tags:
       - competition
+  /institution:
+    get:
+      consumes:
+      - application/json
+      description: get all institution info from db
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Institution'
+            type: array
+        "500":
+          description: db error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: get all institution info
+      tags:
+      - institution
+    post:
+      consumes:
+      - application/json
+      description: add an institution to db
+      parameters:
+      - description: institution's name
+        in: formData
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: empty institution name
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: db error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: create an institution
+      tags:
+      - institution
   /participant/:
     post:
       consumes:

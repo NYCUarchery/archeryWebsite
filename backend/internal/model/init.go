@@ -50,8 +50,8 @@ type ParticipantGroup struct {
 }
 
 type Institution struct {
-	ID 		uint 	`gorm:"primaryKey;autoIncrement"`
-	Name 	string 	`gorm:"not null"`
+	ID 		uint 	`gorm:"primaryKey;autoIncrement" json:"id"`
+	Name 	string 	`gorm:"not null" json:"name"`
 }
 
 type conf struct {
