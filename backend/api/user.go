@@ -263,9 +263,6 @@ func UserInfo(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"result": "success",
-		"name": user.Name,
-		"email": user.Email,
-		"institutionID": user.InstitutionID,
-		"overview": user.Overview,
+		"data": user,
 	})
 }
