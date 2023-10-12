@@ -37,7 +37,22 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/response.AllCompInfoResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.Competition"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -93,7 +108,19 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/response.CompResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -134,7 +161,19 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/response.CompInfoResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.Competition"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -167,12 +206,24 @@ const docTemplate = `{
                 "summary": "get all institution info",
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/model.Institution"
-                            }
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.Institution"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "500": {
@@ -219,6 +270,50 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "db error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/institution/{id}": {
+            "get": {
+                "description": "get institution info from db by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "institution"
+                ],
+                "summary": "get institution info by id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "institution's id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid id",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "no institution found",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }
@@ -411,7 +506,19 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/response.UIDResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -443,7 +550,19 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/response.UserInfoResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.User"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -536,6 +655,29 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "model.Competition": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string"
+                },
+                "hostID": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "overview": {
+                    "type": "string"
+                },
+                "scoreboardURL": {
+                    "type": "string"
+                }
+            }
+        },
         "model.Institution": {
             "type": "object",
             "properties": {
@@ -547,120 +689,23 @@ const docTemplate = `{
                 }
             }
         },
-        "response.AllCompInfoResponse": {
+        "model.User": {
             "type": "object",
             "properties": {
-                "competitions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/response.Competition"
-                    }
-                },
-                "result": {
-                    "type": "string",
-                    "example": "success"
-                }
-            }
-        },
-        "response.CompInfoResponse": {
-            "type": "object",
-            "properties": {
-                "date": {
-                    "type": "string",
-                    "example": "2006-01-02T15:04:05+08:00"
-                },
-                "groups": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/response.Group"
-                    }
-                },
-                "hostID": {
-                    "type": "string",
-                    "example": "87"
-                },
-                "name": {
-                    "type": "string",
-                    "example": "competition name"
-                },
-                "overview": {
-                    "type": "string",
-                    "example": "overview"
-                },
-                "participants": {
-                    "type": "string",
-                    "example": "[1, 2, 3, 87]"
-                },
-                "result": {
-                    "type": "string",
-                    "example": "success"
-                },
-                "scoreboardURL": {
-                    "type": "string",
-                    "example": "Scoreboard URL"
-                }
-            }
-        },
-        "response.CompResponse": {
-            "type": "object",
-            "properties": {
-                "compID": {
-                    "type": "integer",
-                    "example": 87
-                },
-                "result": {
-                    "type": "string",
-                    "example": "result description"
-                }
-            }
-        },
-        "response.Competition": {
-            "type": "object",
-            "properties": {
-                "date": {
-                    "type": "string",
-                    "example": "2006-01-02T15:04:05+08:00"
-                },
-                "hostID": {
-                    "type": "string",
-                    "example": "87"
-                },
-                "name": {
-                    "type": "string",
-                    "example": "competition name"
-                },
-                "overview": {
-                    "type": "string",
-                    "example": "overview"
-                },
-                "scoreboardURL": {
-                    "type": "string",
-                    "example": "Scoreboard URL"
-                }
-            }
-        },
-        "response.Group": {
-            "type": "object",
-            "properties": {
-                "bowType": {
-                    "type": "string",
-                    "example": "bow type"
-                },
-                "competition_id": {
-                    "type": "integer",
-                    "example": 87
-                },
-                "gameRange": {
-                    "type": "integer",
-                    "example": 50
-                },
-                "groupName": {
-                    "type": "string",
-                    "example": "group name"
+                "email": {
+                    "type": "string"
                 },
                 "id": {
-                    "type": "integer",
-                    "example": 87
+                    "type": "integer"
+                },
+                "institutionID": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "overview": {
+                    "type": "string"
                 }
             }
         },
@@ -670,40 +715,6 @@ const docTemplate = `{
                 "result": {
                     "type": "string",
                     "example": "result description"
-                }
-            }
-        },
-        "response.UIDResponse": {
-            "type": "object",
-            "properties": {
-                "uid": {
-                    "type": "string",
-                    "example": "your uid"
-                }
-            }
-        },
-        "response.UserInfoResponse": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string",
-                    "example": "user email"
-                },
-                "institutionID": {
-                    "type": "string",
-                    "example": "user institution id"
-                },
-                "name": {
-                    "type": "string",
-                    "example": "user name"
-                },
-                "overview": {
-                    "type": "string",
-                    "example": "user overview"
-                },
-                "result": {
-                    "type": "string",
-                    "example": "success"
                 }
             }
         }

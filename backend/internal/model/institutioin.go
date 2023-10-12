@@ -5,6 +5,11 @@ func AddInstitution(ins *Institution) (err error) {
 	return
 }
 
+func InstitutionInfoByID(id uint) (ins Institution, err error) {
+	err = DB.Where("id = ?", id).First(&ins).Error
+	return
+}
+
 func AllInstitutionInfo() (ins []Institution, err error) {
 	err = DB.Find(&ins).Error
 	return

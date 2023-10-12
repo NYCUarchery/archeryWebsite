@@ -224,11 +224,11 @@ func ModifyInfo(c *gin.Context) {
 // @Description  get my uid in the session
 // @Tags         user
 // @Produce      json
-// @Success      200  {object}  response.UIDResponse "success"
+// @Success      200  {object}  response.Response{id=uint} "success"
 // @Router       /user/me [get]
 func GetUserID(c *gin.Context) {
 	id := pkg.QuerySession(c, "id")
-	c.JSON(http.StatusOK, gin.H{"uid": id})
+	c.JSON(http.StatusOK, gin.H{"id": id})
 }
 
 // UserInfo godoc
@@ -238,7 +238,7 @@ func GetUserID(c *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param   	 id 	  	 path 	  string true "user's id"
-// @Success      200  {object}  response.UserInfoResponse "success"
+// @Success      200  {object}  response.Response{data=model.User} "success"
 // @Failure      400  {object}  response.Response "empty/invalid user id"
 // @Failure      404  {object}  response.Response "no user found"
 // @Router       /user/{id} [get]

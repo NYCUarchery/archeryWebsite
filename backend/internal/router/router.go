@@ -51,6 +51,7 @@ func RouterSetup() *gin.Engine {
 		insr := sr.Group("/institution")
 		{
 			insr.POST("/", api.CreateInstitution)
+			insr.GET("/:id", api.InstitutionInfo)
 			insr.GET("/", api.AllInstitutionInfo)
 		}
 	}

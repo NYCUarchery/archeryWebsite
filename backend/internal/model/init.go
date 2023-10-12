@@ -11,42 +11,42 @@ import (
 )
 
 type User struct {
-	ID       	 	uint   `gorm:"primaryKey;autoIncrement"`
-	Name     	 	string `gorm:"unique;not null"`
-	Password 	 	string `gorm:"not null"`
-	Email 		 	string `gorm:"unique;not null"`
-	InstitutionID 	uint 
-	Overview	 	string 
+	ID       	 	uint   	`gorm:"primaryKey;autoIncrement" json:"id"`
+	Name     	 	string 	`gorm:"unique;not null" json:"name"`
+	Password 	 	string 	`gorm:"not null" json:"-"`
+	Email 		 	string 	`gorm:"unique;not null" json:"email"`
+	InstitutionID 	uint   	`json:"institutionID"`
+	Overview	 	string 	`json:"overview"`
 }
 
 type Competition struct {
-	ID   			uint   		`gorm:"primaryKey;autoIncrement"`
-	Name 			string 		`gorm:"unique;not null"`
-	Date 			time.Time 	`gorm:"not null"`
-	HostID 			uint 		`gorm:"not null"`
-	ScoreboardURL	string
-	Overview		string
+	ID   			uint   		`gorm:"primaryKey;autoIncrement" json:"id"`
+	Name 			string 		`gorm:"unique;not null" json:"name"`
+	Date 			time.Time 	`gorm:"not null" json:"date"`
+	HostID 			uint 		`gorm:"not null" json:"hostID"`
+	ScoreboardURL	string		`json:"scoreboardURL"`
+	Overview		string		`json:"overview"`
 }
 
 type Group struct {
-	ID 				uint   `gorm:"primaryKey;autoIncrement"`
-	CompetitionID 	uint   `gorm:"not null"`
-	GroupName		string 
-	BowType		 	string 
-	GameRange 		int	   
+	ID 				uint   `gorm:"primaryKey;autoIncrement" json:"id"`
+	CompetitionID 	uint   `gorm:"not null" json:"competitionID"`
+	GroupName		string `json:"groupName"`
+	BowType		 	string `json:"bowType"`
+	GameRange 		int	   `json:"gameRange"`
 }
 
 type Participant struct {
-	ID 				uint   `gorm:"primaryKey;autoIncrement"`
-	UserID 			uint   `gorm:"not null"`
-	CompetitionID 	uint   `gorm:"not null"`
-	Role 			string `gorm:"not null"`
-	Status 			string `gorm:"not null"`
+	ID 				uint   `gorm:"primaryKey;autoIncrement" json:"id"`
+	UserID 			uint   `gorm:"not null" json:"userID"`
+	CompetitionID 	uint   `gorm:"not null" json:"competitionID"`
+	Role 			string `gorm:"not null" json:"role"`
+	Status 			string `gorm:"not null" json:"status"`
 }
 
 type ParticipantGroup struct {
-	ParticipantID uint `gorm:"not null"`
-	GroupID    uint `gorm:"not null"`
+	ParticipantID 	uint `gorm:"not null"`
+	GroupID    		uint `gorm:"not null"`
 }
 
 type Institution struct {

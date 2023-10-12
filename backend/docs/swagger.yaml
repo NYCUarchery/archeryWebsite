@@ -1,5 +1,20 @@
 basePath: /api/
 definitions:
+  model.Competition:
+    properties:
+      date:
+        type: string
+      hostID:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      overview:
+        type: string
+      scoreboardURL:
+        type: string
+    type: object
   model.Institution:
     properties:
       id:
@@ -7,117 +22,23 @@ definitions:
       name:
         type: string
     type: object
-  response.AllCompInfoResponse:
+  model.User:
     properties:
-      competitions:
-        items:
-          $ref: '#/definitions/response.Competition'
-        type: array
-      result:
-        example: success
-        type: string
-    type: object
-  response.CompInfoResponse:
-    properties:
-      date:
-        example: "2006-01-02T15:04:05+08:00"
-        type: string
-      groups:
-        items:
-          $ref: '#/definitions/response.Group'
-        type: array
-      hostID:
-        example: "87"
-        type: string
-      name:
-        example: competition name
-        type: string
-      overview:
-        example: overview
-        type: string
-      participants:
-        example: '[1, 2, 3, 87]'
-        type: string
-      result:
-        example: success
-        type: string
-      scoreboardURL:
-        example: Scoreboard URL
-        type: string
-    type: object
-  response.CompResponse:
-    properties:
-      compID:
-        example: 87
-        type: integer
-      result:
-        example: result description
-        type: string
-    type: object
-  response.Competition:
-    properties:
-      date:
-        example: "2006-01-02T15:04:05+08:00"
-        type: string
-      hostID:
-        example: "87"
-        type: string
-      name:
-        example: competition name
-        type: string
-      overview:
-        example: overview
-        type: string
-      scoreboardURL:
-        example: Scoreboard URL
-        type: string
-    type: object
-  response.Group:
-    properties:
-      bowType:
-        example: bow type
-        type: string
-      competition_id:
-        example: 87
-        type: integer
-      gameRange:
-        example: 50
-        type: integer
-      groupName:
-        example: group name
+      email:
         type: string
       id:
-        example: 87
         type: integer
+      institutionID:
+        type: integer
+      name:
+        type: string
+      overview:
+        type: string
     type: object
   response.Response:
     properties:
       result:
         example: result description
-        type: string
-    type: object
-  response.UIDResponse:
-    properties:
-      uid:
-        example: your uid
-        type: string
-    type: object
-  response.UserInfoResponse:
-    properties:
-      email:
-        example: user email
-        type: string
-      institutionID:
-        example: user institution id
-        type: string
-      name:
-        example: user name
-        type: string
-      overview:
-        example: user overview
-        type: string
-      result:
-        example: success
         type: string
     type: object
 host: localhost:8080
@@ -142,7 +63,14 @@ paths:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/response.AllCompInfoResponse'
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Competition'
+                  type: array
+              type: object
       summary: get information of all the competitions
       tags:
       - competition
@@ -180,7 +108,12 @@ paths:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/response.CompResponse'
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                id:
+                  type: integer
+              type: object
         "400":
           description: competition name exists | cannot parse date string | invalid
             info/groups
@@ -208,7 +141,12 @@ paths:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/response.CompInfoResponse'
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Competition'
+              type: object
         "400":
           description: empty/invalid competition id
           schema:
@@ -229,11 +167,16 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            items:
-              $ref: '#/definitions/model.Institution'
-            type: array
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/model.Institution'
+                  type: array
+              type: object
         "500":
           description: db error
           schema:
@@ -267,6 +210,35 @@ paths:
           schema:
             $ref: '#/definitions/response.Response'
       summary: create an institution
+      tags:
+      - institution
+  /institution/{id}:
+    get:
+      consumes:
+      - application/json
+      description: get institution info from db by id
+      parameters:
+      - description: institution's id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: invalid id
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: no institution found
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: get institution info by id
       tags:
       - institution
   /participant/:
@@ -401,7 +373,12 @@ paths:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/response.UserInfoResponse'
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.User'
+              type: object
         "400":
           description: empty/invalid user id
           schema:
@@ -471,7 +448,12 @@ paths:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/response.UIDResponse'
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                id:
+                  type: integer
+              type: object
       summary: get my uid
       tags:
       - user

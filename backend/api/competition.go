@@ -6,7 +6,6 @@ import (
 	"time"
 	"backend/internal/model"
 	"backend/internal/pkg"
-	"backend/internal/response"
 	"strconv"
 	"encoding/json"
 )
@@ -22,7 +21,7 @@ import (
 // @Param   	 groups 	 	formData string true "a list of groups"
 // @Param   	 overview 	 	formData string false "overview"
 // @Param   	 scoreboardURL 	formData string false "Scoreboard URL"
-// @Success      200  {object}  response.CompResponse "success"
+// @Success      200  {object}  response.Response{id=uint} "success"
 // @Failure      400  {object}  response.Response "competition name exists | cannot parse date string | invalid info/groups"
 // @Failure      500  {object}  response.Response "DB error"
 // @Router       /competition [post]
@@ -80,7 +79,7 @@ func CreateCompetition(c *gin.Context) {
 	
 	c.JSON(http.StatusOK, gin.H{
 		"result": "success",
-		"compID": comp.ID,
+		"id": comp.ID,
 	})
 }
 
@@ -90,7 +89,7 @@ func CreateCompetition(c *gin.Context) {
 // @Tags         competition
 // @Produce      json
 // @Param   	 id 	 	 path int true "competition id"
-// @Success      200  {object}  response.CompInfoResponse "success"
+// @Success      200  {object}  response.Response{data=model.Competition} "success"
 // @Failure      400  {object}  response.Response "empty/invalid competition id"
 // @Failure      404  {object}  response.Response "no competition found"
 // @Router       /competition/{id} [get]
@@ -113,35 +112,9 @@ func CompetitionInfo(c *gin.Context) {
 		return
 	}
 
-	var pars []model.Participant
-	pars, err = model.CompetitionParticipants(uint(cid))
-	var parids []uint
-	for _, par := range pars {
-		parids = append(parids, par.UserID)
-	}
-
-	var groups []model.Group
-	groups, err = model.CompetitionGroups(uint(cid))
-	var resGroups []response.Group
-	for _, gr := range groups {
-		resGroups = append(resGroups, response.Group{
-			ID: gr.ID,
-			CompetitionID: gr.CompetitionID,
-			GroupName: gr.GroupName,
-			BowType: gr.BowType,
-			GameRange: gr.GameRange,
-		})
-	}
-
 	c.JSON(http.StatusOK, gin.H{
 		"result": "success",
-		"name": comp.Name,
-		"date": comp.Date,
-		"hostID": comp.HostID,
-		"scoreboardURL": comp.ScoreboardURL,
-		"overview": comp.Overview,
-		"groups": resGroups,
-		"participants": parids,
+		"data": comp,
 	})
 }
 
@@ -150,14 +123,14 @@ func CompetitionInfo(c *gin.Context) {
 // @Description  get id, name, date, hostID, scoreboardURL, and overview only
 // @Tags         competition
 // @Produce      json
-// @Success      200  {object}  response.AllCompInfoResponse "success"
+// @Success      200  {object}  response.Response{data=[]model.Competition} "success"
 // @Router       /competition [get]
 func AllCompetitionInfo(c *gin.Context) {
 	comps := model.AllCompetitionInfo()
 
 	c.JSON(http.StatusOK, gin.H{
 		"result": "success",
-		"competitions": comps,
+		"data": comps,
 	})
 }
 
