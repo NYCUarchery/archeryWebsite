@@ -3,8 +3,8 @@ import { useSelector } from "react-redux";
 import ActivationBoard from "./ActivationBoard/ActivationBoard";
 import QualifcationBoard from "./QualificationBoard/QualificationBoard";
 import EliminationBoard from "./EliminationBoard/EliminationBoard";
-import GroupEliminationBoard from "./GroupEliminationBoard";
-import MixedEliminationBoard from "./MixedEliminationBoard";
+import GroupEliminationBoard from "./GroupEliminationBoard/GroupEliminationBoard";
+import MixedEliminationBoard from "./MixedEliminationBoard/MixedEliminationBoard";
 
 export default function GameStructureBoard() {
   const subboardShown = useSelector(

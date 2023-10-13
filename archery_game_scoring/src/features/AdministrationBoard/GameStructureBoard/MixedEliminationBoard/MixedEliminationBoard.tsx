@@ -3,10 +3,10 @@ import GroupsMenu from "../GroupsMenu/GroupsMenu";
 import StageSetter from "./StageSetter";
 import GroupBoard from "./GroupBoard/GroupBoard";
 
-export default function EliminationBoard() {
+export default function MixedEliminationBoard() {
   return (
     <Box
-      className="elimination_board"
+      className="mixed_elimination_board"
       sx={{
         display: "flex",
       }}

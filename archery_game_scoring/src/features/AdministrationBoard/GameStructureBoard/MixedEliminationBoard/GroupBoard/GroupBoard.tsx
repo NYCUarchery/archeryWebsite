@@ -14,7 +14,7 @@ export default function GroupBoard() {
   for (let i = 0; i < advancingNum; i++) {
     teamBlocks.push(
       <Grid item xs={3}>
-        <TeamBlock teamIndex={i + 1} playersNum={1} players={[]}></TeamBlock>
+        <TeamBlock teamIndex={i + 1} playersNum={2} players={[]}></TeamBlock>
       </Grid>
     );
   }
@@ -25,7 +25,7 @@ export default function GroupBoard() {
       <Grid item xs={3}>
         <TeamBlock
           teamIndex={i + 1}
-          playersNum={1}
+          playersNum={2}
           players={[{ id: player.rank, name: player.name }]}
         ></TeamBlock>
       </Grid>
