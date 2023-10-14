@@ -18,7 +18,6 @@ func GetOnlyGameInfoByID(context *gin.Context) {
 		return
 	}
 	fmt.Println("GameInfo with ID(", context.Param("id"), ") -> ", data)
-
 	context.IndentedJSON(http.StatusOK, data)
 }
 
@@ -29,17 +28,7 @@ func GetGameInfoWGroupsByID(context *gin.Context) {
 		return
 	}
 	fmt.Println("GameInfo with ID(", context.Param("id"), ") -> ", data)
-	dataWGroup := map[string]interface{}{
-		"Title":            data.Title,
-		"SubTitle":         data.SubTitle,
-		"HostId":           data.HostId,
-		"CurrentPhase":     data.CurrentPhase,
-		"CurrentPhaseKind": data.CurrentPhaseKind,
-		"CurrentStage":     data.CurrentStage,
-		"Script":           data.Script,
-		"GroupInfos":       data.GroupInfos,
-	}
-	context.IndentedJSON(http.StatusOK, dataWGroup)
+	context.IndentedJSON(http.StatusOK, data)
 }
 
 func PostGameInfo(context *gin.Context) {

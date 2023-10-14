@@ -24,12 +24,13 @@ func GetGroupInfoByID(context *gin.Context) {
 }
 
 func PostGroupInfo(context *gin.Context) {
-	var data database.GroupInfo
+	var data database.Group
 	err := context.BindJSON(&data)
 	if err != nil {
 		context.IndentedJSON(http.StatusBadRequest, "error : "+err.Error())
 		return
 	}
+	fmt.Printf("Post GroupInfo -> %v\n", data)
 	newData, error := database.CreateGroupInfo(data)
 	if newData.ID == 0 {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
@@ -42,7 +43,7 @@ func PostGroupInfo(context *gin.Context) {
 }
 
 func UpdateGroupInfo(context *gin.Context) {
-	var data database.GroupInfo
+	var data database.Group
 	id := convert2int(context, "id")
 	data.ID = uint(id)
 	err := context.BindJSON(&data)

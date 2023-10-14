@@ -3,15 +3,15 @@ package database
 import "gorm.io/gorm"
 
 type GameInfo struct { // DB : game_info
-	ID               uint         `json:"-"        gorm:"primary_key"`
-	Title            string       `json:"title"`
-	SubTitle         string       `json:"sub_title"`
-	HostId           uint         `json:"host_id"`
-	CurrentPhase     int          `json:"current_phase"`
-	CurrentPhaseKind string       `json:"current_phase_kind"`
-	CurrentStage     uint         `json:"current_stage"`
-	Script           string       `json:"script"`
-	GroupInfos       []*GroupInfo `json:"-" gorm:"constraint:ondelete:CASCADE;"`
+	ID               uint     `json:"-"        gorm:"primary_key"`
+	Title            string   `json:"title"`
+	SubTitle         string   `json:"sub_title"`
+	HostId           uint     `json:"host_id"`
+	CurrentPhase     int      `json:"current_phase"`
+	CurrentPhaseKind string   `json:"current_phase_kind"`
+	CurrentStage     uint     `json:"current_stage"`
+	Script           string   `json:"script"`
+	Groups           []*Group `json:"groups" gorm:"constraint:ondelete:CASCADE;"`
 }
 
 func InitGameInfo() {
@@ -36,7 +36,7 @@ func GetOnlyGameInfo(ID int) (GameInfo, error) {
 
 func GetGameInfoWGroups(ID int) GameInfo {
 	var data GameInfo
-	DB.Preload("GroupInfos", func(*gorm.DB) *gorm.DB { return DB.Order("group_index asc") }).
+	DB.Preload("Groups", func(*gorm.DB) *gorm.DB { return DB.Order("group_index asc") }).
 		Table("competitions").Where("id = ?", ID).First(&data)
 	return data
 }

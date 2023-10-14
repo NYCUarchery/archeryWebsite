@@ -1,8 +1,8 @@
 package database
 
-type GroupInfo struct {
+type Group struct {
 	ID         uint   `json:"-" gorm:"primary_key"`
-	GameInfoID uint   `json:"-" gorm:"column:competition_id"`
+	GameInfoID uint   `json:"game_info_id" gorm:"column:competition_id"`
 	GroupName  string `json:"group_name"`
 	GroupRange string `json:"group_range"`
 	BowType    string `json:"bow_type"`
@@ -10,7 +10,7 @@ type GroupInfo struct {
 }
 
 func InitGroupInfo() {
-	DB.Table("groups").AutoMigrate(&GroupInfo{})
+	DB.Table("groups").AutoMigrate(&Group{})
 }
 
 // Get GroupInfo By ID godoc
@@ -23,8 +23,8 @@ func InitGroupInfo() {
 //	@Success		200	string	string
 //	@Failure		400	string	string
 //	@Router			/data/groupinfo/{id} [get]
-func GetGroupInfoById(id int) (GroupInfo, error) {
-	var group GroupInfo
+func GetGroupInfoById(id int) (Group, error) {
+	var group Group
 	result := DB.Table("groups").Where("id = ?", id).First(&group)
 	return group, result.Error
 }
@@ -40,7 +40,7 @@ func GetGroupInfoById(id int) (GroupInfo, error) {
 //	@Success		200			string	string
 //	@Failure		400			string	string
 //	@Router			/data/groupinfo [post]
-func CreateGroupInfo(group GroupInfo) (GroupInfo, error) {
+func CreateGroupInfo(group Group) (Group, error) {
 	result := DB.Table("groups").Create(&group)
 	return group, result.Error
 }
@@ -59,7 +59,7 @@ func CreateGroupInfo(group GroupInfo) (GroupInfo, error) {
 //	@Failure		404			string	string
 //	@Failure		500			string	string
 //	@Router			/data/groupinfo/whole/{id} [put]
-func UpdateGroupInfo(id int, group GroupInfo) (GroupInfo, error) {
+func UpdateGroupInfo(id int, group Group) (Group, error) {
 	result := DB.Table("groups").Where("id = ?", id).Updates(&group)
 	return group, result.Error
 }
@@ -77,6 +77,6 @@ func UpdateGroupInfo(id int, group GroupInfo) (GroupInfo, error) {
 //	@Failure		404	string	string
 //	@Router			/data/groupinfo/{id} [delete]
 func DeleteGroupInfo(id int) (bool, error) {
-	result := DB.Table("groups").Where("id = ?", id).Delete(&GroupInfo{})
+	result := DB.Table("groups").Where("id = ?", id).Delete(&Group{})
 	return result.RowsAffected != 0, result.Error
 }
