@@ -11,7 +11,7 @@ COPY tsconfig.json .
 
 RUN npm run build
 RUN npm install -g serve
-ENTRYPOINT serve build
+ENTRYPOINT serve -s build
 
 EXPOSE 3000
 
