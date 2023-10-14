@@ -91,7 +91,7 @@ paths:
     put:
       consumes:
       - application/json
-      description: Put whole new GameInfo and overwrite with the id
+      description: Put whole new GameInfo and overwrite with the id but without GroupInfo
       parameters:
       - description: GameInfo ID
         in: path
@@ -123,7 +123,7 @@ paths:
           description: Internal Server Error
           schema:
             type: string
-      summary: update one GameInfo
+      summary: update one GameInfo without GroupInfo
       tags:
       - GameInfo
   /data/groupinfo:

@@ -63,7 +63,7 @@ const docTemplate = `{
         },
         "/data/gameinfo/whole/{id}": {
             "put": {
-                "description": "Put whole new GameInfo and overwrite with the id",
+                "description": "Put whole new GameInfo and overwrite with the id but without GroupInfo",
                 "consumes": [
                     "application/json"
                 ],
@@ -73,7 +73,7 @@ const docTemplate = `{
                 "tags": [
                     "GameInfo"
                 ],
-                "summary": "update one GameInfo",
+                "summary": "update one GameInfo without GroupInfo",
                 "parameters": [
                     {
                         "type": "string",

@@ -7,6 +7,8 @@ type GameInfo struct { // DB : game_info
 	Title            string   `json:"title"`
 	SubTitle         string   `json:"sub_title"`
 	HostId           uint     `json:"host_id"`
+	Groups_num       int      `json:"groups_num"`
+	Lanes_num        int      `json:"lanes_num"`
 	CurrentPhase     int      `json:"current_phase"`
 	CurrentPhaseKind string   `json:"current_phase_kind"`
 	CurrentStage     uint     `json:"current_stage"`
@@ -59,8 +61,8 @@ func PostGameInfo(data GameInfo) GameInfo {
 
 // Update GameInfo godoc
 //
-//	@Summary		update one GameInfo
-//	@Description	Put whole new GameInfo and overwrite with the id
+//	@Summary		update one GameInfo without GroupInfo
+//	@Description	Put whole new GameInfo and overwrite with the id but without GroupInfo
 //	@Tags			GameInfo
 //	@Accept			json
 //	@Produce		json
