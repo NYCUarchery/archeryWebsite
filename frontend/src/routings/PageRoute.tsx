@@ -8,6 +8,7 @@ import CreateContestPage from '../pages/CreateContestPage';
 import routing from '../util/routing';
 
 const PageRoute = () => {
+	console.log("pageroute")
 	return (
 		<Routes>
 			<Route path={routing.Home} element={<Homepage/>}/>

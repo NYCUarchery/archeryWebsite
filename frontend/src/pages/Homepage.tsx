@@ -52,7 +52,6 @@ const Homepage = () => {
 								{rows.map((v, i) => (
 									<TableRow
 										onClick={() => {
-											console.log("clicking");
 											navigate(v.link);
 										}}
 										hover={true}

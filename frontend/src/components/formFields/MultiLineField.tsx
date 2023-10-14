@@ -15,9 +15,7 @@ interface MultiLineFieldProp {
 
 const MultiLineField: FC<MultiLineFieldProp> = ({ touched, error, handleChange, handleBlur, name, label, value }) => {
 	return (
-		<FormControl
-			// sx={{ height: "200px", minHeight: "200px", }}
-		>
+		<FormControl>
 			<TextField
 				label={label}
 				value={value}

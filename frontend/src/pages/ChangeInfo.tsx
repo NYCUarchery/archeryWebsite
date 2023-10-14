@@ -7,7 +7,7 @@ import Button from '@mui/material/Button';
 import { useNavigate } from 'react-router-dom';
 import avatar from "../assets/images/avatar.jpg";
 import { Formik } from 'formik';
-import { host, api } from '../util/api';
+import api from '../util/api';
 import routing from '../util/routing';
 import { useContext, useState } from 'react';
 import OneLineField from '../components/formFields/OneLineField';
@@ -65,14 +65,12 @@ const ChangeInfo = () => {
 						body.append("oriPassword", values.oriPassword);
 						body.append("modPassword", values.password);
 						body.append("organization", values.organization);
-						console.log("body: ", body);
-						fetch(`${host}/${api.user.modifyInfo}/${uid}`, {
+						fetch(`${api.user.modifyInfo}/${uid}`, {
 							method: "PUT",
 							credentials: "include",
 							body,
 						})
 						.then((res) => {
-							console.log("res: ", res);
 							switch(res.status) {
 								case 200:
 									window.alert("修改成功");
@@ -91,7 +89,6 @@ const ChangeInfo = () => {
 							return res.json();
 						})
 						.then((resjson) => {
-							resjson["result"] && console.log("result: ", resjson["result"])
 							if (!resjson["result"]) {return;}
 							switch(resjson["result"]) {
 								case "need user id":
