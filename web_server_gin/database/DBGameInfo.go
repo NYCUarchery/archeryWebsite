@@ -1,32 +1,32 @@
 package database
 
 type GameInfo struct { // DB : game_info
-	ID               uint   `json:"-"        gorm:"primary_key"`
-	Title            string `json:"title"`
-	SubTitle         string `json:"sub_title"`
-	HostId           uint   `json:"host_id"`
-	CurrentPhase     int    `json:"current_phase"`
-	CurrentPhaseKind string `json:"current_phase_kind"`
-	CurrentStage     uint   `json:"current_stage"`
-	Script           string `json:"script"`
-	// GroupInfo        []*GroupInfo `json:"group_info" gorm:"foreignkey:GameInfoID"`
+	ID               uint         `json:"-"        gorm:"primary_key"`
+	Title            string       `json:"title"`
+	SubTitle         string       `json:"sub_title"`
+	HostId           uint         `json:"host_id"`
+	CurrentPhase     int          `json:"current_phase"`
+	CurrentPhaseKind string       `json:"current_phase_kind"`
+	CurrentStage     uint         `json:"current_stage"`
+	Script           string       `json:"script"`
+	GroupInfos       []*GroupInfo `json:"-" gorm:"foreignkey:GameInfoID"`
 }
 
 func InitGameInfo() {
 	DB.Table("competitions").AutoMigrate(&GameInfo{})
 }
 
-// Get GameInfo By ID godoc
+// Get Only GameInfo By ID godoc
 //
-//	@Summary		Show one GameInfo
-//	@Description	Get one GameInfo by id
+//	@Summary		Show one GameInfo without GroupInfo
+//	@Description	Get one GameInfo by id without GroupInfo
 //	@Tags			GameInfo
 //	@Produce		json
 //	@Param			id	path	int	true	"GameInfo ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
 //	@Router			/data/gameinfo/{id} [get]
-func GetGameInfo(ID int) GameInfo {
+func GetOnlyGameInfo(ID int) GameInfo {
 	var data GameInfo
 	DB.Model(&GameInfo{}).Where("id = ?", ID).First(&data)
 	return data
@@ -39,7 +39,7 @@ func GetGameInfo(ID int) GameInfo {
 //	@Tags			GameInfo
 //	@Accept			json
 //	@Produce		json
-//	@Param			GameInfo	body	string	true	"GaeInfo"
+//	@Param			GameInfo	body	string	true	"GameInfo"
 //	@Success		200			string	string
 //	@Failure		400			string	string
 //	@Router			/data/gameinfo [post]

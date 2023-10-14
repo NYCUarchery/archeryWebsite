@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetGameInfoByID(context *gin.Context) {
-	data := database.GetGameInfo(convert2int(context, "id"))
+func GetOnlyGameInfoByID(context *gin.Context) {
+	data := database.GetOnlyGameInfo(convert2int(context, "id"))
 	if data.ID == 0 {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
 		return

@@ -16,7 +16,7 @@ paths:
       description: Post one new GameInfo data with new id, and return the new GameInfo
         data
       parameters:
-      - description: GaeInfo
+      - description: GameInfo
         in: body
         name: GameInfo
         required: true
@@ -66,7 +66,7 @@ paths:
       tags:
       - GameInfo
     get:
-      description: Get one GameInfo by id
+      description: Get one GameInfo by id without GroupInfo
       parameters:
       - description: GameInfo ID
         in: path
@@ -84,7 +84,7 @@ paths:
           description: Bad Request
           schema:
             type: string
-      summary: Show one GameInfo
+      summary: Show one GameInfo without GroupInfo
       tags:
       - GameInfo
   /data/gameinfo/whole/{id}:

@@ -33,7 +33,7 @@ func AddDataRouter(data *gin.RouterGroup) {
 }
 
 func gameInfoRouter(data *gin.RouterGroup) {
-	data.GET("/:id", translate.GetGameInfoByID)
+	data.GET("/:id", translate.GetOnlyGameInfoByID)
 	data.POST("/", translate.PostGameInfo)
 	data.PUT("/whole/:id", translate.UpdateGameInfo)
 	data.DELETE("/:id", translate.DeleteGameInfo)

@@ -36,7 +36,7 @@ const docTemplate = `{
                 "summary": "Create one GameInfo",
                 "parameters": [
                     {
-                        "description": "GaeInfo",
+                        "description": "GameInfo",
                         "name": "GameInfo",
                         "in": "body",
                         "required": true,
@@ -122,14 +122,14 @@ const docTemplate = `{
         },
         "/data/gameinfo/{id}": {
             "get": {
-                "description": "Get one GameInfo by id",
+                "description": "Get one GameInfo by id without GroupInfo",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "GameInfo"
                 ],
-                "summary": "Show one GameInfo",
+                "summary": "Show one GameInfo without GroupInfo",
                 "parameters": [
                     {
                         "type": "integer",
