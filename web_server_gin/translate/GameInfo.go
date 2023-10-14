@@ -9,14 +9,37 @@ import (
 )
 
 func GetOnlyGameInfoByID(context *gin.Context) {
-	data := database.GetOnlyGameInfo(convert2int(context, "id"))
+	data, error := database.GetOnlyGameInfo(convert2int(context, "id"))
 	if data.ID == 0 {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
+		return
+	} else if error != nil {
+		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": error.Error()})
 		return
 	}
 	fmt.Println("GameInfo with ID(", context.Param("id"), ") -> ", data)
 
 	context.IndentedJSON(http.StatusOK, data)
+}
+
+func GetGameInfoWGroupsByID(context *gin.Context) {
+	data := database.GetGameInfoWGroups(convert2int(context, "id"))
+	if data.ID == 0 {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
+		return
+	}
+	fmt.Println("GameInfo with ID(", context.Param("id"), ") -> ", data)
+	dataWGroup := map[string]interface{}{
+		"Title":            data.Title,
+		"SubTitle":         data.SubTitle,
+		"HostId":           data.HostId,
+		"CurrentPhase":     data.CurrentPhase,
+		"CurrentPhaseKind": data.CurrentPhaseKind,
+		"CurrentStage":     data.CurrentStage,
+		"Script":           data.Script,
+		"GroupInfos":       data.GroupInfos,
+	}
+	context.IndentedJSON(http.StatusOK, dataWGroup)
 }
 
 func PostGameInfo(context *gin.Context) {

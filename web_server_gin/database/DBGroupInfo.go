@@ -1,12 +1,12 @@
 package database
 
 type GroupInfo struct {
-	ID            uint   `json:"-"         gorm:"primary_key"`
-	CompetitionID uint   `json:"-"`
-	GroupName     string `json:"group_name"`
-	GroupRange    string `json:"group_range"`
-	BowType       string `json:"bow_type"`
-	GroupIndex    int    `json:"-"`
+	ID         uint   `json:"-" gorm:"primary_key"`
+	GameInfoID uint   `json:"-" gorm:"column:competition_id"`
+	GroupName  string `json:"group_name"`
+	GroupRange string `json:"group_range"`
+	BowType    string `json:"bow_type"`
+	GroupIndex int    `json:"-"`
 }
 
 func InitGroupInfo() {

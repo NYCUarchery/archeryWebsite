@@ -1,5 +1,7 @@
 package database
 
+import "gorm.io/gorm"
+
 type GameInfo struct { // DB : game_info
 	ID               uint         `json:"-"        gorm:"primary_key"`
 	Title            string       `json:"title"`
@@ -9,7 +11,7 @@ type GameInfo struct { // DB : game_info
 	CurrentPhaseKind string       `json:"current_phase_kind"`
 	CurrentStage     uint         `json:"current_stage"`
 	Script           string       `json:"script"`
-	GroupInfos       []*GroupInfo `json:"-" gorm:"foreignkey:GameInfoID"`
+	GroupInfos       []*GroupInfo `json:"-" gorm:"constraint:ondelete:CASCADE;"`
 }
 
 func InitGameInfo() {
@@ -26,9 +28,16 @@ func InitGameInfo() {
 //	@Success		200	string	string
 //	@Failure		400	string	string
 //	@Router			/data/gameinfo/{id} [get]
-func GetOnlyGameInfo(ID int) GameInfo {
+func GetOnlyGameInfo(ID int) (GameInfo, error) {
 	var data GameInfo
-	DB.Model(&GameInfo{}).Where("id = ?", ID).First(&data)
+	error := DB.Table("competitions").Where("id = ?", ID).First(&data).Error
+	return data, error
+}
+
+func GetGameInfoWGroups(ID int) GameInfo {
+	var data GameInfo
+	DB.Preload("GroupInfos", func(*gorm.DB) *gorm.DB { return DB.Order("group_index asc") }).
+		Table("competitions").Where("id = ?", ID).First(&data)
 	return data
 }
 
@@ -44,7 +53,7 @@ func GetOnlyGameInfo(ID int) GameInfo {
 //	@Failure		400			string	string
 //	@Router			/data/gameinfo [post]
 func PostGameInfo(data GameInfo) GameInfo {
-	DB.Model(&GameInfo{}).Create(&data)
+	DB.Table("competitions").Create(&data)
 	return data
 }
 
@@ -63,7 +72,7 @@ func PostGameInfo(data GameInfo) GameInfo {
 //	@Failure		500			string	string
 //	@Router			/data/gameinfo/whole/{id} [put]
 func UpdateGameInfo(ID int, data GameInfo) GameInfo {
-	DB.Model(&GameInfo{}).Where("id = ?", ID).Updates(&data)
+	DB.Table("competitions").Where("id = ?", ID).Updates(&data)
 	return data
 }
 
@@ -80,6 +89,6 @@ func UpdateGameInfo(ID int, data GameInfo) GameInfo {
 //	@Failure		404	string	string
 //	@Router			/data/gameinfo/{id} [delete]
 func DeleteGameInfo(ID int) bool {
-	result := DB.Delete(&GameInfo{}, "id =?", ID)
+	result := DB.Delete("competition", "id =?", ID)
 	return result.RowsAffected != 0
 }
