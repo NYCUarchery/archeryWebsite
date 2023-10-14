@@ -41,7 +41,6 @@ func gameInfoRouter(data *gin.RouterGroup) {
 
 func groupInfoRouter(data *gin.RouterGroup) {
 	data.GET("/:id", translate.GetGroupInfoByID)
-	//data.GET("/competition/:id", translate.GetGroupInfosByCompetitionID)
 	data.POST("/", translate.PostGroupInfo)
 	data.PUT("/whole/:id", translate.UpdateGroupInfo)
 	data.DELETE("/:id", translate.DeleteGroupInfo)

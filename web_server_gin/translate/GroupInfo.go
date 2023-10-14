@@ -23,18 +23,6 @@ func GetGroupInfoByID(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, data)
 }
 
-// func GetGroupInfosByCompetitionID(context *gin.Context) {
-// 	id := convert2int(context, "id")
-// 	data, error := database.GetGroupInfos(id)
-// 	if error != nil {
-// 		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": error.Error()})
-// 		return
-// 	}
-// 	fmt.Printf("GroupInfos with CompetitionID(%v) -> %v\n", id, data)
-
-// 	context.IndentedJSON(http.StatusOK, data)
-// }
-
 func PostGroupInfo(context *gin.Context) {
 	var data database.GroupInfo
 	err := context.BindJSON(&data)

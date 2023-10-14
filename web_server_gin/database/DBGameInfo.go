@@ -9,6 +9,7 @@ type GameInfo struct { // DB : game_info
 	CurrentPhaseKind string `json:"current_phase_kind"`
 	CurrentStage     uint   `json:"current_stage"`
 	Script           string `json:"script"`
+	// GroupInfo        []*GroupInfo `json:"group_info" gorm:"foreignkey:GameInfoID"`
 }
 
 func InitGameInfo() {

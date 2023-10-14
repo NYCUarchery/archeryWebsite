@@ -6,6 +6,7 @@ type GroupInfo struct {
 	GroupName     string `json:"group_name"`
 	GroupRange    string `json:"group_range"`
 	BowType       string `json:"bow_type"`
+	GroupIndex    int    `json:"-"`
 }
 
 func InitGroupInfo() {
@@ -27,12 +28,6 @@ func GetGroupInfoById(id int) (GroupInfo, error) {
 	result := DB.Table("groups").Where("id = ?", id).First(&group)
 	return group, result.Error
 }
-
-// func GetGroupInfos(CompetitionID int) ([]GroupInfo, error) {
-// 	var groups []GroupInfo
-// 	result := DB.Table("groups").Find(&groups)
-// 	return groups, result.Error
-// }
 
 // Post GroupInfo godoc
 //
