@@ -47,6 +47,13 @@ func RouterSetup() *gin.Engine {
 		{
 			parssr.POST("/", pkg.AuthSessionMiddleware(), api.JoinInCompetition)
 		}
+
+		insr := sr.Group("/institution")
+		{
+			insr.POST("/", api.CreateInstitution)
+			insr.GET("/:id", api.InstitutionInfo)
+			insr.GET("/", api.AllInstitutionInfo)
+		}
 	}
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

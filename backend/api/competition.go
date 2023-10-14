@@ -11,25 +11,24 @@ import (
 )
 
 // CreateCompetition godoc
-// @Summary      create a competition
-// @Description  create a competition and set the person as the host
-// @Tags         competition
-// @Accept       json
-// @Produce      json
-// @Param   	 name 	 	 	formData string true "competition name"
-// @Param   	 date 		 	formData string true "date"
-// @Param   	 categories  	formData string true "a list of categories"
-// @Param   	 overview 	 	formData string false "overview"
-// @Param   	 organization 	formData string false "organization"
-// @Param   	 scoreboardURL 	formData string false "Scoreboard URL"
-// @Success      200  {object}  response.CompResponse "success"
-// @Failure      400  {object}  response.Response "competition name exists | cannot parse date string | invalid info/categories"
-// @Failure      500  {object}  response.Response "DB error"
-// @Router       /competition [post]
+// @Summary			create a competition
+// @Description		create a competition and set the person as the host
+// @Tags			competition
+// @Accept			json
+// @Produce			json
+// @Param			name			formData string true "competition name"
+// @Param 			date			formData string true "date"
+// @Param			groups			formData string true "a list of groups"
+// @Param			overview		formData string false "overview"
+// @Param			scoreboardURL	formData string false "Scoreboard URL"
+// @Success			200  {object}	response.Response{id=uint} "success"
+// @Failure			400  {object}	response.Response "competition name exists | cannot parse date string | invalid info/groups"
+// @Failure			500  {object}	response.Response "DB error"
+// @Router			/competition [post]
 func CreateCompetition(c *gin.Context) {
 	name := c.PostForm("name")
 	date := c.PostForm("date")
-	categories := c.PostFormArray("categories")
+	groups := c.PostFormArray("groups")
 	
 	if findComp := model.CompetitionInfoByName(name); findComp.ID != 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "competition name exists"})
@@ -48,21 +47,23 @@ func CreateCompetition(c *gin.Context) {
 	comp.ScoreboardURL = c.PostForm("scoreboardURL")
 	comp.Overview = c.PostForm("overview")
 	
-	var compcats []model.CompetitionCategory
-	for _, catstr := range categories {
-		cat := struct {
-			Des string `json:"des"`
-			Dis int32 `json:"dis"`
+	var compGroups []model.Group
+	for _, grstr := range groups {
+		gr := struct {
+			GroupName 	string `json:"groupName"`
+			BowType 	string `json:"bowType"`
+			GameRange   int	   `json:"gameRange"`
 		}{}
-		if err = json.Unmarshal([]byte(catstr), &cat); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"result": "invalid categories"})
+		if err = json.Unmarshal([]byte(grstr), &gr); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"result": "invalid groups"})
 			return
 		}
-		var compcat model.CompetitionCategory
-		compcat.CompetitionID = 0
-		compcat.Description = cat.Des
-		compcat.Distance = cat.Dis
-		compcats = append(compcats, compcat)
+		group := model.Group {
+			GroupName: gr.GroupName,
+			BowType: gr.BowType,
+			GameRange: gr.GameRange,
+		}
+		compGroups = append(compGroups, group)
 	}
 
 	err = model.AddCompetition(&comp)
@@ -71,27 +72,27 @@ func CreateCompetition(c *gin.Context) {
 		return
 	}
 
-	for _, compcat := range compcats {
-		compcat.CompetitionID = comp.ID
-		model.AddCompCategory(&compcat)
+	for _, group := range compGroups {
+		group.CompetitionID = comp.ID
+		model.AddGroup(&group)
 	}
 	
 	c.JSON(http.StatusOK, gin.H{
 		"result": "success",
-		"compID": comp.ID,
+		"id": comp.ID,
 	})
 }
 
 // CompetitionInfo godoc
-// @Summary      get information of the competition
-// @Description  get info, categories, participants of the competition
-// @Tags         competition
-// @Produce      json
-// @Param   	 id 	 	 path int true "competition id"
-// @Success      200  {object}  response.CompInfoResponse "success"
-// @Failure      400  {object}  response.Response "empty/invalid competition id"
-// @Failure      404  {object}  response.Response "no competition found"
-// @Router       /competition/{id} [get]
+// @Summary			get information of the competition
+// @Description		get info, groups, participants of the competition
+// @Tags			competition
+// @Produce			json
+// @Param			id		path int true "competition id"
+// @Success			200		{object}	response.Response{data=model.Competition} "success"
+// @Failure			400		{object}	response.Response "empty/invalid competition id"
+// @Failure			404		{object}	response.Response "no competition found"
+// @Router			/competition/{id} [get]
 func CompetitionInfo(c *gin.Context) {
 	cidstr := c.Param("id")
 	if cidstr == "" {
@@ -111,54 +112,25 @@ func CompetitionInfo(c *gin.Context) {
 		return
 	}
 
-	var pars []model.Participant
-	pars, err = model.CompetitionParticipants(uint(cid))
-	var parids []uint
-	for _, par := range pars {
-		parids = append(parids, par.UserID)
-	}
-
-	var cats []model.CompetitionCategory
-	cats, err = model.CompetitionCategories(uint(cid))
-	var pairs []struct{
-		Des string `json:"des"`
-		Dis int32 `json:"dis"`
-	}
-	for _, cat := range cats {
-		pairs = append(pairs, struct{
-			Des string `json:"des"`
-			Dis int32 `json:"dis"`
-		}{
-			Des: cat.Description,
-			Dis: cat.Distance,
-		})
-	}
-
 	c.JSON(http.StatusOK, gin.H{
 		"result": "success",
-		"name": comp.Name,
-		"date": comp.Date,
-		"hostID": comp.HostID,
-		"scoreboardURL": comp.ScoreboardURL,
-		"overview": comp.Overview,
-		"categories": pairs,
-		"participants": parids,
+		"data": comp,
 	})
 }
 
 // AllCompetitionInfo godoc
-// @Summary      get information of all the competition
-// @Description  get id, name, date, hostID, scoreboardURL, and overview only
-// @Tags         competition
-// @Produce      json
-// @Success      200  {object}  response.AllCompInfoResponse "success"
-// @Router       /competition [get]
+// @Summary			get information of all the competitions
+// @Description		get id, name, date, hostID, scoreboardURL, and overview only
+// @Tags			competition
+// @Produce			json
+// @Success			200	{object}	response.Response{data=[]model.Competition} "success"
+// @Router			/competition [get]
 func AllCompetitionInfo(c *gin.Context) {
 	comps := model.AllCompetitionInfo()
 
 	c.JSON(http.StatusOK, gin.H{
 		"result": "success",
-		"competitions": comps,
+		"data": comps,
 	})
 }
 

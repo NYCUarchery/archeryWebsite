@@ -32,12 +32,27 @@ const docTemplate = `{
                 "tags": [
                     "competition"
                 ],
-                "summary": "get information of all the competition",
+                "summary": "get information of all the competitions",
                 "responses": {
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/response.AllCompInfoResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.Competition"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -71,8 +86,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "a list of categories",
-                        "name": "categories",
+                        "description": "a list of groups",
+                        "name": "groups",
                         "in": "formData",
                         "required": true
                     },
@@ -80,12 +95,6 @@ const docTemplate = `{
                         "type": "string",
                         "description": "overview",
                         "name": "overview",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "description": "organization",
-                        "name": "organization",
                         "in": "formData"
                     },
                     {
@@ -99,11 +108,23 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/response.CompResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
-                        "description": "competition name exists | cannot parse date string | invalid info/categories",
+                        "description": "competition name exists | cannot parse date string | invalid info/groups",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }
@@ -119,7 +140,7 @@ const docTemplate = `{
         },
         "/competition/{id}": {
             "get": {
-                "description": "get info, categories, participants of the competition",
+                "description": "get info, groups, participants of the competition",
                 "produces": [
                     "application/json"
                 ],
@@ -140,7 +161,19 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/response.CompInfoResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.Competition"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -151,6 +184,136 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "no competition found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/institution": {
+            "get": {
+                "description": "get all institution info from db",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "institution"
+                ],
+                "summary": "get all institution info",
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/model.Institution"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "db error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "add an institution to db",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "institution"
+                ],
+                "summary": "create an institution",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "institution's name",
+                        "name": "name",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "empty institution name",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "db error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/institution/{id}": {
+            "get": {
+                "description": "get institution info from db by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "institution"
+                ],
+                "summary": "get institution info by id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "institution's id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid id",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "no institution found",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }
@@ -302,8 +465,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "organization",
-                        "name": "organization",
+                        "description": "institution ID",
+                        "name": "institutionID",
                         "in": "formData"
                     }
                 ],
@@ -315,7 +478,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "username/email exists | empty username/password/email",
+                        "description": "username/email exists | empty username/password/email | invalid info",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }
@@ -343,7 +506,19 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/response.UIDResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 }
@@ -351,7 +526,7 @@ const docTemplate = `{
         },
         "/user/{id}": {
             "get": {
-                "description": "get a user's username, overview, and organization",
+                "description": "get a user's username, overview, and institution id",
                 "consumes": [
                     "application/json"
                 ],
@@ -375,7 +550,19 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/response.UserInfoResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.User"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -393,7 +580,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "modify username, password, overview, and organization",
+                "description": "modify username, password, overview, and institution_id",
                 "consumes": [
                     "application/json"
                 ],
@@ -439,8 +626,8 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "modified organization",
-                        "name": "organization",
+                        "description": "modified institution ID",
+                        "name": "institutionID",
                         "in": "formData"
                     }
                 ],
@@ -468,108 +655,57 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "response.AllCompInfoResponse": {
-            "type": "object",
-            "properties": {
-                "competitions": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/response.Competition"
-                    }
-                },
-                "result": {
-                    "type": "string",
-                    "example": "success"
-                }
-            }
-        },
-        "response.Category": {
-            "type": "object",
-            "properties": {
-                "des": {
-                    "type": "string",
-                    "example": "wc"
-                },
-                "dis": {
-                    "type": "string",
-                    "example": "50"
-                }
-            }
-        },
-        "response.CompInfoResponse": {
-            "type": "object",
-            "properties": {
-                "categories": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/response.Category"
-                    }
-                },
-                "date": {
-                    "type": "string",
-                    "example": "2006-01-02T15:04:05+08:00"
-                },
-                "hostID": {
-                    "type": "string",
-                    "example": "87"
-                },
-                "name": {
-                    "type": "string",
-                    "example": "competition name"
-                },
-                "overview": {
-                    "type": "string",
-                    "example": "overview"
-                },
-                "participants": {
-                    "type": "string",
-                    "example": "[1, 2, 3, 87]"
-                },
-                "result": {
-                    "type": "string",
-                    "example": "success"
-                },
-                "scoreboardURL": {
-                    "type": "string",
-                    "example": "Scoreboard URL"
-                }
-            }
-        },
-        "response.CompResponse": {
-            "type": "object",
-            "properties": {
-                "compID": {
-                    "type": "integer",
-                    "example": 87
-                },
-                "result": {
-                    "type": "string",
-                    "example": "result description"
-                }
-            }
-        },
-        "response.Competition": {
+        "model.Competition": {
             "type": "object",
             "properties": {
                 "date": {
-                    "type": "string",
-                    "example": "2006-01-02T15:04:05+08:00"
+                    "type": "string"
                 },
                 "hostID": {
-                    "type": "string",
-                    "example": "87"
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
                 },
                 "name": {
-                    "type": "string",
-                    "example": "competition name"
+                    "type": "string"
                 },
                 "overview": {
-                    "type": "string",
-                    "example": "overview"
+                    "type": "string"
                 },
                 "scoreboardURL": {
-                    "type": "string",
-                    "example": "Scoreboard URL"
+                    "type": "string"
+                }
+            }
+        },
+        "model.Institution": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.User": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "institutionID": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "overview": {
+                    "type": "string"
                 }
             }
         },
@@ -579,40 +715,6 @@ const docTemplate = `{
                 "result": {
                     "type": "string",
                     "example": "result description"
-                }
-            }
-        },
-        "response.UIDResponse": {
-            "type": "object",
-            "properties": {
-                "uid": {
-                    "type": "string",
-                    "example": "your uid"
-                }
-            }
-        },
-        "response.UserInfoResponse": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string",
-                    "example": "user email"
-                },
-                "name": {
-                    "type": "string",
-                    "example": "user name"
-                },
-                "organization": {
-                    "type": "string",
-                    "example": "user organization"
-                },
-                "overview": {
-                    "type": "string",
-                    "example": "user overview"
-                },
-                "result": {
-                    "type": "string",
-                    "example": "success"
                 }
             }
         }
