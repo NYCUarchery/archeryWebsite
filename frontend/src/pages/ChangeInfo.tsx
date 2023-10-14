@@ -7,17 +7,16 @@ import Button from '@mui/material/Button';
 import { useNavigate } from 'react-router-dom';
 import avatar from "../assets/images/avatar.jpg";
 import { Formik } from 'formik';
-import api from '../util/api';
 import routing from '../util/routing';
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import OneLineField from '../components/formFields/OneLineField';
 import MultiLineField from '../components/formFields/MultiLineField';
 import SecretField from '../components/formFields/SecretField';
-import UserContext from '../util/userContext';
+import { userStore } from '../util/userReducer';
+import { ModifyUserInfo } from '../util/api2';
 
 const ChangeInfo = () => {
 	const navigate = useNavigate();
-	const { uid } = useContext(UserContext);
 	const [showPassword, setShowPassword] = useState(false);
 	const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 	const [showOriPassword, setShowOriPassword] = useState(false);
@@ -56,68 +55,12 @@ const ChangeInfo = () => {
 						passwordConfirm: "",
 						organization: "",
 					}}
-					onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
-						const body = new FormData();
-						
-						// body.append("nickname", values.nickname);
-						body.append("username", values.username);
-						body.append("overview", values.overview);
-						body.append("oriPassword", values.oriPassword);
-						body.append("modPassword", values.password);
-						body.append("organization", values.organization);
-						fetch(`${api.user.modifyInfo}/${uid}`, {
-							method: "PUT",
-							credentials: "include",
-							body,
-						})
-						.then((res) => {
-							switch(res.status) {
-								case 200:
-									window.alert("修改成功");
-									navigate(routing.Personal);
-									break;
-								case 400:
-									// window.alert("不正確的 uid");
-									break;
-								case 403:
-									// window.alert("查無此人ㄛ");
-									break;
-								case 404:
-									window.alert("查無此人ㄛ");
-									break;
-							}
-							return res.json();
-						})
-						.then((resjson) => {
-							if (!resjson["result"]) {return;}
-							switch(resjson["result"]) {
-								case "need user id":
-									window.alert("需要 uid");
-									break;
-								case "invalid user id":
-									window.alert("無效 uid");
-									break;
-								case "username can't be empty":
-									window.alert("請輸入 username");
-									break;
-								case "username exists":
-									window.alert("username 已存在");
-									break;
-								case "original password can't be empty":
-									window.alert("請輸入原密碼");
-									break;
-								case "original & modified passwords are the same":
-									window.alert("原密碼和新密碼重複");
-									break;
-								case "cannot change other's info":
-									window.alert("不要偷改別人密碼");
-									break;
-								case "wrong original password":
-									window.alert("不正確的原密碼");
-									break;
-							}
-						})
-						.catch((err) => console.log(err));
+					onSubmit={async (values) => {
+						try {
+							const uid = userStore.getState().uid; 
+							await ModifyUserInfo(uid, values);
+							navigate(routing.Personal)
+						} catch (error) {}
 					}}
 				>
 					{({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values, setFieldValue }) => (
