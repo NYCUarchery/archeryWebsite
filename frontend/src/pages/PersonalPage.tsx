@@ -12,7 +12,7 @@ import avatar from "../assets/images/avatar.jpg";
 import routing from '../util/routing';
 import { useEffect, useState } from 'react';
 import { userStore } from '../util/userReducer';
-import { GetUserInfo } from '../util/api2';
+import { GetUserInfo } from '../util/api';
 
 interface UserInfo {
   overview: string;

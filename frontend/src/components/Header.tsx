@@ -24,7 +24,7 @@ import { useNavigate } from 'react-router-dom';
 
 import Avatar from '@mui/material/Avatar';
 import routing from '../util/routing';
-import { Logout } from '../util/api2';
+import { Logout } from '../util/api';
 import { userStore } from '../util/userReducer';
 
 interface HeaderProps {

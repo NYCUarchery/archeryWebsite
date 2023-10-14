@@ -5,7 +5,7 @@ import { useEffect } from 'react';
 import SignupPage from '../pages/SignupPage';
 import routing from '../util/routing';
 
-import { GetUid } from '../util/api2';
+import { GetUid } from '../util/api';
 
 const UnauthRoute = () => {
 	const navigate = useNavigate();
@@ -14,7 +14,6 @@ const UnauthRoute = () => {
   }, [])
 	return (
 		<>
-			<p>UnauthRoute</p>
 			<Routes>
 				<Route path={routing.Login} element={<LoginPage/>}/>
 				<Route path={routing.Signup} element={<SignupPage/>}/>

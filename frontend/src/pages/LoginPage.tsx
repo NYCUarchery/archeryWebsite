@@ -17,7 +17,7 @@ import OneLineField from '../components/formFields/OneLineField';
 import SecretField from '../components/formFields/SecretField';
 
 import routing from '../util/routing';
-import { GetUid, Login } from '../util/api2';
+import { GetUid, Login } from '../util/api';
 
 
 

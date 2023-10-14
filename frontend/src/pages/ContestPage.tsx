@@ -11,8 +11,8 @@ import Divider from '@mui/material/Divider';
 
 import { useNavigate } from 'react-router-dom';
 
-import api from '../util/api';
 import routing from '../util/routing';
+import { joinCompetition } from '../util/api';
 
 
 const ContestPage = () => {
@@ -67,20 +67,18 @@ const ContestPage = () => {
 										variant="text"
 										sx={{ color: "#2074d4", width: "100%" }}
 										onClick={() => {
-											const body = new FormData();
-											body.append("competitionID", "aaaa");
-
-											fetch(`${api.competition.join}`, {
-												method: "POST",
-												credentials: "include",
-												body: body,
-											})
-											.then((res) => {
-												return res.json();
-											})
-											.then((resjson) => {
-											})
-											.catch((err) => console.log(err));
+											const handleJoinCompetition = async () => {
+												try {
+													const result = await joinCompetition();
+											
+													if (result && result.error) {
+														console.log(result.error);
+													} else { }
+												} catch (error) {
+													console.log(error);
+												}
+											};
+											handleJoinCompetition()
 										}}
 										disabled={!v.canParticipate}
 									>

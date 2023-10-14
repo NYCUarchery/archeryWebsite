@@ -13,7 +13,7 @@ import OneLineField from '../components/formFields/OneLineField';
 import MultiLineField from '../components/formFields/MultiLineField';
 import SecretField from '../components/formFields/SecretField';
 import { userStore } from '../util/userReducer';
-import { ModifyUserInfo } from '../util/api2';
+import { ModifyUserInfo } from '../util/api';
 
 const ChangeInfo = () => {
 	const navigate = useNavigate();

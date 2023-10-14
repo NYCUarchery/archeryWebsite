@@ -18,7 +18,7 @@ import NumberField from '../components/formFields/NumberField';
 
 
 import routing from '../util/routing';
-import { createCompetition } from '../util/api2';
+import { createCompetition } from '../util/api';
 
 
 const CreateContestPage = () => {
