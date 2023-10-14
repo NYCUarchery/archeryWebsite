@@ -19,7 +19,7 @@ import (
 // @Param			password		formData string true "password"
 // @Param			email			formData string true "email"
 // @Param			overview		formData string false "overview"
-// @Param			institutionID	formData string false "institution ID"
+// @Param			institutionID	formData string true "institution ID"
 // @Success			200  {object}	response.Response "success"
 // @Failure			400  {object}	response.Response "username/email exists | empty username/password/email/institutionID | invalid info"
 // @Failure			500  {object}  	response.Response "db error"
