@@ -10,20 +10,20 @@ import (
 )
 
 // Register godoc
-// @Summary      register a user
-// @Description  add a user to db
-// @Tags         user
-// @Accept       json
-// @Produce      json
-// @Param   	 username 	  	formData string true "user's name"
-// @Param   	 password 	  	formData string true "password"
-// @Param   	 email 	  	  	formData string true "email"
-// @Param   	 overview 	  	formData string false "overview"
-// @Param   	 institutionID 	formData string false "institution ID"
-// @Success      200  {object}  response.Response "success"
-// @Failure      400  {object}  response.Response "username/email exists | empty username/password/email | invalid info"
-// @Failure 	 500  {object}  response.Response "db error"
-// @Router       /user [post]
+// @Summary			register a user
+// @Description		add a user to db
+// @Tags			user
+// @Accept			json
+// @Produce			json
+// @Param			username		formData string true "user's name"
+// @Param			password		formData string true "password"
+// @Param			email			formData string true "email"
+// @Param			overview		formData string false "overview"
+// @Param			institutionID	formData string false "institution ID"
+// @Success			200  {object}	response.Response "success"
+// @Failure			400  {object}	response.Response "username/email exists | empty username/password/email/institutionID | invalid info"
+// @Failure			500  {object}  	response.Response "db error"
+// @Router			/user [post]
 func Register(c *gin.Context) {
 	var user model.User
 	user.Name = c.PostForm("username")
@@ -55,15 +55,16 @@ func Register(c *gin.Context) {
 	user.Overview = c.PostForm("overview")
 	insIDStr := c.PostForm("institutionID")
 	if insIDStr == "" {
-		user.InstitutionID = 1
-	} else {
-		insID, err := strconv.Atoi(insIDStr)
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"result": "invalid institution ID"})
-			return
-		}
-		user.InstitutionID = uint(insID)
+		c.JSON(http.StatusBadRequest, gin.H{"result": "empty institution ID"})
+		return
 	}
+	
+	insID, err := strconv.Atoi(insIDStr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "invalid institution ID"})
+		return
+	}
+	user.InstitutionID = uint(insID)
 
 	err := model.AddUser(&user)
 	if err != nil {
@@ -75,16 +76,16 @@ func Register(c *gin.Context) {
 }
 
 // Login godoc
-// @Summary      login
-// @Description  get a session
-// @Tags         session
-// @Accept       json
-// @Produce      json
-// @Param   	 username formData string true "user's name"
-// @Param   	 password formData string true "password"
-// @Success      200  {object}  response.Response "success | has loginned"
-// @Failure      401  {object}  response.Response "wrong username or password"
-// @Router       /session [post]
+// @Summary			login
+// @Description		get a session
+// @Tags			session
+// @Accept			json
+// @Produce			json
+// @Param			username	formData	string	true	"user's name"
+// @Param			password	formData	string	true	"password"
+// @Success			200		{object}	response.Response	"success | has loginned"
+// @Failure			401		{object}	response.Response	"wrong username or password"
+// @Router			/session [post]
 func Login(c *gin.Context) {
 	username := c.PostForm("username")
 	password := c.PostForm("password")
@@ -114,33 +115,33 @@ func Login(c *gin.Context) {
 }
 
 // Logout godoc
-// @Summary      logout
-// @Description  delete the session
-// @Tags         session
-// @Produce      json
-// @Success      200  {object}  response.Response "success"
-// @Router       /session [delete]
+// @Summary			logout
+// @Description		delete the session
+// @Tags			session
+// @Produce			json
+// @Success			200	{object}	response.Response "success"
+// @Router			/session [delete]
 func Logout(c *gin.Context) {
 	pkg.ClearAuthSession(c)
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
 
 // ModifyInfo godoc
-// @Summary      modify user's information
-// @Description  modify username, password, overview, and institution_id
-// @Tags         user
-// @Accept       json
-// @Produce      json
-// @Param   	 id 	  	 	path 	   string true "user's id"
-// @Param   	 oriPassword 	formData string true "original password"
-// @Param   	 modPassword 	formData string false "modified password"
-// @Param   	 email		 	formData string false "modified email"
-// @Param   	 overview 		formData string false "modified overview"
-// @Param   	 institutionID 	formData string false "modified institution ID"
-// @Success      200  {object}  response.Response "success"
-// @Failure      400  {object}  response.Response "empty/invalid user id | invalid modified information"
-// @Failure      403  {object}  response.Response "cannot change other's info | wrong original password"
-// @Router       /user/{id} [put]
+// @Summary			modify user's information
+// @Description		modify username, password, overview, and institution_id
+// @Tags			user
+// @Accept			json
+// @Produce			json
+// @Param			id				path		string true "user's id"
+// @Param			oriPassword		formData	string true "original password"
+// @Param			modPassword		formData	string false "modified password"
+// @Param			email			formData	string false "modified email"
+// @Param			overview		formData	string false "modified overview"
+// @Param			institutionID	formData	string false "modified institution ID"
+// @Success			200  {object}	response.Response "success"
+// @Failure			400  {object}	response.Response "empty/invalid user id | invalid modified information"
+// @Failure			403  {object}	response.Response "cannot change other's info | wrong original password"
+// @Router			/user/{id} [put]
 func ModifyInfo(c *gin.Context) {
 	uidstr := c.Param("id")
 	if uidstr == "" {
@@ -220,28 +221,28 @@ func ModifyInfo(c *gin.Context) {
 }
 
 // GetUserID godoc
-// @Summary      get my uid
-// @Description  get my uid in the session
-// @Tags         user
-// @Produce      json
-// @Success      200  {object}  response.Response{id=uint} "success"
-// @Router       /user/me [get]
+// @Summary		get my uid
+// @Description	get my uid in the session
+// @Tags		user
+// @Produce		json
+// @Success		200	{object}	response.Response{id=uint}	"success"
+// @Router		/user/me [get]
 func GetUserID(c *gin.Context) {
 	id := pkg.QuerySession(c, "id")
 	c.JSON(http.StatusOK, gin.H{"id": id})
 }
 
 // UserInfo godoc
-// @Summary      get a user's information
-// @Description  get a user's username, overview, and institution id
-// @Tags         user
-// @Accept       json
-// @Produce      json
-// @Param   	 id 	  	 path 	  string true "user's id"
-// @Success      200  {object}  response.Response{data=model.User} "success"
-// @Failure      400  {object}  response.Response "empty/invalid user id"
-// @Failure      404  {object}  response.Response "no user found"
-// @Router       /user/{id} [get]
+// @Summary		get a user's information
+// @Description	get a user's username, overview, and institution id
+// @Tags		user
+// @Accept		json
+// @Produce		json
+// @Param		id		path		string true "user's id"
+// @Success		200		{object}	response.Response{data=model.User} "success"
+// @Failure		400		{object}	response.Response "empty/invalid user id"
+// @Failure		404		{object}	response.Response "no user found"
+// @Router		/user/{id} [get]
 func UserInfo(c *gin.Context) {
 	uidstr := c.Param("id")
 	if uidstr == "" {

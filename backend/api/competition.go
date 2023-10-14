@@ -11,20 +11,20 @@ import (
 )
 
 // CreateCompetition godoc
-// @Summary      create a competition
-// @Description  create a competition and set the person as the host
-// @Tags         competition
-// @Accept       json
-// @Produce      json
-// @Param   	 name 	 	 	formData string true "competition name"
-// @Param   	 date 		 	formData string true "date"
-// @Param   	 groups 	 	formData string true "a list of groups"
-// @Param   	 overview 	 	formData string false "overview"
-// @Param   	 scoreboardURL 	formData string false "Scoreboard URL"
-// @Success      200  {object}  response.Response{id=uint} "success"
-// @Failure      400  {object}  response.Response "competition name exists | cannot parse date string | invalid info/groups"
-// @Failure      500  {object}  response.Response "DB error"
-// @Router       /competition [post]
+// @Summary			create a competition
+// @Description		create a competition and set the person as the host
+// @Tags			competition
+// @Accept			json
+// @Produce			json
+// @Param			name			formData string true "competition name"
+// @Param 			date			formData string true "date"
+// @Param			groups			formData string true "a list of groups"
+// @Param			overview		formData string false "overview"
+// @Param			scoreboardURL	formData string false "Scoreboard URL"
+// @Success			200  {object}	response.Response{id=uint} "success"
+// @Failure			400  {object}	response.Response "competition name exists | cannot parse date string | invalid info/groups"
+// @Failure			500  {object}	response.Response "DB error"
+// @Router			/competition [post]
 func CreateCompetition(c *gin.Context) {
 	name := c.PostForm("name")
 	date := c.PostForm("date")
@@ -84,15 +84,15 @@ func CreateCompetition(c *gin.Context) {
 }
 
 // CompetitionInfo godoc
-// @Summary      get information of the competition
-// @Description  get info, groups, participants of the competition
-// @Tags         competition
-// @Produce      json
-// @Param   	 id 	 	 path int true "competition id"
-// @Success      200  {object}  response.Response{data=model.Competition} "success"
-// @Failure      400  {object}  response.Response "empty/invalid competition id"
-// @Failure      404  {object}  response.Response "no competition found"
-// @Router       /competition/{id} [get]
+// @Summary			get information of the competition
+// @Description		get info, groups, participants of the competition
+// @Tags			competition
+// @Produce			json
+// @Param			id		path int true "competition id"
+// @Success			200		{object}	response.Response{data=model.Competition} "success"
+// @Failure			400		{object}	response.Response "empty/invalid competition id"
+// @Failure			404		{object}	response.Response "no competition found"
+// @Router			/competition/{id} [get]
 func CompetitionInfo(c *gin.Context) {
 	cidstr := c.Param("id")
 	if cidstr == "" {
@@ -119,12 +119,12 @@ func CompetitionInfo(c *gin.Context) {
 }
 
 // AllCompetitionInfo godoc
-// @Summary      get information of all the competitions
-// @Description  get id, name, date, hostID, scoreboardURL, and overview only
-// @Tags         competition
-// @Produce      json
-// @Success      200  {object}  response.Response{data=[]model.Competition} "success"
-// @Router       /competition [get]
+// @Summary			get information of all the competitions
+// @Description		get id, name, date, hostID, scoreboardURL, and overview only
+// @Tags			competition
+// @Produce			json
+// @Success			200	{object}	response.Response{data=[]model.Competition} "success"
+// @Router			/competition [get]
 func AllCompetitionInfo(c *gin.Context) {
 	comps := model.AllCompetitionInfo()
 

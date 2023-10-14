@@ -9,16 +9,16 @@ import (
 )
 
 // JoinInCompetition godoc
-// @Summary      join in a competition
-// @Description  add a particpant to the competition
-// @Tags         participant
-// @Accept       json
-// @Produce      json
-// @Param   	 competitionID 	 formData int true "competition id"
-// @Success      200  {object}  response.Response "success"
-// @Failure      400  {object}  response.Response "cannot parse competitionID | participant exists"
-// @Failure      400  {object}  response.Response "no user/competition found"
-// @Router       /participant/ [post]
+// @Summary			join in a competition
+// @Description		add a particpant to the competition
+// @Tags			participant
+// @Accept			json
+// @Produce			json
+// @Param			competitionID	formData int true "competition id"
+// @Success			200  {object}	response.Response "success"
+// @Failure			400  {object}	response.Response "cannot parse competitionID | participant exists"
+// @Failure			400  {object}	response.Response "no user/competition found"
+// @Router			/participant/ [post]
 func JoinInCompetition(c *gin.Context) {
 	userID := pkg.QuerySession(c, "id").(uint)
 	compIDu64, err := strconv.ParseUint(c.PostForm("competitionID"), 10, 32)
