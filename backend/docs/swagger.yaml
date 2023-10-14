@@ -227,9 +227,14 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            $ref: '#/definitions/response.Response'
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.Institution'
+              type: object
         "400":
           description: invalid id
           schema:
@@ -336,6 +341,7 @@ paths:
       - description: institution ID
         in: formData
         name: institutionID
+        required: true
         type: string
       produces:
       - application/json
@@ -345,8 +351,8 @@ paths:
           schema:
             $ref: '#/definitions/response.Response'
         "400":
-          description: username/email exists | empty username/password/email | invalid
-            info
+          description: username/email exists | empty username/password/email/institutionID
+            | invalid info
           schema:
             $ref: '#/definitions/response.Response'
         "500":

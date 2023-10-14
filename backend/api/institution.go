@@ -36,14 +36,14 @@ func CreateInstitution(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
 
-// InstitutionInfoByID godoc
+// InstitutionInfo godoc
 // @Summary			get institution info by id
 // @Description		get institution info from db by id
 // @Tags			institution
 // @Accept			json
 // @Produce			json
 // @Param			id		path string true "institution's id"
-// @Success			200		{object}	response.Response
+// @Success			200		{object}	response.Response{data=model.Institution} "success"
 // @Failure			400		{object}	response.Response "invalid id"
 // @Failure			404		{object}	response.Response "no institution found"
 // @Router			/institution/{id} [get]

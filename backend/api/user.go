@@ -66,7 +66,7 @@ func Register(c *gin.Context) {
 	}
 	user.InstitutionID = uint(insID)
 
-	err := model.AddUser(&user)
+	err = model.AddUser(&user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"result": "db error"})
 		return

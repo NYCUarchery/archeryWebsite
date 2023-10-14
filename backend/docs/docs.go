@@ -301,9 +301,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/response.Response"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.Institution"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -467,7 +479,8 @@ const docTemplate = `{
                         "type": "string",
                         "description": "institution ID",
                         "name": "institutionID",
-                        "in": "formData"
+                        "in": "formData",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -478,7 +491,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "username/email exists | empty username/password/email | invalid info",
+                        "description": "username/email exists | empty username/password/email/institutionID | invalid info",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }
