@@ -38,6 +38,7 @@ func PostGameInfo(context *gin.Context) {
 		context.IndentedJSON(http.StatusBadRequest, "error : "+err.Error())
 		return
 	}
+	data.Groups_num = 0
 	newData := database.PostGameInfo(data)
 	context.IndentedJSON(http.StatusOK, newData)
 }

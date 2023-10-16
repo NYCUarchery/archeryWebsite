@@ -31,6 +31,7 @@ func PostGroupInfo(context *gin.Context) {
 		return
 	}
 	fmt.Printf("Post GroupInfo -> %v\n", data)
+	data.GroupIndex = database.GetGameInfoGroupNum(int(data.GameInfoID))
 	newData, error := database.CreateGroupInfo(data)
 	if newData.ID == 0 {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
@@ -39,6 +40,7 @@ func PostGroupInfo(context *gin.Context) {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": error.Error()})
 		return
 	}
+	database.AddOneGameInfoGroupNum(int(data.GameInfoID))
 	context.IndentedJSON(http.StatusOK, newData)
 }
 
@@ -64,7 +66,7 @@ func UpdateGroupInfo(context *gin.Context) {
 
 func DeleteGroupInfo(context *gin.Context) {
 	id := convert2int(context, "id")
-	affected, error := database.DeleteGroupInfo(id)
+	affected, competitionId, error := database.DeleteGroupInfo(id)
 	if !affected {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID 或 格式錯誤 "})
 		return
@@ -72,5 +74,6 @@ func DeleteGroupInfo(context *gin.Context) {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": error.Error()})
 		return
 	}
+	database.MinusOneGameInfoGroupNum(competitionId)
 	context.IndentedJSON(http.StatusOK, gin.H{"message": "成功刪除用戶"})
 }

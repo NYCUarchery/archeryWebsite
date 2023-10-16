@@ -1,12 +1,12 @@
 package database
 
 type Group struct {
-	ID         uint   `json:"-" gorm:"primary_key"`
+	ID         uint   `json:"id" gorm:"primary_key"`
 	GameInfoID uint   `json:"game_info_id" gorm:"column:competition_id"`
 	GroupName  string `json:"group_name"`
 	GroupRange string `json:"group_range"`
 	BowType    string `json:"bow_type"`
-	GroupIndex int    `json:"-"`
+	GroupIndex int    `json:"group_index"`
 }
 
 func InitGroupInfo() {
@@ -76,7 +76,10 @@ func UpdateGroupInfo(id int, group Group) (Group, error) {
 //	@Failure		400	string	string
 //	@Failure		404	string	string
 //	@Router			/data/groupinfo/{id} [delete]
-func DeleteGroupInfo(id int) (bool, error) {
+func DeleteGroupInfo(id int) (bool, int, error) {
+	var data Group
+	DB.Table("groups").Where("id = ?", id).First(&data)
+	competitionId := int(data.GameInfoID)
 	result := DB.Table("groups").Where("id = ?", id).Delete(&Group{})
-	return result.RowsAffected != 0, result.Error
+	return result.RowsAffected != 0, competitionId, result.Error
 }

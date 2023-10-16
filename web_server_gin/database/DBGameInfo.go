@@ -3,7 +3,7 @@ package database
 import "gorm.io/gorm"
 
 type GameInfo struct { // DB : game_info
-	ID               uint     `json:"-"        gorm:"primary_key"`
+	ID               uint     `json:"id"        gorm:"primary_key"`
 	Title            string   `json:"title"`
 	SubTitle         string   `json:"sub_title"`
 	HostId           uint     `json:"host_id"`
@@ -91,6 +91,24 @@ func UpdateGameInfo(ID int, data GameInfo) GameInfo {
 //	@Failure		404	string	string
 //	@Router			/data/gameinfo/{id} [delete]
 func DeleteGameInfo(ID int) bool {
-	result := DB.Delete("competition", "id =?", ID)
+	result := DB.Table("competitions").Where("id = ?", ID).Delete(&GameInfo{})
 	return result.RowsAffected != 0
+}
+
+func AddOneGameInfoGroupNum(GameInfoID int) {
+	groupNum := GetGameInfoGroupNum(int(GameInfoID))
+	UpdateGameInfoGroupNum(int(GameInfoID), groupNum+1)
+}
+func MinusOneGameInfoGroupNum(GameInfoID int) {
+	groupNum := GetGameInfoGroupNum(int(GameInfoID))
+	UpdateGameInfoGroupNum(int(GameInfoID), groupNum-1)
+}
+func GetGameInfoGroupNum(ID int) int {
+	var data GameInfo
+	DB.Table("competitions").Where("id = ?", ID).First(&data)
+	return data.Groups_num
+}
+func UpdateGameInfoGroupNum(ID int, newGroupNum int) int {
+	result := DB.Table("competitions").Where("id = ?", ID).UpdateColumn("groups_num", newGroupNum)
+	return int(result.RowsAffected)
 }
