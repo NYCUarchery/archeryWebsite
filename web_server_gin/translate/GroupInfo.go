@@ -63,15 +63,14 @@ func UpdateGroupInfo(context *gin.Context) {
 		context.IndentedJSON(http.StatusBadRequest, "error : "+err.Error())
 		return
 	}
-	ischanged, newData, error := database.UpdateGroupInfo(id, data)
+	olddata, _ := database.GetGroupInfoById(id)
+	data.GameInfoID = olddata.GameInfoID
+	_, newData, error := database.UpdateGroupInfo(id, data)
 	if newData.ID == 0 {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
 		return
 	} else if error != nil {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": error.Error()})
-		return
-	} else if !ischanged {
-		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "資料庫unchanged"})
 		return
 	}
 	context.IndentedJSON(http.StatusOK, newData)
