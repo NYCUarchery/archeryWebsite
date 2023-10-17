@@ -66,10 +66,10 @@ func UpdateGroupInfo(id int, newgroup Group) (bool, Group, error) {
 	return result.RowsAffected != 0, group, result.Error
 }
 
-// Update GroupInfo Index godoc
+// Update GroupInfos Index godoc
 //
-//	@Summary		update one GroupInfo Index
-//	@Description	Put competition_id and group_ids to update GroupInfo Index
+//	@Summary		update GroupInfos Indexes under the same Competition
+//	@Description	Put competition_id and group_ids to update GroupInfos Indexes under the same Competition
 //	@Tags			GroupInfo
 //	@Accept			json
 //	@Produce		json

@@ -21,9 +21,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/data/gameinfo": {
+        "/data/competition": {
             "post": {
-                "description": "Post one new GameInfo data with new id, and return the new GameInfo data",
+                "description": "Post one new Competition data with new id, and return the new Competition data",
                 "consumes": [
                     "application/json"
                 ],
@@ -31,13 +31,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "GameInfo"
+                    "Competition"
                 ],
-                "summary": "Create one GameInfo",
+                "summary": "Create one Competition",
                 "parameters": [
                     {
-                        "description": "GameInfo",
-                        "name": "GameInfo",
+                        "description": "Competition",
+                        "name": "Competition",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -61,9 +61,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/gameinfo/whole/{id}": {
+        "/data/competition/whole/{id}": {
             "put": {
-                "description": "Put whole new GameInfo and overwrite with the id but without GroupInfo",
+                "description": "Put whole new Competition and overwrite with the id but without GroupInfo",
                 "consumes": [
                     "application/json"
                 ],
@@ -71,20 +71,20 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "GameInfo"
+                    "Competition"
                 ],
-                "summary": "update one GameInfo without GroupInfo",
+                "summary": "update one Competition without GroupInfo",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "GameInfo ID",
+                        "description": "Competition ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "GameInfo",
-                        "name": "GameInfo",
+                        "description": "Competition",
+                        "name": "Competition",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -120,20 +120,20 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/gameinfo/{id}": {
+        "/data/competition/{id}": {
             "get": {
-                "description": "Get one GameInfo by id with GroupInfos",
+                "description": "Get one Competition by id with GroupInfos",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "GameInfo"
+                    "Competition"
                 ],
-                "summary": "Show one GameInfo with GroupInfos",
+                "summary": "Show one Competition with GroupInfos",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "GameInfo ID",
+                        "description": "Competition ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -155,7 +155,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "delete one GameInfo by id",
+                "description": "delete one Competition by id",
                 "consumes": [
                     "application/json"
                 ],
@@ -163,13 +163,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "GameInfo"
+                    "Competition"
                 ],
-                "summary": "delete one GameInfo",
+                "summary": "delete one Competition",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "GameInfo ID",
+                        "description": "Competition ID",
                         "name": "id",
                         "in": "path",
                         "required": true
