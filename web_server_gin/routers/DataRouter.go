@@ -44,6 +44,7 @@ func groupInfoRouter(data *gin.RouterGroup) {
 	data.GET("/:id", translate.GetGroupInfoByID)
 	data.POST("/", translate.PostGroupInfo)
 	data.PUT("/whole/:id", translate.UpdateGroupInfo)
+	data.PUT("/reorder", translate.ReorderGroupInfo)
 	data.DELETE("/:id", translate.DeleteGroupInfo)
 }
 
