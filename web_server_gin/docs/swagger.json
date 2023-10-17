@@ -115,14 +115,14 @@
         },
         "/data/gameinfo/{id}": {
             "get": {
-                "description": "Get one GameInfo by id without GroupInfo",
+                "description": "Get one GameInfo by id with GroupInfos",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "GameInfo"
                 ],
-                "summary": "Show one GameInfo without GroupInfo",
+                "summary": "Show one GameInfo with GroupInfos",
                 "parameters": [
                     {
                         "type": "integer",
@@ -223,6 +223,58 @@
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/groupinfo/reorder": {
+            "put": {
+                "description": "Put competition_id and group_ids to update GroupInfo Index",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GroupInfo"
+                ],
+                "summary": "update one GroupInfo Index",
+                "parameters": [
+                    {
+                        "description": "GroupInfo IDs for reorder",
+                        "name": "groupIdsForReorder",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "type": "string"
                         }

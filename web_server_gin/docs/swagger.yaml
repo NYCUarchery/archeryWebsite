@@ -66,7 +66,7 @@ paths:
       tags:
       - GameInfo
     get:
-      description: Get one GameInfo by id without GroupInfo
+      description: Get one GameInfo by id with GroupInfos
       parameters:
       - description: GameInfo ID
         in: path
@@ -84,7 +84,7 @@ paths:
           description: Bad Request
           schema:
             type: string
-      summary: Show one GameInfo without GroupInfo
+      summary: Show one GameInfo with GroupInfos
       tags:
       - GameInfo
   /data/gameinfo/whole/{id}:
@@ -202,6 +202,40 @@ paths:
           schema:
             type: string
       summary: Show one GroupInfo
+      tags:
+      - GroupInfo
+  /data/groupinfo/reorder:
+    put:
+      consumes:
+      - application/json
+      description: Put competition_id and group_ids to update GroupInfo Index
+      parameters:
+      - description: GroupInfo IDs for reorder
+        in: body
+        name: groupIdsForReorder
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: update one GroupInfo Index
       tags:
       - GroupInfo
   /data/groupinfo/whole/{id}:

@@ -36,6 +36,16 @@ func GetOnlyGameInfo(ID int) (GameInfo, error) {
 	return data, error
 }
 
+// Get One GameInfo By ID with Groups godoc
+//
+//	@Summary		Show one GameInfo with GroupInfos
+//	@Description	Get one GameInfo by id with GroupInfos
+//	@Tags			GameInfo
+//	@Produce		json
+//	@Param			id	path	int	true	"GameInfo ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/data/gameinfo/{id} [get]
 func GetGameInfoWGroups(ID int) GameInfo {
 	var data GameInfo
 	DB.Preload("Groups", func(*gorm.DB) *gorm.DB { return DB.Order("group_index asc") }).

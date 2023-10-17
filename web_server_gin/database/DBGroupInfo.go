@@ -66,6 +66,19 @@ func UpdateGroupInfo(id int, newgroup Group) (bool, Group, error) {
 	return result.RowsAffected != 0, group, result.Error
 }
 
+// Update GroupInfo Index godoc
+//
+//	@Summary		update one GroupInfo Index
+//	@Description	Put competition_id and group_ids to update GroupInfo Index
+//	@Tags			GroupInfo
+//	@Accept			json
+//	@Produce		json
+//	@Param			groupIdsForReorder	body	string	true	"GroupInfo IDs for reorder"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Failure		404			string	string
+//	@Failure		500			string	string
+//	@Router			/data/groupinfo/reorder [put]
 func UpdateGroupInfoIndex(id int, index int) (bool, Group, error) {
 	var group Group
 	result := DB.Table("groups").Where("id = ?", id).Update("group_index", index)
