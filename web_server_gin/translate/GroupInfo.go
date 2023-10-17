@@ -40,6 +40,15 @@ func PostGroupInfo(context *gin.Context) {
 		context.IndentedJSON(http.StatusBadRequest, "error : "+err.Error())
 		return
 	}
+	competition, err := database.GetOnlyCompetition(int(data.CompetitionId))
+	if competition.ID == 0 {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 CompetitionId"})
+		return
+	} else if err != nil {
+		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
 	fmt.Printf("Post GroupInfo -> %v\n", data)
 	data.GroupIndex = database.GetCompetitionGroupNum(int(data.CompetitionId))
 	newData, error := database.CreateGroupInfo(data)
