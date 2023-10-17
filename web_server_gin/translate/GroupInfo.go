@@ -100,7 +100,6 @@ func ReorderGroupInfo(context *gin.Context) {
 	}
 
 	for index, id := range idArray.GroupIds {
-		fmt.Print("id = ", id, "\n")
 		if id == 0 {
 			context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 Group ID"})
 			return
@@ -114,24 +113,18 @@ func ReorderGroupInfo(context *gin.Context) {
 			context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": error.Error()})
 			return
 		} else {
-			_, tempdata, err := database.UpdateGroupInfoIndex(id, index)
+			_, _, err := database.UpdateGroupInfoIndex(id, index)
 			if err != nil {
 				context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
 			}
-			fmt.Print("tempdata.GroupIndex = ", tempdata.GroupIndex, "\n")
-			temp2data, _ := database.GetGroupInfoById(id)
-			fmt.Print("temp2data.GroupIndex = ", temp2data.GroupIndex, "\n")
-			context.IndentedJSON(http.StatusOK, tempdata)
 		}
 	}
 	data := database.GetGameInfoWGroups(idArray.CompetitionId)
-	fmt.Printf("Reorder GroupInfo with ID(%v) -> %v\n", idArray.CompetitionId, data)
 	if data.ID == 0 {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "資料庫無效的用戶 competition_id "})
 		return
 	}
-	fmt.Println("GameInfo with ID(", idArray.CompetitionId, ") -> ", data)
 	context.IndentedJSON(http.StatusOK, data)
 }
 
