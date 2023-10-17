@@ -1,6 +1,8 @@
 package database
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type Competition struct { // DB : game_info
 	ID               uint     `json:"id"        gorm:"primary_key"`
@@ -13,11 +15,11 @@ type Competition struct { // DB : game_info
 	CurrentPhaseKind string   `json:"current_phase_kind"`
 	CurrentStage     uint     `json:"current_stage"`
 	Script           string   `json:"script"`
-	Groups           []*Group `json:"groups" gorm:"constraint:ondelete:CASCADE;"`
+	Groups           []*Group `json:"groups" gorm:"constraint:OnDelete:CASCADE;"`
 }
 
 func InitCompetition() {
-	DB.Table("competitions").AutoMigrate(&Competition{})
+	DB.AutoMigrate(&Competition{})
 }
 
 // Get Only Competition By ID godoc
@@ -49,7 +51,7 @@ func GetOnlyCompetition(ID int) (Competition, error) {
 func GetCompetitionWGroups(ID int) Competition {
 	var data Competition
 	DB.Preload("Groups", func(*gorm.DB) *gorm.DB { return DB.Order("group_index asc") }).
-		Table("competitions").Where("id = ?", ID).First(&data)
+		Model(&Competition{}).Where("id = ?", ID).First(&data)
 	return data
 }
 
@@ -65,7 +67,7 @@ func GetCompetitionWGroups(ID int) Competition {
 //	@Failure		400			string	string
 //	@Router			/data/competition [post]
 func PostCompetition(data Competition) Competition {
-	DB.Table("competitions").Create(&data)
+	DB.Model(&Competition{}).Create(&data)
 	return data
 }
 
@@ -85,8 +87,8 @@ func PostCompetition(data Competition) Competition {
 //	@Router			/data/competition/whole/{id} [put]
 func UpdateCompetition(ID int, newdata Competition) (Competition, error) {
 	var data Competition
-	DB.Table("competitions").Where("id = ?", ID).Updates(&newdata)
-	error := DB.Table("competitions").Where("id = ?", ID).First(&data).Error
+	DB.Model(&Competition{}).Where("id = ?", ID).Updates(&newdata)
+	error := DB.Model(&Competition{}).Where("id = ?", ID).First(&data).Error
 	return data, error
 }
 
@@ -103,7 +105,7 @@ func UpdateCompetition(ID int, newdata Competition) (Competition, error) {
 //	@Failure		404	string	string
 //	@Router			/data/competition/{id} [delete]
 func DeleteCompetition(ID int) bool {
-	result := DB.Table("competitions").Where("id = ?", ID).Delete(&Competition{})
+	result := DB.Delete(&Competition{}, "id =?", ID)
 	return result.RowsAffected != 0
 }
 

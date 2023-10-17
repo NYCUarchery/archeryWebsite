@@ -2,7 +2,7 @@ package database
 
 type Group struct {
 	ID            uint   `json:"id" gorm:"primary_key"`
-	CompetitionId uint   `json:"competition_id" gorm:"column:competition_id"`
+	CompetitionId uint   `json:"competition_id" `
 	GroupName     string `json:"group_name"`
 	GroupRange    string `json:"group_range"`
 	BowType       string `json:"bow_type"`
