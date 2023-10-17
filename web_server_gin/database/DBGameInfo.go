@@ -83,9 +83,11 @@ func PostGameInfo(data GameInfo) GameInfo {
 //	@Failure		404			string	string
 //	@Failure		500			string	string
 //	@Router			/data/gameinfo/whole/{id} [put]
-func UpdateGameInfo(ID int, data GameInfo) GameInfo {
-	DB.Table("competitions").Where("id = ?", ID).Updates(&data)
-	return data
+func UpdateGameInfo(ID int, newdata GameInfo) (GameInfo, error) {
+	var data GameInfo
+	DB.Table("competitions").Where("id = ?", ID).Updates(&newdata)
+	error := DB.Table("competitions").Where("id = ?", ID).First(&data).Error
+	return data, error
 }
 
 // Delete GameInfo by id godoc

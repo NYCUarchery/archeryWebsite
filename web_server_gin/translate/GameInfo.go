@@ -45,14 +45,19 @@ func PostGameInfo(context *gin.Context) {
 
 func UpdateGameInfo(context *gin.Context) {
 	data := database.GameInfo{}
+	id := convert2int(context, "id")
 	err := context.BindJSON(&data)
 	if err != nil {
 		context.IndentedJSON(http.StatusBadRequest, "error : "+err.Error())
 		return
 	}
-	newData := database.UpdateGameInfo(convert2int(context, "id"), data)
+	data.Groups_num = database.GetGameInfoGroupNum(id)
+	newData, error := database.UpdateGameInfo(id, data)
 	if newData.Title == "" {
 		context.IndentedJSON(http.StatusInternalServerError, "error : "+err.Error())
+		return
+	} else if error != nil {
+		context.IndentedJSON(http.StatusInternalServerError, "error : "+error.Error())
 		return
 	}
 	context.IndentedJSON(http.StatusOK, newData)
