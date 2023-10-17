@@ -61,6 +61,41 @@ const docTemplate = `{
                 }
             }
         },
+        "/data/competition/groups/{id}": {
+            "get": {
+                "description": "Get one Competition by id with GroupInfos",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "Show one Competition with GroupInfos",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/data/competition/whole/{id}": {
             "put": {
                 "description": "Put whole new Competition and overwrite with the id but without GroupInfo",
@@ -122,14 +157,14 @@ const docTemplate = `{
         },
         "/data/competition/{id}": {
             "get": {
-                "description": "Get one Competition by id with GroupInfos",
+                "description": "Get one Competition by id without GroupInfo",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Competition"
                 ],
-                "summary": "Show one Competition with GroupInfos",
+                "summary": "Show one Competition without GroupInfo",
                 "parameters": [
                     {
                         "type": "integer",
@@ -239,7 +274,7 @@ const docTemplate = `{
         },
         "/data/groupinfo/reorder": {
             "put": {
-                "description": "Put competition_id and group_ids to update GroupInfo Index",
+                "description": "Put competition_id and group_ids to update GroupInfos Indexes under the same Competition",
                 "consumes": [
                     "application/json"
                 ],
@@ -249,7 +284,7 @@ const docTemplate = `{
                 "tags": [
                     "GroupInfo"
                 ],
-                "summary": "update one GroupInfo Index",
+                "summary": "update GroupInfos Indexes under the same Competition",
                 "parameters": [
                     {
                         "description": "GroupInfo IDs for reorder",

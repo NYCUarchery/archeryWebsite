@@ -66,6 +66,29 @@ paths:
       tags:
       - Competition
     get:
+      description: Get one Competition by id without GroupInfo
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Competition without GroupInfo
+      tags:
+      - Competition
+  /data/competition/groups/{id}:
+    get:
       description: Get one Competition by id with GroupInfos
       parameters:
       - description: Competition ID
@@ -209,7 +232,8 @@ paths:
     put:
       consumes:
       - application/json
-      description: Put competition_id and group_ids to update GroupInfo Index
+      description: Put competition_id and group_ids to update GroupInfos Indexes under
+        the same Competition
       parameters:
       - description: GroupInfo IDs for reorder
         in: body
@@ -236,7 +260,7 @@ paths:
           description: Internal Server Error
           schema:
             type: string
-      summary: update one GroupInfo Index
+      summary: update GroupInfos Indexes under the same Competition
       tags:
       - GroupInfo
   /data/groupinfo/whole/{id}:

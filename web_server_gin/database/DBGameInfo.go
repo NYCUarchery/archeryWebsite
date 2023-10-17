@@ -45,7 +45,7 @@ func GetOnlyCompetition(ID int) (Competition, error) {
 //	@Param			id	path	int	true	"Competition ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/data/competition/{id} [get]
+//	@Router			/data/competition/groups/{id} [get]
 func GetCompetitionWGroups(ID int) Competition {
 	var data Competition
 	DB.Preload("Groups", func(*gorm.DB) *gorm.DB { return DB.Order("group_index asc") }).
