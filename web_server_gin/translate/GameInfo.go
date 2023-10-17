@@ -8,8 +8,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func GetOnlyGameInfoByID(context *gin.Context) {
-	data, error := database.GetOnlyGameInfo(convert2int(context, "id"))
+func GetOnlyCompetitionByID(context *gin.Context) {
+	data, error := database.GetOnlyCompetition(convert2int(context, "id"))
 	if data.ID == 0 {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
 		return
@@ -17,42 +17,42 @@ func GetOnlyGameInfoByID(context *gin.Context) {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": error.Error()})
 		return
 	}
-	fmt.Println("GameInfo with ID(", context.Param("id"), ") -> ", data)
+	fmt.Println("Competition with ID(", context.Param("id"), ") -> ", data)
 	context.IndentedJSON(http.StatusOK, data)
 }
 
-func GetGameInfoWGroupsByID(context *gin.Context) {
-	data := database.GetGameInfoWGroups(convert2int(context, "id"))
+func GetCompetitionWGroupsByID(context *gin.Context) {
+	data := database.GetCompetitionWGroups(convert2int(context, "id"))
 	if data.ID == 0 {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
 		return
 	}
-	fmt.Println("GameInfo with ID(", context.Param("id"), ") -> ", data)
+	fmt.Println("Competition with ID(", context.Param("id"), ") -> ", data)
 	context.IndentedJSON(http.StatusOK, data)
 }
 
-func PostGameInfo(context *gin.Context) {
-	data := database.GameInfo{}
+func PostCompetition(context *gin.Context) {
+	data := database.Competition{}
 	err := context.BindJSON(&data)
 	if err != nil {
 		context.IndentedJSON(http.StatusBadRequest, "error : "+err.Error())
 		return
 	}
 	data.Groups_num = 0
-	newData := database.PostGameInfo(data)
+	newData := database.PostCompetition(data)
 	context.IndentedJSON(http.StatusOK, newData)
 }
 
-func UpdateGameInfo(context *gin.Context) {
-	data := database.GameInfo{}
+func UpdateCompetition(context *gin.Context) {
+	data := database.Competition{}
 	id := convert2int(context, "id")
 	err := context.BindJSON(&data)
 	if err != nil {
 		context.IndentedJSON(http.StatusBadRequest, "error : "+err.Error())
 		return
 	}
-	data.Groups_num = database.GetGameInfoGroupNum(id)
-	newData, error := database.UpdateGameInfo(id, data)
+	data.Groups_num = database.GetCompetitionGroupNum(id)
+	newData, error := database.UpdateCompetition(id, data)
 	if newData.Title == "" {
 		context.IndentedJSON(http.StatusInternalServerError, "error : "+err.Error())
 		return
@@ -63,8 +63,8 @@ func UpdateGameInfo(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, newData)
 }
 
-func DeleteGameInfo(context *gin.Context) {
-	if !database.DeleteGameInfo(convert2int(context, "id")) {
+func DeleteCompetition(context *gin.Context) {
+	if !database.DeleteCompetition(convert2int(context, "id")) {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID 或 格式錯誤 "})
 		return
 	}

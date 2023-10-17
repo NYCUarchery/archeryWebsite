@@ -41,7 +41,7 @@ func PostGroupInfo(context *gin.Context) {
 		return
 	}
 	fmt.Printf("Post GroupInfo -> %v\n", data)
-	data.GroupIndex = database.GetGameInfoGroupNum(int(data.GameInfoID))
+	data.GroupIndex = database.GetCompetitionGroupNum(int(data.CompetitionId))
 	newData, error := database.CreateGroupInfo(data)
 	if newData.ID == 0 {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
@@ -50,7 +50,7 @@ func PostGroupInfo(context *gin.Context) {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": error.Error()})
 		return
 	}
-	database.AddOneGameInfoGroupNum(int(data.GameInfoID))
+	database.AddOneCompetitionGroupNum(int(data.CompetitionId))
 	context.IndentedJSON(http.StatusOK, newData)
 }
 
@@ -64,7 +64,7 @@ func UpdateGroupInfo(context *gin.Context) {
 		return
 	}
 	olddata, _ := database.GetGroupInfoById(id)
-	data.GameInfoID = olddata.GameInfoID
+	data.CompetitionId = olddata.CompetitionId
 	_, newData, error := database.UpdateGroupInfo(id, data)
 	if newData.ID == 0 {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
@@ -89,7 +89,7 @@ func ReorderGroupInfo(context *gin.Context) {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 GroupIds"})
 		return
 	}
-	gamedata, err := database.GetOnlyGameInfo(idArray.CompetitionId)
+	gamedata, err := database.GetOnlyCompetition(idArray.CompetitionId)
 	if gamedata.ID == 0 || gamedata.Groups_num != len(idArray.GroupIds) {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Groups_num 與 GroupIds 長度不符, Group_num = " + fmt.Sprint(gamedata.Groups_num) + ", GroupIds = " + fmt.Sprint(idArray.GroupIds)})
 		return
@@ -119,7 +119,7 @@ func ReorderGroupInfo(context *gin.Context) {
 			}
 		}
 	}
-	data := database.GetGameInfoWGroups(idArray.CompetitionId)
+	data := database.GetCompetitionWGroups(idArray.CompetitionId)
 	if data.ID == 0 {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "資料庫無效的用戶 competition_id "})
 		return
@@ -137,6 +137,6 @@ func DeleteGroupInfo(context *gin.Context) {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": error.Error()})
 		return
 	}
-	database.MinusOneGameInfoGroupNum(competitionId)
+	database.MinusOneCompetitionGroupNum(competitionId)
 	context.IndentedJSON(http.StatusOK, gin.H{"message": "成功刪除用戶"})
 }

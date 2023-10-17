@@ -2,7 +2,7 @@ package database
 
 import "gorm.io/gorm"
 
-type GameInfo struct { // DB : game_info
+type Competition struct { // DB : game_info
 	ID               uint     `json:"id"        gorm:"primary_key"`
 	Title            string   `json:"title"`
 	SubTitle         string   `json:"sub_title"`
@@ -16,111 +16,111 @@ type GameInfo struct { // DB : game_info
 	Groups           []*Group `json:"groups" gorm:"constraint:ondelete:CASCADE;"`
 }
 
-func InitGameInfo() {
-	DB.Table("competitions").AutoMigrate(&GameInfo{})
+func InitCompetition() {
+	DB.Table("competitions").AutoMigrate(&Competition{})
 }
 
-// Get Only GameInfo By ID godoc
+// Get Only Competition By ID godoc
 //
-//	@Summary		Show one GameInfo without GroupInfo
-//	@Description	Get one GameInfo by id without GroupInfo
-//	@Tags			GameInfo
+//	@Summary		Show one Competition without GroupInfo
+//	@Description	Get one Competition by id without GroupInfo
+//	@Tags			Competition
 //	@Produce		json
-//	@Param			id	path	int	true	"GameInfo ID"
+//	@Param			id	path	int	true	"Competition ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/data/gameinfo/{id} [get]
-func GetOnlyGameInfo(ID int) (GameInfo, error) {
-	var data GameInfo
+//	@Router			/data/competition/{id} [get]
+func GetOnlyCompetition(ID int) (Competition, error) {
+	var data Competition
 	error := DB.Table("competitions").Where("id = ?", ID).First(&data).Error
 	return data, error
 }
 
-// Get One GameInfo By ID with Groups godoc
+// Get One Competition By ID with Groups godoc
 //
-//	@Summary		Show one GameInfo with GroupInfos
-//	@Description	Get one GameInfo by id with GroupInfos
-//	@Tags			GameInfo
+//	@Summary		Show one Competition with GroupInfos
+//	@Description	Get one Competition by id with GroupInfos
+//	@Tags			Competition
 //	@Produce		json
-//	@Param			id	path	int	true	"GameInfo ID"
+//	@Param			id	path	int	true	"Competition ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/data/gameinfo/{id} [get]
-func GetGameInfoWGroups(ID int) GameInfo {
-	var data GameInfo
+//	@Router			/data/competition/{id} [get]
+func GetCompetitionWGroups(ID int) Competition {
+	var data Competition
 	DB.Preload("Groups", func(*gorm.DB) *gorm.DB { return DB.Order("group_index asc") }).
 		Table("competitions").Where("id = ?", ID).First(&data)
 	return data
 }
 
-// Post GameInfo godoc
+// Post Competition godoc
 //
-//	@Summary		Create one GameInfo
-//	@Description	Post one new GameInfo data with new id, and return the new GameInfo data
-//	@Tags			GameInfo
+//	@Summary		Create one Competition
+//	@Description	Post one new Competition data with new id, and return the new Competition data
+//	@Tags			Competition
 //	@Accept			json
 //	@Produce		json
-//	@Param			GameInfo	body	string	true	"GameInfo"
+//	@Param			Competition	body	string	true	"Competition"
 //	@Success		200			string	string
 //	@Failure		400			string	string
-//	@Router			/data/gameinfo [post]
-func PostGameInfo(data GameInfo) GameInfo {
+//	@Router			/data/competition [post]
+func PostCompetition(data Competition) Competition {
 	DB.Table("competitions").Create(&data)
 	return data
 }
 
-// Update GameInfo godoc
+// Update Competition godoc
 //
-//	@Summary		update one GameInfo without GroupInfo
-//	@Description	Put whole new GameInfo and overwrite with the id but without GroupInfo
-//	@Tags			GameInfo
+//	@Summary		update one Competition without GroupInfo
+//	@Description	Put whole new Competition and overwrite with the id but without GroupInfo
+//	@Tags			Competition
 //	@Accept			json
 //	@Produce		json
-//	@Param			id			path	string	true	"GameInfo ID"
-//	@Param			GameInfo	body	string	true	"GameInfo"
+//	@Param			id			path	string	true	"Competition ID"
+//	@Param			Competition	body	string	true	"Competition"
 //	@Success		200			string	string
 //	@Failure		400			string	string
 //	@Failure		404			string	string
 //	@Failure		500			string	string
-//	@Router			/data/gameinfo/whole/{id} [put]
-func UpdateGameInfo(ID int, newdata GameInfo) (GameInfo, error) {
-	var data GameInfo
+//	@Router			/data/competition/whole/{id} [put]
+func UpdateCompetition(ID int, newdata Competition) (Competition, error) {
+	var data Competition
 	DB.Table("competitions").Where("id = ?", ID).Updates(&newdata)
 	error := DB.Table("competitions").Where("id = ?", ID).First(&data).Error
 	return data, error
 }
 
-// Delete GameInfo by id godoc
+// Delete Competition by id godoc
 //
-//	@Summary		delete one GameInfo
-//	@Description	delete one GameInfo by id
-//	@Tags			GameInfo
+//	@Summary		delete one Competition
+//	@Description	delete one Competition by id
+//	@Tags			Competition
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path	string	true	"GameInfo ID"
+//	@Param			id	path	string	true	"Competition ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
 //	@Failure		404	string	string
-//	@Router			/data/gameinfo/{id} [delete]
-func DeleteGameInfo(ID int) bool {
-	result := DB.Table("competitions").Where("id = ?", ID).Delete(&GameInfo{})
+//	@Router			/data/competition/{id} [delete]
+func DeleteCompetition(ID int) bool {
+	result := DB.Table("competitions").Where("id = ?", ID).Delete(&Competition{})
 	return result.RowsAffected != 0
 }
 
-func AddOneGameInfoGroupNum(GameInfoID int) {
-	groupNum := GetGameInfoGroupNum(int(GameInfoID))
-	UpdateGameInfoGroupNum(int(GameInfoID), groupNum+1)
+func AddOneCompetitionGroupNum(CompetitionID int) {
+	groupNum := GetCompetitionGroupNum(int(CompetitionID))
+	UpdateCompetitionGroupNum(int(CompetitionID), groupNum+1)
 }
-func MinusOneGameInfoGroupNum(GameInfoID int) {
-	groupNum := GetGameInfoGroupNum(int(GameInfoID))
-	UpdateGameInfoGroupNum(int(GameInfoID), groupNum-1)
+func MinusOneCompetitionGroupNum(CompetitionID int) {
+	groupNum := GetCompetitionGroupNum(int(CompetitionID))
+	UpdateCompetitionGroupNum(int(CompetitionID), groupNum-1)
 }
-func GetGameInfoGroupNum(ID int) int {
-	var data GameInfo
+func GetCompetitionGroupNum(ID int) int {
+	var data Competition
 	DB.Table("competitions").Where("id = ?", ID).First(&data)
 	return data.Groups_num
 }
-func UpdateGameInfoGroupNum(ID int, newGroupNum int) int {
+func UpdateCompetitionGroupNum(ID int, newGroupNum int) int {
 	result := DB.Table("competitions").Where("id = ?", ID).UpdateColumn("groups_num", newGroupNum)
 	return int(result.RowsAffected)
 }
