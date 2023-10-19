@@ -10,6 +10,7 @@ interface Props {
 interface Player {
   id: number;
   name: string;
+  order: number;
 }
 
 export default function LanePlayerList({ laneNum, players }: Props) {
