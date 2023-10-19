@@ -17,6 +17,7 @@ elimination: 對抗賽
 team elimination:團體對抗賽
 
 lane: 靶道
+order: 標示資格賽中選手射擊的編號，當人太多時這會標示選手射擊的順序，通常用大寫字母顯示。
 target: 靶，會由靶道號碼以及一個英文子母來表示特定的靶。
 compount (bow): 複合弓
 recurve (bow): 反曲弓
