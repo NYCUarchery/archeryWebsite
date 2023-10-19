@@ -21,9 +21,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/data/gameinfo": {
+        "/data/competition": {
             "post": {
-                "description": "Post one new GameInfo data with new id, and return the new GameInfo data",
+                "description": "Post one new Competition data with new id, and return the new Competition data",
                 "consumes": [
                     "application/json"
                 ],
@@ -31,13 +31,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "GameInfo"
+                    "Competition"
                 ],
-                "summary": "Create one GameInfo",
+                "summary": "Create one Competition",
                 "parameters": [
                     {
-                        "description": "GaeInfo",
-                        "name": "GameInfo",
+                        "description": "Competition",
+                        "name": "Competition",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -61,9 +61,44 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/gameinfo/whole/{id}": {
+        "/data/competition/groups/{id}": {
+            "get": {
+                "description": "Get one Competition by id with GroupInfos",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "Show one Competition with GroupInfos",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/competition/whole/{id}": {
             "put": {
-                "description": "Put whole new GameInfo and overwrite with the id",
+                "description": "Put whole new Competition and overwrite with the id but without GroupInfo",
                 "consumes": [
                     "application/json"
                 ],
@@ -71,20 +106,20 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "GameInfo"
+                    "Competition"
                 ],
-                "summary": "update one GameInfo",
+                "summary": "update one Competition without GroupInfo",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "GameInfo ID",
+                        "description": "Competition ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "GameInfo",
-                        "name": "GameInfo",
+                        "description": "Competition",
+                        "name": "Competition",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -120,20 +155,20 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/gameinfo/{id}": {
+        "/data/competition/{id}": {
             "get": {
-                "description": "Get one GameInfo by id",
+                "description": "Get one Competition by id without GroupInfo",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "GameInfo"
+                    "Competition"
                 ],
-                "summary": "Show one GameInfo",
+                "summary": "Show one Competition without GroupInfo",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "GameInfo ID",
+                        "description": "Competition ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -155,7 +190,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "delete one GameInfo by id",
+                "description": "delete one Competition by id",
                 "consumes": [
                     "application/json"
                 ],
@@ -163,13 +198,241 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "GameInfo"
+                    "Competition"
                 ],
-                "summary": "delete one GameInfo",
+                "summary": "delete one Competition",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "GameInfo ID",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/groupinfo": {
+            "post": {
+                "description": "Post one new GroupInfo data with new id, and return the new GroupInfo data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GroupInfo"
+                ],
+                "summary": "Create one GroupInfo",
+                "parameters": [
+                    {
+                        "description": "LaneData",
+                        "name": "GroupInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/groupinfo/reorder": {
+            "put": {
+                "description": "Put competition_id and group_ids to update GroupInfos Indexes under the same Competition",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GroupInfo"
+                ],
+                "summary": "update GroupInfos Indexes under the same Competition",
+                "parameters": [
+                    {
+                        "description": "GroupInfo IDs for reorder",
+                        "name": "groupIdsForReorder",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/groupinfo/whole/{id}": {
+            "put": {
+                "description": "Put whole new GroupInfo and overwrite with the id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GroupInfo"
+                ],
+                "summary": "update one GroupInfo",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "GroupInfo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "GroupInfo",
+                        "name": "GroupInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/groupinfo/{id}": {
+            "get": {
+                "description": "Get one GroupInfo by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GroupInfo"
+                ],
+                "summary": "Show one GroupInfo",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "LaneInfo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "delete one GroupInfo by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GroupInfo"
+                ],
+                "summary": "delete one GroupInfo",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "GroupInfo ID",
                         "name": "id",
                         "in": "path",
                         "required": true

@@ -30,6 +30,7 @@ terminal 輸入 go work init web_server_gin (應該會出現go.work)
 ## api 註解
 如果更新了gin swag的註解
 在運行前需要在terminal中輸入 swag init (應該會出現doc檔案)
+http://localhost:8080/swagger/index.html#/
 
 ## 運行 
 ### debug mode 
