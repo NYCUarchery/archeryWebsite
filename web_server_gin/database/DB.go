@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -26,16 +27,28 @@ func GetDb() *gorm.DB {
 	return DB
 }
 
-func getdsn() {
+func getDSNFileByMode() string {
+	switch gin.Mode() {
+	case "release":
+		return "../dsn_config.txt"
+	case "debug":
+		return "../test_dsn_config.txt"
+	case "test":
+		return "../dsn_config.txt"
+	default:
+		return "../text_dsn_config.txt"
+	}
+}
+
+func getDSN() {
 	Pwd, _ := os.Getwd()
-	FilePath := filepath.Join(Pwd, "dsn_config.txt")
+	FilePath := filepath.Join(Pwd, getDSNFileByMode())
 	file, err := os.Open(FilePath)
 	if err != nil {
 		fmt.Println("Error opening file:", err)
 		return
 	}
 	defer file.Close()
-
 	scanner := bufio.NewScanner(file)
 	if scanner.Scan() {
 		line := scanner.Text()
@@ -50,19 +63,10 @@ func getdsn() {
 	}
 }
 
-func testdsn() {
-	DSN.username = "root"
-	DSN.password = "099092099092"
-	DSN.host = "127.0.0.1"
-	DSN.port = "3306"
-	DSN.database = "Demo"
-}
-
-func Database_Initial() {
+func connectDB() {
 	// 建立資料庫連線
 	// reference https://github.com/go-sql-driver/mysql#dsn-data-source-name
-	getdsn()
-	testdsn()
+	getDSN()
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify",
 		DSN.username, DSN.password, DSN.host, DSN.port, DSN.database)
 	var err error
@@ -70,7 +74,11 @@ func Database_Initial() {
 	if err != nil {
 		fmt.Println("資料庫徹底連線失敗：", err)
 	}
+}
 
+func DatabaseInitial() {
+	connectDB()
 	InitLaneInfo()
-
+	InitCompetition()
+	InitGroupInfo()
 }
