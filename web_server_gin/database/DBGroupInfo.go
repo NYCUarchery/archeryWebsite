@@ -40,9 +40,9 @@ func GetGroupInfoById(id int) (Group, error) {
 //	@Success		200			string	string
 //	@Failure		400			string	string
 //	@Router			/data/groupinfo [post]
-func CreateGroupInfo(group Group) (Group, error) {
+func CreateGroupInfo(group Group) error {
 	result := DB.Table("groups").Create(&group)
-	return group, result.Error
+	return result.Error
 }
 
 // Update GroupInfo godoc
@@ -59,11 +59,10 @@ func CreateGroupInfo(group Group) (Group, error) {
 //	@Failure		404			string	string
 //	@Failure		500			string	string
 //	@Router			/data/groupinfo/whole/{id} [put]
-func UpdateGroupInfo(id int, newgroup Group) (bool, Group, error) {
-	var group Group
-	result := DB.Table("groups").Where("id = ?", id).Updates(&newgroup)
-	DB.Table("groups").Where("id = ?", id).First(&group)
-	return result.RowsAffected != 0, group, result.Error
+func UpdateGroupInfo(id int, group Group) (bool, error) {
+	result := DB.Table("groups").Where("id = ?", id).Updates(&group)
+	isChanged := result.RowsAffected != 0
+	return isChanged, result.Error
 }
 
 // Update GroupInfos Index godoc
@@ -79,11 +78,10 @@ func UpdateGroupInfo(id int, newgroup Group) (bool, Group, error) {
 //	@Failure		404					string	string
 //	@Failure		500					string	string
 //	@Router			/data/groupinfo/reorder [put]
-func UpdateGroupInfoIndex(id int, index int) (bool, Group, error) {
-	var group Group
+func UpdateGroupInfoIndex(id int, index int) (bool, error) {
 	result := DB.Table("groups").Where("id = ?", id).Update("group_index", index)
-	DB.Table("groups").Where("id = ?", id).First(&group)
-	return result.RowsAffected != 0, group, result.Error
+	isChanged := result.RowsAffected != 0
+	return isChanged, result.Error
 }
 
 // Delete GroupInfo by id godoc
@@ -98,10 +96,8 @@ func UpdateGroupInfoIndex(id int, index int) (bool, Group, error) {
 //	@Failure		400	string	string
 //	@Failure		404	string	string
 //	@Router			/data/groupinfo/{id} [delete]
-func DeleteGroupInfo(id int) (bool, int, error) {
-	var data Group
-	DB.Table("groups").Where("id = ?", id).First(&data)
-	competitionId := int(data.CompetitionId)
+func DeleteGroupInfo(id int) (bool, error) {
 	result := DB.Table("groups").Where("id = ?", id).Delete(&Group{})
-	return result.RowsAffected != 0, competitionId, result.Error
+	isChanged := result.RowsAffected != 0
+	return isChanged, result.Error
 }

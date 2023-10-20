@@ -51,7 +51,8 @@ func PostGroupInfo(context *gin.Context) {
 
 	fmt.Printf("Post GroupInfo -> %v\n", data)
 	data.GroupIndex = database.GetCompetitionGroupNum(int(data.CompetitionId))
-	newData, error := database.CreateGroupInfo(data)
+	error := database.CreateGroupInfo(data)
+	newData, error := database.GetGroupInfoById(int(data.ID))
 	if newData.ID == 0 {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
 		return
@@ -74,7 +75,8 @@ func UpdateGroupInfo(context *gin.Context) {
 	}
 	olddata, _ := database.GetGroupInfoById(id)
 	data.CompetitionId = olddata.CompetitionId
-	_, newData, error := database.UpdateGroupInfo(id, data)
+	_, error := database.UpdateGroupInfo(id, data)
+	newData, error := database.GetGroupInfoById(id)
 	if newData.ID == 0 {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
 		return
@@ -121,7 +123,7 @@ func ReorderGroupInfo(context *gin.Context) {
 			context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": error.Error()})
 			return
 		} else {
-			_, _, err := database.UpdateGroupInfoIndex(id, index)
+			_, err := database.UpdateGroupInfoIndex(id, index)
 			if err != nil {
 				context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
@@ -138,7 +140,21 @@ func ReorderGroupInfo(context *gin.Context) {
 
 func DeleteGroupInfo(context *gin.Context) {
 	id := convert2int(context, "id")
-	affected, competitionId, error := database.DeleteGroupInfo(id)
+	group, error := database.GetGroupInfoById(id)
+	if group.ID == 0 {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
+		return
+	} else if error != nil {
+		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": error.Error()})
+		return
+	}
+	competitionId := int(group.CompetitionId)
+	if competitionId == 0 {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 CompetitionId"})
+		return
+	}
+	database.MinusOneCompetitionGroupNum(competitionId)
+	affected, error := database.DeleteGroupInfo(id)
 	if !affected {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID 或 格式錯誤 "})
 		return
@@ -146,6 +162,5 @@ func DeleteGroupInfo(context *gin.Context) {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": error.Error()})
 		return
 	}
-	database.MinusOneCompetitionGroupNum(competitionId)
 	context.IndentedJSON(http.StatusOK, gin.H{"message": "成功刪除用戶"})
 }
