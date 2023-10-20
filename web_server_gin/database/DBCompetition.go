@@ -22,6 +22,12 @@ func InitCompetition() {
 	DB.AutoMigrate(&Competition{})
 }
 
+func GetCompetitionIsExist(id int) bool {
+	var data Competition
+	DB.Table("competitions").Where("id = ?", id).First(&data)
+	return data.ID != 0
+}
+
 // Get Only Competition By ID godoc
 //
 //	@Summary		Show one Competition without GroupInfo
@@ -48,11 +54,11 @@ func GetOnlyCompetition(ID int) (Competition, error) {
 //	@Success		200	string	string
 //	@Failure		400	string	string
 //	@Router			/data/competition/groups/{id} [get]
-func GetCompetitionWGroups(ID int) Competition {
+func GetCompetitionWGroups(ID int) (Competition, error) {
 	var data Competition
-	DB.Preload("Groups", func(*gorm.DB) *gorm.DB { return DB.Order("group_index asc") }).
+	result := DB.Preload("Groups", func(*gorm.DB) *gorm.DB { return DB.Order("group_index asc") }).
 		Model(&Competition{}).Where("id = ?", ID).First(&data)
-	return data
+	return data, result.Error
 }
 
 // Post Competition godoc

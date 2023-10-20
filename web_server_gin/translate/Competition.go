@@ -4,9 +4,22 @@ import (
 	"fmt"
 	"net/http"
 	"web_server_gin/database"
+	response "web_server_gin/translate/Response"
 
 	"github.com/gin-gonic/gin"
 )
+
+func IsGetCompetition(context *gin.Context, id int) (bool, database.Competition) {
+	if response.ErrorIdTest(context, database.GetCompetitionIsExist(id), "Competition") {
+		return false, database.Competition{}
+	}
+	data, err := database.GetCompetitionWGroups(id)
+	if response.ErrorInternalErrorTest(context, err, "Get Competition") {
+		return false, data
+	}
+	response.AcceptPrint(id, fmt.Sprint(data), "Competition")
+	return true, data
+}
 
 func GetOnlyCompetitionByID(context *gin.Context) {
 	data, error := database.GetOnlyCompetition(convert2int(context, "id"))
@@ -22,7 +35,7 @@ func GetOnlyCompetitionByID(context *gin.Context) {
 }
 
 func GetCompetitionWGroupsByID(context *gin.Context) {
-	data := database.GetCompetitionWGroups(convert2int(context, "id"))
+	data, _ := database.GetCompetitionWGroups(convert2int(context, "id"))
 	if data.ID == 0 {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
 		return
@@ -64,7 +77,7 @@ func UpdateCompetition(context *gin.Context) {
 }
 
 func DeleteCompetition(context *gin.Context) {
-	data := database.GetCompetitionWGroups(convert2int(context, "id"))
+	data, _ := database.GetCompetitionWGroups(convert2int(context, "id"))
 	for _, group := range data.Groups {
 		database.DeleteGroupInfo(int(group.ID))
 	}

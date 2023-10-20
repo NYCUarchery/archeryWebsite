@@ -13,6 +13,12 @@ func InitGroupInfo() {
 	DB.Table("groups").AutoMigrate(&Group{})
 }
 
+func GetGroupIsExist(id int) bool {
+	var group Group
+	DB.Table("groups").Where("id = ?", id).First(&group)
+	return group.ID != 0
+}
+
 // Get GroupInfo By ID godoc
 //
 //	@Summary		Show one GroupInfo
@@ -40,9 +46,9 @@ func GetGroupInfoById(id int) (Group, error) {
 //	@Success		200			string	string
 //	@Failure		400			string	string
 //	@Router			/data/groupinfo [post]
-func CreateGroupInfo(group Group) error {
+func CreateGroupInfo(group Group) (Group, error) {
 	result := DB.Table("groups").Create(&group)
-	return result.Error
+	return group, result.Error
 }
 
 // Update GroupInfo godoc
