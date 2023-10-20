@@ -20,12 +20,12 @@ type groupIdsForReorder struct {
 
 func GetGroupInfoByID(context *gin.Context) {
 	id := convert2int(context, "id")
-	data, error := database.GetGroupInfoById(id)
+	data, err := database.GetGroupInfoById(id)
 	if data.ID == 0 {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
 		return
-	} else if error != nil {
-		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": error.Error()})
+	} else if err != nil {
+		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	fmt.Printf("GroupInfo with ID(%v) -> %v\n", id, data)
