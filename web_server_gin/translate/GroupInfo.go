@@ -154,8 +154,8 @@ func DeleteGroupInfo(context *gin.Context) {
 	}
 	database.MinusOneCompetitionGroupNum(competitionId)
 	/*delete group*/
-	affected, error := database.DeleteGroupInfo(id)
-	if response.ErrorInternalErrorTest(context, error, "Delete GroupInfo") {
+	affected, err := database.DeleteGroupInfo(id)
+	if response.ErrorInternalErrorTest(context, err, "Delete GroupInfo") {
 		return
 	}
 	response.AcceptDeleteSuccess(context, affected, "GroupInfo")

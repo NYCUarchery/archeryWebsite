@@ -52,7 +52,7 @@ func PostCompetition(context *gin.Context) {
 		return
 	}
 	data.Groups_num = 0
-	newData := database.PostCompetition(data)
+	newData, _ := database.PostCompetition(data)
 	context.IndentedJSON(http.StatusOK, newData)
 }
 
@@ -81,7 +81,8 @@ func DeleteCompetition(context *gin.Context) {
 	for _, group := range data.Groups {
 		database.DeleteGroupInfo(int(group.ID))
 	}
-	if !database.DeleteCompetition(convert2int(context, "id")) {
+	isChanged, _ := database.DeleteCompetition(convert2int(context, "id"))
+	if !isChanged {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID 或 格式錯誤 "})
 		return
 	}
