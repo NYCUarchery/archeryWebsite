@@ -78,6 +78,7 @@ func preloadLane(ID int, data *LaneData) *LaneData {
 }
 
 // Get LaneInfo By ID godoc
+//
 //	@Summary		Show one LaneInfo
 //	@Description	Get one LaneInfo by id
 //	@Tags			LaneInfo
@@ -93,6 +94,7 @@ func GetLaneInfoByID(ID int) LaneData {
 }
 
 // Post LaneInfo godoc
+//
 //	@Summary		Create one LaneInfo
 //	@Description	Post one new LaneInfo data with new id, and return the new LaneInfo data
 //	@Tags			LaneInfo
@@ -109,6 +111,7 @@ func PostLaneInfo(data LaneData) LaneData {
 }
 
 // Update LaneInfo godoc
+//
 //	@Summary		update one LaneInfo
 //	@Description	Put whole new LaneInfo and overwrite with the id
 //	@Tags			LaneInfo
@@ -127,6 +130,7 @@ func UpdateLaneInfo(ID int, data LaneData) LaneData {
 }
 
 // Update LaneInfo Score godoc
+//
 //	@Summary		update one LaneInfo Score
 //	@Description	Put one LaneInfo score by index and id
 //	@Tags			LaneInfo
@@ -150,6 +154,7 @@ func UpdataLaneScore(ID int, stageindex int, userindex int, arrowindex int, scor
 }
 
 // Update LaneInfo Confirmation godoc
+//
 //	@Summary		update one LaneInfo confirmation
 //	@Description	Put one LaneInfo confirm by index and id
 //	@Tags			LaneInfo
@@ -171,6 +176,7 @@ func UpdataLaneConfirm(ID int, stageindex int, userindex int, confirmation bool)
 }
 
 // Delete LaneInfo by id godoc
+//
 //	@Summary		delete one LaneInfo
 //	@Description	delete one LaneInfo by id
 //	@Tags			LaneInfo

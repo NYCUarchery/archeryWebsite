@@ -12,7 +12,6 @@ func AddDataRouter(data *gin.RouterGroup) {
 
 	data.GET("/eliminationInfo/:gameName", translate.GetEliminationInfo)
 	data.GET("/phaseInfo/:gameName", translate.GetPhaseInfo)
-	data.GET("/qualificationInfo/:gameName", translate.GetQualificationInfo)
 	data.GET("/teamEliminationInfo/:gameName", translate.GetTeamEliminationInfo)
 	data.GET("/userInfo/:userName", translate.GetUserInfo)
 
@@ -21,6 +20,9 @@ func AddDataRouter(data *gin.RouterGroup) {
 
 	groupinfo := data.Group("groupinfo")
 	groupInfoRouter(groupinfo)
+
+	qualification := data.Group("qualification")
+	qualificationRouter(qualification)
 
 	laneinfo := data.Group("laneinfo")
 	laneInfoRouter(laneinfo)
@@ -46,6 +48,11 @@ func groupInfoRouter(data *gin.RouterGroup) {
 	data.PUT("/whole/:id", translate.UpdateGroupInfo)
 	data.PUT("/reorder", translate.ReorderGroupInfo)
 	data.DELETE("/:id", translate.DeleteGroupInfo)
+}
+
+func qualificationRouter(data *gin.RouterGroup) {
+	data.GET("/:id", translate.GetQualificationByID)
+	data.PUT("/whole/:id", translate.UpdateQualificationByID)
 }
 
 func laneInfoRouter(data *gin.RouterGroup) {
