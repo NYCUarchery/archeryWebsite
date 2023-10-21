@@ -1,5 +1,5 @@
 import host from "./config"
-import axios, { AxiosResponse, AxiosError } from 'axios'
+import axios from 'axios'
 import formatISO from 'date-fns/formatISO';
 
 import { setUid, resetUid, userStore } from './userReducer';

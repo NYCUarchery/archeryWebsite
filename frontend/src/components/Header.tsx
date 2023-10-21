@@ -33,6 +33,7 @@ interface HeaderProps {
 
 const Header: FC<HeaderProps> = ({ setSideBarOpen }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const uid = userStore.getState().uid
 
   const handleMenu = (event: MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -110,7 +111,7 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen }) => {
                                   Logout(() => navigate(routing.Login))
                                 }}
                               >
-                                登出
+                                {uid >=0? "登出":"登入"}
                               </MenuItem>
                             </MenuList>
                           </Box>
