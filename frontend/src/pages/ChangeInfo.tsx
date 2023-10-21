@@ -53,7 +53,8 @@ const ChangeInfo = () => {
 						oriPassword: "",
 						password: "",
 						passwordConfirm: "",
-						organization: "",
+						email: "",
+						institutionID: "1",
 					}}
 					onSubmit={async (values) => {
 						try {
@@ -83,13 +84,13 @@ const ChangeInfo = () => {
 									</Grid>
 									<Grid item xs={12} sx={{mt: 2}}>
 										<OneLineField
-											touched={touched.organization}
-											error={errors.organization}
+											touched={touched.email}
+											error={errors.email}
 											handleChange={handleChange}
 											handleBlur={handleBlur}
-											name={"organization"}
-											label={"所屬組織"}
-											value={values.organization}
+											name={"email"}
+											label={"電子郵件"}
+											value={values.email}
 										/>
 									</Grid>
 									<Grid item xs={12} sx={{mt: 2}}>
@@ -117,6 +118,7 @@ const ChangeInfo = () => {
 												mousedown: handleMouseDownOriPassword,
 												show: showOriPassword,
 											}}
+											required={true}
 										/>
 									</Grid>
 									<Grid item xs={12} sx={{mt: 2}}>

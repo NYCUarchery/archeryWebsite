@@ -56,8 +56,8 @@ const LoginPage = () => {
 									try {
 										const res = await Login(values.username, values.password)
 										if (res.result == "Success") {
-											navigate(routing.Home);
 											GetUid();
+											navigate(routing.Home);
 										}
 										else navigate(routing.Login);
 									} catch (error) {}

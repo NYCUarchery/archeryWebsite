@@ -18,6 +18,7 @@ interface UserInfo {
   overview: string;
 	organization: string;
 	name: string;
+	email: string;
 }
 
 const PersonalPage = () => {
@@ -28,8 +29,8 @@ const PersonalPage = () => {
 		const fetchData = async () => {
       try {
         const info = await GetUserInfo(uid);
-        console.log("info: ", info);
-        setUserinfo(info.data);
+        console.log("info: ", info.data);
+        setUserinfo(info.data.data);
       } catch (error) { }
     };
 
@@ -54,6 +55,11 @@ const PersonalPage = () => {
 							<Grid item xs={2}>
 								<Typography variant="h6" component="div">
 									{userinfo?.organization}
+								</Typography>
+							</Grid>
+							<Grid item xs={2} sx={{mt: 2}}>
+								<Typography variant="h6" component="div">
+									{userinfo?.email}
 								</Typography>
 							</Grid>
 							<Grid item xs={2} sx={{mt: 2}}>

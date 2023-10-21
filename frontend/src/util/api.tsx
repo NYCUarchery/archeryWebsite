@@ -15,10 +15,10 @@ const api = {
 	},
 	competition: {
 		create: `${host}/api/competition/`,
+		all: `${host}/api/competition/`,
 		join: `${host}/api/competition/join`,
 	},
 };
-
 
 const Login = async (username: string, password: string, successHandler?: any) => {
   try {
@@ -30,7 +30,7 @@ const Login = async (username: string, password: string, successHandler?: any) =
       withCredentials: true,
     });
 
-    console.log("Logging successfully");
+    // console.log("Logging successfully");
 
     if (successHandler) successHandler();
     return {result: "Success"}
@@ -71,12 +71,13 @@ const GetUid = async (successHandler?: any, failHandler?: any) => {
       withCredentials: true,
     });
 
-    console.log("res: ", response);
+    // console.log("res: ", response);
+    // console.log("res.data: ", response.data);
 
-    if (response.data.uid) {
-      userStore.dispatch(setUid(response.data.uid));
-      var uid = response.data.uid;
-      console.log("setting uid: ", uid);
+    if (response.data.id > 0) {
+      userStore.dispatch(setUid(response.data.id));
+      var uid = response.data.id;
+      // console.log("setting uid: ", uid);
 
       if (successHandler) successHandler();
 
@@ -95,7 +96,7 @@ const GetUserInfo = async (uid: number, successHandler?: any, failHandler?: any)
   try {
     const response = await axios.get(`${api.user.info}/${uid}`, { withCredentials: true });
 
-    console.log(response);
+    // console.log(response);
 
     return response;
   } catch (error: any) {
@@ -117,11 +118,30 @@ const GetUserInfo = async (uid: number, successHandler?: any, failHandler?: any)
 const ModifyUserInfo = async (uid: any, values: any, successHandler?: any, failHandler?: any) => {
   try {
     const body = new FormData();
-    body.append("username", values.username);
-    body.append("overview", values.overview);
-    body.append("oriPassword", values.oriPassword);
-    body.append("modPassword", values.password);
-    body.append("organization", values.organization);
+    for (const [key, value] of Object.entries(values)) {
+
+      if (value === "") continue;
+      switch(key) {
+        case "username":
+          body.append("id", values.username);
+          break;
+        case "overview":
+          body.append("overview", values.overview);
+          break;
+        case "oriPassword":
+          body.append("oriPassword", values.oriPassword);
+          break;
+        case "password":
+          body.append("modPassword", values.password);
+          break;
+        case "email":
+          body.append("email", values.email);
+          break;
+        case "institutionID":
+          body.append("institutionID", values.institutionID);
+          break;
+      }
+    }
 
     const response = await axios.put(`${api.user.modifyInfo}/${uid}`, body, {
       withCredentials: true,
@@ -273,4 +293,16 @@ const joinCompetition = async () => {
   }
 };
 
-export { Login, Logout, GetUid, GetUserInfo, ModifyUserInfo, createCompetition, registerUser, joinCompetition };
+const getCompetitions = async () => {
+  try {
+    const response = await axios.get(`${api.competition.all}/`, { withCredentials: true });
+
+
+    return response;
+  } catch (error: any) {
+
+    return error;
+  }
+};
+
+export { Login, Logout, GetUid, GetUserInfo, ModifyUserInfo, createCompetition, registerUser, joinCompetition, getCompetitions };
