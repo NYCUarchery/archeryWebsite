@@ -115,8 +115,8 @@ func DeleteCompetition(context *gin.Context) {
 		}
 	}
 
-	/*delete group*/
-	affected, err := database.DeleteGroupInfo(id)
+	/*delete competition*/
+	affected, err := database.DeleteCompetition(id)
 	if response.ErrorInternalErrorTest(context, err, "Delete Competition with Groups") {
 		return
 	}
