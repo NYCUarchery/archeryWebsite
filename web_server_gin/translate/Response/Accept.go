@@ -8,16 +8,18 @@ import (
 )
 
 func AcceptDeleteSuccess(context *gin.Context, isChanged bool, message string) {
+	id := context.Param("id")
 	if isChanged {
-		context.IndentedJSON(http.StatusOK, gin.H{"message": "Delete " + message + " success"})
+		context.IndentedJSON(http.StatusOK, gin.H{"message": "Delete ID(" + id + "): " + message + " success"})
 	} else {
-		context.IndentedJSON(http.StatusOK, gin.H{"message": "Delete " + message + " fail"})
+		context.IndentedJSON(http.StatusOK, gin.H{"message": "Delete ID(" + id + "): " + message + " fail"})
 	}
 }
 
 func AcceptNotChange(context *gin.Context, isChange bool, message string) bool {
+	id := context.Param("id")
 	if !isChange {
-		context.IndentedJSON(http.StatusNoContent, gin.H{"message": message + " no change"})
+		context.IndentedJSON(http.StatusNoContent, gin.H{"message": "Delete ID(" + id + "): " + message + " no change"})
 		return true
 	}
 	return false
