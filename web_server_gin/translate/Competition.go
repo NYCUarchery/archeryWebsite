@@ -109,17 +109,16 @@ func DeleteCompetition(context *gin.Context) {
 	}
 	/*delete all related groups*/
 	for _, group := range data.Groups {
-		affected, err := database.DeleteGroupInfo(int(group.ID))
+		_, err := database.DeleteGroupInfo(int(group.ID))
 		if response.ErrorInternalErrorTest(context, err, "Delete GroupInfo in Competition") {
 			return
 		}
-		response.AcceptDeleteSuccess(context, affected, "GroupInfo in Competition")
 	}
 
 	/*delete group*/
 	affected, err := database.DeleteGroupInfo(id)
-	if response.ErrorInternalErrorTest(context, err, "Delete Competition") {
+	if response.ErrorInternalErrorTest(context, err, "Delete Competition with Groups") {
 		return
 	}
-	response.AcceptDeleteSuccess(context, affected, "Competition")
+	response.AcceptDeleteSuccess(context, affected, "Competition with Groups")
 }
