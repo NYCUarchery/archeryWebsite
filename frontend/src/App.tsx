@@ -7,51 +7,40 @@ import { BrowserRouter } from 'react-router-dom';
 import PageRoute from './routings/PageRoute';
 import UnauthRoute from './routings/UnauthRoute';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import PageContainer from './components/PageContainer';
-import { host, api } from './util/api';
 
-import UserContext from './util/userContext';
+import { userStore } from './util/userReducer';
+import { GetUid } from './util/api2';
 
 function App() {
   const [sideBarOpen, setSideBarOpen] = useState(false);
-  const [authorized, setAuthorized] = useState(false);
-  const [uid, setUid] = useState("");
-  (uid == "") && fetch(`${host}/${api.user.getUserID}`, {
-    method: "GET",
-    credentials: "include",
-  })
-  .then((res) => res.json())
-  .then((resjson) => {
-    console.log(resjson);
-    if (resjson["uid"]) {
-      setUid(resjson["uid"]);
+  const [subpage, setSubpage] = useState(<UnauthRoute />);
+  userStore.subscribe(() => {
+    if (userStore.getState().uid > 0) {
+      setSubpage(<PageRoute />);
     }
-  });
-
+    else {
+      setSubpage(<UnauthRoute />);
+    }
+  })
+	useEffect(() => {
+		GetUid()
+  }, [])
+  
   return (
     <div>
       <BrowserRouter>
-        <UserContext.Provider
-          value={{
-            uid: uid,
-          }}
-        >
-          <Header setSideBarOpen={setSideBarOpen} setAuthorized={setAuthorized}/>
+          <Header setSideBarOpen={setSideBarOpen} />
           <div style={{display: "flex"}}>
             <Sidebar setSideBarOpen={setSideBarOpen} sideBarOpen={sideBarOpen} />
             <div style={{position: "fixed", minHeight: "calc(100vh - 64px)", minWidth: "100vw", top: "64px", height: "calc(100vh - 64px)", overflowY: "scroll"}}>
 
               <PageContainer>
-
-                {authorized?
-                  <PageRoute />:
-                  <UnauthRoute setAuthorized={setAuthorized}/>
-                }
+                {subpage}
               </PageContainer>
             </div>
           </div>
-        </UserContext.Provider>
       </BrowserRouter>
     </div>
   );

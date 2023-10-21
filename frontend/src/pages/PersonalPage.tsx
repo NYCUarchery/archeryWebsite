@@ -12,7 +12,7 @@ import avatar from "../assets/images/avatar.jpg";
 import routing from '../util/routing';
 import UserContext from '../util/userContext';
 import { useContext, useEffect, useState } from 'react';
-import { api, host } from '../util/api';
+import api from '../util/api';
 
 interface UserInfo {
   overview: string;
@@ -25,12 +25,11 @@ const PersonalPage = () => {
 	const { uid } = useContext(UserContext);
 	const [ userinfo, setUserinfo ] = useState<UserInfo | undefined>(undefined);
 	useEffect(() => {
-		fetch(`${host}/${api.user.info}/${uid}`, {
+		fetch(`${api.user.info}/${uid}`, {
 			method: "GET",
 			credentials: "include",
 		})
 		.then((res) => {
-			console.log("res: ", res);
 			switch(res.status) {
 				case 200:
 					break;
@@ -44,7 +43,6 @@ const PersonalPage = () => {
 			return res.json();
 		})
 		.then((resjson) => {
-			console.log("resjson: ", resjson);
 			setUserinfo(resjson);
 		})
 		.catch((err) => console.log(err));

@@ -11,86 +11,9 @@ import Divider from '@mui/material/Divider';
 
 import { useNavigate } from 'react-router-dom';
 
-import { host, api } from '../util/api';
+import api from '../util/api';
 import routing from '../util/routing';
 
-
-// const rows = [
-	// {
-	// 	"id": "1",
-	// 	"name": "2023亞錦代表隊選拔賽暨2024奧運代表隊選拔賽第一場",
-	// 	"holder": "我大交通射箭隊",
-	// 	"date": "2017-04-23 10:30",
-	// 	"dashboard": "https://google.com/",
-	// 	"participate": "未報名",
-	// 	"state": "可報名",
-	// 	"canParticipate": true,
-	// },
-// 	{
-// 		"id": "2",
-// 		"name": "The International, DOTA2 Championships 2023",
-// 		"holder": "隔壁校射箭隊",
-// 		"date": "2017-04-24 10:30",
-// 		"dashboard": "contest/2",
-// 		"participate": "已報名",
-// 		"state": "報名截止",
-// 		"canParticipate": false,
-// 	},
-// 	{
-// 		"id": "3",
-// 		"name": "BLAST Paris Major 2023",
-// 		"holder": "隔壁校射箭隊",
-// 		"date": "2017-04-25 10:30",
-// 		"participate": "未報名",
-// 		"state": "進行中",
-// 		"canParticipate": false,
-// 	},
-// 	{
-// 		"id": "4",
-// 		"name": "stardew valley fair 2023",
-// 		"holder": "隔壁校射箭隊",
-// 		"date": "2017-04-26 10:30",
-// 		"participate": "未報名",
-// 		"state": "已結束",
-// 		"canParticipate": false,
-// 	},
-// 	{
-// 		"id": "5",
-// 		"name": "Delicious Whirled Cup 2023",
-// 		"holder": "隔壁校射箭隊",
-// 		"date": "2017-04-27 10:30",
-// 		"participate": "未報名",
-// 		"state": "延期",
-// 		"canParticipate": true,
-// 	},
-// 	{
-// 		"id": "6",
-// 		"name": "stardew valley fair 2023",
-// 		"holder": "隔壁校射箭隊",
-// 		"date": "2017-04-28 10:30",
-// 		"participate": "未報名",
-// 		"state": "已取消",
-// 		"canParticipate": false,
-// 	},
-// 	{
-// 		"id": "7",
-// 		"name": "stardew valley fair 2023",
-// 		"holder": "隔壁校射箭隊",
-// 		"date": "2017-04-29 10:30",
-// 		"participate": "未報名",
-// 		"state": "協辦單位拿錢跑了",
-// 		"canParticipate": false,
-// 	},
-// 	{
-// 		"id": "8",
-// 		"name": "stardew valley fair 2023",
-// 		"holder": "隔壁校射箭隊",
-// 		"date": "2017-04-30 10:30",
-// 		"participate": "未報名",
-// 		"state": "氣態",
-// 		"canParticipate": false,
-// 	},
-// ];
 
 const ContestPage = () => {
 	const navigate = useNavigate();
@@ -147,7 +70,7 @@ const ContestPage = () => {
 											const body = new FormData();
 											body.append("competitionID", "aaaa");
 
-											fetch(`${host}/${api.competition.join}`, {
+											fetch(`${api.competition.join}`, {
 												method: "POST",
 												credentials: "include",
 												body: body,
@@ -156,14 +79,6 @@ const ContestPage = () => {
 												return res.json();
 											})
 											.then((resjson) => {
-		
-												console.log(resjson);
-												if (resjson["result"] && resjson["result"] === "success") {
-													console.log("Create Success");
-												} else {
-													console.log("Too bad QQ");
-													console.log("resjson['result']:", resjson["result"])
-												}
 											})
 											.catch((err) => console.log(err));
 										}}

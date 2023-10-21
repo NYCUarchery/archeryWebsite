@@ -24,7 +24,7 @@ import MultiLineInput from '../components/formFields/MultiLineField';
 import NumberField from '../components/formFields/NumberField';
 
 
-import { host, api } from '../util/api';
+import api from '../util/api';
 import routing from '../util/routing';
 
 
@@ -50,7 +50,7 @@ const CreateContestPage = () => {
 							}}
 							validationSchema={Yup.object().shape({
 								name: Yup.string().max(255).required('請填入名稱'),
-								date: Yup.date().required('請填入日期'),
+								// date: Yup.date().required('請填入日期'),
 							})}
 							onSubmit={(values, { setErrors, setStatus, setSubmitting }) => {
 								const dateString = formatISO(values.date);
@@ -64,15 +64,13 @@ const CreateContestPage = () => {
 								values.categories.map((v, i) => {
 									body.append("categories", JSON.stringify(v));
 								})
-								console.log("body: ", body)
 
-								fetch(`${host}/${api.competition.create}`, {
+								fetch(`${api.competition.create}`, {
 									method: "POST",
 									credentials: "include",
 									body,
 								})
 								.then((res) => {
-									console.log("res: ", res);
 									if (res.status === 200) {
 										// window.alert("創造成功");
 									} else if (res.status === 400) {
@@ -83,7 +81,6 @@ const CreateContestPage = () => {
 									return res.json();
 								})
 								.then((resjson) => {
-									resjson["result"] && console.log("result: ", resjson["result"])
 									if (!resjson["result"]) {return;}
 									switch(resjson["result"]) {
 										case "competition name exists":
@@ -97,6 +94,7 @@ const CreateContestPage = () => {
 											break;
 										case "success":
 											window.alert(`大成功 id= ${resjson["compID"]}`);
+											navigate(routing.Contests);
 											break;
 									}
 								})
@@ -141,13 +139,6 @@ const CreateContestPage = () => {
 															slotProps={{textField: {required: true}}}
 														/>
 													</LocalizationProvider>
-
-													{touched.date && errors.date && (
-														<FormHelperText error>
-															{' '}
-															{/* {errors.date}{' '} */}
-														</FormHelperText>
-													)}
 												</FormControl>
 											</Grid>
 											<Grid item xs={2}>
@@ -215,9 +206,7 @@ const CreateContestPage = () => {
 																			<Button
 																				onClick={() => {
 																					arrayHelpers.remove(i);
-																					console.log("i: ", i)
 																				}}
-																				// sx={{maxWidth: "64px", width: "64px", pl: 0, pr: 0, background: "Gray"}}
 																				sx={{maxWidth: "64px", width: "64px", pl: 0, pr: 0}}
 																			>
 																				<DeleteIcon fontSize="small" sx={{pl: -2, pr: -2,}}/>
@@ -233,8 +222,6 @@ const CreateContestPage = () => {
 																	size="large"
 																	onClick={() => {
 																		arrayHelpers.push({"des": "", "dis": 70});
-
-																		console.log("values: ", values)
 																	}}
 																	variant="contained"
 																	color="secondary"

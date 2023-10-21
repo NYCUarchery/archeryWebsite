@@ -1,21 +1,18 @@
+import host from "./config";
+
 const api = {
 	user: {
-		login: "session",
-		logout: "session",
-		modifyInfo: "user",
-		register: "user",
-		getUserID: "user/me",
-		info: "user",
+		login: `${host}/api/session/`,
+		logout: `${host}/api/session/`,
+		modifyInfo: `${host}/api/user`,
+		register: `${host}/api/user/`,
+		getUserID: `${host}/api/user/me`,
+		info: `${host}/api/user`,
 	},
 	competition: {
-		create: "competition",
-		join: "competition/join",
+		create: `${host}/api/competition/`,
+		join: `${host}/api/competition/join`,
 	},
 };
 
-const host = "http://"+window.location.host+"/api";
-
-
-export { host, api };
-
-// export default api;
+export default api;

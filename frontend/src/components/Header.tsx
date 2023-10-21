@@ -1,5 +1,5 @@
 
-import { useState, ChangeEvent, MouseEvent, Dispatch, SetStateAction, FC } from 'react';
+import { useState, MouseEvent, Dispatch, SetStateAction, FC } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -11,7 +11,7 @@ import MenuList from '@mui/material/MenuList';
 
 
 import Popper from '@mui/material/Popper';
-import { ClickAwayListener, createTheme } from '@mui/material';
+import { ClickAwayListener } from '@mui/material';
 
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -23,25 +23,20 @@ import avatar from "../assets/images/avatar.jpg";
 import { useNavigate } from 'react-router-dom';
 
 import Avatar from '@mui/material/Avatar';
-import { host, api } from '../util/api';
 import routing from '../util/routing';
+import { Logout } from '../util/api2';
+import { userStore } from '../util/userReducer';
 
 interface HeaderProps {
   setSideBarOpen: Dispatch<SetStateAction<boolean>>;
-  setAuthorized: Dispatch<SetStateAction<boolean>>;
 }
 
-const Header: FC<HeaderProps> = ({ setSideBarOpen, setAuthorized }) => {
-  const [auth, setAuth] = useState(true);
+const Header: FC<HeaderProps> = ({ setSideBarOpen }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setAuth(event.target.checked);
-  };
 
   const handleMenu = (event: MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
-		if (anchorEl == event.currentTarget) setAnchorEl(null);
+		if (anchorEl === event.currentTarget) setAnchorEl(null);
   };
 
   const handleClose = () => {
@@ -50,7 +45,6 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen, setAuthorized }) => {
 
   const navigate = useNavigate();
 
-  
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="fixed" sx={{zIndex: 99}}>
@@ -74,7 +68,7 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen, setAuthorized }) => {
             </Typography>
           </Button>
           <div style={{flexGrow: 1}}></div>
-          {auth && (
+          {(true) && (
             <div>
 							<ClickAwayListener onClickAway={handleClose}>
 								<div>
@@ -101,7 +95,6 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen, setAuthorized }) => {
                           <img src={avatar} alt="My Avatar" width="100px" style={{cursor: "pointer"}} onClick={() => navigate(routing.Personal)}/>
                           <Box component="div" sx={{display: "flex", flexFlow: "column", mt: "10px"}}>
                             <MenuList>
-
                               <MenuItem
                                 aria-label="personal page"
                                 onClick={() => {
@@ -114,24 +107,7 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen, setAuthorized }) => {
                               <MenuItem
                                 onClick={() => {
                                   handleClose();
-                                  setAuthorized(false);
-                                  fetch(`${host}/${api.user.logout}`, {
-                                    method: "DELETE",
-                                    credentials: "include",
-                                  })
-                                  .then((res) => {
-                                    console.log("res: ", res)
-                                    return res.json()
-                                  })
-                                  .then((resjson) => {
-                                    console.log(resjson);
-                                    if (resjson["result"] && resjson["result"] === "success") {
-                                      console.log("Log Out Success");
-                                      navigate(routing.Login);
-                                    } else {
-                                      window.alert("");
-                                    }
-                                  });
+                                  Logout(() => navigate(routing.Login))
                                 }}
                               >
                                 登出

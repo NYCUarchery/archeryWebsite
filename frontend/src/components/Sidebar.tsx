@@ -46,15 +46,11 @@ const SidebarItem: FC<sidebarItemProps> = ({item, navigate}) => {
 		<Box>
 			<ListItem
 				disablePadding
-				// onMouseOver={() => {
-				// 	setOpen(!open);
-				// }}
 			>
 				<ListItemButton
 					onClick={() => {
 						item.subitem? setOpen(!open):
 						navigate(item.route)
-						// navigate(item.route)
 					}}
 				>
 					<ListItemText primary={item.label}/>
@@ -105,7 +101,6 @@ const Sidebar: FC<SidebarProps> = ({ sideBarOpen, setSideBarOpen }) => {
 			<Box
 				sx={{
 					width: 200,
-					// height: "calc(100vh - 64px)",
 					height: "100vh",
 					backgroundColor: "#87e8e3",
 					top: { sm: "64px", xs: "56px" },
@@ -113,8 +108,6 @@ const Sidebar: FC<SidebarProps> = ({ sideBarOpen, setSideBarOpen }) => {
 				role="presentation"
 
 				position="relative"
-				// onClick={toggleDrawer(anchor, false)}
-				// onKeyDown={toggleDrawer(anchor, false)}
 			>
 				<Grow
 					in={sideBarOpen}
@@ -133,7 +126,6 @@ const Sidebar: FC<SidebarProps> = ({ sideBarOpen, setSideBarOpen }) => {
 	return (
 		<ClickAwayListener onClickAway={handleClose}>
 			<Box sx={{position:"fixed",	zIndex: 10}}>
-				{/* {sideBarOpen && list()} */}
 				{list()}
 			</Box>
 		</ClickAwayListener>

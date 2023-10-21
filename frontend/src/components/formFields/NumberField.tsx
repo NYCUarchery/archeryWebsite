@@ -37,8 +37,7 @@ const NumberField: FC<NumberFieldProp> = ({ touched, error, handleChange, handle
 
 			{touched && error && (
 				<FormHelperText error>
-					{' '}
-					{error}{' '}
+					{error}
 				</FormHelperText>
 			)}
 		</FormControl>
