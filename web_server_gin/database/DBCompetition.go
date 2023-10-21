@@ -91,11 +91,10 @@ func PostCompetition(data Competition) (Competition, error) {
 //	@Failure		404			string	string
 //	@Failure		500			string	string
 //	@Router			/data/competition/whole/{id} [put]
-func UpdateCompetition(ID int, newdata Competition) (Competition, error) {
-	var data Competition
-	DB.Model(&Competition{}).Where("id = ?", ID).Updates(&newdata)
-	error := DB.Model(&Competition{}).Where("id = ?", ID).First(&data).Error
-	return data, error
+func UpdateCompetition(ID int, newdata Competition) (bool, error) {
+	result := DB.Model(&Competition{}).Where("id = ?", ID).Updates(&newdata)
+	isChanged := result.RowsAffected != 0
+	return isChanged, result.Error
 }
 
 // Delete Competition by id godoc

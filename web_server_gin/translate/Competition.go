@@ -9,7 +9,19 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func IsGetCompetition(context *gin.Context, id int) (bool, database.Competition) {
+func IsGetOnlyCompetition(context *gin.Context, id int) (bool, database.Competition) {
+	if response.ErrorIdTest(context, database.GetCompetitionIsExist(id), "Competition") {
+		return false, database.Competition{}
+	}
+	data, err := database.GetOnlyCompetition(id)
+	if response.ErrorInternalErrorTest(context, err, "Get Competition") {
+		return false, data
+	}
+	response.AcceptPrint(id, fmt.Sprint(data), "Competition")
+	return true, data
+}
+
+func IsGetCompetitionWGroup(context *gin.Context, id int) (bool, database.Competition) {
 	if response.ErrorIdTest(context, database.GetCompetitionIsExist(id), "Competition") {
 		return false, database.Competition{}
 	}
@@ -22,69 +34,92 @@ func IsGetCompetition(context *gin.Context, id int) (bool, database.Competition)
 }
 
 func GetOnlyCompetitionByID(context *gin.Context) {
-	data, error := database.GetOnlyCompetition(convert2int(context, "id"))
-	if data.ID == 0 {
-		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
-		return
-	} else if error != nil {
-		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": error.Error()})
+	id := convert2int(context, "id")
+	isExist, data := IsGetOnlyCompetition(context, id)
+	if !isExist {
 		return
 	}
-	fmt.Println("Competition with ID(", context.Param("id"), ") -> ", data)
 	context.IndentedJSON(http.StatusOK, data)
 }
 
 func GetCompetitionWGroupsByID(context *gin.Context) {
-	data, _ := database.GetCompetitionWGroups(convert2int(context, "id"))
-	if data.ID == 0 {
-		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
+	id := convert2int(context, "id")
+	isExist, data := IsGetCompetitionWGroup(context, id)
+	if !isExist {
 		return
 	}
-	fmt.Println("Competition with ID(", context.Param("id"), ") -> ", data)
 	context.IndentedJSON(http.StatusOK, data)
 }
 
 func PostCompetition(context *gin.Context) {
-	data := database.Competition{}
+	var data database.Competition
 	err := context.BindJSON(&data)
-	if err != nil {
-		context.IndentedJSON(http.StatusBadRequest, "error : "+err.Error())
+	/*parse data check*/
+	if response.ErrorReceiveDataTest(context, err, "Competition") {
+		return
+	} else if response.ErrorReceiveDataNilTest(context, data, "Competition") {
 		return
 	}
+	/*auto write Groups_num*/
 	data.Groups_num = 0
-	newData, _ := database.PostCompetition(data)
+
+	newData, err := database.PostCompetition(data)
+	if response.ErrorInternalErrorTest(context, err, "Post GroupInfo") {
+		return
+	}
 	context.IndentedJSON(http.StatusOK, newData)
 }
 
 func UpdateCompetition(context *gin.Context) {
-	data := database.Competition{}
+	var data database.Competition
 	id := convert2int(context, "id")
+	/*write id for update success*/
+	data.ID = uint(id)
 	err := context.BindJSON(&data)
-	if err != nil {
-		context.IndentedJSON(http.StatusBadRequest, "error : "+err.Error())
+	/*parse data check*/
+	if response.ErrorReceiveDataTest(context, err, "Competition") {
+		return
+	} else if response.ErrorReceiveDataNilTest(context, data, "Competition") {
 		return
 	}
+
+	/*replace GroupNum with old one*/
 	data.Groups_num = database.GetCompetitionGroupNum(id)
-	newData, error := database.UpdateCompetition(id, data)
-	if newData.Title == "" {
-		context.IndentedJSON(http.StatusInternalServerError, "error : "+err.Error())
+	/*update and check change*/
+	isChanged, err := database.UpdateCompetition(id, data)
+	if response.ErrorInternalErrorTest(context, err, "Update Competition") {
 		return
-	} else if error != nil {
-		context.IndentedJSON(http.StatusInternalServerError, "error : "+error.Error())
+	} else if response.AcceptNotChange(context, isChanged, "Update Competition") {
+		return
+	}
+	/*return new update data*/
+	isExist, newData := IsGetOnlyCompetition(context, id)
+	if !isExist {
 		return
 	}
 	context.IndentedJSON(http.StatusOK, newData)
 }
 
 func DeleteCompetition(context *gin.Context) {
-	data, _ := database.GetCompetitionWGroups(convert2int(context, "id"))
-	for _, group := range data.Groups {
-		database.DeleteGroupInfo(int(group.ID))
-	}
-	isChanged, _ := database.DeleteCompetition(convert2int(context, "id"))
-	if !isChanged {
-		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID 或 格式錯誤 "})
+	id := convert2int(context, "id")
+	/*check data exist*/
+	isExist, data := IsGetCompetitionWGroup(context, id)
+	if !isExist {
 		return
 	}
-	context.IndentedJSON(http.StatusOK, "success")
+	/*delete all related groups*/
+	for _, group := range data.Groups {
+		affected, err := database.DeleteGroupInfo(int(group.ID))
+		if response.ErrorInternalErrorTest(context, err, "Delete GroupInfo in Competition") {
+			return
+		}
+		response.AcceptDeleteSuccess(context, affected, "GroupInfo in Competition")
+	}
+
+	/*delete group*/
+	affected, err := database.DeleteGroupInfo(id)
+	if response.ErrorInternalErrorTest(context, err, "Delete Competition") {
+		return
+	}
+	response.AcceptDeleteSuccess(context, affected, "Competition")
 }

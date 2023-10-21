@@ -132,7 +132,7 @@ func ReorderGroupInfo(context *gin.Context) {
 		}
 	}
 	/*return new updated competition data*/
-	isExist, newData := IsGetCompetition(context, competitionId)
+	isExist, newData := IsGetCompetitionWGroup(context, competitionId)
 	if !isExist {
 		return
 	}
@@ -148,7 +148,7 @@ func DeleteGroupInfo(context *gin.Context) {
 	}
 	/*update competition group_num*/
 	competitionId := int(group.CompetitionId)
-	isExist, _ := IsGetCompetition(context, competitionId)
+	isExist, _ := IsGetOnlyCompetition(context, competitionId)
 	if !isExist {
 		return
 	}
