@@ -5,17 +5,21 @@ import (
 )
 
 type Competition struct { // DB : game_info
-	ID               uint     `json:"id"        gorm:"primary_key"`
-	Title            string   `json:"title"`
-	SubTitle         string   `json:"sub_title"`
-	HostId           uint     `json:"host_id"`
-	Groups_num       int      `json:"groups_num"`
-	Lanes_num        int      `json:"lanes_num"`
-	CurrentPhase     int      `json:"current_phase"`
-	CurrentPhaseKind string   `json:"current_phase_kind"`
-	CurrentStage     uint     `json:"current_stage"`
-	Script           string   `json:"script"`
-	Groups           []*Group `json:"groups" gorm:"constraint:OnDelete:CASCADE;"`
+	ID                       uint     `json:"id"        gorm:"primary_key"`
+	Title                    string   `json:"title"`
+	SubTitle                 string   `json:"sub_title"`
+	HostId                   uint     `json:"host_id"`
+	Groups_num               int      `json:"groups_num"`
+	Lanes_num                int      `json:"lanes_num"`
+	CurrentPhase             int      `json:"current_phase"`
+	CurrentPhaseKind         string   `json:"current_phase_kind"`
+	CurrentStage             uint     `json:"current_stage"`
+	QualificationIsActive    bool     `json:"qualification_is_active"`
+	EliminationIsActive      bool     `json:"elimination_is_active"`
+	TeamEliminationIsActive  bool     `json:"team_elimination_is_active"`
+	MixedEliminationIsActive bool     `json:"mixed_elimination_is_active"`
+	Script                   string   `json:"script"`
+	Groups                   []*Group `json:"groups" gorm:"constraint:OnDelete:CASCADE;"`
 }
 
 func InitCompetition() {
