@@ -2,7 +2,7 @@ import host from "./config"
 import axios from 'axios'
 import formatISO from 'date-fns/formatISO';
 
-import { setUid, resetUid, userStore } from './userReducer';
+import { setUid, resetUid, userStore, setOverview, setInstitutionID, setEmail, resetDirty, setDirty, setName } from './userReducer';
 
 const api = {
 	user: {
@@ -30,8 +30,6 @@ const Login = async (username: string, password: string, successHandler?: any) =
       withCredentials: true,
     });
 
-    // console.log("Logging successfully");
-
     if (successHandler) successHandler();
     return {result: "Success"}
   } catch (error: any) {
@@ -52,7 +50,6 @@ const Logout = async (successHandler?: any, failHandler?: any) => {
       withCredentials: true,
     });
 
-    console.log("resetUid ing");
     userStore.dispatch(resetUid());
 
     if (response?.data?.result === "success" && successHandler) {
@@ -71,13 +68,9 @@ const GetUid = async (successHandler?: any, failHandler?: any) => {
       withCredentials: true,
     });
 
-    // console.log("res: ", response);
-    // console.log("res.data: ", response.data);
-
     if (response.data.id > 0) {
       userStore.dispatch(setUid(response.data.id));
       var uid = response.data.id;
-      // console.log("setting uid: ", uid);
 
       if (successHandler) successHandler();
 
@@ -94,11 +87,34 @@ const GetUid = async (successHandler?: any, failHandler?: any) => {
 
 const GetUserInfo = async (uid: number, successHandler?: any, failHandler?: any) => {
   try {
-    const response = await axios.get(`${api.user.info}/${uid}`, { withCredentials: true });
+    if (userStore.getState().dirty > 0) {
+      const response = await axios.get(`${api.user.info}/${uid}`, { withCredentials: true });
+      for (const [key, value] of Object.entries(response.data.data)) {
+        if (value === "") continue;
+        switch (key) {
+          case "name":
+            userStore.dispatch(setName(response.data.name));
+            break;
+          case "overview":
+            userStore.dispatch(setOverview(response.data.data.overview));
+            break;
+          case "email":
+            userStore.dispatch(setEmail(response.data.data.email));
+            break;
+          case "institutionID":
+            userStore.dispatch(setInstitutionID(response.data.data.institutionID));
+            break;
+        }
+      }
+      userStore.dispatch(resetDirty());
+      return response.data.data;
+    }
+    else {
+      const response = userStore.getState().userInfo;
+      return response;
+    }
+    
 
-    // console.log(response);
-
-    return response;
   } catch (error: any) {
     if (error.response) {
       switch (error.response.status) {
@@ -150,6 +166,7 @@ const ModifyUserInfo = async (uid: any, values: any, successHandler?: any, failH
     switch (response.status) {
       case 200:
         window.alert("修改成功");
+        userStore.dispatch(setDirty());
         if (successHandler) successHandler();
         break;
       case 400:

@@ -15,9 +15,9 @@ import { userStore } from '../util/userReducer';
 import { GetUserInfo } from '../util/api';
 
 interface UserInfo {
-  overview: string;
-	organization: string;
 	name: string;
+  overview: string;
+	institutionID: string;
 	email: string;
 }
 
@@ -29,13 +29,14 @@ const PersonalPage = () => {
 		const fetchData = async () => {
       try {
         const info = await GetUserInfo(uid);
-        console.log("info: ", info.data);
-        setUserinfo(info.data.data);
+        setUserinfo(info);
       } catch (error) { }
     };
-
-    fetchData();
+		fetchData();
 	}, [])
+	userStore.subscribe(() => {
+		setUserinfo(userStore.getState().userInfo)
+	})
 	
 	return (
 		<Card sx={{p: 2, mb: 2}}>
@@ -54,7 +55,7 @@ const PersonalPage = () => {
 							</Grid>
 							<Grid item xs={2}>
 								<Typography variant="h6" component="div">
-									{userinfo?.organization}
+									{/* {userinfo?.institutionID} */}
 								</Typography>
 							</Grid>
 							<Grid item xs={2} sx={{mt: 2}}>
