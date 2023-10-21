@@ -52,9 +52,19 @@ const LoginPage = () => {
 								password: Yup.string().max(255).required('Password is required')
 							})}
 							onSubmit={(values, { setErrors, setStatus, setSubmitting }) => {
-								Login(values.username, values.password, () => {
-									GetUid(() => navigate(routing.Home), () => navigate(routing.Login))
-								});
+								const login = async () => {
+									try {
+										const res = await Login(values.username, values.password)
+										if (res.result == "Success") {
+											navigate(routing.Home);
+											GetUid();
+										}
+										else navigate(routing.Login);
+									} catch (error) {}
+								}
+								
+								login();
+
 							}}
 						>
 							{({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
@@ -151,27 +161,3 @@ const LoginPage = () => {
 }
 
 export default LoginPage;
-
-
-{/* <Grid container direction="column" alignItems="center" justifyContent="center" spacing={2}>
-<Grid item xs={2}>
-	<Typography variant="h6" component="div">
-		ARCHERY
-	</Typography>
-</Grid>
-<Grid item xs={2}>
-	<TextField
-		required
-		label="Username"
-		value={values.username}
-		onChange={handleChange}
-		onBlur={handleBlur}
-	/>
-</Grid>
-<Grid item xs={2}>
-	<TextField
-		required
-		label="Password"
-		value={values.password}
-		onChange={handleChange}
-	/> */}

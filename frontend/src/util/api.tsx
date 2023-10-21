@@ -33,7 +33,7 @@ const Login = async (username: string, password: string, successHandler?: any) =
     console.log("Logging successfully");
 
     if (successHandler) successHandler();
-
+    return {result: "Success"}
   } catch (error: any) {
     if (error.response) {
       switch (error.response.status) {
@@ -42,6 +42,7 @@ const Login = async (username: string, password: string, successHandler?: any) =
           break;
       }
     }
+    return {result: "Fail"}
   }
 };
 
