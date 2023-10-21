@@ -59,6 +59,10 @@ func PostGroupInfo(context *gin.Context) {
 	if response.ErrorInternalErrorTest(context, int(newData.ID), "Post GroupInfo", err) {
 		return
 	}
+	/*auto create qualification*/
+	if !PostQualificationThroughGroup(context, int(newData.ID)) {
+		return
+	}
 	/*update competition.groupnum*/
 	database.AddOneCompetitionGroupNum(int(data.CompetitionId))
 	context.IndentedJSON(http.StatusOK, newData)
@@ -156,6 +160,10 @@ func DeleteGroupInfo(context *gin.Context) {
 	/*delete group*/
 	affected, err := database.DeleteGroupInfo(id)
 	if response.ErrorInternalErrorTest(context, id, "Delete GroupInfo", err) {
+		return
+	}
+	/*delete qualification*/
+	if !DeleteQualificationThroughGroup(context, id) {
 		return
 	}
 	response.AcceptDeleteSuccess(context, id, affected, "GroupInfo")

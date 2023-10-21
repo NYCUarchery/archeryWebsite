@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func IsGetOnlyQualification(context *gin.Context, id int) (bool, database.Qualification) {
+func IsGetQualification(context *gin.Context, id int) (bool, database.Qualification) {
 	if response.ErrorIdTest(context, id, database.GetQualificationIsExist(id), "Qualification") {
 		return false, database.Qualification{}
 	}
@@ -24,7 +24,7 @@ func IsGetOnlyQualification(context *gin.Context, id int) (bool, database.Qualif
 // group share id with qualification
 func GetQualificationByID(context *gin.Context) {
 	id := convert2int(context, "id")
-	isExist, data := IsGetOnlyQualification(context, id)
+	isExist, data := IsGetQualification(context, id)
 	if !isExist {
 		return
 	}
@@ -32,23 +32,16 @@ func GetQualificationByID(context *gin.Context) {
 }
 
 // when group is created, qualification is created
-// reflesh groupid in qualification
-// cannot delete qualification solely
-func PostQualification(context *gin.Context) {
+// share same id with group
+func PostQualificationThroughGroup(context *gin.Context, id int) bool {
 	var data database.Qualification
-	err := context.BindJSON(&data)
-	id := int(data.ID)
-	/*parse data check*/
-	if response.ErrorReceiveDataTest(context, id, "Qualification", err) {
-		return
-	}
 	/*insert data*/
-	data, err = database.PostQualification(data)
+	data, err := database.PostQualification(data)
 	if response.ErrorInternalErrorTest(context, id, "Post Qualification", err) {
-		return
+		return false
 	}
 	response.AcceptPrint(id, fmt.Sprint(data), "Qualification")
-	context.IndentedJSON(http.StatusOK, data)
+	return true
 }
 
 // cannot replace groupid
@@ -80,21 +73,16 @@ func UpdateQualificationByID(context *gin.Context) {
 
 // delete qualification when group is deleted
 // cannot delete qualification solely
-func DeleteQualificationByID(context *gin.Context) {
-	id := convert2int(context, "id")
-	/*id check*/
-	if response.ErrorIdTest(context, id, database.GetQualificationIsExist(id), "Qualification") {
-		return
-	}
+func DeleteQualificationThroughGroup(context *gin.Context, id int) bool {
 	/*delete data*/
 	isChanged, err := database.DeleteQualification(id)
 	if response.ErrorInternalErrorTest(context, id, "Delete Qualification", err) {
-		return
+		return false
 	} else if !isChanged {
 		response.AcceptNotChange(context, id, isChanged, "Qualification")
-		return
+		return false
 	}
 
 	response.AcceptPrint(id, fmt.Sprint(id), "Qualification")
-	context.IndentedJSON(http.StatusOK, id)
+	return true
 }
