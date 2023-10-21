@@ -9,17 +9,17 @@ import (
 
 func AcceptDeleteSuccess(context *gin.Context, id int, isChanged bool, message string) {
 	if isChanged {
-		errorMessage := fmt.Sprintf("Delete ID(%d): %s success\n", id, message)
+		errorMessage := fmt.Sprintf("Delete ID(%d): %s success", id, message)
 		context.IndentedJSON(http.StatusOK, gin.H{"message": errorMessage})
 	} else {
-		errorMessage := fmt.Sprintf("Delete ID(%d): %s fail\n", id, message)
+		errorMessage := fmt.Sprintf("Delete ID(%d): %s fail", id, message)
 		context.IndentedJSON(http.StatusOK, gin.H{"message": errorMessage})
 	}
 }
 
 func AcceptNotChange(context *gin.Context, id int, isChange bool, message string) bool {
 	if !isChange {
-		errorMessage := fmt.Sprintf("Delete ID(%d): %s ne change\n", id, message)
+		errorMessage := fmt.Sprintf("Delete ID(%d): %s no change ", id, message)
 		context.IndentedJSON(http.StatusNoContent, gin.H{"message": errorMessage})
 		return true
 	}
