@@ -1,46 +1,43 @@
 package response
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-func ErrorReceiveDataTest(context *gin.Context, err error, message string) bool {
-	id := context.Param("id")
+func ErrorReceiveDataTest(context *gin.Context, id int, message string, err error) bool {
 	if err != nil {
-		context.IndentedJSON(http.StatusBadRequest,
-			gin.H{"error": "bad request data \nID(" + id + "):" + message + " \n" + err.Error()})
+		errorMessage := fmt.Sprintf("bad request data\nID(%d): %s\n%s", id, message, err.Error())
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": errorMessage})
 		return true
 	}
 	return false
 }
 
-func ErrorReceiveDataNilTest(context *gin.Context, data interface{}, message string) bool {
-	id := context.Param("id")
+func ErrorReceiveDataNilTest(context *gin.Context, id int, data interface{}, message string) bool {
 	if data == nil {
-		context.IndentedJSON(http.StatusBadRequest,
-			gin.H{"error": "bad request data is nil\n" + "ID(" + id + "):" + message + " \n"})
+		errorMessage := fmt.Sprintf("bad request data is nil\nID(%d): %s\n", id, message)
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": errorMessage})
 		return true
 	}
 	return false
 }
 
-func ErrorIdTest(context *gin.Context, isExist bool, message string) bool {
-	id := context.Param("id")
+func ErrorIdTest(context *gin.Context, id int, isExist bool, message string) bool {
 	if !isExist {
-		context.IndentedJSON(http.StatusBadRequest,
-			gin.H{"error": "invalid " + message + " ID(" + id + ")"})
+		errorMessage := fmt.Sprintf("invalid %s ID(%d)", message, id)
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": errorMessage})
 		return true
 	}
 	return false
 }
 
-func ErrorInternalErrorTest(context *gin.Context, err error, message string) bool {
-	id := context.Param("id")
+func ErrorInternalErrorTest(context *gin.Context, id int, message string, err error) bool {
 	if err != nil {
-		context.IndentedJSON(http.StatusInternalServerError,
-			gin.H{"error": message + " need fix ID(" + id + ") \n" + err.Error()})
+		errorMessage := fmt.Sprintf("%s need fix ID(%d)\n%s", message, id, err.Error())
+		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": errorMessage})
 		return true
 	}
 	return false

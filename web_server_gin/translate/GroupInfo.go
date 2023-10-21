@@ -19,11 +19,11 @@ type groupIdsForReorder struct {
 //		"group_ids" : [1, 2, 3, 4, 5, 6, 7, 8]
 //	}
 func IsGetGroupInfo(context *gin.Context, id int) (bool, database.Group) {
-	if response.ErrorIdTest(context, database.GetGroupIsExist(id), "GroupInfo") {
+	if response.ErrorIdTest(context, id, database.GetGroupIsExist(id), "GroupInfo") {
 		return false, database.Group{}
 	}
 	data, err := database.GetGroupInfoById(id)
-	if response.ErrorInternalErrorTest(context, err, "Get GroupInfo") {
+	if response.ErrorInternalErrorTest(context, id, "Get GroupInfo", err) {
 		return false, data
 	}
 	response.AcceptPrint(id, fmt.Sprint(data), "GroupInfo")
@@ -43,20 +43,20 @@ func PostGroupInfo(context *gin.Context) {
 	var data database.Group
 	err := context.BindJSON(&data)
 	/*parse data check*/
-	if response.ErrorReceiveDataTest(context, err, "GroupInfo") {
+	if response.ErrorReceiveDataTest(context, 0, "GroupInfo", err) {
 		return
-	} else if response.ErrorReceiveDataNilTest(context, data, "GroupInfo") {
+	} else if response.ErrorReceiveDataNilTest(context, 0, data, "GroupInfo") {
 		return
 	}
 	/*competition id check*/
-	if response.ErrorIdTest(context, database.GetCompetitionIsExist(int(data.CompetitionId)), "Competition(in groupinfo)") {
+	if response.ErrorIdTest(context, int(data.CompetitionId), database.GetCompetitionIsExist(int(data.CompetitionId)), "Competition(in groupinfo)") {
 		return
 	}
 	/*auto write GroupIndex*/
 	data.GroupIndex = database.GetCompetitionGroupNum(int(data.CompetitionId))
 
 	newData, err := database.CreateGroupInfo(data)
-	if response.ErrorInternalErrorTest(context, err, "Post GroupInfo") {
+	if response.ErrorInternalErrorTest(context, int(newData.ID), "Post GroupInfo", err) {
 		return
 	}
 	/*update competition.groupnum*/
@@ -71,9 +71,9 @@ func UpdateGroupInfo(context *gin.Context) {
 	data.ID = uint(id)
 	err := context.BindJSON(&data)
 	/*parse data check*/
-	if response.ErrorReceiveDataTest(context, err, "GroupInfo") {
+	if response.ErrorReceiveDataTest(context, id, "GroupInfo", err) {
 		return
-	} else if response.ErrorReceiveDataNilTest(context, data, "GroupInfo") {
+	} else if response.ErrorReceiveDataNilTest(context, id, data, "GroupInfo") {
 		return
 	}
 
@@ -86,9 +86,9 @@ func UpdateGroupInfo(context *gin.Context) {
 
 	/*update and check change*/
 	isChanged, err := database.UpdateGroupInfo(id, data)
-	if response.ErrorInternalErrorTest(context, err, "Update GroupInfo") {
+	if response.ErrorInternalErrorTest(context, id, "Update GroupInfo", err) {
 		return
-	} else if response.AcceptNotChange(context, isChanged, "Update GroupInfo") {
+	} else if response.AcceptNotChange(context, id, isChanged, "Update GroupInfo") {
 		return
 	}
 	/*return new updated data*/
@@ -105,16 +105,16 @@ func ReorderGroupInfo(context *gin.Context) {
 	groupIds := idArray.GroupIds
 	competitionId := idArray.CompetitionId
 	/*parse data check*/
-	if response.ErrorReceiveDataTest(context, err, "groupIdsForReorder of GroupInfo") {
+	if response.ErrorReceiveDataTest(context, 0, "groupIdsForReorder of GroupInfo", err) {
 		return
-	} else if response.ErrorReceiveDataNilTest(context, groupIds, "GroupIds of groupIdsForReorder") {
+	} else if response.ErrorReceiveDataNilTest(context, 0, groupIds, "GroupIds of groupIdsForReorder") {
 		return
-	} else if response.ErrorIdTest(context, database.GetCompetitionIsExist(competitionId), "CompetitionId of groupIdsForReorder") {
+	} else if response.ErrorIdTest(context, competitionId, database.GetCompetitionIsExist(competitionId), "CompetitionId of groupIdsForReorder") {
 		return
 	}
 	/*check competition group_num*/
 	gamedata, err := database.GetOnlyCompetition(competitionId)
-	if response.ErrorInternalErrorTest(context, err, "Get Competition in Reorder GroupInfo") {
+	if response.ErrorInternalErrorTest(context, competitionId, "Get Competition in Reorder GroupInfo", err) {
 		return
 	} else if gamedata.ID == 0 || gamedata.Groups_num != len(groupIds) {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Groups_num 與 GroupIds 長度不符, Group_num = " + fmt.Sprint(gamedata.Groups_num) + ", GroupIds = " + fmt.Sprint(groupIds)})
@@ -123,11 +123,11 @@ func ReorderGroupInfo(context *gin.Context) {
 
 	/*update group_index*/
 	for index, id := range groupIds {
-		if response.ErrorIdTest(context, database.GetGroupIsExist(id), "GroupInfo in Reorder") {
+		if response.ErrorIdTest(context, id, database.GetGroupIsExist(id), "GroupInfo in Reorder") {
 			return
 		}
 		_, err := database.UpdateGroupInfoIndex(id, index)
-		if response.ErrorInternalErrorTest(context, err, "Update GroupInfo Index in Reorder") {
+		if response.ErrorInternalErrorTest(context, id, "Update GroupInfo Index in Reorder", err) {
 			return
 		}
 	}
@@ -155,8 +155,8 @@ func DeleteGroupInfo(context *gin.Context) {
 	database.MinusOneCompetitionGroupNum(competitionId)
 	/*delete group*/
 	affected, err := database.DeleteGroupInfo(id)
-	if response.ErrorInternalErrorTest(context, err, "Delete GroupInfo") {
+	if response.ErrorInternalErrorTest(context, id, "Delete GroupInfo", err) {
 		return
 	}
-	response.AcceptDeleteSuccess(context, affected, "GroupInfo")
+	response.AcceptDeleteSuccess(context, id, affected, "GroupInfo")
 }

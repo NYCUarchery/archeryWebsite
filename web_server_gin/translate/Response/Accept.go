@@ -7,19 +7,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func AcceptDeleteSuccess(context *gin.Context, isChanged bool, message string) {
-	id := context.Param("id")
+func AcceptDeleteSuccess(context *gin.Context, id int, isChanged bool, message string) {
 	if isChanged {
-		context.IndentedJSON(http.StatusOK, gin.H{"message": "Delete ID(" + id + "): " + message + " success"})
+		errorMessage := fmt.Sprintf("Delete ID(%d): %s success\n", id, message)
+		context.IndentedJSON(http.StatusOK, gin.H{"message": errorMessage})
 	} else {
-		context.IndentedJSON(http.StatusOK, gin.H{"message": "Delete ID(" + id + "): " + message + " fail"})
+		errorMessage := fmt.Sprintf("Delete ID(%d): %s fail\n", id, message)
+		context.IndentedJSON(http.StatusOK, gin.H{"message": errorMessage})
 	}
 }
 
-func AcceptNotChange(context *gin.Context, isChange bool, message string) bool {
-	id := context.Param("id")
+func AcceptNotChange(context *gin.Context, id int, isChange bool, message string) bool {
 	if !isChange {
-		context.IndentedJSON(http.StatusNoContent, gin.H{"message": "Delete ID(" + id + "): " + message + " no change"})
+		errorMessage := fmt.Sprintf("Delete ID(%d): %s ne change\n", id, message)
+		context.IndentedJSON(http.StatusNoContent, gin.H{"message": errorMessage})
 		return true
 	}
 	return false
