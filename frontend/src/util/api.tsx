@@ -2,7 +2,7 @@ import host from "./config"
 import axios from 'axios'
 import formatISO from 'date-fns/formatISO';
 
-import { setUid, resetUid, userStore, setOverview, setInstitutionID, setEmail, resetDirty, setDirty, setName } from './userReducer';
+import { setUid, resetUid, userStore, setOverview, setInstitutionID, setEmail, resetDirty, setDirty, setName, resetAllInfo } from './userReducer';
 
 const api = {
 	user: {
@@ -51,6 +51,7 @@ const Logout = async (successHandler?: any, failHandler?: any) => {
     });
 
     userStore.dispatch(resetUid());
+    userStore.dispatch(resetAllInfo());
 
     if (response?.data?.result === "success" && successHandler) {
       successHandler();

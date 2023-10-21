@@ -8,18 +8,22 @@ import { useNavigate } from 'react-router-dom';
 import avatar from "../assets/images/avatar.jpg";
 import { Formik } from 'formik';
 import routing from '../util/routing';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import OneLineField from '../components/formFields/OneLineField';
 import MultiLineField from '../components/formFields/MultiLineField';
 import SecretField from '../components/formFields/SecretField';
 import { userStore } from '../util/userReducer';
 import { ModifyUserInfo } from '../util/api';
 
+
 const ChangeInfo = () => {
 	const navigate = useNavigate();
 	const [showPassword, setShowPassword] = useState(false);
 	const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 	const [showOriPassword, setShowOriPassword] = useState(false);
+
+	const userinfo = userStore.getState().userInfo;
+	
 	const handleClickShowPassword = () => {
 		setShowPassword(!showPassword);
 	};
@@ -48,13 +52,13 @@ const ChangeInfo = () => {
 			<CardContent>
 				<Formik
 					initialValues={{
-						username: "",
+						username: userinfo.name,
 						overview: "你以為你躲起來就找不到你了嗎，沒有用的。你是那樣拉風的男人，不管在什麼地方，就好像漆黑中的螢火蟲一樣，是那樣的鮮明，那樣的出眾。你那憂鬱的眼神，唏噓的鬍渣子，隨意叼著的牙籤，還有那杯 dry martine ，都深深的迷住了我。張嘉航,你真是電競界的罪人,你害怕你強大的天賦會蓋過其他人,選擇在接觸遊戲十年後再出道,而放棄與你的宿敵 FAKER 競爭神的寶座,今年該是你奪回神寶座的時候了。",
 						oriPassword: "",
 						password: "",
 						passwordConfirm: "",
-						email: "",
-						institutionID: "1",
+						email: userinfo.email,
+						institutionID: userinfo.institutionID,
 					}}
 					onSubmit={async (values) => {
 						try {

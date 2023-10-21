@@ -20,7 +20,6 @@ const resetDirty = createAction('resetDirty')
 
 const resetAllInfo = createAction('resetAllInfo')
 
-
 const userReducer = createReducer(
 	{
 		uid: -1,
