@@ -7,7 +7,7 @@ const initialState = {
     "Participants",
     "Groups",
     "Game Structure",
-    "Process",
+    "Progress",
     "Score Edition",
   ],
   adminBoardTabsIsHidden: true,
