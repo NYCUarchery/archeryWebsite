@@ -15,6 +15,7 @@ import { gameStructureBoardReducer } from "../features/AdministrationBoard/GameS
 import { gameStructureGroupMenuReducer } from "../features/AdministrationBoard/GameStructureBoard/GroupsMenu/groupsMenuSlice";
 import { qualificationStructureGroupBoardReducer } from "../features/AdministrationBoard/GameStructureBoard/QualificationBoard/GroupBoard/groupBoardSlice";
 import { adminPhaseSelectorReducer } from "../features/AdministrationBoard/PhaseSelector/phaseSelectorSlice";
+import { processEndSwitchReducer } from "../features/AdministrationBoard/ProcessBoard/EndSwitch/endSwitchSlice";
 
 const store = configureStore({
   reducer: {
@@ -35,6 +36,7 @@ const store = configureStore({
     gameStructureGroupMenu: gameStructureGroupMenuReducer,
     qualificationStructureGroupBoard: qualificationStructureGroupBoardReducer,
     adminPhaseSelector: adminPhaseSelectorReducer,
+    processEndSwitch: processEndSwitchReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(ReduxLogger),
