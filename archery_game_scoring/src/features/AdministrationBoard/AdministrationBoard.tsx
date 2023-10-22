@@ -3,7 +3,7 @@ import ScoreEditionBoard from "./ScoreEditionBoard/ScoreEditionBoard";
 import ParticipantsBoard from "./ParticipantsBoard/ParticitpantsBoard";
 import GroupsBoard from "./GroupsBoard/GroupsBoard";
 import GameStructureBoard from "./GameStructureBoard/GameStructureBoard";
-import PhasesBoard from "./PhasesBoard/PhasesBoard";
+import ProcessBoard from "./ProcessBoard/ProcessBoard";
 import { useSelector } from "react-redux";
 
 export default function AdministrationBoard() {
@@ -34,8 +34,8 @@ function specifyBoard(boardName: string) {
     case "Game Structure":
       board = <GameStructureBoard></GameStructureBoard>;
       break;
-    case "Phases":
-      board = <PhasesBoard></PhasesBoard>;
+    case "Process":
+      board = <ProcessBoard></ProcessBoard>;
       break;
     case "Score Edition":
       board = <ScoreEditionBoard></ScoreEditionBoard>;
