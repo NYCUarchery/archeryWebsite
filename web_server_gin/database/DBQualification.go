@@ -4,6 +4,7 @@ type Qualification struct {
 	ID           uint `json:"id"        gorm:"primary_key"`
 	PlayerNum    int  `json:"player_num"`
 	AdvancingNum int  `json:"advancing_num"`
+	CurrentRound int  `json:"current_round"`
 }
 
 func InitQualification() {
@@ -28,7 +29,7 @@ func PostQualification(data Qualification) (Qualification, error) {
 }
 
 func UpdateQualification(id int, data Qualification) (bool, error) {
-	result := DB.Model(&Qualification{}).Updates(&data)
+	result := DB.Model(&Qualification{}).Where("id = ?", id).Updates(&data)
 	return true, result.Error
 }
 

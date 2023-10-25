@@ -70,7 +70,7 @@ func PostQualificationThroughGroup(context *gin.Context, id int) bool {
 func UpdateQualificationByID(context *gin.Context) {
 	var data database.Qualification
 	err := context.BindJSON(&data)
-	id := int(data.ID)
+	id := convert2int(context, "id")
 	/*parse data check*/
 	if response.ErrorReceiveDataTest(context, id, "Qualification", err) {
 		return
