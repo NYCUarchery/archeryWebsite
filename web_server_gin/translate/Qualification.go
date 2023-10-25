@@ -21,6 +21,16 @@ func IsGetQualification(context *gin.Context, id int) (bool, database.Qualificat
 	return true, data
 }
 
+// Get One Qualification By ID godoc
+//
+//	@Summary		Show one Qualification
+//	@Description	Get one Qualification by id
+//	@Tags			Qualification
+//	@Produce		json
+//	@Param			id	path	int	true	"Qualification ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/data/qualification/{id} [get]
 func GetQualificationByID(context *gin.Context) {
 	id := convert2int(context, "id")
 	isExist, data := IsGetQualification(context, id)
@@ -43,7 +53,20 @@ func PostQualificationThroughGroup(context *gin.Context, id int) bool {
 	return true
 }
 
-// cannot replace groupid
+// Update Qualification godoc
+//
+//	@Summary		update one Qualification
+//	@Description	Put whole new Qualification and overwrite with the id, but cannot replace groupid
+//	@Tags			Qualification
+//	@Accept			json
+//	@Produce		json
+//	@Param			id			path	string	true	"Qualification ID"
+//	@Param			Qualification	body	string	true	"Qualification"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Failure		404			string	string
+//	@Failure		500			string	string
+//	@Router			/data/qualification/whole/{id} [put]
 func UpdateQualificationByID(context *gin.Context) {
 	var data database.Qualification
 	err := context.BindJSON(&data)

@@ -18,6 +18,7 @@ type groupIdsForReorder struct {
 //		"competition_id" : 000,
 //		"group_ids" : [1, 2, 3, 4, 5, 6, 7, 8]
 //	}
+
 func IsGetGroupInfo(context *gin.Context, id int) (bool, database.Group) {
 	if response.ErrorIdTest(context, id, database.GetGroupIsExist(id), "GroupInfo") {
 		return false, database.Group{}
@@ -52,7 +53,7 @@ func GetGroupInfoByID(context *gin.Context) {
 // Post GroupInfo godoc
 //
 //	@Summary		Create one GroupInfo
-//	@Description	Post one new GroupInfo data with new id, and return the new GroupInfo data
+//	@Description	Post one new GroupInfo data with new id, create qualification with same id, and return the new GroupInfo data
 //	@Tags			GroupInfo
 //	@Accept			json
 //	@Produce		json
@@ -194,7 +195,7 @@ func ReorderGroupInfo(context *gin.Context) {
 // Delete GroupInfo by id godoc
 //
 //	@Summary		delete one GroupInfo
-//	@Description	delete one GroupInfo by id
+//	@Description	delete one GroupInfo by id, and delete qualification with same id
 //	@Tags			GroupInfo
 //	@Accept			json
 //	@Produce		json

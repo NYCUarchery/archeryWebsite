@@ -154,8 +154,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: Post one new GroupInfo data with new id, and return the new GroupInfo
-        data
+      description: Post one new GroupInfo data with new id, create qualification with
+        same id, and return the new GroupInfo data
       parameters:
       - description: LaneData
         in: body
@@ -181,7 +181,8 @@ paths:
     delete:
       consumes:
       - application/json
-      description: delete one GroupInfo by id
+      description: delete one GroupInfo by id, and delete qualification with same
+        id
       parameters:
       - description: GroupInfo ID
         in: path
@@ -520,6 +521,69 @@ paths:
       summary: update one LaneInfo
       tags:
       - LaneInfo
+  /data/qualification/{id}:
+    get:
+      description: Get one Qualification by id
+      parameters:
+      - description: Qualification ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Qualification
+      tags:
+      - Qualification
+  /data/qualification/whole/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Put whole new Qualification and overwrite with the id, but cannot
+        replace groupid
+      parameters:
+      - description: Qualification ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Qualification
+        in: body
+        name: Qualification
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: update one Qualification
+      tags:
+      - Qualification
   /swagger/doc.json:
     get:
       description: get Api docs in json
