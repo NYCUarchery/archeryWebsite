@@ -48,7 +48,7 @@ type AllScore struct { // DB: all_score
 	Score      int  `json:"score"`
 }
 
-func InitLaneInfo() {
+func InitOldLaneInfo() {
 	DB.AutoMigrate(&LaneData{})
 	DB.AutoMigrate(&LaneUser{})
 
@@ -77,37 +77,37 @@ func preloadLane(ID int, data *LaneData) *LaneData {
 	return data
 }
 
-func GetLaneInfoByID(ID int) LaneData {
+func GetOldLaneInfoByID(ID int) LaneData {
 	var data LaneData
 	preloadLane(ID, &data)
 	return data
 }
 
-func PostLaneInfo(data LaneData) LaneData {
+func PostOldLaneInfo(data LaneData) LaneData {
 	DB.Model(&LaneData{}).Create(&data)
 	// function read the position of user_id to write user_index in data
 	return data
 }
 
-func UpdateLaneInfo(ID int, data LaneData) LaneData {
+func UpdateOldLaneInfo(ID int, data LaneData) LaneData {
 	DB.Model(&LaneData{}).Where("id =?", ID).Updates(&data)
 	return data
 }
 
-func UpdataLaneScore(ID int, stageindex int, userindex int, arrowindex int, score int) bool {
+func UpdataOldLaneScore(ID int, stageindex int, userindex int, arrowindex int, score int) bool {
 	sql := "UPDATE `Demo`.all_scores INNER JOIN `Demo`.end_scores ON `Demo`.all_scores.end_score_id = `Demo`.end_scores.id INNER JOIN `Demo`.lane_stages ON `Demo`.end_scores.lane_stage_id = `Demo`.lane_stages.id INNER JOIN `Demo`.lane_data ON `Demo`.lane_stages.lane_data_id = `Demo`.lane_data.id SET `Demo`.all_scores.score = ? WHERE `Demo`.lane_data.id = ? AND `Demo`.lane_stages.stage_index = ? AND `Demo`.end_scores.user_index = ? AND `Demo`.all_scores.arrow_index = ? ;"
 	result := DB.Exec(sql, score, ID, stageindex, userindex, arrowindex)
 
 	return result.Error == nil
 }
 
-func UpdataLaneConfirm(ID int, stageindex int, userindex int, confirmation bool) bool {
+func UpdataOldLaneConfirm(ID int, stageindex int, userindex int, confirmation bool) bool {
 	sql := "UPDATE `Demo`.confirmations INNER JOIN `Demo`.lane_stages ON `Demo`.confirmations.lane_stage_id = `Demo`.lane_stages.id INNER JOIN `Demo`.lane_data ON `Demo`.lane_stages.lane_data_id = `Demo`.lane_data.id SET `Demo`.confirmations.confirm = ? WHERE `Demo`.lane_data.id = ? AND `Demo`.lane_stages.stage_index = ? AND `Demo`.confirmations.user_index = ?;"
 	result := DB.Exec(sql, confirmation, ID, stageindex, userindex)
 	return result.Error == nil
 }
 
-func DeleteLaneInfoByID(ID int) bool {
+func DeleteOldLaneInfoByID(ID int) bool {
 	result := DB.Delete(&LaneData{}, "id =?", ID)
 	return result.RowsAffected != 0
 }

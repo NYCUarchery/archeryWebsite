@@ -303,11 +303,11 @@ paths:
       summary: update one GroupInfo
       tags:
       - GroupInfo
-  /data/laneinfo:
+  /data/oldlaneinfo:
     post:
       consumes:
       - application/json
-      description: Post one new LaneInfo data with new id, and return the new LaneInfo
+      description: Post one new OldLaneInfo data with new id, and return the new OldLaneInfo
         data
       parameters:
       - description: LaneData
@@ -327,16 +327,16 @@ paths:
           description: Bad Request
           schema:
             type: string
-      summary: Create one LaneInfo
+      summary: Create one OldLaneInfo
       tags:
-      - LaneInfo
-  /data/laneinfo/{id}:
+      - OldLaneInfo
+  /data/oldlaneinfo/{id}:
     delete:
       consumes:
       - application/json
-      description: delete one LaneInfo by id
+      description: delete one OldLaneInfo by id
       parameters:
-      - description: LaneInfo ID
+      - description: OldLaneInfo ID
         in: path
         name: id
         required: true
@@ -356,13 +356,13 @@ paths:
           description: Not Found
           schema:
             type: string
-      summary: delete one LaneInfo
+      summary: delete one OldLaneInfo
       tags:
-      - LaneInfo
+      - OldLaneInfo
     get:
-      description: Get one LaneInfo by id
+      description: Get one OldLaneInfo by id
       parameters:
-      - description: LaneInfo ID
+      - description: OldLaneInfo ID
         in: path
         name: id
         required: true
@@ -378,26 +378,26 @@ paths:
           description: Bad Request
           schema:
             type: string
-      summary: Show one LaneInfo
+      summary: Show one OldLaneInfo
       tags:
-      - LaneInfo
-  /data/laneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm}:
+      - OldLaneInfo
+  /data/oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm}:
     put:
       consumes:
       - application/json
-      description: Put one LaneInfo confirm by index and id
+      description: Put one OldLaneInfo confirm by index and id
       parameters:
-      - description: LaneInfo ID
+      - description: OldLaneInfo ID
         in: path
         name: id
         required: true
         type: string
-      - description: LaneInfo stage index
+      - description: OldLaneInfo stage index
         in: path
         name: stageindex
         required: true
         type: string
-      - description: LaneInfo user index of the stage
+      - description: OldLaneInfo user index of the stage
         in: path
         name: userindex
         required: true
@@ -426,31 +426,31 @@ paths:
           description: Internal Server Error
           schema:
             type: string
-      summary: update one LaneInfo confirmation
+      summary: update one OldLaneInfo confirmation
       tags:
-      - LaneInfo
-  /data/laneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score}:
+      - OldLaneInfo
+  /data/oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score}:
     put:
       consumes:
       - application/json
-      description: Put one LaneInfo score by index and id
+      description: Put one OldLaneInfo score by index and id
       parameters:
-      - description: LaneInfo ID
+      - description: OldLaneInfo ID
         in: path
         name: id
         required: true
         type: string
-      - description: LaneInfo stage index
+      - description: OldLaneInfo stage index
         in: path
         name: stageindex
         required: true
         type: string
-      - description: LaneInfo user index of the stage
+      - description: OldLaneInfo user index of the stage
         in: path
         name: userindex
         required: true
         type: string
-      - description: LaneInfo arrow index of the user
+      - description: OldLaneInfo arrow index of the user
         in: path
         name: arrowindex
         required: true
@@ -479,16 +479,16 @@ paths:
           description: Internal Server Error
           schema:
             type: string
-      summary: update one LaneInfo Score
+      summary: update one OldLaneInfo Score
       tags:
-      - LaneInfo
-  /data/laneinfo/whole/{id}:
+      - OldLaneInfo
+  /data/oldlaneinfo/whole/{id}:
     put:
       consumes:
       - application/json
-      description: Put whole new LaneInfo and overwrite with the id
+      description: Put whole new OldLaneInfo and overwrite with the id
       parameters:
-      - description: LaneInfo ID
+      - description: OldLaneInfo ID
         in: path
         name: id
         required: true
@@ -518,9 +518,9 @@ paths:
           description: Internal Server Error
           schema:
             type: string
-      summary: update one LaneInfo
+      summary: update one OldLaneInfo
       tags:
-      - LaneInfo
+      - OldLaneInfo
   /data/qualification/{id}:
     get:
       description: Get one Qualification by id

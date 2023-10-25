@@ -65,7 +65,7 @@ func getDSN() {
 
 func DatabaseInitial() {
 	connectDB()
-	InitLaneInfo()
+	InitOldLaneInfo()
 	InitCompetition()
 	InitGroupInfo()
 	InitQualification()
