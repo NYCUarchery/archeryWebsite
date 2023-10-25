@@ -33,6 +33,16 @@ func IsGetCompetitionWGroup(context *gin.Context, id int) (bool, database.Compet
 	return true, data
 }
 
+// Get Only Competition By ID godoc
+//
+//	@Summary		Show one Competition without GroupInfo
+//	@Description	Get one Competition by id without GroupInfo
+//	@Tags			Competition
+//	@Produce		json
+//	@Param			id	path	int	true	"Competition ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/data/competition/{id} [get]
 func GetOnlyCompetitionByID(context *gin.Context) {
 	id := convert2int(context, "id")
 	isExist, data := IsGetOnlyCompetition(context, id)
@@ -42,6 +52,16 @@ func GetOnlyCompetitionByID(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, data)
 }
 
+// Get One Competition By ID with Groups godoc
+//
+//	@Summary		Show one Competition with GroupInfos
+//	@Description	Get one Competition by id with GroupInfos
+//	@Tags			Competition
+//	@Produce		json
+//	@Param			id	path	int	true	"Competition ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/data/competition/groups/{id} [get]
 func GetCompetitionWGroupsByID(context *gin.Context) {
 	id := convert2int(context, "id")
 	isExist, data := IsGetCompetitionWGroup(context, id)
@@ -51,6 +71,17 @@ func GetCompetitionWGroupsByID(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, data)
 }
 
+// Post Competition godoc
+//
+//	@Summary		Create one Competition
+//	@Description	Post one new Competition data with new id, and return the new Competition data
+//	@Tags			Competition
+//	@Accept			json
+//	@Produce		json
+//	@Param			Competition	body	string	true	"Competition"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Router			/data/competition [post]
 func PostCompetition(context *gin.Context) {
 	var data database.Competition
 	err := context.BindJSON(&data)
@@ -71,6 +102,20 @@ func PostCompetition(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, newData)
 }
 
+// Update Competition godoc
+//
+//	@Summary		update one Competition without GroupInfo
+//	@Description	Put whole new Competition and overwrite with the id but without GroupInfo
+//	@Tags			Competition
+//	@Accept			json
+//	@Produce		json
+//	@Param			id			path	string	true	"Competition ID"
+//	@Param			Competition	body	string	true	"Competition"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Failure		404			string	string
+//	@Failure		500			string	string
+//	@Router			/data/competition/whole/{id} [put]
 func UpdateCompetition(context *gin.Context) {
 	var data database.Competition
 	id := convert2int(context, "id")
@@ -101,6 +146,18 @@ func UpdateCompetition(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, newData)
 }
 
+// Delete Competition by id godoc
+//
+//	@Summary		delete one Competition
+//	@Description	delete one Competition by id
+//	@Tags			Competition
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path	string	true	"Competition ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Failure		404	string	string
+//	@Router			/data/competition/{id} [delete]
 func DeleteCompetition(context *gin.Context) {
 	id := convert2int(context, "id")
 	/*check data exist*/

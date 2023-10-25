@@ -21,7 +21,6 @@ func IsGetQualification(context *gin.Context, id int) (bool, database.Qualificat
 	return true, data
 }
 
-// group share id with qualification
 func GetQualificationByID(context *gin.Context) {
 	id := convert2int(context, "id")
 	isExist, data := IsGetQualification(context, id)

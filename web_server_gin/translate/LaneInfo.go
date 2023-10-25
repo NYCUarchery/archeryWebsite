@@ -31,6 +31,16 @@ func loadLaneInfo(data *database.LaneData) {
 	}
 }
 
+// Get LaneInfo By ID godoc
+//
+//	@Summary		Show one LaneInfo
+//	@Description	Get one LaneInfo by id
+//	@Tags			LaneInfo
+//	@Produce		json
+//	@Param			id	path	int	true	"LaneInfo ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/data/laneinfo/{id} [get]
 func GetLaneInfoByID(context *gin.Context) {
 	data := database.GetLaneInfoByID(convert2int(context, "id"))
 	if data.ID == 0 {
@@ -42,6 +52,17 @@ func GetLaneInfoByID(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, data)
 }
 
+// Post LaneInfo godoc
+//
+//	@Summary		Create one LaneInfo
+//	@Description	Post one new LaneInfo data with new id, and return the new LaneInfo data
+//	@Tags			LaneInfo
+//	@Accept			json
+//	@Produce		json
+//	@Param			LaneData	body	string	true	"LaneData"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Router			/data/laneinfo [post]
 func PostLaneInfo(context *gin.Context) {
 	data := database.LaneData{}
 	err := context.BindJSON(&data)
@@ -54,6 +75,20 @@ func PostLaneInfo(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, newData)
 }
 
+// Update LaneInfo godoc
+//
+//	@Summary		update one LaneInfo
+//	@Description	Put whole new LaneInfo and overwrite with the id
+//	@Tags			LaneInfo
+//	@Accept			json
+//	@Produce		json
+//	@Param			id			path	string	true	"LaneInfo ID"
+//	@Param			LaneData	body	string	true	"LaneData"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Failure		404			string	string
+//	@Failure		500			string	string
+//	@Router			/data/laneinfo/whole/{id} [put]
 func UpdateLaneInfo(context *gin.Context) {
 	data := database.LaneData{}
 	err := context.BindJSON(&data)
@@ -70,6 +105,23 @@ func UpdateLaneInfo(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, newdata)
 }
 
+// Update LaneInfo Score godoc
+//
+//	@Summary		update one LaneInfo Score
+//	@Description	Put one LaneInfo score by index and id
+//	@Tags			LaneInfo
+//	@Accept			json
+//	@Produce		json
+//	@Param			id			path	string	true	"LaneInfo ID"
+//	@Param			stageindex	path	string	true	"LaneInfo stage index"
+//	@Param			userindex	path	string	true	"LaneInfo user index of the stage"
+//	@Param			arrowindex	path	string	true	"LaneInfo arrow index of the user"
+//	@Param			score		path	string	true	"score of the arrow"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Failure		404			string	string
+//	@Failure		500			string	string
+//	@Router			/data/laneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score} [put]
 func UpdataLaneScore(context *gin.Context) {
 	id := convert2int(context, "id")
 	stageindex := convert2int(context, "stageindex")
@@ -91,6 +143,22 @@ func UpdataLaneScore(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, newdata)
 }
 
+// Update LaneInfo Confirmation godoc
+//
+//	@Summary		update one LaneInfo confirmation
+//	@Description	Put one LaneInfo confirm by index and id
+//	@Tags			LaneInfo
+//	@Accept			json
+//	@Produce		json
+//	@Param			id			path	string	true	"LaneInfo ID"
+//	@Param			stageindex	path	string	true	"LaneInfo stage index"
+//	@Param			userindex	path	string	true	"LaneInfo user index of the stage"
+//	@Param			confirm		path	string	true	"confirmation of the user"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Failure		404			string	string
+//	@Failure		500			string	string
+//	@Router			/data/laneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm} [put]
 func UpdataLaneConfirm(context *gin.Context) {
 	id := convert2int(context, "id")
 	stageindex := convert2int(context, "stageindex")
@@ -110,6 +178,18 @@ func UpdataLaneConfirm(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, newdata)
 }
 
+// Delete LaneInfo by id godoc
+//
+//	@Summary		delete one LaneInfo
+//	@Description	delete one LaneInfo by id
+//	@Tags			LaneInfo
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path	string	true	"LaneInfo ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Failure		404	string	string
+//	@Router			/data/laneinfo/{id} [delete]
 func DeleteLaneInfoByID(context *gin.Context) {
 	if !database.DeleteLaneInfoByID(convert2int(context, "id")) {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID 或 格式錯誤 "})

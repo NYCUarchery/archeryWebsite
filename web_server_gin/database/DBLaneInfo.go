@@ -77,75 +77,23 @@ func preloadLane(ID int, data *LaneData) *LaneData {
 	return data
 }
 
-// Get LaneInfo By ID godoc
-//
-//	@Summary		Show one LaneInfo
-//	@Description	Get one LaneInfo by id
-//	@Tags			LaneInfo
-//	@Produce		json
-//	@Param			id	path	int	true	"LaneInfo ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
-//	@Router			/data/laneinfo/{id} [get]
 func GetLaneInfoByID(ID int) LaneData {
 	var data LaneData
 	preloadLane(ID, &data)
 	return data
 }
 
-// Post LaneInfo godoc
-//
-//	@Summary		Create one LaneInfo
-//	@Description	Post one new LaneInfo data with new id, and return the new LaneInfo data
-//	@Tags			LaneInfo
-//	@Accept			json
-//	@Produce		json
-//	@Param			LaneData	body	string	true	"LaneData"
-//	@Success		200			string	string
-//	@Failure		400			string	string
-//	@Router			/data/laneinfo [post]
 func PostLaneInfo(data LaneData) LaneData {
 	DB.Model(&LaneData{}).Create(&data)
 	// function read the position of user_id to write user_index in data
 	return data
 }
 
-// Update LaneInfo godoc
-//
-//	@Summary		update one LaneInfo
-//	@Description	Put whole new LaneInfo and overwrite with the id
-//	@Tags			LaneInfo
-//	@Accept			json
-//	@Produce		json
-//	@Param			id			path	string	true	"LaneInfo ID"
-//	@Param			LaneData	body	string	true	"LaneData"
-//	@Success		200			string	string
-//	@Failure		400			string	string
-//	@Failure		404			string	string
-//	@Failure		500			string	string
-//	@Router			/data/laneinfo/whole/{id} [put]
 func UpdateLaneInfo(ID int, data LaneData) LaneData {
 	DB.Model(&LaneData{}).Where("id =?", ID).Updates(&data)
 	return data
 }
 
-// Update LaneInfo Score godoc
-//
-//	@Summary		update one LaneInfo Score
-//	@Description	Put one LaneInfo score by index and id
-//	@Tags			LaneInfo
-//	@Accept			json
-//	@Produce		json
-//	@Param			id			path	string	true	"LaneInfo ID"
-//	@Param			stageindex	path	string	true	"LaneInfo stage index"
-//	@Param			userindex	path	string	true	"LaneInfo user index of the stage"
-//	@Param			arrowindex	path	string	true	"LaneInfo arrow index of the user"
-//	@Param			score		path	string	true	"score of the arrow"
-//	@Success		200			string	string
-//	@Failure		400			string	string
-//	@Failure		404			string	string
-//	@Failure		500			string	string
-//	@Router			/data/laneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score} [put]
 func UpdataLaneScore(ID int, stageindex int, userindex int, arrowindex int, score int) bool {
 	sql := "UPDATE `Demo`.all_scores INNER JOIN `Demo`.end_scores ON `Demo`.all_scores.end_score_id = `Demo`.end_scores.id INNER JOIN `Demo`.lane_stages ON `Demo`.end_scores.lane_stage_id = `Demo`.lane_stages.id INNER JOIN `Demo`.lane_data ON `Demo`.lane_stages.lane_data_id = `Demo`.lane_data.id SET `Demo`.all_scores.score = ? WHERE `Demo`.lane_data.id = ? AND `Demo`.lane_stages.stage_index = ? AND `Demo`.end_scores.user_index = ? AND `Demo`.all_scores.arrow_index = ? ;"
 	result := DB.Exec(sql, score, ID, stageindex, userindex, arrowindex)
@@ -153,40 +101,12 @@ func UpdataLaneScore(ID int, stageindex int, userindex int, arrowindex int, scor
 	return result.Error == nil
 }
 
-// Update LaneInfo Confirmation godoc
-//
-//	@Summary		update one LaneInfo confirmation
-//	@Description	Put one LaneInfo confirm by index and id
-//	@Tags			LaneInfo
-//	@Accept			json
-//	@Produce		json
-//	@Param			id			path	string	true	"LaneInfo ID"
-//	@Param			stageindex	path	string	true	"LaneInfo stage index"
-//	@Param			userindex	path	string	true	"LaneInfo user index of the stage"
-//	@Param			confirm		path	string	true	"confirmation of the user"
-//	@Success		200			string	string
-//	@Failure		400			string	string
-//	@Failure		404			string	string
-//	@Failure		500			string	string
-//	@Router			/data/laneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm} [put]
 func UpdataLaneConfirm(ID int, stageindex int, userindex int, confirmation bool) bool {
 	sql := "UPDATE `Demo`.confirmations INNER JOIN `Demo`.lane_stages ON `Demo`.confirmations.lane_stage_id = `Demo`.lane_stages.id INNER JOIN `Demo`.lane_data ON `Demo`.lane_stages.lane_data_id = `Demo`.lane_data.id SET `Demo`.confirmations.confirm = ? WHERE `Demo`.lane_data.id = ? AND `Demo`.lane_stages.stage_index = ? AND `Demo`.confirmations.user_index = ?;"
 	result := DB.Exec(sql, confirmation, ID, stageindex, userindex)
 	return result.Error == nil
 }
 
-// Delete LaneInfo by id godoc
-//
-//	@Summary		delete one LaneInfo
-//	@Description	delete one LaneInfo by id
-//	@Tags			LaneInfo
-//	@Accept			json
-//	@Produce		json
-//	@Param			id	path	string	true	"LaneInfo ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
-//	@Failure		404	string	string
-//	@Router			/data/laneinfo/{id} [delete]
 func DeleteLaneInfoByID(ID int) bool {
 	result := DB.Delete(&LaneData{}, "id =?", ID)
 	return result.RowsAffected != 0
