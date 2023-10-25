@@ -206,26 +206,34 @@ func ReorderGroupInfo(context *gin.Context) {
 //	@Router			/data/groupinfo/{id} [delete]
 func DeleteGroupInfo(context *gin.Context) {
 	id := convert2int(context, "id")
+	success, affected := DeleteGroupInfoById(context, id)
+	if !success {
+		return
+	}
+	response.AcceptDeleteSuccess(context, id, affected, "GroupInfo")
+}
+
+func DeleteGroupInfoById(context *gin.Context, id int) (bool, bool) {
 	/*check data exist*/
 	isChanged, group := IsGetGroupInfo(context, id)
 	if !isChanged {
-		return
+		return false, false
 	}
 	/*update competition group_num*/
 	competitionId := int(group.CompetitionId)
 	isExist, _ := IsGetOnlyCompetition(context, competitionId)
 	if !isExist {
-		return
+		return false, false
 	}
 	database.MinusOneCompetitionGroupNum(competitionId)
 	/*delete group*/
 	affected, err := database.DeleteGroupInfo(id)
 	if response.ErrorInternalErrorTest(context, id, "Delete GroupInfo", err) {
-		return
+		return false, false
 	}
 	/*delete qualification*/
 	if !DeleteQualificationThroughGroup(context, id) {
-		return
+		return false, false
 	}
-	response.AcceptDeleteSuccess(context, id, affected, "GroupInfo")
+	return true, affected
 }

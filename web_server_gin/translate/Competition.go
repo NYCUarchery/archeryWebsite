@@ -168,12 +168,8 @@ func DeleteCompetition(context *gin.Context) {
 	/*delete all related groups*/
 	for _, group := range data.Groups {
 		groupId := int(group.ID)
-		_, err := database.DeleteGroupInfo(groupId)
-		if response.ErrorInternalErrorTest(context, groupId, "Delete GroupInfo in Competition", err) {
-			return
-		}
-		/*delete qualification*/
-		if !DeleteQualificationThroughGroup(context, groupId) {
+		success, _ := DeleteGroupInfoById(context, groupId)
+		if !success {
 			return
 		}
 	}
