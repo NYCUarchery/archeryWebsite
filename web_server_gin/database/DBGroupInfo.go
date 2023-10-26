@@ -7,6 +7,7 @@ type Group struct {
 	GroupRange    string `json:"group_range"`
 	BowType       string `json:"bow_type"`
 	GroupIndex    int    `json:"group_index"`
+	PlayerNum     int    `json:"player_num"`
 }
 
 func InitGroupInfo() {

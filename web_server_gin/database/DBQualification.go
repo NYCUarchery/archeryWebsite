@@ -2,9 +2,9 @@ package database
 
 type Qualification struct {
 	ID           uint `json:"id"        gorm:"primary_key"`
-	PlayerNum    int  `json:"player_num"`
 	AdvancingNum int  `json:"advancing_num"`
 	CurrentRound int  `json:"current_round"`
+	CurrentEnd   int  `json:"current_end"`
 }
 
 func InitQualification() {
