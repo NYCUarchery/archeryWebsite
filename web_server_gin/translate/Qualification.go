@@ -110,11 +110,12 @@ func UpdateQualificationByID(context *gin.Context) {
 
 	/*check if lanes are occupied*/
 	laneQualificationIds := database.GetLaneQualificationId(int(firstLaneId), data.StartLaneNumber, data.EndLaneNumber)
+	noTypeGroupId := int(competition.NoTypeGroupId)
 	for index, laneQualificationId := range laneQualificationIds {
 		lanenumber := index + data.StartLaneNumber
 		fmt.Printf("laneQualificationId: %d\n", laneQualificationId)
 		fmt.Printf("lanenumber: %d\n", lanenumber)
-		if laneQualificationId != 0 && laneQualificationId != id {
+		if laneQualificationId != noTypeGroupId && laneQualificationId != id {
 			errorMessage := fmt.Sprintf("Lane number %d is occupied", lanenumber)
 			context.IndentedJSON(http.StatusBadRequest, gin.H{"message": errorMessage})
 			return
@@ -135,7 +136,7 @@ func UpdateQualificationByID(context *gin.Context) {
 		laneId := int(firstLaneId) + index - 1
 		fmt.Printf("laneId: %d\n", laneId)
 		fmt.Printf("index: %d\n", index)
-		success := UpdateLaneQualificationId(context, laneId, 0)
+		success := UpdateLaneQualificationId(context, laneId, noTypeGroupId)
 		if !success {
 			return
 		}

@@ -113,12 +113,18 @@ func PostCompetition(context *gin.Context) {
 			return
 		}
 	}
-	/*auto write first lane id*/
+	/*auto write firstLaneId and noTypeGroupId*/
 	newData.FirstLaneId = uint(database.GetFirstLaneId(uint(newId)))
 	ischanged := database.UpdateCompetitionFirstLaneId(newId, int(newData.FirstLaneId))
 	if response.AcceptNotChange(context, id, ischanged, "Update Competition FirstLaneId") {
 		return
 	}
+	newData.NoTypeGroupId = int(noTypeGroupId)
+	ischanged = database.UpdateCompetitionNoTypeGroupId(newId, int(newData.NoTypeGroupId))
+	if response.AcceptNotChange(context, id, ischanged, "Update Competition FirstLaneId") {
+		return
+	}
+
 	context.IndentedJSON(http.StatusOK, newData)
 }
 
@@ -149,10 +155,11 @@ func UpdateCompetition(context *gin.Context) {
 		return
 	}
 
-	/*replace GroupNum, LaneNum, FirstLaneId with old one*/
+	/*replace GroupNum, LaneNum, FirstLaneId, noTyoeGroupId with old one*/
 	data.GroupsNum = database.GetCompetitionGroupNum(id)
 	data.LanesNum = database.GetCompetitionLaneNum(id)
 	data.FirstLaneId = uint(database.GetFirstLaneId(uint(id)))
+	data.NoTypeGroupId = database.GetCompetitionNoTypeGroupId(id)
 
 	/*update and check change*/
 	isChanged, err := database.UpdateCompetition(id, data)

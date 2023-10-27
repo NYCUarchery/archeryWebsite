@@ -10,6 +10,7 @@ type Competition struct { // DB : game_info
 	SubTitle                 string   `json:"sub_title"`
 	HostId                   uint     `json:"host_id"`
 	GroupsNum                int      `json:"groups_num"`
+	NoTypeGroupId            int      `json:"no_type_group_id"`
 	LanesNum                 int      `json:"lanes_num"`
 	FirstLaneId              uint     `json:"first_lane_id"`
 	CurrentPhase             int      `json:"current_phase"`
@@ -88,6 +89,18 @@ func GetCompetitionLaneNum(ID int) int {
 }
 func UpdateCompetitionFirstLaneId(ID int, newFirstLaneId int) bool {
 	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("first_lane_id", newFirstLaneId)
+	isChanged := result.RowsAffected != 0
+	return isChanged
+}
+
+func GetCompetitionNoTypeGroupId(ID int) int {
+	var data Competition
+	DB.Table("competitions").Where("id = ?", ID).First(&data)
+	return data.NoTypeGroupId
+}
+
+func UpdateCompetitionNoTypeGroupId(ID int, newNoTypeGroupId int) bool {
+	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("no_type_group_id", newNoTypeGroupId)
 	isChanged := result.RowsAffected != 0
 	return isChanged
 }
