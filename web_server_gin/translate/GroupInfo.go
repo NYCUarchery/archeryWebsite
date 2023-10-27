@@ -185,6 +185,7 @@ func ReorderGroupInfo(context *gin.Context) {
 	err := context.BindJSON(&idArray)
 	groupIds := idArray.GroupIds
 	competitionId := idArray.CompetitionId
+	noTypeGroupId := database.GetCompetitionNoTypeGroupId(competitionId)
 	/*parse data check*/
 	if response.ErrorReceiveDataTest(context, 0, "groupIdsForReorder of GroupInfo", err) {
 		return
@@ -201,17 +202,28 @@ func ReorderGroupInfo(context *gin.Context) {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Groups_num 與 GroupIds 長度不符, Group_num = " + fmt.Sprint(gamedata.GroupsNum) + ", GroupIds = " + fmt.Sprint(groupIds)})
 		return
 	}
-
-	/*update group_index*/
-	for index, id := range groupIds {
+	/*check if there're no noTypeGroupId*/
+	for _, id := range groupIds {
+		if id == noTypeGroupId {
+			context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "GroupIds cannot include noTypeGroupId"})
+			return
+		}
+	}
+	/*check all group exist*/
+	for _, id := range groupIds {
 		if response.ErrorIdTest(context, id, database.GetGroupIsExist(id), "GroupInfo in Reorder") {
 			return
 		}
+	}
+
+	/*update group_index*/
+	for index, id := range groupIds {
 		_, err := database.UpdateGroupInfoIndex(id, index)
 		if response.ErrorInternalErrorTest(context, id, "Update GroupInfo Index in Reorder", err) {
 			return
 		}
 	}
+
 	/*return new updated competition data*/
 	isExist, newData := IsGetCompetitionWGroup(context, competitionId)
 	if !isExist {
