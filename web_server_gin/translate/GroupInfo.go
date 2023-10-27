@@ -145,6 +145,10 @@ func UpdateGroupInfo(context *gin.Context) {
 	isExist, oldData := IsGetGroupInfo(context, id)
 	if !isExist {
 		return
+		/*cannot update 無組別*/
+	} else if oldData.GroupIndex == -1 {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "noTypeGroup cannot update"})
+		return
 	}
 	data.CompetitionId = oldData.CompetitionId
 
@@ -235,7 +239,7 @@ func DeleteGroupInfo(context *gin.Context) {
 	if !success {
 		return
 	} else if group.GroupIndex == -1 {
-		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無組別不可刪除"})
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "noTypeGroup cannot delete"})
 		return
 	}
 	success, affected := DeleteGroupInfoById(context, id)
