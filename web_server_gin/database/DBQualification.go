@@ -1,5 +1,7 @@
 package database
 
+import "gorm.io/gorm"
+
 type Qualification struct {
 	ID              uint    `json:"id"        gorm:"primary_key"`
 	AdvancingNum    int     `json:"advancing_num"`
@@ -16,13 +18,24 @@ func InitQualification() {
 
 func GetQualificationIsExist(id int) bool {
 	var data Qualification
-	DB.Table("qualifications").Where("id = ?", id).First(&data)
+	DB.Model(&Qualification{}).Where("id = ?", id).First(&data)
 	return data.ID != 0
 }
 
 func GetOnlyQualification(ID int) (Qualification, error) {
 	var data Qualification
-	result := DB.Table("qualifications").Where("id = ?", ID).First(&data)
+	result := DB.Model(&Qualification{}).Where("id = ?", ID).First(&data)
+	return data, result.Error
+}
+
+func GetQualificationWLanesByID(id int) (Qualification, error) {
+	var data Qualification
+	result := DB.Model(&Qualification{}).
+		Preload("Lanes", func(*gorm.DB) *gorm.DB {
+			return DB.Order("lane_number asc")
+		}).
+		Where("id = ?", id).
+		First(&data)
 	return data, result.Error
 }
 

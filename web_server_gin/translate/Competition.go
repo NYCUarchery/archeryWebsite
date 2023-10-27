@@ -92,17 +92,23 @@ func PostCompetition(context *gin.Context) {
 	} else if response.ErrorReceiveDataNilTest(context, id, data, "Competition") {
 		return
 	}
-	/*auto write Groups_num*/
-	data.GroupsNum = 0
+	/*auto write Groups_num, minus one for 無組別*/
+	data.GroupsNum = -1
 
 	newData, err := database.PostCompetition(data)
 	newId := int(newData.ID)
 	if response.ErrorInternalErrorTest(context, newId, "Post GroupInfo", err) {
 		return
 	}
+	/*create無組別group*/
+	newData.GroupsNum++
+	success, noTypeGroupId := PostNoTypeGroupInfo(context, newId)
+	if !success {
+		return
+	}
 	/*create lanes, after get competitionId*/
 	for i := 0; i < data.LanesNum; i++ {
-		success := PostLaneThroughCompetition(context, newId, i+1)
+		success := PostLaneThroughCompetition(context, newId, int(noTypeGroupId), i+1)
 		if !success {
 			return
 		}

@@ -90,6 +90,30 @@ func PostGroupInfo(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, newData)
 }
 
+// Post 無組別 group, when competition is created
+func PostNoTypeGroupInfo(context *gin.Context, competitionId int) (bool, uint) {
+	var data database.Group
+	/*auto write GroupIndex*/
+	data.GroupIndex = database.GetCompetitionGroupNum(competitionId)
+	/*auto write CompetitionId*/
+	data.CompetitionId = uint(competitionId)
+	/*auto write GroupName*/
+	data.GroupName = "無組別"
+
+	newData, err := database.CreateGroupInfo(data)
+	if response.ErrorInternalErrorTest(context, int(newData.ID), "Post GroupInfo", err) {
+		return false, 0
+	}
+	/*auto create qualification*/
+	if !PostQualificationThroughGroup(context, int(newData.ID)) {
+		return false, 0
+	}
+	/*update competition.groupnum*/
+	database.AddOneCompetitionGroupNum(competitionId)
+	response.AcceptPrint(int(newData.ID), fmt.Sprint(newData), "GroupInfo 無組別 ")
+	return true, newData.ID
+}
+
 // Update GroupInfo godoc
 //
 //	@Summary		update one GroupInfo
@@ -217,6 +241,9 @@ func DeleteGroupInfoById(context *gin.Context, id int) (bool, bool) {
 	/*check data exist*/
 	isChanged, group := IsGetGroupInfo(context, id)
 	if !isChanged {
+		return false, false
+	} else if group.GroupIndex == -1 {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無組別不可刪除"})
 		return false, false
 	}
 	/*update competition group_num*/

@@ -40,6 +40,20 @@ func GetOnlyQualificationByID(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, data)
 }
 
+// Get One Qualification By ID godoc
+func GetQualificationWLanesByID(context *gin.Context) {
+	id := convert2int(context, "id")
+	if response.ErrorIdTest(context, id, database.GetQualificationIsExist(id), "Qualification") {
+		return
+	}
+	data, err := database.GetQualificationWLanesByID(id)
+	if response.ErrorInternalErrorTest(context, id, "Get Qualification with lanes", err) {
+		return
+	}
+	response.AcceptPrint(id, fmt.Sprint(data), "Qualification with lanes")
+	context.IndentedJSON(http.StatusOK, data)
+}
+
 // when group is created, qualification is created
 // share same id with group
 func PostQualificationThroughGroup(context *gin.Context, id int) bool {

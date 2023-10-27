@@ -55,7 +55,9 @@ func groupInfoRouter(data *gin.RouterGroup) {
 
 func qualificationRouter(data *gin.RouterGroup) {
 	data.GET("/:id", translate.GetOnlyQualificationByID)
+	data.GET("/lanes/:id", translate.GetQualificationWLanesByID)
 	data.PUT("/whole/:id", translate.UpdateQualificationByID)
+
 }
 
 func laneRouter(data *gin.RouterGroup) {
