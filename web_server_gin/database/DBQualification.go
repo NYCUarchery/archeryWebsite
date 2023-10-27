@@ -1,12 +1,13 @@
 package database
 
 type Qualification struct {
-	ID              uint `json:"id"        gorm:"primary_key"`
-	AdvancingNum    int  `json:"advancing_num"`
-	CurrentRound    int  `json:"current_round"`
-	CurrentEnd      int  `json:"current_end"`
-	StartLaneNumber int  `json:"start_lane"`
-	EndLaneNumber   int  `json:"end_lane"`
+	ID              uint    `json:"id"        gorm:"primary_key"`
+	AdvancingNum    int     `json:"advancing_num"`
+	CurrentRound    int     `json:"current_round"`
+	CurrentEnd      int     `json:"current_end"`
+	StartLaneNumber int     `json:"start_lane"`
+	EndLaneNumber   int     `json:"end_lane"`
+	Lanes           []*Lane `json:"lanes" `
 }
 
 func InitQualification() {
@@ -19,7 +20,7 @@ func GetQualificationIsExist(id int) bool {
 	return data.ID != 0
 }
 
-func GetQualification(ID int) (Qualification, error) {
+func GetOnlyQualification(ID int) (Qualification, error) {
 	var data Qualification
 	result := DB.Table("qualifications").Where("id = ?", ID).First(&data)
 	return data, result.Error

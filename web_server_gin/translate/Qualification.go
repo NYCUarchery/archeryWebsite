@@ -13,7 +13,7 @@ func IsGetQualification(context *gin.Context, id int) (bool, database.Qualificat
 	if response.ErrorIdTest(context, id, database.GetQualificationIsExist(id), "Qualification") {
 		return false, database.Qualification{}
 	}
-	data, err := database.GetQualification(id)
+	data, err := database.GetOnlyQualification(id)
 	if response.ErrorInternalErrorTest(context, id, "Get Qualification", err) {
 		return false, data
 	}
@@ -31,7 +31,7 @@ func IsGetQualification(context *gin.Context, id int) (bool, database.Qualificat
 //	@Success		200	string	string
 //	@Failure		400	string	string
 //	@Router			/data/qualification/{id} [get]
-func GetQualificationByID(context *gin.Context) {
+func GetOnlyQualificationByID(context *gin.Context) {
 	id := convert2int(context, "id")
 	isExist, data := IsGetQualification(context, id)
 	if !isExist {
@@ -138,7 +138,7 @@ func UpdateQualificationByID(context *gin.Context) {
 	}
 
 	/*return data*/
-	data, err = database.GetQualification(id)
+	data, err = database.GetOnlyQualification(id)
 	if response.ErrorInternalErrorTest(context, id, "Get Qualification", err) {
 		return
 	}

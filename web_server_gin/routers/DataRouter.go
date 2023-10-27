@@ -54,7 +54,7 @@ func groupInfoRouter(data *gin.RouterGroup) {
 }
 
 func qualificationRouter(data *gin.RouterGroup) {
-	data.GET("/:id", translate.GetQualificationByID)
+	data.GET("/:id", translate.GetOnlyQualificationByID)
 	data.PUT("/whole/:id", translate.UpdateQualificationByID)
 }
 
