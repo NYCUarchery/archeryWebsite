@@ -174,16 +174,18 @@ func DeleteQualificationThroughGroup(context *gin.Context, id int) bool {
 	group, _ := database.GetGroupInfoById(id)
 	competitionId := int(group.CompetitionId)
 	_, competition := IsGetOnlyCompetition(context, competitionId)
+	noTypeGroupId := int(competition.NoTypeGroupId)
 	firstLaneId := competition.FirstLaneId
 	oldLaneStart := oldData.StartLaneNumber
 	oldLaneEnd := oldData.EndLaneNumber
 	for index := oldLaneStart; index <= oldLaneEnd; index++ {
-		laneId := int(firstLaneId) + index
-		success := UpdateLaneQualificationId(context, laneId, 0)
+		laneId := int(firstLaneId) + index - 1
+		success := UpdateLaneQualificationId(context, laneId, noTypeGroupId)
 		if !success {
 			return false
 		}
 	}
+
 	/*delete data*/
 	isChanged, err := database.DeleteQualification(id)
 	if response.ErrorInternalErrorTest(context, id, "Delete Qualification", err) {

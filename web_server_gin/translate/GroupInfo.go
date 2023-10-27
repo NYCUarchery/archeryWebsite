@@ -261,7 +261,6 @@ func DeleteGroupInfoById(context *gin.Context, id int) (bool, bool) {
 	if !isExist {
 		return false, false
 	}
-	database.MinusOneCompetitionGroupNum(competitionId)
 	/*delete qualification*/
 	if !DeleteQualificationThroughGroup(context, id) {
 		return false, false
@@ -271,5 +270,6 @@ func DeleteGroupInfoById(context *gin.Context, id int) (bool, bool) {
 	if response.ErrorInternalErrorTest(context, id, "Delete GroupInfo", err) {
 		return false, false
 	}
+	database.MinusOneCompetitionGroupNum(competitionId)
 	return true, affected
 }
