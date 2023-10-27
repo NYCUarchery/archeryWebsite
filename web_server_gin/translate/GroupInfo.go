@@ -230,6 +230,14 @@ func ReorderGroupInfo(context *gin.Context) {
 //	@Router			/data/groupinfo/{id} [delete]
 func DeleteGroupInfo(context *gin.Context) {
 	id := convert2int(context, "id")
+	/*cannot delete 無組別*/
+	success, group := IsGetGroupInfo(context, id)
+	if !success {
+		return
+	} else if group.GroupIndex == -1 {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無組別不可刪除"})
+		return
+	}
 	success, affected := DeleteGroupInfoById(context, id)
 	if !success {
 		return
@@ -239,11 +247,8 @@ func DeleteGroupInfo(context *gin.Context) {
 
 func DeleteGroupInfoById(context *gin.Context, id int) (bool, bool) {
 	/*check data exist*/
-	isChanged, group := IsGetGroupInfo(context, id)
-	if !isChanged {
-		return false, false
-	} else if group.GroupIndex == -1 {
-		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無組別不可刪除"})
+	success, group := IsGetGroupInfo(context, id)
+	if !success {
 		return false, false
 	}
 	/*update competition group_num*/

@@ -188,6 +188,11 @@ func DeleteCompetition(context *gin.Context) {
 	if !isExist {
 		return
 	}
+	/*delete all related lanes*/
+	success := DeleteLaneByCompetitionId(context, id)
+	if !success {
+		return
+	}
 	/*delete all related groups*/
 	for _, group := range data.Groups {
 		groupId := int(group.ID)
@@ -196,12 +201,6 @@ func DeleteCompetition(context *gin.Context) {
 			return
 		}
 	}
-	/*delete all related lanes*/
-	success := DeleteLaneByCompetitionId(context, id)
-	if !success {
-		return
-	}
-
 	/*delete competition*/
 	affected, err := database.DeleteCompetition(id)
 	if response.ErrorInternalErrorTest(context, id, "Delete Competition with Groups", err) {
