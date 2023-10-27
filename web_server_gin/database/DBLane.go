@@ -5,7 +5,7 @@ type Lane struct {
 	CompetitionId   uint `json:"competition_id"`
 	QualificationId uint `json:"qualification_id"`
 	PlayerNum       int  `json:"player_num"`
-	Index           int  `json:"lane_index"`
+	LaneNumber      int  `json:"lane_number"`
 }
 
 func InitLane() {
@@ -32,7 +32,7 @@ func GetFirstLaneId(competitionId uint) int {
 
 func GetAllLaneByCompetitionId(competitionId int) ([]Lane, error) {
 	var data []Lane
-	result := DB.Model(&Lane{}).Where("competition_id = ?", competitionId).Order("`index` asc").Find(&data)
+	result := DB.Model(&Lane{}).Where("competition_id = ?", competitionId).Order("`lane_number` asc").Find(&data)
 	return data, result.Error
 }
 

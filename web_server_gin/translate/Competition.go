@@ -102,7 +102,7 @@ func PostCompetition(context *gin.Context) {
 	}
 	/*create lanes, after get competitionId*/
 	for i := 0; i < data.LanesNum; i++ {
-		success := PostLaneThroughCompetition(context, newId, i)
+		success := PostLaneThroughCompetition(context, newId, i+1)
 		if !success {
 			return
 		}

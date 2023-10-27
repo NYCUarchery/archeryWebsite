@@ -62,16 +62,16 @@ func GetAllLaneByCompetitionId(context *gin.Context) {
 }
 
 // when competition is created, lane is created
-func PostLaneThroughCompetition(context *gin.Context, competitionId int, index int) bool {
+func PostLaneThroughCompetition(context *gin.Context, competitionId int, laneNumber int) bool {
 	var data database.Lane
 	/*set competition ID*/
 	/*set qualification ID = 0*/
 	/*set player num = 0*/
-	/*set index*/
+	/*set LaneNumber*/
 	data.CompetitionId = uint(competitionId)
 	data.QualificationId = 0
 	data.PlayerNum = 0
-	data.Index = index
+	data.LaneNumber = laneNumber
 	/*insert data*/
 	data, err := database.PostLane(data)
 	landId := int(data.ID)
