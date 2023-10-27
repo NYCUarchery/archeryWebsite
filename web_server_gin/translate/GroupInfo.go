@@ -169,8 +169,8 @@ func ReorderGroupInfo(context *gin.Context) {
 	gamedata, err := database.GetOnlyCompetition(competitionId)
 	if response.ErrorInternalErrorTest(context, competitionId, "Get Competition in Reorder GroupInfo", err) {
 		return
-	} else if gamedata.ID == 0 || gamedata.Groups_num != len(groupIds) {
-		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Groups_num 與 GroupIds 長度不符, Group_num = " + fmt.Sprint(gamedata.Groups_num) + ", GroupIds = " + fmt.Sprint(groupIds)})
+	} else if gamedata.ID == 0 || gamedata.GroupsNum != len(groupIds) {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Groups_num 與 GroupIds 長度不符, Group_num = " + fmt.Sprint(gamedata.GroupsNum) + ", GroupIds = " + fmt.Sprint(groupIds)})
 		return
 	}
 

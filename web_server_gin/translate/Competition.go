@@ -74,7 +74,7 @@ func GetCompetitionWGroupsByID(context *gin.Context) {
 // Post Competition godoc
 //
 //	@Summary		Create one Competition
-//	@Description	Post one new Competition data with new id, and return the new Competition data
+//	@Description	Post one new Competition data with new id, create Lanes,and return the new Competition data
 //	@Tags			Competition
 //	@Accept			json
 //	@Produce		json
@@ -93,10 +93,24 @@ func PostCompetition(context *gin.Context) {
 		return
 	}
 	/*auto write Groups_num*/
-	data.Groups_num = 0
+	data.GroupsNum = 0
 
 	newData, err := database.PostCompetition(data)
-	if response.ErrorInternalErrorTest(context, id, "Post GroupInfo", err) {
+	newId := int(newData.ID)
+	if response.ErrorInternalErrorTest(context, newId, "Post GroupInfo", err) {
+		return
+	}
+	/*create lanes, after get competitionId*/
+	for i := 0; i < data.LanesNum; i++ {
+		success := PostLaneThroughCompetition(context, newId, i)
+		if !success {
+			return
+		}
+	}
+	/*auto write first lane id*/
+	newData.FirstLaneId = uint(database.GetFirstLaneId(uint(newId)))
+	ischanged := database.UpdateCompetitionFirstLaneId(newId, int(newData.FirstLaneId))
+	if response.AcceptNotChange(context, id, ischanged, "Update Competition FirstLaneId") {
 		return
 	}
 	context.IndentedJSON(http.StatusOK, newData)
@@ -129,8 +143,11 @@ func UpdateCompetition(context *gin.Context) {
 		return
 	}
 
-	/*replace GroupNum with old one*/
-	data.Groups_num = database.GetCompetitionGroupNum(id)
+	/*replace GroupNum, LaneNum, FirstLaneId with old one*/
+	data.GroupsNum = database.GetCompetitionGroupNum(id)
+	data.LanesNum = database.GetCompetitionLaneNum(id)
+	data.FirstLaneId = uint(database.GetFirstLaneId(uint(id)))
+
 	/*update and check change*/
 	isChanged, err := database.UpdateCompetition(id, data)
 	if response.ErrorInternalErrorTest(context, id, "Update Competition", err) {

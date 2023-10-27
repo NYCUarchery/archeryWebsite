@@ -13,8 +13,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: Post one new Competition data with new id, and return the new Competition
-        data
+      description: Post one new Competition data with new id, create Lanes,and return
+        the new Competition data
       parameters:
       - description: Competition
         in: body
@@ -303,6 +303,52 @@ paths:
       summary: update one GroupInfo
       tags:
       - GroupInfo
+  /data/lane/{id}:
+    get:
+      description: Get one Lane by id
+      parameters:
+      - description: Lane ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Lane
+      tags:
+      - Lane
+  /data/lane/all/{id}:
+    get:
+      description: Get all Lane by competition id
+      parameters:
+      - description: competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show all Lane of a competition
+      tags:
+      - Lane
   /data/oldlaneinfo:
     post:
       consumes:

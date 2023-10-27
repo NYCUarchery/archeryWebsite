@@ -9,8 +9,9 @@ type Competition struct { // DB : game_info
 	Title                    string   `json:"title"`
 	SubTitle                 string   `json:"sub_title"`
 	HostId                   uint     `json:"host_id"`
-	Groups_num               int      `json:"groups_num"`
-	Lanes_num                int      `json:"lanes_num"`
+	GroupsNum                int      `json:"groups_num"`
+	LanesNum                 int      `json:"lanes_num"`
+	FirstLaneId              uint     `json:"first_lane_id"`
 	CurrentPhase             int      `json:"current_phase"`
 	CurrentPhaseKind         string   `json:"current_phase_kind"`
 	CurrentStage             uint     `json:"current_stage"`
@@ -73,9 +74,20 @@ func MinusOneCompetitionGroupNum(CompetitionID int) {
 func GetCompetitionGroupNum(ID int) int {
 	var data Competition
 	DB.Table("competitions").Where("id = ?", ID).First(&data)
-	return data.Groups_num
+	return data.GroupsNum
 }
 func UpdateCompetitionGroupNum(ID int, newGroupNum int) int {
 	result := DB.Table("competitions").Where("id = ?", ID).UpdateColumn("groups_num", newGroupNum)
 	return int(result.RowsAffected)
+}
+
+func GetCompetitionLaneNum(ID int) int {
+	var data Competition
+	DB.Table("competitions").Where("id = ?", ID).First(&data)
+	return data.LanesNum
+}
+func UpdateCompetitionFirstLaneId(ID int, newFirstLaneId int) bool {
+	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("first_lane_id", newFirstLaneId)
+	isChanged := result.RowsAffected != 0
+	return isChanged
 }

@@ -50,7 +50,7 @@ func GetLaneByID(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/data/lane/all/{id} [get]
 func GetAllLaneByCompetitionId(context *gin.Context) {
-	competitionId := convert2int(context, "competitionId")
+	competitionId := convert2int(context, "id")
 	var data []database.Lane
 	/*get data*/
 	data, err := database.GetAllLaneByCompetitionId(competitionId)

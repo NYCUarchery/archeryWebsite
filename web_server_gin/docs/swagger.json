@@ -16,7 +16,7 @@
     "paths": {
         "/data/competition": {
             "post": {
-                "description": "Post one new Competition data with new id, and return the new Competition data",
+                "description": "Post one new Competition data with new id, create Lanes,and return the new Competition data",
                 "consumes": [
                     "application/json"
                 ],
@@ -446,6 +446,76 @@
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/lane/all/{id}": {
+            "get": {
+                "description": "Get all Lane by competition id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Lane"
+                ],
+                "summary": "Show all Lane of a competition",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/lane/{id}": {
+            "get": {
+                "description": "Get one Lane by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Lane"
+                ],
+                "summary": "Show one Lane",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Lane ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "type": "string"
                         }
