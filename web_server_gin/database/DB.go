@@ -69,6 +69,7 @@ func DatabaseInitial() {
 	InitCompetition()
 	InitGroupInfo()
 	InitQualification()
+	InitLane()
 }
 
 func connectDB() {
