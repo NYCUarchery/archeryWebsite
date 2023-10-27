@@ -56,6 +56,9 @@ func GetAllLaneByCompetitionId(context *gin.Context) {
 	data, err := database.GetAllLaneByCompetitionId(competitionId)
 	if response.ErrorInternalErrorTest(context, competitionId, "Get All Lane By Competition ID", err) {
 		return
+	} else if len(data) == 0 {
+		response.ErrorIdTest(context, competitionId, false, "Lane")
+		return
 	}
 	response.AcceptPrint(competitionId, fmt.Sprint(data), "Lane")
 	context.IndentedJSON(200, data)
@@ -121,12 +124,12 @@ func UpdateLanePlayerNumMinusOne(context *gin.Context, laneId int) bool {
 }
 
 // lane is deleted when competition is deleted
-func DeleteLane(context *gin.Context, id int) bool {
+func DeleteLaneByCompetitionId(context *gin.Context, competitionId int) bool {
 	/*delete data*/
-	_, err := database.DeleteLane(id)
-	if response.ErrorInternalErrorTest(context, id, "Delete Lane", err) {
+	err := database.DeleteLane(competitionId)
+	if response.ErrorInternalErrorTest(context, competitionId, "Delete Qualification", err) {
 		return false
 	}
-	response.AcceptDeleteSuccess(context, id, true, "Lane")
+	response.AcceptPrint(competitionId, fmt.Sprint(competitionId), "Qualification")
 	return true
 }

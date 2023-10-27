@@ -190,6 +190,11 @@ func DeleteCompetition(context *gin.Context) {
 			return
 		}
 	}
+	/*delete all related lanes*/
+	success := DeleteLaneByCompetitionId(context, id)
+	if !success {
+		return
+	}
 
 	/*delete competition*/
 	affected, err := database.DeleteCompetition(id)

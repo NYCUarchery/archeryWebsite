@@ -148,7 +148,27 @@ func UpdateQualificationByID(context *gin.Context) {
 
 // delete qualification when group is deleted
 // cannot delete qualification solely
+// update lanes' qualification id to 0
 func DeleteQualificationThroughGroup(context *gin.Context, id int) bool {
+	/*check data exist*/
+	isExist, oldData := IsGetQualification(context, id)
+	if !isExist {
+		return false
+	}
+	/*update lanes' qualification Id*/
+	group, _ := database.GetGroupInfoById(id)
+	competitionId := int(group.CompetitionId)
+	_, competition := IsGetOnlyCompetition(context, competitionId)
+	firstLaneId := competition.FirstLaneId
+	oldLaneStart := oldData.StartLaneNumber
+	oldLaneEnd := oldData.EndLaneNumber
+	for index := oldLaneStart; index <= oldLaneEnd; index++ {
+		laneId := int(firstLaneId) + index
+		success := UpdateLaneQualificationId(context, laneId, 0)
+		if !success {
+			return false
+		}
+	}
 	/*delete data*/
 	isChanged, err := database.DeleteQualification(id)
 	if response.ErrorInternalErrorTest(context, id, "Delete Qualification", err) {
@@ -157,7 +177,6 @@ func DeleteQualificationThroughGroup(context *gin.Context, id int) bool {
 		response.AcceptNotChange(context, id, isChanged, "Qualification")
 		return false
 	}
-
 	response.AcceptPrint(id, fmt.Sprint(id), "Qualification")
 	return true
 }
