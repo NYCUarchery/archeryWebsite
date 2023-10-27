@@ -39,7 +39,7 @@ func GetLaneByID(context *gin.Context) {
 	context.IndentedJSON(200, data)
 }
 
-// Get One Lane By ID godoc
+// Get All Lane By Competition ID godoc
 //
 //	@Summary		Show all Lane of a competition
 //	@Description	Get all Lane by competition id

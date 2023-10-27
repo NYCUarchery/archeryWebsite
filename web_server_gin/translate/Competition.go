@@ -73,8 +73,8 @@ func GetCompetitionWGroupsByID(context *gin.Context) {
 
 // Post Competition godoc
 //
-//	@Summary		Create one Competition
-//	@Description	Post one new Competition data with new id, create Lanes,and return the new Competition data
+//	@Summary		Create one Competition and related data
+//	@Description	Post one new Competition data with new id, create noTypeGroup, create Lanes which link to noTypeGroup, and return the new Competition data
 //	@Tags			Competition
 //	@Accept			json
 //	@Produce		json
@@ -131,7 +131,7 @@ func PostCompetition(context *gin.Context) {
 // Update Competition godoc
 //
 //	@Summary		update one Competition without GroupInfo
-//	@Description	Put whole new Competition and overwrite with the id but without GroupInfo
+//	@Description	Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace GroupNum, LaneNum, FirstLaneId, noTyoeGroupId
 //	@Tags			Competition
 //	@Accept			json
 //	@Produce		json
@@ -179,7 +179,7 @@ func UpdateCompetition(context *gin.Context) {
 // Delete Competition by id godoc
 //
 //	@Summary		delete one Competition
-//	@Description	delete one Competition by id
+//	@Description	delete one Competition by id, delete all related lanes and groups
 //	@Tags			Competition
 //	@Accept			json
 //	@Produce		json

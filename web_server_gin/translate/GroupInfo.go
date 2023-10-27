@@ -53,7 +53,7 @@ func GetGroupInfoByID(context *gin.Context) {
 // Post GroupInfo godoc
 //
 //	@Summary		Create one GroupInfo
-//	@Description	Post one new GroupInfo data with new id, create qualification with same id, and return the new GroupInfo data
+//	@Description	Post one new GroupInfo data with new id, create qualification with same id, and auto write GroupIndex
 //	@Tags			GroupInfo
 //	@Accept			json
 //	@Produce		json
@@ -117,7 +117,7 @@ func PostNoTypeGroupInfo(context *gin.Context, competitionId int) (bool, uint) {
 // Update GroupInfo godoc
 //
 //	@Summary		update one GroupInfo
-//	@Description	Put whole new GroupInfo and overwrite with the id
+//	@Description	Put whole new GroupInfo and overwrite with the id, cannot overwrite CompetitionId
 //	@Tags			GroupInfo
 //	@Accept			json
 //	@Produce		json

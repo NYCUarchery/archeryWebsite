@@ -23,7 +23,7 @@ const docTemplate = `{
     "paths": {
         "/data/competition": {
             "post": {
-                "description": "Post one new Competition data with new id, create Lanes,and return the new Competition data",
+                "description": "Post one new Competition data with new id, create noTypeGroup, create Lanes which link to noTypeGroup, and return the new Competition data",
                 "consumes": [
                     "application/json"
                 ],
@@ -33,7 +33,7 @@ const docTemplate = `{
                 "tags": [
                     "Competition"
                 ],
-                "summary": "Create one Competition",
+                "summary": "Create one Competition and related data",
                 "parameters": [
                     {
                         "description": "Competition",
@@ -98,7 +98,7 @@ const docTemplate = `{
         },
         "/data/competition/whole/{id}": {
             "put": {
-                "description": "Put whole new Competition and overwrite with the id but without GroupInfo",
+                "description": "Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace GroupNum, LaneNum, FirstLaneId, noTyoeGroupId",
                 "consumes": [
                     "application/json"
                 ],
@@ -190,7 +190,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "delete one Competition by id",
+                "description": "delete one Competition by id, delete all related lanes and groups",
                 "consumes": [
                     "application/json"
                 ],
@@ -234,7 +234,7 @@ const docTemplate = `{
         },
         "/data/groupinfo": {
             "post": {
-                "description": "Post one new GroupInfo data with new id, create qualification with same id, and return the new GroupInfo data",
+                "description": "Post one new GroupInfo data with new id, create qualification with same id, and auto write GroupIndex",
                 "consumes": [
                     "application/json"
                 ],
@@ -326,7 +326,7 @@ const docTemplate = `{
         },
         "/data/groupinfo/whole/{id}": {
             "put": {
-                "description": "Put whole new GroupInfo and overwrite with the id",
+                "description": "Put whole new GroupInfo and overwrite with the id, cannot overwrite CompetitionId",
                 "consumes": [
                     "application/json"
                 ],
@@ -916,7 +916,7 @@ const docTemplate = `{
         },
         "/data/qualification/{id}": {
             "get": {
-                "description": "Get one Qualification by id",
+                "description": "Get one Qualification with Lanes by id",
                 "produces": [
                     "application/json"
                 ],

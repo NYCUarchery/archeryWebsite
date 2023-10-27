@@ -40,7 +40,16 @@ func GetOnlyQualificationByID(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, data)
 }
 
-// Get One Qualification By ID godoc
+// Get One Qualification with Lanes By ID godoc
+//
+//	@Summary		Show one Qualification
+//	@Description	Get one Qualification with Lanes by id
+//	@Tags			Qualification
+//	@Produce		json
+//	@Param			id	path	int	true	"Qualification ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/data/qualification/{id} [get]
 func GetQualificationWLanesByID(context *gin.Context) {
 	id := convert2int(context, "id")
 	if response.ErrorIdTest(context, id, database.GetQualificationIsExist(id), "Qualification") {
@@ -74,12 +83,12 @@ func PostQualificationThroughGroup(context *gin.Context, id int) bool {
 //	@Tags			Qualification
 //	@Accept			json
 //	@Produce		json
-//	@Param			id			path	string	true	"Qualification ID"
+//	@Param			id				path	string	true	"Qualification ID"
 //	@Param			Qualification	body	string	true	"Qualification"
-//	@Success		200			string	string
-//	@Failure		400			string	string
-//	@Failure		404			string	string
-//	@Failure		500			string	string
+//	@Success		200				string	string
+//	@Failure		400				string	string
+//	@Failure		404				string	string
+//	@Failure		500				string	string
 //	@Router			/data/qualification/whole/{id} [put]
 func UpdateQualificationByID(context *gin.Context) {
 	var data database.Qualification
