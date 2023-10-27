@@ -77,6 +77,36 @@ func UpdateQualificationByID(context *gin.Context) {
 	} else if response.ErrorIdTest(context, id, database.GetQualificationIsExist(id), "Qualification") {
 		return
 	}
+	/*data is exist check*/
+	success, oldData := IsGetQualification(context, id)
+	if !success {
+		return
+	}
+	/*check if lane start and end is valid*/
+	group, _ := database.GetGroupInfoById(id)
+	competitionId := int(group.CompetitionId)
+	_, competition := IsGetOnlyCompetition(context, competitionId)
+	firstLaneId := competition.FirstLaneId
+	laneNum := competition.LanesNum
+	if data.StartLaneNumber <= 0 || data.StartLaneNumber > laneNum || data.EndLaneNumber <= 0 || data.EndLaneNumber > laneNum || data.StartLaneNumber > data.EndLaneNumber {
+		errorMessage := fmt.Sprintf("Lane number is invalid start: %d end: %d", data.StartLaneNumber, data.EndLaneNumber)
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"message": errorMessage})
+		return
+	}
+
+	/*check if lanes are occupied*/
+	laneQualificationIds := database.GetLaneQualificationId(int(firstLaneId), data.StartLaneNumber, data.EndLaneNumber)
+	for index, laneQualificationId := range laneQualificationIds {
+		lanenumber := index + data.StartLaneNumber
+		fmt.Printf("laneQualificationId: %d\n", laneQualificationId)
+		fmt.Printf("lanenumber: %d\n", lanenumber)
+		if laneQualificationId != 0 && laneQualificationId != id {
+			errorMessage := fmt.Sprintf("Lane number %d is occupied", lanenumber)
+			context.IndentedJSON(http.StatusBadRequest, gin.H{"message": errorMessage})
+			return
+		}
+	}
+
 	/*update data*/
 	isChanged, err := database.UpdateQualification(id, data)
 	if response.ErrorInternalErrorTest(context, id, "Update Qualification", err) {
@@ -84,6 +114,29 @@ func UpdateQualificationByID(context *gin.Context) {
 	} else if response.ErrorIdTest(context, id, isChanged, "Qualification") {
 		return
 	}
+	/*update lanes' qualificationId*/
+	oldLaneStart := oldData.StartLaneNumber
+	oldLaneEnd := oldData.EndLaneNumber
+	for index := oldLaneStart; index <= oldLaneEnd; index++ {
+		laneId := int(firstLaneId) + index - 1
+		fmt.Printf("laneId: %d\n", laneId)
+		fmt.Printf("index: %d\n", index)
+		success := UpdateLaneQualificationId(context, laneId, 0)
+		if !success {
+			return
+		}
+	}
+	fmt.Printf("\n")
+	for index := data.StartLaneNumber; index <= data.EndLaneNumber; index++ {
+		laneId := int(firstLaneId) + index - 1
+		fmt.Printf("laneId: %d\n", laneId)
+		fmt.Printf("index: %d\n", index)
+		success := UpdateLaneQualificationId(context, laneId, id)
+		if !success {
+			return
+		}
+	}
+
 	/*return data*/
 	data, err = database.GetQualification(id)
 	if response.ErrorInternalErrorTest(context, id, "Get Qualification", err) {

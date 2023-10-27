@@ -84,15 +84,12 @@ func PostLaneThroughCompetition(context *gin.Context, competitionId int, laneNum
 
 // lane need to update qualification id
 func UpdateLaneQualificationId(context *gin.Context, id int, qualificationId int) bool {
-	var data database.Lane
-	/*set qualification ID*/
-	data.QualificationId = uint(qualificationId)
 	/*update data*/
-	_, err := database.UpdateLane(id, data)
+	err := database.UpdateLaneQualificationId(id, qualificationId)
 	if response.ErrorInternalErrorTest(context, id, "Update Lane Qualification", err) {
 		return false
 	}
-	response.AcceptPrint(id, fmt.Sprint(data), "Lane")
+	response.AcceptPrint(id, fmt.Sprintf("id = %v, qualificationID = %v", id, qualificationId), "Lane")
 	return true
 }
 

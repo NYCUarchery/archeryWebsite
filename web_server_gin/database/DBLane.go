@@ -36,6 +36,12 @@ func GetAllLaneByCompetitionId(competitionId int) ([]Lane, error) {
 	return data, result.Error
 }
 
+func GetLaneQualificationId(firstLaneId int, start int, end int) []int {
+	var data []int
+	DB.Model(&Lane{}).Where("id >= ? AND id <= ?", firstLaneId+start-1, firstLaneId+end-1).Pluck("qualification_id", &data)
+	return data
+}
+
 func PostLane(lane Lane) (Lane, error) {
 	result := DB.Model(&Lane{}).Create(&lane)
 	return lane, result.Error
@@ -44,6 +50,11 @@ func PostLane(lane Lane) (Lane, error) {
 func UpdateLane(id int, lane Lane) (bool, error) {
 	result := DB.Model(&Lane{}).Where("id = ?", id).Updates(&lane)
 	return true, result.Error
+}
+
+func UpdateLaneQualificationId(id int, qualificationId int) error {
+	result := DB.Model(&Lane{}).Where("id = ?", id).Update("qualification_id", qualificationId)
+	return result.Error
 }
 
 func DeleteLane(id int) (bool, error) {
