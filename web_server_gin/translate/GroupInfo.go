@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"web_server_gin/database"
+	response "web_server_gin/translate/Response"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,52 +14,52 @@ type groupIdsForReorder struct {
 	GroupIds      []int `json:"group_ids"`
 }
 
-// {
-// 	"competition_id" : 000,
-// 	"group_ids" : [1, 2, 3, 4, 5, 6, 7, 8]
-// }
+//	{
+//		"competition_id" : 000,
+//		"group_ids" : [1, 2, 3, 4, 5, 6, 7, 8]
+//	}
+func IsGetGroupInfo(context *gin.Context, id int) (bool, database.Group) {
+	if response.ErrorIdTest(context, id, database.GetGroupIsExist(id), "GroupInfo") {
+		return false, database.Group{}
+	}
+	data, err := database.GetGroupInfoById(id)
+	if response.ErrorInternalErrorTest(context, id, "Get GroupInfo", err) {
+		return false, data
+	}
+	response.AcceptPrint(id, fmt.Sprint(data), "GroupInfo")
+	return true, data
+}
 
 func GetGroupInfoByID(context *gin.Context) {
 	id := convert2int(context, "id")
-	data, error := database.GetGroupInfoById(id)
-	if data.ID == 0 {
-		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
-		return
-	} else if error != nil {
-		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": error.Error()})
+	isExist, data := IsGetGroupInfo(context, id)
+	if !isExist {
 		return
 	}
-	fmt.Printf("GroupInfo with ID(%v) -> %v\n", id, data)
-
 	context.IndentedJSON(http.StatusOK, data)
 }
 
 func PostGroupInfo(context *gin.Context) {
 	var data database.Group
 	err := context.BindJSON(&data)
-	if err != nil {
-		context.IndentedJSON(http.StatusBadRequest, "error : "+err.Error())
+	/*parse data check*/
+	if response.ErrorReceiveDataTest(context, 0, "GroupInfo", err) {
+		return
+	} else if response.ErrorReceiveDataNilTest(context, 0, data, "GroupInfo") {
 		return
 	}
-	competition, err := database.GetOnlyCompetition(int(data.CompetitionId))
-	if competition.ID == 0 {
-		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 CompetitionId"})
-		return
-	} else if err != nil {
-		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	/*competition id check*/
+	if response.ErrorIdTest(context, int(data.CompetitionId), database.GetCompetitionIsExist(int(data.CompetitionId)), "Competition(in groupinfo)") {
 		return
 	}
-
-	fmt.Printf("Post GroupInfo -> %v\n", data)
+	/*auto write GroupIndex*/
 	data.GroupIndex = database.GetCompetitionGroupNum(int(data.CompetitionId))
-	newData, error := database.CreateGroupInfo(data)
-	if newData.ID == 0 {
-		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
-		return
-	} else if error != nil {
-		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": error.Error()})
+
+	newData, err := database.CreateGroupInfo(data)
+	if response.ErrorInternalErrorTest(context, int(newData.ID), "Post GroupInfo", err) {
 		return
 	}
+	/*update competition.groupnum*/
 	database.AddOneCompetitionGroupNum(int(data.CompetitionId))
 	context.IndentedJSON(http.StatusOK, newData)
 }
@@ -66,20 +67,33 @@ func PostGroupInfo(context *gin.Context) {
 func UpdateGroupInfo(context *gin.Context) {
 	var data database.Group
 	id := convert2int(context, "id")
+	/*write id for update success*/
 	data.ID = uint(id)
 	err := context.BindJSON(&data)
-	if err != nil {
-		context.IndentedJSON(http.StatusBadRequest, "error : "+err.Error())
+	/*parse data check*/
+	if response.ErrorReceiveDataTest(context, id, "GroupInfo", err) {
+		return
+	} else if response.ErrorReceiveDataNilTest(context, id, data, "GroupInfo") {
 		return
 	}
-	olddata, _ := database.GetGroupInfoById(id)
-	data.CompetitionId = olddata.CompetitionId
-	_, newData, error := database.UpdateGroupInfo(id, data)
-	if newData.ID == 0 {
-		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
+
+	/*replace CompetitionId with old one*/
+	isExist, oldData := IsGetGroupInfo(context, id)
+	if !isExist {
 		return
-	} else if error != nil {
-		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": error.Error()})
+	}
+	data.CompetitionId = oldData.CompetitionId
+
+	/*update and check change*/
+	isChanged, err := database.UpdateGroupInfo(id, data)
+	if response.ErrorInternalErrorTest(context, id, "Update GroupInfo", err) {
+		return
+	} else if response.AcceptNotChange(context, id, isChanged, "Update GroupInfo") {
+		return
+	}
+	/*return new updated data*/
+	isExist, newData := IsGetGroupInfo(context, id)
+	if !isExist {
 		return
 	}
 	context.IndentedJSON(http.StatusOK, newData)
@@ -88,64 +102,61 @@ func UpdateGroupInfo(context *gin.Context) {
 func ReorderGroupInfo(context *gin.Context) {
 	var idArray groupIdsForReorder
 	err := context.BindJSON(&idArray)
-	if err != nil {
-		context.IndentedJSON(http.StatusBadRequest, "error : "+err.Error())
+	groupIds := idArray.GroupIds
+	competitionId := idArray.CompetitionId
+	/*parse data check*/
+	if response.ErrorReceiveDataTest(context, 0, "groupIdsForReorder of GroupInfo", err) {
 		return
-	} else if idArray.CompetitionId == 0 {
-		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 CompetitionId"})
+	} else if response.ErrorReceiveDataNilTest(context, 0, groupIds, "GroupIds of groupIdsForReorder") {
 		return
-	} else if idArray.GroupIds == nil {
-		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 GroupIds"})
+	} else if response.ErrorIdTest(context, competitionId, database.GetCompetitionIsExist(competitionId), "CompetitionId of groupIdsForReorder") {
 		return
 	}
-	gamedata, err := database.GetOnlyCompetition(idArray.CompetitionId)
-	if gamedata.ID == 0 || gamedata.Groups_num != len(idArray.GroupIds) {
-		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Groups_num 與 GroupIds 長度不符, Group_num = " + fmt.Sprint(gamedata.Groups_num) + ", GroupIds = " + fmt.Sprint(idArray.GroupIds)})
+	/*check competition group_num*/
+	gamedata, err := database.GetOnlyCompetition(competitionId)
+	if response.ErrorInternalErrorTest(context, competitionId, "Get Competition in Reorder GroupInfo", err) {
 		return
-	} else if err != nil {
-		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	} else if gamedata.ID == 0 || gamedata.Groups_num != len(groupIds) {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Groups_num 與 GroupIds 長度不符, Group_num = " + fmt.Sprint(gamedata.Groups_num) + ", GroupIds = " + fmt.Sprint(groupIds)})
 		return
 	}
 
-	for index, id := range idArray.GroupIds {
-		if id == 0 {
-			context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 Group ID"})
+	/*update group_index*/
+	for index, id := range groupIds {
+		if response.ErrorIdTest(context, id, database.GetGroupIsExist(id), "GroupInfo in Reorder") {
 			return
 		}
-		var data database.Group
-		data, error := database.GetGroupInfoById(id)
-		if data.ID == 0 {
-			context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "資料庫無效的用戶 ID"})
+		_, err := database.UpdateGroupInfoIndex(id, index)
+		if response.ErrorInternalErrorTest(context, id, "Update GroupInfo Index in Reorder", err) {
 			return
-		} else if error != nil {
-			context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": error.Error()})
-			return
-		} else {
-			_, _, err := database.UpdateGroupInfoIndex(id, index)
-			if err != nil {
-				context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-				return
-			}
 		}
 	}
-	data := database.GetCompetitionWGroups(idArray.CompetitionId)
-	if data.ID == 0 {
-		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "資料庫無效的用戶 competition_id "})
+	/*return new updated competition data*/
+	isExist, newData := IsGetCompetitionWGroup(context, competitionId)
+	if !isExist {
 		return
 	}
-	context.IndentedJSON(http.StatusOK, data)
+	context.IndentedJSON(http.StatusOK, newData)
 }
 
 func DeleteGroupInfo(context *gin.Context) {
 	id := convert2int(context, "id")
-	affected, competitionId, error := database.DeleteGroupInfo(id)
-	if !affected {
-		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID 或 格式錯誤 "})
+	/*check data exist*/
+	isChanged, group := IsGetGroupInfo(context, id)
+	if !isChanged {
 		return
-	} else if error != nil {
-		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": error.Error()})
+	}
+	/*update competition group_num*/
+	competitionId := int(group.CompetitionId)
+	isExist, _ := IsGetOnlyCompetition(context, competitionId)
+	if !isExist {
 		return
 	}
 	database.MinusOneCompetitionGroupNum(competitionId)
-	context.IndentedJSON(http.StatusOK, gin.H{"message": "成功刪除用戶"})
+	/*delete group*/
+	affected, err := database.DeleteGroupInfo(id)
+	if response.ErrorInternalErrorTest(context, id, "Delete GroupInfo", err) {
+		return
+	}
+	response.AcceptDeleteSuccess(context, id, affected, "GroupInfo")
 }

@@ -22,6 +22,12 @@ func InitCompetition() {
 	DB.AutoMigrate(&Competition{})
 }
 
+func GetCompetitionIsExist(id int) bool {
+	var data Competition
+	DB.Table("competitions").Where("id = ?", id).First(&data)
+	return data.ID != 0
+}
+
 // Get Only Competition By ID godoc
 //
 //	@Summary		Show one Competition without GroupInfo
@@ -34,8 +40,8 @@ func InitCompetition() {
 //	@Router			/data/competition/{id} [get]
 func GetOnlyCompetition(ID int) (Competition, error) {
 	var data Competition
-	error := DB.Table("competitions").Where("id = ?", ID).First(&data).Error
-	return data, error
+	result := DB.Table("competitions").Where("id = ?", ID).First(&data)
+	return data, result.Error
 }
 
 // Get One Competition By ID with Groups godoc
@@ -48,11 +54,11 @@ func GetOnlyCompetition(ID int) (Competition, error) {
 //	@Success		200	string	string
 //	@Failure		400	string	string
 //	@Router			/data/competition/groups/{id} [get]
-func GetCompetitionWGroups(ID int) Competition {
+func GetCompetitionWGroups(ID int) (Competition, error) {
 	var data Competition
-	DB.Preload("Groups", func(*gorm.DB) *gorm.DB { return DB.Order("group_index asc") }).
+	result := DB.Preload("Groups", func(*gorm.DB) *gorm.DB { return DB.Order("group_index asc") }).
 		Model(&Competition{}).Where("id = ?", ID).First(&data)
-	return data
+	return data, result.Error
 }
 
 // Post Competition godoc
@@ -66,9 +72,9 @@ func GetCompetitionWGroups(ID int) Competition {
 //	@Success		200			string	string
 //	@Failure		400			string	string
 //	@Router			/data/competition [post]
-func PostCompetition(data Competition) Competition {
-	DB.Model(&Competition{}).Create(&data)
-	return data
+func PostCompetition(data Competition) (Competition, error) {
+	result := DB.Model(&Competition{}).Create(&data)
+	return data, result.Error
 }
 
 // Update Competition godoc
@@ -85,11 +91,10 @@ func PostCompetition(data Competition) Competition {
 //	@Failure		404			string	string
 //	@Failure		500			string	string
 //	@Router			/data/competition/whole/{id} [put]
-func UpdateCompetition(ID int, newdata Competition) (Competition, error) {
-	var data Competition
-	DB.Model(&Competition{}).Where("id = ?", ID).Updates(&newdata)
-	error := DB.Model(&Competition{}).Where("id = ?", ID).First(&data).Error
-	return data, error
+func UpdateCompetition(ID int, newdata Competition) (bool, error) {
+	result := DB.Model(&Competition{}).Where("id = ?", ID).Updates(&newdata)
+	isChanged := result.RowsAffected != 0
+	return isChanged, result.Error
 }
 
 // Delete Competition by id godoc
@@ -104,9 +109,10 @@ func UpdateCompetition(ID int, newdata Competition) (Competition, error) {
 //	@Failure		400	string	string
 //	@Failure		404	string	string
 //	@Router			/data/competition/{id} [delete]
-func DeleteCompetition(ID int) bool {
+func DeleteCompetition(ID int) (bool, error) {
 	result := DB.Delete(&Competition{}, "id =?", ID)
-	return result.RowsAffected != 0
+	isChanged := result.RowsAffected != 0
+	return isChanged, result.Error
 }
 
 func AddOneCompetitionGroupNum(CompetitionID int) {
