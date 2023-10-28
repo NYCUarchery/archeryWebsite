@@ -855,6 +855,182 @@ const docTemplate = `{
                 }
             }
         },
+        "/data/participant": {
+            "post": {
+                "description": "Post one new Participant data with new id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Participant"
+                ],
+                "summary": "Create one Participant",
+                "parameters": [
+                    {
+                        "description": "Participant",
+                        "name": "Participant",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/participant/whole/{id}": {
+            "put": {
+                "description": "Put whole new Participant and overwrite with the id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Participant"
+                ],
+                "summary": "update one Participant",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Participant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Participant",
+                        "name": "Participant",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/participant/{id}": {
+            "get": {
+                "description": "Get One Participant By ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Participant"
+                ],
+                "summary": "Show One Participant By ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Participant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "delete one Participant by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Participant"
+                ],
+                "summary": "delete one Participant",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Participant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/data/qualification/whole/{id}": {
             "put": {
                 "description": "Put whole new Qualification and overwrite with the id, but cannot replace groupid",

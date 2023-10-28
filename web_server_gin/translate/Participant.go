@@ -21,6 +21,16 @@ func IsGetParticipant(context *gin.Context, id uint) (bool, database.Participant
 	return true, data
 }
 
+// Get One Participant By ID godoc
+//
+//	@Summary		Show One Participant By ID
+//	@Description	Get One Participant By ID
+//	@Tags			Participant
+//	@Produce		json
+//	@Param			id	path	int	true	"Participant ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/data/participant/{id} [get]
 func GetParticipant(context *gin.Context) {
 	id := convert2uint(context, "id")
 	isExist, data := IsGetParticipant(context, id)
@@ -30,6 +40,17 @@ func GetParticipant(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, data)
 }
 
+// Post Participant godoc
+//
+//	@Summary		Create one Participant
+//	@Description	Post one new Participant data with new id
+//	@Tags			Participant
+//	@Accept			json
+//	@Produce		json
+//	@Param			Participant	body	string	true	"Participant"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Router			/data/participant [post]
 func PostParticipant(context *gin.Context) {
 	var data database.Participant
 	err := context.BindJSON(&data)
@@ -49,6 +70,20 @@ func PostParticipant(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, newData)
 }
 
+// Update Participant godoc
+//
+//	@Summary		update one Participant
+//	@Description	Put whole new Participant and overwrite with the id
+//	@Tags			Participant
+//	@Accept			json
+//	@Produce		json
+//	@Param			id			path	string	true	"Participant ID"
+//	@Param			Participant	body	string	true	"Participant"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Failure		404			string	string
+//	@Failure		500			string	string
+//	@Router			/data/participant/whole/{id} [put]
 func UpdateParticipant(context *gin.Context) {
 	var data database.Participant
 	err := context.BindJSON(&data)
@@ -75,6 +110,18 @@ func UpdateParticipant(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, newdata)
 }
 
+// Delete Participant by id godoc
+//
+//	@Summary		delete one Participant
+//	@Description	delete one Participant by id
+//	@Tags			Participant
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path	string	true	"Participant ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Failure		404	string	string
+//	@Router			/data/participant/{id} [delete]
 func DeleteParticipant(context *gin.Context) {
 	id := convert2uint(context, "id")
 	if response.ErrorIdTest(context, id, database.GetParticipantIsExist(id), "Participant") {

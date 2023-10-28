@@ -568,6 +568,122 @@ paths:
       summary: update one OldLaneInfo
       tags:
       - OldLaneInfo
+  /data/participant:
+    post:
+      consumes:
+      - application/json
+      description: Post one new Participant data with new id
+      parameters:
+      - description: Participant
+        in: body
+        name: Participant
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Create one Participant
+      tags:
+      - Participant
+  /data/participant/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete one Participant by id
+      parameters:
+      - description: Participant ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+      summary: delete one Participant
+      tags:
+      - Participant
+    get:
+      description: Get One Participant By ID
+      parameters:
+      - description: Participant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show One Participant By ID
+      tags:
+      - Participant
+  /data/participant/whole/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Put whole new Participant and overwrite with the id
+      parameters:
+      - description: Participant ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Participant
+        in: body
+        name: Participant
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: update one Participant
+      tags:
+      - Participant
   /data/qualification/{id}:
     get:
       description: Get one Qualification with Lanes by id

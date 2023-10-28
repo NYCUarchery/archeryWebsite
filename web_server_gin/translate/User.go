@@ -50,8 +50,8 @@ func GetUserById(context *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			User	body	string	true	"User"
-//	@Success		200			string	string
-//	@Failure		400			string	string
+//	@Success		200		string	string
+//	@Failure		400		string	string
 //	@Router			/data/user [post]
 func PostUser(context *gin.Context) {
 	var data database.User
@@ -79,12 +79,12 @@ func PostUser(context *gin.Context) {
 //	@Tags			User
 //	@Accept			json
 //	@Produce		json
-//	@Param			id			path	string	true	"User ID"
+//	@Param			id		path	string	true	"User ID"
 //	@Param			User	body	string	true	"User"
-//	@Success		200			string	string
-//	@Failure		400			string	string
-//	@Failure		404			string	string
-//	@Failure		500			string	string
+//	@Success		200		string	string
+//	@Failure		400		string	string
+//	@Failure		404		string	string
+//	@Failure		500		string	string
 //	@Router			/data/user/whole/{id} [put]
 func PutUser(context *gin.Context) {
 	var data database.User
