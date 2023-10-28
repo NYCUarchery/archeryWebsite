@@ -15,8 +15,8 @@ import OneLineField from '../components/formFields/OneLineField';
 import SecretField from '../components/formFields/SecretField';
 import MultiLineInput from '../components/formFields/MultiLineField';
 
-import api from '../util/api';
 import routing from '../util/routing';
+import { registerUser } from '../util/api';
 
 
 const SignupPage = () => {
@@ -65,32 +65,20 @@ const SignupPage = () => {
 								password: Yup.string().min(6, "Password should be longer than 6 characters").max(255).required('Password is required'),
 								passwordConfirm: Yup.string().oneOf([Yup.ref("password"), ""], "Password must match").required('Confirm your password'),
 							})}
-							onSubmit={(values, { setErrors, setStatus, setSubmitting }) => {
-								const body = new FormData();
-								body.append("username", values.username);
-								body.append("password", values.password);
-								body.append("overview", values.overview);
-								body.append("organization", values.organization);
-								// body.append("confirmPassword", values.passwordConfirm);
-								fetch(`${api.user.register}`, {
-									method: "POST",
-									body,
-								})
-								.then((res) => {
-									if (res.status === 200) {
+							onSubmit={async (values: any) => {
+								try {
+									const result = await registerUser(values);
+							
+									if (result.success) {
 										window.alert("成功註冊 讚");
 										navigate(routing.Login);
-									} else if (res.status === 400) {
-										window.alert("此帳號已存在");
-									} else if (res.status === 500) {
-										window.alert("後端好像壞啦ouo 怕爆><");
+									} else {
+										window.alert(result.error || "An error occurred");
 									}
-									return res.json();
-								})
-								.then((resjson) => {
-								})
-								.catch((err) => console.log(err));
-						}}
+								} catch (error) {
+									console.log(error);
+								}
+							}}
 						>
 							{({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
 								<form noValidate onSubmit={handleSubmit}>

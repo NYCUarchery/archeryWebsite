@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 import PageContainer from './components/PageContainer';
 
 import { userStore } from './util/userReducer';
-import { GetUid } from './util/api2';
+import { GetUid } from './util/api';
 
 function App() {
   const [sideBarOpen, setSideBarOpen] = useState(false);

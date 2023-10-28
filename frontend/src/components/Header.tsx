@@ -24,7 +24,7 @@ import { useNavigate } from 'react-router-dom';
 
 import Avatar from '@mui/material/Avatar';
 import routing from '../util/routing';
-import { Logout } from '../util/api2';
+import { Logout } from '../util/api';
 import { userStore } from '../util/userReducer';
 
 interface HeaderProps {
@@ -33,6 +33,7 @@ interface HeaderProps {
 
 const Header: FC<HeaderProps> = ({ setSideBarOpen }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const uid = userStore.getState().uid
 
   const handleMenu = (event: MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -110,7 +111,7 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen }) => {
                                   Logout(() => navigate(routing.Login))
                                 }}
                               >
-                                登出
+                                {uid >=0? "登出":"登入"}
                               </MenuItem>
                             </MenuList>
                           </Box>

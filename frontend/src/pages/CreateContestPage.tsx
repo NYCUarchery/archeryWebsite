@@ -2,21 +2,14 @@ import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import FormControl from '@mui/material/FormControl';
-import TextField from '@mui/material/TextField';
-import FormHelperText from '@mui/material/FormHelperText';
-import MenuItem from '@mui/material/MenuItem';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
 import Button from '@mui/material/Button';
-import Box from '@mui/material/Box';
-import Divider from '@mui/material/Divider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns'
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 import { useNavigate } from 'react-router-dom';
-import { Formik, FieldArray, Field } from 'formik';
-import formatISO from 'date-fns/formatISO';
+import { Formik, FieldArray } from 'formik';
 import * as Yup from 'yup';
 
 import OneLineField from '../components/formFields/OneLineField';
@@ -24,8 +17,8 @@ import MultiLineInput from '../components/formFields/MultiLineField';
 import NumberField from '../components/formFields/NumberField';
 
 
-import api from '../util/api';
 import routing from '../util/routing';
+import { createCompetition } from '../util/api';
 
 
 const CreateContestPage = () => {
@@ -52,53 +45,18 @@ const CreateContestPage = () => {
 								name: Yup.string().max(255).required('請填入名稱'),
 								// date: Yup.date().required('請填入日期'),
 							})}
-							onSubmit={(values, { setErrors, setStatus, setSubmitting }) => {
-								const dateString = formatISO(values.date);
-								const body = new FormData();
-								body.append("name", values.name);
-								body.append("date", dateString);
-								body.append("overview", values.overview);
-								body.append("organization", values.organization);
-								body.append("scoreboardURL", values.scoreboardURL);
-
-								values.categories.map((v, i) => {
-									body.append("categories", JSON.stringify(v));
-								})
-
-								fetch(`${api.competition.create}`, {
-									method: "POST",
-									credentials: "include",
-									body,
-								})
-								.then((res) => {
-									if (res.status === 200) {
-										// window.alert("創造成功");
-									} else if (res.status === 400) {
-										// window.alert("名稱、日期、資訊有誤");
-									} else if (res.status === 500) {
-										window.alert("後端好像壞啦ouo 怕爆><");
+							onSubmit={async (values) => {
+								try {
+									const result = await createCompetition(values);
+									if (result?.success) {
+										window.alert(`大成功 id= ${result?.error}`);
+										navigate(routing.Contests);
 									}
-									return res.json();
-								})
-								.then((resjson) => {
-									if (!resjson["result"]) {return;}
-									switch(resjson["result"]) {
-										case "competition name exists":
-											window.alert("比賽名稱已存在");
-											break;
-										case "cannot parse date string":
-											window.alert("日期字串有誤（我的問題）");
-											break;
-										case "invalid categories":
-											window.alert("組別資料有誤（還是我的問題）");
-											break;
-										case "success":
-											window.alert(`大成功 id= ${resjson["compID"]}`);
-											navigate(routing.Contests);
-											break;
-									}
-								})
-								.catch((err) => console.log(err));
+									else window.alert(`大失敗: ${result?.error}`);
+									// Handle success or other logic here
+								} catch (error) {
+									// Handle errors here
+								}
 							}}
 						>
 							{({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values, setFieldValue }) => {
