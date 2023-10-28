@@ -65,6 +65,7 @@ func GetAllLaneByCompetitionId(context *gin.Context) {
 }
 
 // when competition is created, lane is created
+// noTypeLane with LaneNumber == 0
 func PostLaneThroughCompetition(context *gin.Context, competitionId uint, noTypeGroupId uint, laneNumber int) bool {
 	var data database.Lane
 	/*set competition ID*/
@@ -86,7 +87,17 @@ func PostLaneThroughCompetition(context *gin.Context, competitionId uint, noType
 }
 
 // lane need to update qualification id
+// noTypeLane cannot be updated
 func UpdateLaneQualificationId(context *gin.Context, id uint, qualificationId uint) bool {
+	IsExist, data := IsGetLane(context, id)
+	/*check noTypeLane*/
+	if !IsExist {
+		response.ErrorIdTest(context, id, IsExist, "Lane")
+		return false
+	} else if data.LaneNumber == 0 {
+		response.ErrorIdTest(context, id, false, "Lane noTypeLane cannot be updated")
+		return false
+	}
 	/*update data*/
 	err := database.UpdateLaneQualificationId(id, qualificationId)
 	if response.ErrorInternalErrorTest(context, id, "Update Lane Qualification", err) {

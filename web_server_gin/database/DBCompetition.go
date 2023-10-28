@@ -12,10 +12,8 @@ type Competition struct { // DB : game_info
 	GroupsNum                int            `json:"groups_num"`
 	NoTypeGroupId            uint           `json:"no_type_group_id"`
 	LanesNum                 int            `json:"lanes_num"`
-	FirstLaneId              uint           `json:"first_lane_id"`
+	NoTypeLaneId             uint           `json:"no_type_lane_id"`
 	CurrentPhase             int            `json:"current_phase"`
-	CurrentPhaseKind         string         `json:"current_phase_kind"`
-	CurrentStage             uint           `json:"current_stage"`
 	QualificationIsActive    bool           `json:"qualification_is_active"`
 	EliminationIsActive      bool           `json:"elimination_is_active"`
 	TeamEliminationIsActive  bool           `json:"team_elimination_is_active"`
@@ -102,8 +100,8 @@ func GetCompetitionLaneNum(ID uint) int {
 	DB.Table("competitions").Where("id = ?", ID).First(&data)
 	return data.LanesNum
 }
-func UpdateCompetitionFirstLaneId(ID uint, newFirstLaneId uint) bool {
-	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("first_lane_id", newFirstLaneId)
+func UpdateCompetitionNoTypeLaneId(ID uint, newNoTypeLaneId uint) bool {
+	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("no_type_lane_id", newNoTypeLaneId)
 	isChanged := result.RowsAffected != 0
 	return isChanged
 }

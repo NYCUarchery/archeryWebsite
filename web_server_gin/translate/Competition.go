@@ -131,18 +131,20 @@ func PostCompetition(context *gin.Context) {
 		return
 	}
 	/*create lanes, after get competitionId*/
-	for i := 0; i < data.LanesNum; i++ {
-		success := PostLaneThroughCompetition(context, newId, noTypeGroupId, i+1)
+	for i := 0; i <= data.LanesNum; i++ {
+		success := PostLaneThroughCompetition(context, newId, noTypeGroupId, i)
 		if !success {
 			return
 		}
 	}
-	/*auto write firstLaneId and noTypeGroupId*/
-	newData.FirstLaneId = database.GetFirstLaneId(newId)
-	ischanged := database.UpdateCompetitionFirstLaneId(newId, newData.FirstLaneId)
-	if response.AcceptNotChange(context, id, ischanged, "Update Competition FirstLaneId") {
+	/*auto write noTypeLaneId*/
+	newData.NoTypeLaneId = database.GetNoTypeLaneId(newId)
+	fmt.Printf("noTypeLaneId: %d\n", newData.NoTypeLaneId)
+	ischanged := database.UpdateCompetitionNoTypeLaneId(newId, newData.NoTypeLaneId)
+	if response.AcceptNotChange(context, id, ischanged, "Update Competition NoTypeLaneId") {
 		return
 	}
+	/*auto write noTypeGroupId*/
 	newData.NoTypeGroupId = noTypeGroupId
 	ischanged = database.UpdateCompetitionNoTypeGroupId(newId, newData.NoTypeGroupId)
 	if response.AcceptNotChange(context, id, ischanged, "Update Competition FirstLaneId") {
@@ -170,7 +172,7 @@ func UpdateCompetition(context *gin.Context) {
 	var data database.Competition
 	id := convert2uint(context, "id")
 	/*write id for update success*/
-	data.ID = uint(id)
+	data.ID = id
 	err := context.BindJSON(&data)
 	/*parse data check*/
 	if response.ErrorReceiveDataTest(context, id, "Competition", err) {
@@ -182,7 +184,7 @@ func UpdateCompetition(context *gin.Context) {
 	/*replace GroupNum, LaneNum, FirstLaneId, noTyoeGroupId with old one*/
 	data.GroupsNum = database.GetCompetitionGroupNum(id)
 	data.LanesNum = database.GetCompetitionLaneNum(id)
-	data.FirstLaneId = uint(database.GetFirstLaneId(uint(id)))
+	data.NoTypeLaneId = database.GetNoTypeLaneId(id)
 	data.NoTypeGroupId = database.GetCompetitionNoTypeGroupId(id)
 
 	/*update and check change*/

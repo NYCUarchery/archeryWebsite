@@ -105,11 +105,17 @@ func UpdateQualificationByID(context *gin.Context) {
 	if !success {
 		return
 	}
+	/*check if qualification is belong to noTypeGroup*/
+	_, Group := IsGetGroupInfo(context, id)
+	if Group.GroupIndex == -1 {
+		response.ErrorIdTest(context, id, false, "Qualification is belong to noTypeGroup, when update Qualification")
+		return
+	}
 	/*check if lane start and end is valid*/
 	group, _ := database.GetGroupInfoById(id)
 	competitionId := group.CompetitionId
 	_, competition := IsGetOnlyCompetition(context, competitionId)
-	firstLaneId := competition.FirstLaneId
+	noTypeLaneId := competition.NoTypeGroupId
 	laneNum := competition.LanesNum
 	if data.StartLaneNumber <= 0 || data.StartLaneNumber > laneNum || data.EndLaneNumber <= 0 || data.EndLaneNumber > laneNum || data.StartLaneNumber > data.EndLaneNumber {
 		errorMessage := fmt.Sprintf("Lane number is invalid start: %d end: %d", data.StartLaneNumber, data.EndLaneNumber)
@@ -118,7 +124,7 @@ func UpdateQualificationByID(context *gin.Context) {
 	}
 
 	/*check if lanes are occupied*/
-	laneQualificationIds := database.GetLaneQualificationId(firstLaneId, data.StartLaneNumber, data.EndLaneNumber)
+	laneQualificationIds := database.GetLaneQualificationId(noTypeLaneId, data.StartLaneNumber, data.EndLaneNumber)
 	noTypeGroupId := competition.NoTypeGroupId
 	for index, laneQualificationId := range laneQualificationIds {
 		lanenumber := index + data.StartLaneNumber
@@ -142,7 +148,7 @@ func UpdateQualificationByID(context *gin.Context) {
 	oldLaneStart := oldData.StartLaneNumber
 	oldLaneEnd := oldData.EndLaneNumber
 	for index := oldLaneStart; index <= oldLaneEnd; index++ {
-		laneId := firstLaneId + uint(index-1)
+		laneId := noTypeLaneId + uint(index+1)
 		fmt.Printf("laneId: %d\n", laneId)
 		fmt.Printf("index: %d\n", index)
 		success := UpdateLaneQualificationId(context, laneId, noTypeGroupId)
@@ -152,7 +158,7 @@ func UpdateQualificationByID(context *gin.Context) {
 	}
 	fmt.Printf("\n")
 	for index := data.StartLaneNumber; index <= data.EndLaneNumber; index++ {
-		laneId := firstLaneId + uint(index-1)
+		laneId := noTypeLaneId + uint(index)
 		fmt.Printf("laneId: %d\n", laneId)
 		fmt.Printf("index: %d\n", index)
 		success := UpdateLaneQualificationId(context, laneId, id)
@@ -184,11 +190,11 @@ func DeleteQualificationThroughGroup(context *gin.Context, id uint) bool {
 	competitionId := group.CompetitionId
 	_, competition := IsGetOnlyCompetition(context, competitionId)
 	noTypeGroupId := competition.NoTypeGroupId
-	firstLaneId := competition.FirstLaneId
+	noTypeLaneId := competition.NoTypeLaneId
 	oldLaneStart := oldData.StartLaneNumber
 	oldLaneEnd := oldData.EndLaneNumber
 	for index := oldLaneStart; index <= oldLaneEnd; index++ {
-		laneId := firstLaneId + uint(index-1)
+		laneId := noTypeLaneId + uint(index-1)
 		success := UpdateLaneQualificationId(context, laneId, noTypeGroupId)
 		if !success {
 			return false

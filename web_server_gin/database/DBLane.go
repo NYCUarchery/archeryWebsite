@@ -24,7 +24,7 @@ func GetLaneById(id uint) (Lane, error) {
 	return lane, result.Error
 }
 
-func GetFirstLaneId(competitionId uint) uint {
+func GetNoTypeLaneId(competitionId uint) uint {
 	var data Lane
 	DB.Model(&Lane{}).Where("competition_id = ?", competitionId).First(&data)
 	return data.ID
@@ -36,9 +36,9 @@ func GetAllLaneByCompetitionId(competitionId uint) ([]Lane, error) {
 	return data, result.Error
 }
 
-func GetLaneQualificationId(firstLaneId uint, start int, end int) []uint {
+func GetLaneQualificationId(NoTypeLaneId uint, start int, end int) []uint {
 	var data []uint
-	DB.Model(&Lane{}).Where("id >= ? AND id <= ?", firstLaneId+uint(start-1), firstLaneId+uint(end-1)).Pluck("qualification_id", &data)
+	DB.Model(&Lane{}).Where("id >= ? AND id <= ?", NoTypeLaneId+uint(start), NoTypeLaneId+uint(end)).Pluck("qualification_id", &data)
 	return data
 }
 
