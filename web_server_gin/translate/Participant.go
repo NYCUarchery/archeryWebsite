@@ -61,6 +61,16 @@ func PostParticipant(context *gin.Context) {
 	if response.ErrorInternalErrorTest(context, 0, "Post User", err) {
 		return
 	}
+	/*check if competition id is exist*/
+	competitionId := data.CompetitionID
+	if response.ErrorIdTest(context, competitionId, database.GetCompetitionIsExist(competitionId), "Competition when post Participant ") {
+		return
+	}
+	/*check if User id is exist*/
+	userId := data.UserID
+	if response.ErrorIdTest(context, userId, database.GetUserIsExist(userId), "User when post Participant ") {
+		return
+	}
 	id := data.ID
 	IsExist, newData := IsGetParticipant(context, id)
 	if !IsExist {

@@ -49,10 +49,10 @@ func GetUserWParticipantsById(context *gin.Context) {
 		return
 	}
 	data, err := database.GetUserWParticipantsById(id)
-	if response.ErrorInternalErrorTest(context, id, "Get User", err) {
+	if response.ErrorInternalErrorTest(context, id, "Get User with participants ", err) {
 		return
 	}
-	response.AcceptPrint(id, fmt.Sprint(data), "User")
+	response.AcceptPrint(id, fmt.Sprint(data), "User with participants ")
 	context.IndentedJSON(http.StatusOK, data)
 }
 
@@ -77,6 +77,7 @@ func PostUser(context *gin.Context) {
 	if response.ErrorInternalErrorTest(context, 0, "Post User", err) {
 		return
 	}
+
 	id := data.ID
 	IsExist, newData := IsGetUser(context, id)
 	if !IsExist {

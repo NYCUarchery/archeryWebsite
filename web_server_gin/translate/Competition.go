@@ -71,6 +71,20 @@ func GetCompetitionWGroupsByID(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, data)
 }
 
+func GetCompetitionWParticipantsByID(context *gin.Context) {
+	var data database.Competition
+	id := convert2uint(context, "id")
+	if response.ErrorIdTest(context, id, database.GetCompetitionIsExist(id), "Competition") {
+		return
+	}
+	data, err := database.GetCompetitionWParticipants(id)
+	if response.ErrorInternalErrorTest(context, id, "Get Competition with participants ", err) {
+		return
+	}
+	response.AcceptPrint(id, fmt.Sprint(data), "Competition with participants ")
+	context.IndentedJSON(http.StatusOK, data)
+}
+
 // Post Competition godoc
 //
 //	@Summary		Create one Competition and related data
