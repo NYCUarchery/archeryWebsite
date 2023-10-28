@@ -285,3 +285,28 @@ func DeleteGroupInfoById(context *gin.Context, id uint) (bool, bool) {
 	database.MinusOneCompetitionGroupNum(competitionId)
 	return true, affected
 }
+
+func DeleteGroupInfoByIdThroughCompetition(context *gin.Context, id uint) (bool, bool) {
+	/*check data exist*/
+	success, group := IsGetGroupInfo(context, id)
+	if !success {
+		return false, false
+	}
+	/*update competition group_num*/
+	competitionId := group.CompetitionId
+	isExist, _ := IsGetOnlyCompetition(context, competitionId)
+	if !isExist {
+		return false, false
+	}
+	/*delete qualification*/
+	if !DeleteQualificationThroughGroupThroughCompetition(context, id) {
+		return false, false
+	}
+	/*delete group*/
+	affected, err := database.DeleteGroupInfo(id)
+	if response.ErrorInternalErrorTest(context, id, "Delete GroupInfo", err) {
+		return false, false
+	}
+	database.MinusOneCompetitionGroupNum(competitionId)
+	return true, affected
+}

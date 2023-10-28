@@ -229,7 +229,7 @@ func DeleteCompetition(context *gin.Context) {
 	/*delete all related groups*/
 	for _, group := range data.Groups {
 		groupId := group.ID
-		success, _ := DeleteGroupInfoById(context, groupId)
+		success, _ := DeleteGroupInfoByIdThroughCompetition(context, groupId)
 		if !success {
 			return
 		}

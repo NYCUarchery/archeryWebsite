@@ -137,10 +137,10 @@ func UpdateLanePlayerNumMinusOne(context *gin.Context, laneId uint) bool {
 // lane is deleted when competition is deleted
 func DeleteLaneByCompetitionId(context *gin.Context, competitionId uint) bool {
 	/*delete data*/
-	err := database.DeleteLane(competitionId)
-	if response.ErrorInternalErrorTest(context, competitionId, "Delete Qualification", err) {
+	err := database.DeleteLaneByCompetitionId(competitionId)
+	if response.ErrorInternalErrorTest(context, competitionId, "Delete Lane by competition ", err) {
 		return false
 	}
-	response.AcceptPrint(competitionId, fmt.Sprint(competitionId), "Qualification")
+	response.AcceptPrint(competitionId, fmt.Sprint(competitionId), "Delete Lane by competition")
 	return true
 }

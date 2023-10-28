@@ -57,7 +57,7 @@ func UpdateLaneQualificationId(id uint, qualificationId uint) error {
 	return result.Error
 }
 
-func DeleteLane(competitionId uint) error {
+func DeleteLaneByCompetitionId(competitionId uint) error {
 	result := DB.Delete(&Lane{}, "competition_id =?", competitionId)
 	return result.Error
 }
