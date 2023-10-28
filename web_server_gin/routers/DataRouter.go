@@ -18,6 +18,9 @@ func AddDataRouter(data *gin.RouterGroup) {
 	user := data.Group("user")
 	userRouter(user)
 
+	participant := data.Group("participant")
+	participantRouter(participant)
+
 	competition := data.Group("competition")
 	competitionRouter(competition)
 
@@ -39,6 +42,13 @@ func userRouter(data *gin.RouterGroup) {
 	data.POST("/", translate.PostUser)
 	data.PUT("/whole/:id", translate.PutUser)
 	data.DELETE("/:id", translate.DeleteUser)
+}
+
+func participantRouter(data *gin.RouterGroup) {
+	data.GET("/:id", translate.GetParticipant)
+	data.POST("/", translate.PostParticipant)
+	data.PUT("/whole/:id", translate.UpdateParticipant)
+	data.DELETE("/:id", translate.DeleteParticipant)
 }
 
 func competitionRouter(data *gin.RouterGroup) {

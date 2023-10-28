@@ -66,7 +66,10 @@ func getDSN() {
 func DatabaseInitial() {
 	connectDB()
 	InitOldLaneInfo()
+
 	InitUser()
+	InitParticipant()
+
 	InitCompetition()
 	InitGroupInfo()
 	InitQualification()

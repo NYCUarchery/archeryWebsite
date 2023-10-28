@@ -56,15 +56,14 @@ func GetUserById(context *gin.Context) {
 func PostUser(context *gin.Context) {
 	var data database.User
 	err := context.BindJSON(&data)
-	id := convert2uint(context, "id")
-	if response.ErrorReceiveDataTest(context, id, "User", err) {
+	if response.ErrorReceiveDataTest(context, 0, "User", err) {
 		return
 	}
 	data, err = database.CreateUser(data)
-	if response.ErrorInternalErrorTest(context, id, "Post User", err) {
+	if response.ErrorInternalErrorTest(context, 0, "Post User", err) {
 		return
 	}
-	id = data.ID
+	id := data.ID
 	IsExist, newData := IsGetUser(context, id)
 	if !IsExist {
 		return
