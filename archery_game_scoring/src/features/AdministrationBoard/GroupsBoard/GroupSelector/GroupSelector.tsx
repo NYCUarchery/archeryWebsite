@@ -34,7 +34,7 @@ export default function GroupSelector({ groups }: Props) {
   for (let i = 0; i < groupsNum; i++) {
     buttons.push(
       <ToggleButton className="group_selector_button" key={i} value={i}>
-        {groupNames[i] ? groupNames[i] : `第${i + 1}組`}
+        {groupNames ? groupNames[i] : `不知道，所就叫第${i}組`}
       </ToggleButton>
     );
   }

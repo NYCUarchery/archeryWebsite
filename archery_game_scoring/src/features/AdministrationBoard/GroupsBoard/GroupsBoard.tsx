@@ -9,10 +9,11 @@ function fetchCompetitionById(id: number) {
 }
 
 export default function GroupsBoard() {
-  const { data, isLoading, isError } = useQuery(
+  const { data, isLoading } = useQuery(
     ["group", 1],
     () => fetchCompetitionById(1),
     {
+      retry: false,
       select: (data: any) => {
         const groups = data?.data.groups;
         return groups;
@@ -24,23 +25,12 @@ export default function GroupsBoard() {
     return (
       <Box
         sx={{
-          fontSize: "100px",
+          fontSize: "50px",
         }}
       >
         載入中辣
       </Box>
     );
-  if (isError) {
-    return (
-      <Box
-        sx={{
-          fontSize: "100px",
-        }}
-      >
-        載入失敗辣
-      </Box>
-    );
-  }
 
   return (
     <div className="groups_board">
