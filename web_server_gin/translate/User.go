@@ -21,6 +21,16 @@ func IsGetUser(context *gin.Context, id uint) (bool, database.User) {
 	return true, data
 }
 
+// Get One User By ID godoc
+//
+//	@Summary		Show One User By ID
+//	@Description	Get One User By ID
+//	@Tags			User
+//	@Produce		json
+//	@Param			id	path	int	true	"User ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/data/user/{id} [get]
 func GetUserById(context *gin.Context) {
 	var data database.User
 	id := convert2uint(context, "id")
@@ -32,6 +42,17 @@ func GetUserById(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, data)
 }
 
+// Post User godoc
+//
+//	@Summary		Create one User
+//	@Description	Post one new User data with new id
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			User	body	string	true	"User"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Router			/data/user [post]
 func PostUser(context *gin.Context) {
 	var data database.User
 	err := context.BindJSON(&data)
@@ -52,6 +73,20 @@ func PostUser(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, newData)
 }
 
+// Update User godoc
+//
+//	@Summary		update one User
+//	@Description	Put whole new User and overwrite with the id
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			id			path	string	true	"User ID"
+//	@Param			User	body	string	true	"User"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Failure		404			string	string
+//	@Failure		500			string	string
+//	@Router			/data/user/whole/{id} [put]
 func PutUser(context *gin.Context) {
 	var data database.User
 	err := context.BindJSON(&data)
@@ -75,6 +110,18 @@ func PutUser(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, newData)
 }
 
+// Delete User by id godoc
+//
+//	@Summary		delete one User
+//	@Description	delete one User by id
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path	string	true	"User ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Failure		404	string	string
+//	@Router			/data/user/{id} [delete]
 func DeleteUser(context *gin.Context) {
 	id := convert2uint(context, "id")
 	success, err := database.DeleteUser(id)
