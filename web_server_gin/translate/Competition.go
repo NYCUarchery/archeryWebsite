@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func IsGetOnlyCompetition(context *gin.Context, id int) (bool, database.Competition) {
+func IsGetOnlyCompetition(context *gin.Context, id uint) (bool, database.Competition) {
 	if response.ErrorIdTest(context, id, database.GetCompetitionIsExist(id), "Competition") {
 		return false, database.Competition{}
 	}
@@ -21,7 +21,7 @@ func IsGetOnlyCompetition(context *gin.Context, id int) (bool, database.Competit
 	return true, data
 }
 
-func IsGetCompetitionWGroup(context *gin.Context, id int) (bool, database.Competition) {
+func IsGetCompetitionWGroup(context *gin.Context, id uint) (bool, database.Competition) {
 	if response.ErrorIdTest(context, id, database.GetCompetitionIsExist(id), "Competition") {
 		return false, database.Competition{}
 	}
@@ -44,7 +44,7 @@ func IsGetCompetitionWGroup(context *gin.Context, id int) (bool, database.Compet
 //	@Failure		400	string	string
 //	@Router			/data/competition/{id} [get]
 func GetOnlyCompetitionByID(context *gin.Context) {
-	id := convert2int(context, "id")
+	id := convert2uint(context, "id")
 	isExist, data := IsGetOnlyCompetition(context, id)
 	if !isExist {
 		return
@@ -63,7 +63,7 @@ func GetOnlyCompetitionByID(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/data/competition/groups/{id} [get]
 func GetCompetitionWGroupsByID(context *gin.Context) {
-	id := convert2int(context, "id")
+	id := convert2uint(context, "id")
 	isExist, data := IsGetCompetitionWGroup(context, id)
 	if !isExist {
 		return
@@ -85,7 +85,7 @@ func GetCompetitionWGroupsByID(context *gin.Context) {
 func PostCompetition(context *gin.Context) {
 	var data database.Competition
 	err := context.BindJSON(&data)
-	id := int(data.ID)
+	id := data.ID
 	/*parse data check*/
 	if response.ErrorReceiveDataTest(context, id, "Competition", err) {
 		return
@@ -96,7 +96,7 @@ func PostCompetition(context *gin.Context) {
 	data.GroupsNum = -1
 
 	newData, err := database.PostCompetition(data)
-	newId := int(newData.ID)
+	newId := newData.ID
 	if response.ErrorInternalErrorTest(context, newId, "Post GroupInfo", err) {
 		return
 	}
@@ -108,19 +108,19 @@ func PostCompetition(context *gin.Context) {
 	}
 	/*create lanes, after get competitionId*/
 	for i := 0; i < data.LanesNum; i++ {
-		success := PostLaneThroughCompetition(context, newId, int(noTypeGroupId), i+1)
+		success := PostLaneThroughCompetition(context, newId, noTypeGroupId, i+1)
 		if !success {
 			return
 		}
 	}
 	/*auto write firstLaneId and noTypeGroupId*/
-	newData.FirstLaneId = uint(database.GetFirstLaneId(uint(newId)))
-	ischanged := database.UpdateCompetitionFirstLaneId(newId, int(newData.FirstLaneId))
+	newData.FirstLaneId = database.GetFirstLaneId(newId)
+	ischanged := database.UpdateCompetitionFirstLaneId(newId, newData.FirstLaneId)
 	if response.AcceptNotChange(context, id, ischanged, "Update Competition FirstLaneId") {
 		return
 	}
-	newData.NoTypeGroupId = int(noTypeGroupId)
-	ischanged = database.UpdateCompetitionNoTypeGroupId(newId, int(newData.NoTypeGroupId))
+	newData.NoTypeGroupId = noTypeGroupId
+	ischanged = database.UpdateCompetitionNoTypeGroupId(newId, newData.NoTypeGroupId)
 	if response.AcceptNotChange(context, id, ischanged, "Update Competition FirstLaneId") {
 		return
 	}
@@ -144,7 +144,7 @@ func PostCompetition(context *gin.Context) {
 //	@Router			/data/competition/whole/{id} [put]
 func UpdateCompetition(context *gin.Context) {
 	var data database.Competition
-	id := convert2int(context, "id")
+	id := convert2uint(context, "id")
 	/*write id for update success*/
 	data.ID = uint(id)
 	err := context.BindJSON(&data)
@@ -189,7 +189,7 @@ func UpdateCompetition(context *gin.Context) {
 //	@Failure		404	string	string
 //	@Router			/data/competition/{id} [delete]
 func DeleteCompetition(context *gin.Context) {
-	id := convert2int(context, "id")
+	id := convert2uint(context, "id")
 	/*check data exist*/
 	isExist, data := IsGetCompetitionWGroup(context, id)
 	if !isExist {
@@ -202,7 +202,7 @@ func DeleteCompetition(context *gin.Context) {
 	}
 	/*delete all related groups*/
 	for _, group := range data.Groups {
-		groupId := int(group.ID)
+		groupId := group.ID
 		success, _ := DeleteGroupInfoById(context, groupId)
 		if !success {
 			return

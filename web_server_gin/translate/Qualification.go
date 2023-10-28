@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func IsGetQualification(context *gin.Context, id int) (bool, database.Qualification) {
+func IsGetQualification(context *gin.Context, id uint) (bool, database.Qualification) {
 	if response.ErrorIdTest(context, id, database.GetQualificationIsExist(id), "Qualification") {
 		return false, database.Qualification{}
 	}
@@ -32,7 +32,7 @@ func IsGetQualification(context *gin.Context, id int) (bool, database.Qualificat
 //	@Failure		400	string	string
 //	@Router			/data/qualification/{id} [get]
 func GetOnlyQualificationByID(context *gin.Context) {
-	id := convert2int(context, "id")
+	id := convert2uint(context, "id")
 	isExist, data := IsGetQualification(context, id)
 	if !isExist {
 		return
@@ -51,7 +51,7 @@ func GetOnlyQualificationByID(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/data/qualification/{id} [get]
 func GetQualificationWLanesByID(context *gin.Context) {
-	id := convert2int(context, "id")
+	id := convert2uint(context, "id")
 	if response.ErrorIdTest(context, id, database.GetQualificationIsExist(id), "Qualification") {
 		return
 	}
@@ -65,7 +65,7 @@ func GetQualificationWLanesByID(context *gin.Context) {
 
 // when group is created, qualification is created
 // share same id with group
-func PostQualificationThroughGroup(context *gin.Context, id int) bool {
+func PostQualificationThroughGroup(context *gin.Context, id uint) bool {
 	var data database.Qualification
 	/*insert data*/
 	data, err := database.PostQualification(data)
@@ -93,7 +93,7 @@ func PostQualificationThroughGroup(context *gin.Context, id int) bool {
 func UpdateQualificationByID(context *gin.Context) {
 	var data database.Qualification
 	err := context.BindJSON(&data)
-	id := convert2int(context, "id")
+	id := convert2uint(context, "id")
 	/*parse data check*/
 	if response.ErrorReceiveDataTest(context, id, "Qualification", err) {
 		return
@@ -107,7 +107,7 @@ func UpdateQualificationByID(context *gin.Context) {
 	}
 	/*check if lane start and end is valid*/
 	group, _ := database.GetGroupInfoById(id)
-	competitionId := int(group.CompetitionId)
+	competitionId := group.CompetitionId
 	_, competition := IsGetOnlyCompetition(context, competitionId)
 	firstLaneId := competition.FirstLaneId
 	laneNum := competition.LanesNum
@@ -118,8 +118,8 @@ func UpdateQualificationByID(context *gin.Context) {
 	}
 
 	/*check if lanes are occupied*/
-	laneQualificationIds := database.GetLaneQualificationId(int(firstLaneId), data.StartLaneNumber, data.EndLaneNumber)
-	noTypeGroupId := int(competition.NoTypeGroupId)
+	laneQualificationIds := database.GetLaneQualificationId(firstLaneId, data.StartLaneNumber, data.EndLaneNumber)
+	noTypeGroupId := competition.NoTypeGroupId
 	for index, laneQualificationId := range laneQualificationIds {
 		lanenumber := index + data.StartLaneNumber
 		fmt.Printf("laneQualificationId: %d\n", laneQualificationId)
@@ -142,7 +142,7 @@ func UpdateQualificationByID(context *gin.Context) {
 	oldLaneStart := oldData.StartLaneNumber
 	oldLaneEnd := oldData.EndLaneNumber
 	for index := oldLaneStart; index <= oldLaneEnd; index++ {
-		laneId := int(firstLaneId) + index - 1
+		laneId := firstLaneId + uint(index-1)
 		fmt.Printf("laneId: %d\n", laneId)
 		fmt.Printf("index: %d\n", index)
 		success := UpdateLaneQualificationId(context, laneId, noTypeGroupId)
@@ -152,7 +152,7 @@ func UpdateQualificationByID(context *gin.Context) {
 	}
 	fmt.Printf("\n")
 	for index := data.StartLaneNumber; index <= data.EndLaneNumber; index++ {
-		laneId := int(firstLaneId) + index - 1
+		laneId := firstLaneId + uint(index-1)
 		fmt.Printf("laneId: %d\n", laneId)
 		fmt.Printf("index: %d\n", index)
 		success := UpdateLaneQualificationId(context, laneId, id)
@@ -173,7 +173,7 @@ func UpdateQualificationByID(context *gin.Context) {
 // delete qualification when group is deleted
 // cannot delete qualification solely
 // update lanes' qualification id to 0
-func DeleteQualificationThroughGroup(context *gin.Context, id int) bool {
+func DeleteQualificationThroughGroup(context *gin.Context, id uint) bool {
 	/*check data exist*/
 	isExist, oldData := IsGetQualification(context, id)
 	if !isExist {
@@ -181,14 +181,14 @@ func DeleteQualificationThroughGroup(context *gin.Context, id int) bool {
 	}
 	/*update lanes' qualification Id*/
 	group, _ := database.GetGroupInfoById(id)
-	competitionId := int(group.CompetitionId)
+	competitionId := group.CompetitionId
 	_, competition := IsGetOnlyCompetition(context, competitionId)
-	noTypeGroupId := int(competition.NoTypeGroupId)
+	noTypeGroupId := competition.NoTypeGroupId
 	firstLaneId := competition.FirstLaneId
 	oldLaneStart := oldData.StartLaneNumber
 	oldLaneEnd := oldData.EndLaneNumber
 	for index := oldLaneStart; index <= oldLaneEnd; index++ {
-		laneId := int(firstLaneId) + index - 1
+		laneId := firstLaneId + uint(index-1)
 		success := UpdateLaneQualificationId(context, laneId, noTypeGroupId)
 		if !success {
 			return false

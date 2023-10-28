@@ -10,8 +10,8 @@ import (
 )
 
 type groupIdsForReorder struct {
-	CompetitionId int   `json:"competition_id"`
-	GroupIds      []int `json:"group_ids"`
+	CompetitionId uint   `json:"competition_id"`
+	GroupIds      []uint `json:"group_ids"`
 }
 
 //	{
@@ -19,7 +19,7 @@ type groupIdsForReorder struct {
 //		"group_ids" : [1, 2, 3, 4, 5, 6, 7, 8]
 //	}
 
-func IsGetGroupInfo(context *gin.Context, id int) (bool, database.Group) {
+func IsGetGroupInfo(context *gin.Context, id uint) (bool, database.Group) {
 	if response.ErrorIdTest(context, id, database.GetGroupIsExist(id), "GroupInfo") {
 		return false, database.Group{}
 	}
@@ -42,7 +42,7 @@ func IsGetGroupInfo(context *gin.Context, id int) (bool, database.Group) {
 //	@Failure		400	string	string
 //	@Router			/data/groupinfo/{id} [get]
 func GetGroupInfoByID(context *gin.Context) {
-	id := convert2int(context, "id")
+	id := convert2uint(context, "id")
 	isExist, data := IsGetGroupInfo(context, id)
 	if !isExist {
 		return
@@ -71,27 +71,27 @@ func PostGroupInfo(context *gin.Context) {
 		return
 	}
 	/*competition id check*/
-	if response.ErrorIdTest(context, int(data.CompetitionId), database.GetCompetitionIsExist(int(data.CompetitionId)), "Competition(in groupinfo)") {
+	if response.ErrorIdTest(context, data.CompetitionId, database.GetCompetitionIsExist(data.CompetitionId), "Competition(in groupinfo)") {
 		return
 	}
 	/*auto write GroupIndex*/
-	data.GroupIndex = database.GetCompetitionGroupNum(int(data.CompetitionId))
+	data.GroupIndex = database.GetCompetitionGroupNum(data.CompetitionId)
 
 	newData, err := database.CreateGroupInfo(data)
-	if response.ErrorInternalErrorTest(context, int(newData.ID), "Post GroupInfo", err) {
+	if response.ErrorInternalErrorTest(context, newData.ID, "Post GroupInfo", err) {
 		return
 	}
 	/*auto create qualification*/
-	if !PostQualificationThroughGroup(context, int(newData.ID)) {
+	if !PostQualificationThroughGroup(context, newData.ID) {
 		return
 	}
 	/*update competition.groupnum*/
-	database.AddOneCompetitionGroupNum(int(data.CompetitionId))
+	database.AddOneCompetitionGroupNum(data.CompetitionId)
 	context.IndentedJSON(http.StatusOK, newData)
 }
 
 // Post 無組別 group, when competition is created
-func PostNoTypeGroupInfo(context *gin.Context, competitionId int) (bool, uint) {
+func PostNoTypeGroupInfo(context *gin.Context, competitionId uint) (bool, uint) {
 	var data database.Group
 	/*auto write GroupIndex*/
 	data.GroupIndex = database.GetCompetitionGroupNum(competitionId)
@@ -101,16 +101,16 @@ func PostNoTypeGroupInfo(context *gin.Context, competitionId int) (bool, uint) {
 	data.GroupName = "無組別"
 
 	newData, err := database.CreateGroupInfo(data)
-	if response.ErrorInternalErrorTest(context, int(newData.ID), "Post GroupInfo", err) {
+	if response.ErrorInternalErrorTest(context, newData.ID, "Post GroupInfo", err) {
 		return false, 0
 	}
 	/*auto create qualification*/
-	if !PostQualificationThroughGroup(context, int(newData.ID)) {
+	if !PostQualificationThroughGroup(context, newData.ID) {
 		return false, 0
 	}
 	/*update competition.groupnum*/
 	database.AddOneCompetitionGroupNum(competitionId)
-	response.AcceptPrint(int(newData.ID), fmt.Sprint(newData), "GroupInfo 無組別 ")
+	response.AcceptPrint(newData.ID, fmt.Sprint(newData), "GroupInfo 無組別 ")
 	return true, newData.ID
 }
 
@@ -130,7 +130,7 @@ func PostNoTypeGroupInfo(context *gin.Context, competitionId int) (bool, uint) {
 //	@Router			/data/groupinfo/whole/{id} [put]
 func UpdateGroupInfo(context *gin.Context) {
 	var data database.Group
-	id := convert2int(context, "id")
+	id := convert2uint(context, "id")
 	/*write id for update success*/
 	data.ID = uint(id)
 	err := context.BindJSON(&data)
@@ -245,7 +245,7 @@ func ReorderGroupInfo(context *gin.Context) {
 //	@Failure		404	string	string
 //	@Router			/data/groupinfo/{id} [delete]
 func DeleteGroupInfo(context *gin.Context) {
-	id := convert2int(context, "id")
+	id := convert2uint(context, "id")
 	/*cannot delete 無組別*/
 	success, group := IsGetGroupInfo(context, id)
 	if !success {
@@ -261,14 +261,14 @@ func DeleteGroupInfo(context *gin.Context) {
 	response.AcceptDeleteSuccess(context, id, affected, "GroupInfo")
 }
 
-func DeleteGroupInfoById(context *gin.Context, id int) (bool, bool) {
+func DeleteGroupInfoById(context *gin.Context, id uint) (bool, bool) {
 	/*check data exist*/
 	success, group := IsGetGroupInfo(context, id)
 	if !success {
 		return false, false
 	}
 	/*update competition group_num*/
-	competitionId := int(group.CompetitionId)
+	competitionId := group.CompetitionId
 	isExist, _ := IsGetOnlyCompetition(context, competitionId)
 	if !isExist {
 		return false, false

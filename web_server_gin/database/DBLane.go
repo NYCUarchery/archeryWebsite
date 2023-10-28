@@ -12,33 +12,33 @@ func InitLane() {
 	DB.AutoMigrate(&Lane{})
 }
 
-func GetLaneIsExist(id int) bool {
+func GetLaneIsExist(id uint) bool {
 	var lane Lane
 	DB.Model(&Lane{}).Where("id = ?", id).First(&lane)
 	return lane.ID != 0
 }
 
-func GetLaneById(id int) (Lane, error) {
+func GetLaneById(id uint) (Lane, error) {
 	var lane Lane
 	result := DB.Model(&Lane{}).Where("id = ?", id).First(&lane)
 	return lane, result.Error
 }
 
-func GetFirstLaneId(competitionId uint) int {
+func GetFirstLaneId(competitionId uint) uint {
 	var data Lane
 	DB.Model(&Lane{}).Where("competition_id = ?", competitionId).First(&data)
-	return int(data.ID)
+	return data.ID
 }
 
-func GetAllLaneByCompetitionId(competitionId int) ([]Lane, error) {
+func GetAllLaneByCompetitionId(competitionId uint) ([]Lane, error) {
 	var data []Lane
 	result := DB.Model(&Lane{}).Where("competition_id = ?", competitionId).Order("`lane_number` asc").Find(&data)
 	return data, result.Error
 }
 
-func GetLaneQualificationId(firstLaneId int, start int, end int) []int {
-	var data []int
-	DB.Model(&Lane{}).Where("id >= ? AND id <= ?", firstLaneId+start-1, firstLaneId+end-1).Pluck("qualification_id", &data)
+func GetLaneQualificationId(firstLaneId uint, start int, end int) []uint {
+	var data []uint
+	DB.Model(&Lane{}).Where("id >= ? AND id <= ?", firstLaneId+uint(start-1), firstLaneId+uint(end-1)).Pluck("qualification_id", &data)
 	return data
 }
 
@@ -47,17 +47,17 @@ func PostLane(lane Lane) (Lane, error) {
 	return lane, result.Error
 }
 
-func UpdateLane(id int, lane Lane) (bool, error) {
+func UpdateLane(id uint, lane Lane) (bool, error) {
 	result := DB.Model(&Lane{}).Where("id = ?", id).Updates(&lane)
 	return true, result.Error
 }
 
-func UpdateLaneQualificationId(id int, qualificationId int) error {
+func UpdateLaneQualificationId(id uint, qualificationId uint) error {
 	result := DB.Model(&Lane{}).Where("id = ?", id).Update("qualification_id", qualificationId)
 	return result.Error
 }
 
-func DeleteLane(competitionId int) error {
+func DeleteLane(competitionId uint) error {
 	result := DB.Delete(&Lane{}, "competition_id =?", competitionId)
 	return result.Error
 }

@@ -16,19 +16,19 @@ func InitQualification() {
 	DB.AutoMigrate(&Qualification{})
 }
 
-func GetQualificationIsExist(id int) bool {
+func GetQualificationIsExist(id uint) bool {
 	var data Qualification
 	DB.Model(&Qualification{}).Where("id = ?", id).First(&data)
 	return data.ID != 0
 }
 
-func GetOnlyQualification(ID int) (Qualification, error) {
+func GetOnlyQualification(ID uint) (Qualification, error) {
 	var data Qualification
 	result := DB.Model(&Qualification{}).Where("id = ?", ID).First(&data)
 	return data, result.Error
 }
 
-func GetQualificationWLanesByID(id int) (Qualification, error) {
+func GetQualificationWLanesByID(id uint) (Qualification, error) {
 	var data Qualification
 	result := DB.Model(&Qualification{}).
 		Preload("Lanes", func(*gorm.DB) *gorm.DB {
@@ -44,12 +44,12 @@ func PostQualification(data Qualification) (Qualification, error) {
 	return data, result.Error
 }
 
-func UpdateQualification(id int, data Qualification) (bool, error) {
+func UpdateQualification(id uint, data Qualification) (bool, error) {
 	result := DB.Model(&Qualification{}).Where("id = ?", id).Updates(&data)
 	return true, result.Error
 }
 
-func DeleteQualification(id int) (bool, error) {
+func DeleteQualification(id uint) (bool, error) {
 	result := DB.Delete(&Qualification{}, "id =?", id)
 	return true, result.Error
 }

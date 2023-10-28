@@ -10,7 +10,7 @@ type Competition struct { // DB : game_info
 	SubTitle                 string   `json:"sub_title"`
 	HostId                   uint     `json:"host_id"`
 	GroupsNum                int      `json:"groups_num"`
-	NoTypeGroupId            int      `json:"no_type_group_id"`
+	NoTypeGroupId            uint     `json:"no_type_group_id"`
 	LanesNum                 int      `json:"lanes_num"`
 	FirstLaneId              uint     `json:"first_lane_id"`
 	CurrentPhase             int      `json:"current_phase"`
@@ -28,19 +28,19 @@ func InitCompetition() {
 	DB.AutoMigrate(&Competition{})
 }
 
-func GetCompetitionIsExist(id int) bool {
+func GetCompetitionIsExist(id uint) bool {
 	var data Competition
 	DB.Table("competitions").Where("id = ?", id).First(&data)
 	return data.ID != 0
 }
 
-func GetOnlyCompetition(ID int) (Competition, error) {
+func GetOnlyCompetition(ID uint) (Competition, error) {
 	var data Competition
 	result := DB.Table("competitions").Where("id = ?", ID).First(&data)
 	return data, result.Error
 }
 
-func GetCompetitionWGroups(ID int) (Competition, error) {
+func GetCompetitionWGroups(ID uint) (Competition, error) {
 	var data Competition
 	result := DB.Preload("Groups", func(*gorm.DB) *gorm.DB { return DB.Order("group_index asc") }).
 		Model(&Competition{}).Where("id = ?", ID).First(&data)
@@ -52,54 +52,55 @@ func PostCompetition(data Competition) (Competition, error) {
 	return data, result.Error
 }
 
-func UpdateCompetition(ID int, newdata Competition) (bool, error) {
+func UpdateCompetition(ID uint, newdata Competition) (bool, error) {
 	result := DB.Model(&Competition{}).Where("id = ?", ID).Updates(&newdata)
 	isChanged := result.RowsAffected != 0
 	return isChanged, result.Error
 }
 
-func DeleteCompetition(ID int) (bool, error) {
+func DeleteCompetition(ID uint) (bool, error) {
 	result := DB.Delete(&Competition{}, "id =?", ID)
 	isChanged := result.RowsAffected != 0
 	return isChanged, result.Error
 }
 
-func AddOneCompetitionGroupNum(CompetitionID int) {
-	groupNum := GetCompetitionGroupNum(int(CompetitionID))
-	UpdateCompetitionGroupNum(int(CompetitionID), groupNum+1)
+func AddOneCompetitionGroupNum(CompetitionID uint) {
+	groupNum := GetCompetitionGroupNum(CompetitionID)
+	UpdateCompetitionGroupNum(CompetitionID, groupNum+1)
 }
-func MinusOneCompetitionGroupNum(CompetitionID int) {
-	groupNum := GetCompetitionGroupNum(int(CompetitionID))
-	UpdateCompetitionGroupNum(int(CompetitionID), groupNum-1)
+func MinusOneCompetitionGroupNum(CompetitionID uint) {
+	groupNum := GetCompetitionGroupNum(CompetitionID)
+	UpdateCompetitionGroupNum(CompetitionID, groupNum-1)
 }
-func GetCompetitionGroupNum(ID int) int {
+func GetCompetitionGroupNum(ID uint) int {
 	var data Competition
 	DB.Table("competitions").Where("id = ?", ID).First(&data)
 	return data.GroupsNum
 }
-func UpdateCompetitionGroupNum(ID int, newGroupNum int) int {
+func UpdateCompetitionGroupNum(ID uint, newGroupNum int) bool {
 	result := DB.Table("competitions").Where("id = ?", ID).UpdateColumn("groups_num", newGroupNum)
-	return int(result.RowsAffected)
+	isChanged := result.RowsAffected != 0
+	return isChanged
 }
 
-func GetCompetitionLaneNum(ID int) int {
+func GetCompetitionLaneNum(ID uint) int {
 	var data Competition
 	DB.Table("competitions").Where("id = ?", ID).First(&data)
 	return data.LanesNum
 }
-func UpdateCompetitionFirstLaneId(ID int, newFirstLaneId int) bool {
+func UpdateCompetitionFirstLaneId(ID uint, newFirstLaneId uint) bool {
 	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("first_lane_id", newFirstLaneId)
 	isChanged := result.RowsAffected != 0
 	return isChanged
 }
 
-func GetCompetitionNoTypeGroupId(ID int) int {
+func GetCompetitionNoTypeGroupId(ID uint) uint {
 	var data Competition
 	DB.Table("competitions").Where("id = ?", ID).First(&data)
 	return data.NoTypeGroupId
 }
 
-func UpdateCompetitionNoTypeGroupId(ID int, newNoTypeGroupId int) bool {
+func UpdateCompetitionNoTypeGroupId(ID uint, newNoTypeGroupId uint) bool {
 	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("no_type_group_id", newNoTypeGroupId)
 	isChanged := result.RowsAffected != 0
 	return isChanged
