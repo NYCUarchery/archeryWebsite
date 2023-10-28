@@ -3,7 +3,7 @@ import { useQuery } from "react-query";
 import axios from "axios";
 
 const fetchCompetition = (competitionId: number) => {
-  return axios.get(`http://localhost:8080/data/competition/${competitionId}`);
+  return axios.get(`/data/competition/${competitionId}`);
 };
 
 function GameTitle() {
