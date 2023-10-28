@@ -63,14 +63,14 @@ const docTemplate = `{
         },
         "/data/competition/groups/{id}": {
             "get": {
-                "description": "Get one Competition by id with GroupInfos",
+                "description": "Get one Competition by id with Participants",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Competition"
                 ],
-                "summary": "Show one Competition with GroupInfos",
+                "summary": "Show one Competition with Participants",
                 "parameters": [
                     {
                         "type": "integer",

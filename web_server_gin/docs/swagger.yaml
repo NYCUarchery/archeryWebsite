@@ -89,7 +89,7 @@ paths:
       - Competition
   /data/competition/groups/{id}:
     get:
-      description: Get one Competition by id with GroupInfos
+      description: Get one Competition by id with Participants
       parameters:
       - description: Competition ID
         in: path
@@ -107,7 +107,7 @@ paths:
           description: Bad Request
           schema:
             type: string
-      summary: Show one Competition with GroupInfos
+      summary: Show one Competition with Participants
       tags:
       - Competition
   /data/competition/whole/{id}:

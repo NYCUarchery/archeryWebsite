@@ -71,6 +71,16 @@ func GetCompetitionWGroupsByID(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, data)
 }
 
+// Get One Competition By ID with Participants godoc
+//
+//	@Summary		Show one Competition with Participants
+//	@Description	Get one Competition by id with Participants
+//	@Tags			Competition
+//	@Produce		json
+//	@Param			id	path	int	true	"Competition ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/data/competition/groups/{id} [get]
 func GetCompetitionWParticipantsByID(context *gin.Context) {
 	var data database.Competition
 	id := convert2uint(context, "id")
