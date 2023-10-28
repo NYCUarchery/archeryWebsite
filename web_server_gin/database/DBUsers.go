@@ -1,12 +1,13 @@
 package database
 
 type User struct {
-	ID            uint   `json:"id" gorm:"primary_key"`
-	InstitutionId uint   `json:"institution_id"`
-	Name          string `json:"name"`
-	Password      string `json:"password"`
-	Email         string `json:"email"`
-	Overview      string `json:"overview"`
+	ID            uint           `json:"id" gorm:"primary_key"`
+	InstitutionId uint           `json:"institution_id"`
+	Name          string         `json:"name"`
+	Password      string         `json:"password"`
+	Email         string         `json:"email"`
+	Overview      string         `json:"overview"`
+	Participants  []*Participant `json:"participants" `
 }
 
 func InitUser() {
@@ -29,6 +30,15 @@ func GetUserByEmail(email string) (User, error) {
 	var user User
 	result := DB.Table("users").Where("email = ?", email).First(&user)
 	return user, result.Error
+}
+
+func GetUserWParticipantsById(id uint) (User, error) {
+	var data User
+	result := DB.Preload("Participants").
+		Model(&User{}).
+		Where("id = ?", id).
+		Find(&data)
+	return data, result.Error
 }
 
 func CreateUser(user User) (User, error) {

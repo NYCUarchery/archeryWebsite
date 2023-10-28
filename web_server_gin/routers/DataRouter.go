@@ -38,7 +38,8 @@ func AddDataRouter(data *gin.RouterGroup) {
 }
 
 func userRouter(data *gin.RouterGroup) {
-	data.GET("/:id", translate.GetUserById)
+	data.GET("/:id", translate.GetOnlyUserById)
+	data.GET("/participants/:id", translate.GetUserWParticipantsById)
 	data.POST("/", translate.PostUser)
 	data.PUT("/whole/:id", translate.PutUser)
 	data.DELETE("/:id", translate.DeleteUser)

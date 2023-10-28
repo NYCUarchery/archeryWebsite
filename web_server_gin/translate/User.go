@@ -31,11 +31,25 @@ func IsGetUser(context *gin.Context, id uint) (bool, database.User) {
 //	@Success		200	string	string
 //	@Failure		400	string	string
 //	@Router			/data/user/{id} [get]
-func GetUserById(context *gin.Context) {
+func GetOnlyUserById(context *gin.Context) {
 	var data database.User
 	id := convert2uint(context, "id")
 	IsExist, data := IsGetUser(context, id)
 	if !IsExist {
+		return
+	}
+	response.AcceptPrint(id, fmt.Sprint(data), "User")
+	context.IndentedJSON(http.StatusOK, data)
+}
+
+func GetUserWParticipantsById(context *gin.Context) {
+	var data database.User
+	id := convert2uint(context, "id")
+	if response.ErrorIdTest(context, id, database.GetUserIsExist(id), "User") {
+		return
+	}
+	data, err := database.GetUserWParticipantsById(id)
+	if response.ErrorInternalErrorTest(context, id, "Get User", err) {
 		return
 	}
 	response.AcceptPrint(id, fmt.Sprint(data), "User")
