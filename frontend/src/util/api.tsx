@@ -3,6 +3,7 @@ import axios from 'axios'
 import formatISO from 'date-fns/formatISO';
 
 import { setUid, resetUid, userStore, setOverview, setInstitutionID, setEmail, resetDirty, setDirty, setName, resetAllInfo } from './userReducer';
+import { de } from "date-fns/locale";
 
 const api = {
 	user: {
@@ -16,8 +17,11 @@ const api = {
 	competition: {
 		create: `${host}/api/competition/`,
 		all: `${host}/api/competition/`,
-		join: `${host}/api/competition/join`,
 	},
+  participant: {
+    join: `${host}/api/participant/`,
+  },
+
 };
 
 const Login = async (username: string, password: string, successHandler?: any) => {
@@ -275,39 +279,59 @@ const registerUser = async (values: any) => {
   try {
     const body = new FormData();
     body.append("username", values.username);
-    body.append("password", values.password);
     body.append("overview", values.overview);
-    body.append("organization", values.organization);
+    body.append("password", values.password);
+    body.append("institutionID", values.institutionID);
+    body.append("email", values.email);
 
     const response = await axios.post(api.user.register, body);
-
-    if (response.status === 200) {
-      return { success: true };
-    }
-
-    return { success: false, error: "Server error" };
+    return { result: response.data.result };
   } catch (error: any) {
-    return { success: false, error: error.message };
+    switch (error.response.data.result) {
+      case "username exists":
+        window.alert("帳號已存在");
+        break;
+      case "email exists":
+        window.alert("信箱已存在");
+        break;
+      case "invalid institution ID":
+        window.alert("無效學校代碼");
+        break;
+      default:
+        window.alert("未知錯誤");
+        break;
+    }
+    return { result: error.response.data.result };
   }
 };
 
-const joinCompetition = async () => {
+const joinCompetition = async (competitionID: any) => {
   try {
     const body = new FormData();
-    body.append("competitionID", "aaaa"); // Replace "aaaa" with the actual competition ID
+    body.append("competitionID", competitionID);
 
-    const response = await fetch(api.competition.join, {
-      method: "POST",
-      credentials: "include",
-      body: body,
-    });
+    const response = await axios.post(api.participant.join, body, { withCredentials: true });
 
-    const resjson = await response.json();
-
-    return resjson;
+    return { result: response.data.result };
   } catch (error: any) {
-    console.log(error);
-    return { error: error.message };
+    switch (error.response.data.statusText) {
+      case "cannot parse competitionID": 
+        window.alert("比賽ID有誤");
+        break;
+      case "no competition found":
+        window.alert("找不到比賽");
+        break;
+      case "participant exists":
+        window.alert("已報名過");
+        break;
+      case "no user found":
+        window.alert("找不到使用者");
+        break;
+      default:
+        window.alert("未知錯誤");
+        break;
+    }
+    return { result: error.response.data.statusText };
   }
 };
 

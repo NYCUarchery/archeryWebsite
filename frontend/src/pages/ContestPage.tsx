@@ -40,6 +40,7 @@ const ContestPage = () => {
 		const fetchData = async () => {
 			try {
 				const response = await getCompetitions();
+				// console.log(response.data.data)
 				setRows(response.data.data);
 			} catch (error) {}
 		};
@@ -100,14 +101,13 @@ const ContestPage = () => {
 										onClick={() => {
 											const handleJoinCompetition = async () => {
 												try {
-													const result = await joinCompetition();
-											
-													if (result && result.error) {
-														console.log(result.error);
-													} else { }
-												} catch (error) {
-													console.log(error);
-												}
+													const result = await joinCompetition(v.id);
+													if (result.result == "success") {
+														window.alert("報名成功");
+													} else {
+														window.alert("報名失敗");
+													}
+												} catch (error) { }
 											};
 											handleJoinCompetition()
 										}}
