@@ -33,6 +33,10 @@ terminal 輸入 go work init web_server_gin (應該會出現go.work)
 http://localhost:8080/swagger/index.html#/
 
 ## 運行 
+### 小提醒
+1. 可能要先裝swag
+2. 要先前端靜態檔案建起來
+
 ### debug mode 
 預設就是debug mode 
 在web_server_gin目錄中
