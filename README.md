@@ -38,6 +38,11 @@ http://localhost:8080/swagger/index.html#/
 
 ## 運行
 
+### 小提醒
+
+1. 可能要先裝 swag
+2. 要先前端靜態檔案建起來
+
 ### debug mode
 
 預設就是 debug mode

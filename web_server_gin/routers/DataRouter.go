@@ -12,7 +12,6 @@ func AddDataRouter(data *gin.RouterGroup) {
 
 	data.GET("/eliminationInfo/:gameName", translate.GetEliminationInfo)
 	data.GET("/phaseInfo/:gameName", translate.GetPhaseInfo)
-	data.GET("/qualificationInfo/:gameName", translate.GetQualificationInfo)
 	data.GET("/teamEliminationInfo/:gameName", translate.GetTeamEliminationInfo)
 	data.GET("/userInfo/:userName", translate.GetUserInfo)
 
@@ -22,8 +21,14 @@ func AddDataRouter(data *gin.RouterGroup) {
 	groupinfo := data.Group("groupinfo")
 	groupInfoRouter(groupinfo)
 
-	laneinfo := data.Group("laneinfo")
-	laneInfoRouter(laneinfo)
+	qualification := data.Group("qualification")
+	qualificationRouter(qualification)
+
+	lane := data.Group("lane")
+	laneRouter(lane)
+
+	oldlaneinfo := data.Group("oldlaneinfo")
+	oldLaneInfoRouter(oldlaneinfo)
 
 	data.GET("/", translate.FindAllUsers)
 	data.GET("/:id", translate.FindByUserID)
@@ -48,11 +53,24 @@ func groupInfoRouter(data *gin.RouterGroup) {
 	data.DELETE("/:id", translate.DeleteGroupInfo)
 }
 
-func laneInfoRouter(data *gin.RouterGroup) {
-	data.GET("/:id", translate.GetLaneInfoByID)
-	data.POST("/", translate.PostLaneInfo)
-	data.PUT("/whole/:id", translate.UpdateLaneInfo)
-	data.PUT("/score/:id/:stageindex/:userindex/:arrowindex/:score", translate.UpdataLaneScore)
-	data.PUT("/confirm/:id/:stageindex/:userindex/:confirm", translate.UpdataLaneConfirm)
-	data.DELETE("/:id", translate.DeleteLaneInfoByID)
+func qualificationRouter(data *gin.RouterGroup) {
+	data.GET("/:id", translate.GetOnlyQualificationByID)
+	data.GET("/lanes/:id", translate.GetQualificationWLanesByID)
+	data.PUT("/whole/:id", translate.UpdateQualificationByID)
+
+}
+
+func laneRouter(data *gin.RouterGroup) {
+	data.GET("/:id", translate.GetLaneByID)
+	data.GET("/all/:id", translate.GetAllLaneByCompetitionId)
+	// data.GET("/players/:id", translate.GetLaneWPlayers)
+}
+
+func oldLaneInfoRouter(data *gin.RouterGroup) {
+	data.GET("/:id", translate.GetOldLaneInfoByID)
+	data.POST("/", translate.PostOldLaneInfo)
+	data.PUT("/whole/:id", translate.UpdateOldLaneInfo)
+	data.PUT("/score/:id/:stageindex/:userindex/:arrowindex/:score", translate.UpdataOldLaneScore)
+	data.PUT("/confirm/:id/:stageindex/:userindex/:confirm", translate.UpdataOldLaneConfirm)
+	data.DELETE("/:id", translate.DeleteOldLaneInfoByID)
 }

@@ -23,7 +23,7 @@ const docTemplate = `{
     "paths": {
         "/data/competition": {
             "post": {
-                "description": "Post one new Competition data with new id, and return the new Competition data",
+                "description": "Post one new Competition data with new id, create noTypeGroup, create Lanes which link to noTypeGroup, and return the new Competition data",
                 "consumes": [
                     "application/json"
                 ],
@@ -33,7 +33,7 @@ const docTemplate = `{
                 "tags": [
                     "Competition"
                 ],
-                "summary": "Create one Competition",
+                "summary": "Create one Competition and related data",
                 "parameters": [
                     {
                         "description": "Competition",
@@ -98,7 +98,7 @@ const docTemplate = `{
         },
         "/data/competition/whole/{id}": {
             "put": {
-                "description": "Put whole new Competition and overwrite with the id but without GroupInfo",
+                "description": "Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace GroupNum, LaneNum, FirstLaneId, noTyoeGroupId",
                 "consumes": [
                     "application/json"
                 ],
@@ -190,7 +190,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "delete one Competition by id",
+                "description": "delete one Competition by id, delete all related lanes and groups",
                 "consumes": [
                     "application/json"
                 ],
@@ -234,7 +234,7 @@ const docTemplate = `{
         },
         "/data/groupinfo": {
             "post": {
-                "description": "Post one new GroupInfo data with new id, and return the new GroupInfo data",
+                "description": "Post one new GroupInfo data with new id, create qualification with same id, and auto write GroupIndex",
                 "consumes": [
                     "application/json"
                 ],
@@ -326,7 +326,7 @@ const docTemplate = `{
         },
         "/data/groupinfo/whole/{id}": {
             "put": {
-                "description": "Put whole new GroupInfo and overwrite with the id",
+                "description": "Put whole new GroupInfo and overwrite with the id, cannot overwrite CompetitionId",
                 "consumes": [
                     "application/json"
                 ],
@@ -418,7 +418,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "delete one GroupInfo by id",
+                "description": "delete one GroupInfo by id, and delete qualification with same id",
                 "consumes": [
                     "application/json"
                 ],
@@ -460,9 +460,79 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/laneinfo": {
+        "/data/lane/all/{id}": {
+            "get": {
+                "description": "Get all Lane by competition id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Lane"
+                ],
+                "summary": "Show all Lane of a competition",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/lane/{id}": {
+            "get": {
+                "description": "Get one Lane by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Lane"
+                ],
+                "summary": "Show one Lane",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Lane ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/oldlaneinfo": {
             "post": {
-                "description": "Post one new LaneInfo data with new id, and return the new LaneInfo data",
+                "description": "Post one new OldLaneInfo data with new id, and return the new OldLaneInfo data",
                 "consumes": [
                     "application/json"
                 ],
@@ -470,9 +540,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "LaneInfo"
+                    "OldLaneInfo"
                 ],
-                "summary": "Create one LaneInfo",
+                "summary": "Create one OldLaneInfo",
                 "parameters": [
                     {
                         "description": "LaneData",
@@ -500,9 +570,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/laneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm}": {
+        "/data/oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm}": {
             "put": {
-                "description": "Put one LaneInfo confirm by index and id",
+                "description": "Put one OldLaneInfo confirm by index and id",
                 "consumes": [
                     "application/json"
                 ],
@@ -510,27 +580,27 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "LaneInfo"
+                    "OldLaneInfo"
                 ],
-                "summary": "update one LaneInfo confirmation",
+                "summary": "update one OldLaneInfo confirmation",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "LaneInfo ID",
+                        "description": "OldLaneInfo ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "LaneInfo stage index",
+                        "description": "OldLaneInfo stage index",
                         "name": "stageindex",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "LaneInfo user index of the stage",
+                        "description": "OldLaneInfo user index of the stage",
                         "name": "userindex",
                         "in": "path",
                         "required": true
@@ -571,9 +641,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/laneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score}": {
+        "/data/oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score}": {
             "put": {
-                "description": "Put one LaneInfo score by index and id",
+                "description": "Put one OldLaneInfo score by index and id",
                 "consumes": [
                     "application/json"
                 ],
@@ -581,34 +651,34 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "LaneInfo"
+                    "OldLaneInfo"
                 ],
-                "summary": "update one LaneInfo Score",
+                "summary": "update one OldLaneInfo Score",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "LaneInfo ID",
+                        "description": "OldLaneInfo ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "LaneInfo stage index",
+                        "description": "OldLaneInfo stage index",
                         "name": "stageindex",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "LaneInfo user index of the stage",
+                        "description": "OldLaneInfo user index of the stage",
                         "name": "userindex",
                         "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "LaneInfo arrow index of the user",
+                        "description": "OldLaneInfo arrow index of the user",
                         "name": "arrowindex",
                         "in": "path",
                         "required": true
@@ -649,9 +719,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/laneinfo/whole/{id}": {
+        "/data/oldlaneinfo/whole/{id}": {
             "put": {
-                "description": "Put whole new LaneInfo and overwrite with the id",
+                "description": "Put whole new OldLaneInfo and overwrite with the id",
                 "consumes": [
                     "application/json"
                 ],
@@ -659,13 +729,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "LaneInfo"
+                    "OldLaneInfo"
                 ],
-                "summary": "update one LaneInfo",
+                "summary": "update one OldLaneInfo",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "LaneInfo ID",
+                        "description": "OldLaneInfo ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -708,20 +778,20 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/laneinfo/{id}": {
+        "/data/oldlaneinfo/{id}": {
             "get": {
-                "description": "Get one LaneInfo by id",
+                "description": "Get one OldLaneInfo by id",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "LaneInfo"
+                    "OldLaneInfo"
                 ],
-                "summary": "Show one LaneInfo",
+                "summary": "Show one OldLaneInfo",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "LaneInfo ID",
+                        "description": "OldLaneInfo ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -743,7 +813,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "delete one LaneInfo by id",
+                "description": "delete one OldLaneInfo by id",
                 "consumes": [
                     "application/json"
                 ],
@@ -751,13 +821,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "LaneInfo"
+                    "OldLaneInfo"
                 ],
-                "summary": "delete one LaneInfo",
+                "summary": "delete one OldLaneInfo",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "LaneInfo ID",
+                        "description": "OldLaneInfo ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -778,6 +848,100 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/qualification/whole/{id}": {
+            "put": {
+                "description": "Put whole new Qualification and overwrite with the id, but cannot replace groupid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Qualification"
+                ],
+                "summary": "update one Qualification",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Qualification ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Qualification",
+                        "name": "Qualification",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/qualification/{id}": {
+            "get": {
+                "description": "Get one Qualification with Lanes by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Qualification"
+                ],
+                "summary": "Show one Qualification",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Qualification ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "type": "string"
                         }

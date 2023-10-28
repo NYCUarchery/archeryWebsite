@@ -5,108 +5,63 @@ import (
 )
 
 type Competition struct { // DB : game_info
-	ID               uint     `json:"id"        gorm:"primary_key"`
-	Title            string   `json:"title"`
-	SubTitle         string   `json:"sub_title"`
-	HostId           uint     `json:"host_id"`
-	Groups_num       int      `json:"groups_num"`
-	Lanes_num        int      `json:"lanes_num"`
-	CurrentPhase     int      `json:"current_phase"`
-	CurrentPhaseKind string   `json:"current_phase_kind"`
-	CurrentStage     uint     `json:"current_stage"`
-	Script           string   `json:"script"`
-	Groups           []*Group `json:"groups" gorm:"constraint:OnDelete:CASCADE;"`
+	ID                       uint     `json:"id"        gorm:"primary_key"`
+	Title                    string   `json:"title"`
+	SubTitle                 string   `json:"sub_title"`
+	HostId                   uint     `json:"host_id"`
+	GroupsNum                int      `json:"groups_num"`
+	NoTypeGroupId            int      `json:"no_type_group_id"`
+	LanesNum                 int      `json:"lanes_num"`
+	FirstLaneId              uint     `json:"first_lane_id"`
+	CurrentPhase             int      `json:"current_phase"`
+	CurrentPhaseKind         string   `json:"current_phase_kind"`
+	CurrentStage             uint     `json:"current_stage"`
+	QualificationIsActive    bool     `json:"qualification_is_active"`
+	EliminationIsActive      bool     `json:"elimination_is_active"`
+	TeamEliminationIsActive  bool     `json:"team_elimination_is_active"`
+	MixedEliminationIsActive bool     `json:"mixed_elimination_is_active"`
+	Script                   string   `json:"script"`
+	Groups                   []*Group `json:"groups" gorm:"constraint:OnDelete:CASCADE;"`
 }
 
 func InitCompetition() {
 	DB.AutoMigrate(&Competition{})
 }
 
-// Get Only Competition By ID godoc
-//
-//	@Summary		Show one Competition without GroupInfo
-//	@Description	Get one Competition by id without GroupInfo
-//	@Tags			Competition
-//	@Produce		json
-//	@Param			id	path	int	true	"Competition ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
-//	@Router			/data/competition/{id} [get]
+func GetCompetitionIsExist(id int) bool {
+	var data Competition
+	DB.Table("competitions").Where("id = ?", id).First(&data)
+	return data.ID != 0
+}
+
 func GetOnlyCompetition(ID int) (Competition, error) {
 	var data Competition
-	error := DB.Table("competitions").Where("id = ?", ID).First(&data).Error
-	return data, error
+	result := DB.Table("competitions").Where("id = ?", ID).First(&data)
+	return data, result.Error
 }
 
-// Get One Competition By ID with Groups godoc
-//
-//	@Summary		Show one Competition with GroupInfos
-//	@Description	Get one Competition by id with GroupInfos
-//	@Tags			Competition
-//	@Produce		json
-//	@Param			id	path	int	true	"Competition ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
-//	@Router			/data/competition/groups/{id} [get]
-func GetCompetitionWGroups(ID int) Competition {
+func GetCompetitionWGroups(ID int) (Competition, error) {
 	var data Competition
-	DB.Preload("Groups", func(*gorm.DB) *gorm.DB { return DB.Order("group_index asc") }).
+	result := DB.Preload("Groups", func(*gorm.DB) *gorm.DB { return DB.Order("group_index asc") }).
 		Model(&Competition{}).Where("id = ?", ID).First(&data)
-	return data
+	return data, result.Error
 }
 
-// Post Competition godoc
-//
-//	@Summary		Create one Competition
-//	@Description	Post one new Competition data with new id, and return the new Competition data
-//	@Tags			Competition
-//	@Accept			json
-//	@Produce		json
-//	@Param			Competition	body	string	true	"Competition"
-//	@Success		200			string	string
-//	@Failure		400			string	string
-//	@Router			/data/competition [post]
-func PostCompetition(data Competition) Competition {
-	DB.Model(&Competition{}).Create(&data)
-	return data
+func PostCompetition(data Competition) (Competition, error) {
+	result := DB.Model(&Competition{}).Create(&data)
+	return data, result.Error
 }
 
-// Update Competition godoc
-//
-//	@Summary		update one Competition without GroupInfo
-//	@Description	Put whole new Competition and overwrite with the id but without GroupInfo
-//	@Tags			Competition
-//	@Accept			json
-//	@Produce		json
-//	@Param			id			path	string	true	"Competition ID"
-//	@Param			Competition	body	string	true	"Competition"
-//	@Success		200			string	string
-//	@Failure		400			string	string
-//	@Failure		404			string	string
-//	@Failure		500			string	string
-//	@Router			/data/competition/whole/{id} [put]
-func UpdateCompetition(ID int, newdata Competition) (Competition, error) {
-	var data Competition
-	DB.Model(&Competition{}).Where("id = ?", ID).Updates(&newdata)
-	error := DB.Model(&Competition{}).Where("id = ?", ID).First(&data).Error
-	return data, error
+func UpdateCompetition(ID int, newdata Competition) (bool, error) {
+	result := DB.Model(&Competition{}).Where("id = ?", ID).Updates(&newdata)
+	isChanged := result.RowsAffected != 0
+	return isChanged, result.Error
 }
 
-// Delete Competition by id godoc
-//
-//	@Summary		delete one Competition
-//	@Description	delete one Competition by id
-//	@Tags			Competition
-//	@Accept			json
-//	@Produce		json
-//	@Param			id	path	string	true	"Competition ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
-//	@Failure		404	string	string
-//	@Router			/data/competition/{id} [delete]
-func DeleteCompetition(ID int) bool {
+func DeleteCompetition(ID int) (bool, error) {
 	result := DB.Delete(&Competition{}, "id =?", ID)
-	return result.RowsAffected != 0
+	isChanged := result.RowsAffected != 0
+	return isChanged, result.Error
 }
 
 func AddOneCompetitionGroupNum(CompetitionID int) {
@@ -120,9 +75,32 @@ func MinusOneCompetitionGroupNum(CompetitionID int) {
 func GetCompetitionGroupNum(ID int) int {
 	var data Competition
 	DB.Table("competitions").Where("id = ?", ID).First(&data)
-	return data.Groups_num
+	return data.GroupsNum
 }
 func UpdateCompetitionGroupNum(ID int, newGroupNum int) int {
 	result := DB.Table("competitions").Where("id = ?", ID).UpdateColumn("groups_num", newGroupNum)
 	return int(result.RowsAffected)
+}
+
+func GetCompetitionLaneNum(ID int) int {
+	var data Competition
+	DB.Table("competitions").Where("id = ?", ID).First(&data)
+	return data.LanesNum
+}
+func UpdateCompetitionFirstLaneId(ID int, newFirstLaneId int) bool {
+	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("first_lane_id", newFirstLaneId)
+	isChanged := result.RowsAffected != 0
+	return isChanged
+}
+
+func GetCompetitionNoTypeGroupId(ID int) int {
+	var data Competition
+	DB.Table("competitions").Where("id = ?", ID).First(&data)
+	return data.NoTypeGroupId
+}
+
+func UpdateCompetitionNoTypeGroupId(ID int, newNoTypeGroupId int) bool {
+	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("no_type_group_id", newNoTypeGroupId)
+	isChanged := result.RowsAffected != 0
+	return isChanged
 }
