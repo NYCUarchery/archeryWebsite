@@ -15,6 +15,9 @@ func AddDataRouter(data *gin.RouterGroup) {
 	data.GET("/teamEliminationInfo/:gameName", translate.GetTeamEliminationInfo)
 	data.GET("/userInfo/:userName", translate.GetUserInfo)
 
+	user := data.Group("user")
+	userRouter(user)
+
 	competition := data.Group("competition")
 	competitionRouter(competition)
 
@@ -29,12 +32,13 @@ func AddDataRouter(data *gin.RouterGroup) {
 
 	oldlaneinfo := data.Group("oldlaneinfo")
 	oldLaneInfoRouter(oldlaneinfo)
+}
 
-	data.GET("/", translate.FindAllUsers)
-	data.GET("/:id", translate.FindByUserID)
+func userRouter(data *gin.RouterGroup) {
+	data.GET("/:id", translate.GetUserById)
 	data.POST("/", translate.PostUser)
+	data.PUT("/whole/:id", translate.PutUser)
 	data.DELETE("/:id", translate.DeleteUser)
-	data.PUT("/:id", translate.UpdataUser)
 }
 
 func competitionRouter(data *gin.RouterGroup) {
