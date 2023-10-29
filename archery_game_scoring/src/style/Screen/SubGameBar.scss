@@ -1,0 +1,102 @@
+.sub_game_bar {
+  width: 100%;
+  height: 40px;
+  display: flex;
+  background-color: $main-color;
+  color: #ffffff;
+  justify-content: center;
+  .admin_board_list_accordion {
+    height: 100%;
+    background-color: $sub-color;
+    color: $main_text_color;
+    .MuiAccordionSummary-root {
+      min-height: 100%;
+      .MuiAccordionSummary-content {
+        min-height: 100%;
+        margin: auto;
+      }
+    }
+    .admin_board_list_item {
+      background-color: $sub-color;
+      color: $main_text_color;
+      text-transform: none;
+      z-index: 3;
+    }
+  }
+}
+
+@mixin sub_game_bar_list() {
+  max-width: 200px;
+  width: 50%;
+  height: 100%;
+  margin: 0px;
+  padding: 0px;
+  z-index: 1;
+}
+
+.group_list {
+  @include sub_game_bar_list();
+  margin-left: auto;
+}
+.phase_list {
+  @include sub_game_bar_list();
+  margin-right: auto;
+}
+
+@mixin sub_game_bar_list_button() {
+  width: 100%;
+  height: 40px;
+  border: 0px;
+  color: #ffffff;
+  background-color: $sub-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+
+  &:active {
+    background-color: darken($sub-color, 5%);
+  }
+}
+
+.group_list_button {
+  @include sub_game_bar_list_button();
+}
+
+.phase_list_button {
+  @include sub_game_bar_list_button();
+}
+
+@mixin sub_game_bar_list_item() {
+  width: auto;
+  height: 40px;
+  border-top: 1px solid #ffffff;
+  background-color: $sub-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+  transition: 0.3s;
+  max-height: 0px;
+  overflow: hidden;
+  transition: max-height 0.1s ease-in-out;
+  &:hover {
+    background-color: darken($sub-color, 5%);
+  }
+}
+
+.group_list_item {
+  @include sub_game_bar_list_item();
+}
+
+.phase_list_item {
+  @include sub_game_bar_list_item();
+}
+
+.group_phase_tag {
+  @include sub_game_bar_list_button();
+  margin: 0px auto 0px;
+  &:active {
+    background-color: $sub-color;
+  }
+}

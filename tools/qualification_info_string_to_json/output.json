@@ -1,0 +1,116 @@
+{
+  "players": [
+    {
+      "rank": "1",
+      "target": "29B",
+      "name": "鄞意東",
+      "institution": "立禪射藝",
+      "score": "198"
+    },
+    {
+      "rank": "2",
+      "target": "30B",
+      "name": "楊清壬",
+      "institution": "好射射箭隊",
+      "score": "174"
+    },
+    {
+      "rank": "3",
+      "target": "30C",
+      "name": "顧子震",
+      "institution": "清大現代弓射箭社",
+      "score": "155"
+    },
+    {
+      "rank": "4",
+      "target": "30A",
+      "name": "李鑑璿",
+      "institution": "中山大學",
+      "score": "146"
+    },
+    {
+      "rank": "5",
+      "target": "29A",
+      "name": "蕭育軒",
+      "institution": "中山大學",
+      "score": "145"
+    },
+    {
+      "rank": "6",
+      "target": "29C",
+      "name": "陳虹宇",
+      "institution": "清大現代弓射箭社",
+      "score": "118"
+    },
+    {
+      "rank": "7",
+      "target": "29D",
+      "name": "楊維寧",
+      "institution": "台大射箭協會",
+      "score": "112"
+    },
+    {
+      "rank": "8",
+      "target": "28A",
+      "name": "陳易宏",
+      "institution": "中山大學",
+      "score": "104"
+    },
+    {
+      "rank": "9",
+      "target": "27B",
+      "name": "陳恩",
+      "institution": "立禪射藝",
+      "score": "103"
+    },
+    {
+      "rank": "10",
+      "target": "27D",
+      "name": "何欣",
+      "institution": "台大射箭協會",
+      "score": "102"
+    },
+    {
+      "rank": "11",
+      "target": "28D",
+      "name": "鍾文景",
+      "institution": "台大射箭協會",
+      "score": "99"
+    },
+    {
+      "rank": "12",
+      "target": "27C",
+      "name": "朱光耀",
+      "institution": "中山大學",
+      "score": "85"
+    },
+    {
+      "rank": "13",
+      "target": "27A",
+      "name": "王思皓",
+      "institution": "中山大學",
+      "score": "81"
+    },
+    {
+      "rank": "14",
+      "target": "28C",
+      "name": "謝逸樺",
+      "institution": "中山大學",
+      "score": "76"
+    },
+    {
+      "rank": "15",
+      "target": "30D",
+      "name": "畢楨煥",
+      "institution": "交大射箭社",
+      "score": "0"
+    },
+    {
+      "rank": "16",
+      "target": "28B",
+      "name": "余俊憲",
+      "institution": "立禪射藝",
+      "score": "0"
+    }
+  ]
+}
