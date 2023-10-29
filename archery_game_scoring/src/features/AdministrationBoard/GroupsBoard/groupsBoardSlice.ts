@@ -2,9 +2,9 @@ import { createSlice } from "@reduxjs/toolkit";
 import GroupInfo from "../../../jsons/GroupInfo.json";
 
 const initialState = {
-  groupsNum: GroupInfo.group_num,
+  groupsNum: GroupInfo.groups_num,
   groupNames: GroupInfo.group_names,
-  groups: create2DArray(GroupInfo.group_num),
+  groups: create2DArray(GroupInfo.groups_num),
 };
 
 const groupsBoardSlice = createSlice({
@@ -37,6 +37,19 @@ const groupsBoardSlice = createSlice({
       let player = state.groups[fromGroupId][playerIndex];
       state.groups[fromGroupId].splice(playerIndex, 1);
       state.groups[toGroupId].push(player);
+      state.groups[toGroupId].sort((a, b) => {
+        return a.id - b.id;
+      });
+    },
+    setPlayerLane: (state, action) => {
+      for (let i = 0; i < state.groups[action.payload.groupId].length; i++) {
+        if (
+          state.groups[action.payload.groupId][i].id === action.payload.playerId
+        ) {
+          state.groups[action.payload.groupId][i].lane = action.payload.lane;
+          break;
+        }
+      }
     },
   },
 });
@@ -54,3 +67,4 @@ export const addGroup = groupsBoardSlice.actions.addGroup;
 export const removeGroup = groupsBoardSlice.actions.removeGroup;
 export const setGroups = groupsBoardSlice.actions.setGroups;
 export const movePlayer = groupsBoardSlice.actions.movePlayer;
+export const setPlayerLane = groupsBoardSlice.actions.setPlayerLane;

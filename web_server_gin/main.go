@@ -1,23 +1,44 @@
 package main
 
 import (
+	"fmt"
 	"web_server_gin/database"
-	"web_server_gin/routers"
+	routers "web_server_gin/routers"
 
 	"github.com/gin-gonic/gin"
 )
 
+//	@title			Gin swagger
+//	@version		1.0
+//	@description	Gin swagger
+
+//	@contact.name	NYCUArchery
+//	@contact.url	https://github.com/NYCUarchery
+
+//	@license.name	no license yet
+
+//	@host	localhost:8080
+// schemes http
 func main() {
-	router := gin.Default() // initialize a Gin router
-	data := router.Group("/data")
-	views := router.Group("/views")
+	server := gin.Default() // initialize a Gin router
+	ip := getIpByMode()
+	port := "8080"
 
-	go func() { database.Database_Initial() }()
+	database.DatabaseInitial()
+	routers.SetUpRouter(server, ip, port)
 
-	routers.AddViewsRouter(views, router)
-	routers.AddDataRouter(data)
+	server.Run(fmt.Sprintf("%s:%s", ip, port))
+}
 
-	// router.Run("0.0.0.0:8080") // attach the router to an http.Server and start the server
-	router.Run("127.0.0.1:8080") // for localhost test
-
+func getIpByMode() string {
+	switch gin.Mode() {
+	case "release":
+		return "0.0.0.0" // attach the router to an http.Server and start the server
+	case "debug":
+		return "localhost" // for localhost test
+	case "test":
+		return "0.0.0.0"
+	default:
+		return "127.0.0.1"
+	}
 }

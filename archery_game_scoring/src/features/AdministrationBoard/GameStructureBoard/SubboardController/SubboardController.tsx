@@ -10,6 +10,18 @@ export default function SubboardController() {
   const subboardShown = useSelector(
     (state: any) => state.gameStructureBoard.subboardShown
   );
+  const qualificationIsActive = useSelector(
+    (state: any) => state.game.qualificationIsActive
+  );
+  const eliminationIsActive = useSelector(
+    (state: any) => state.game.eliminationIsActive
+  );
+  const teamEliminationIsActive = useSelector(
+    (state: any) => state.game.teamEliminationIsActive
+  );
+  const mixedEliminationIsActive = useSelector(
+    (state: any) => state.game.mixedEliminationIsActive
+  );
   const handleChange = (
     _event: React.MouseEvent<HTMLElement>,
     newSubboardShown: number | null
@@ -18,10 +30,34 @@ export default function SubboardController() {
   };
 
   let buttons = [];
+  let buttonsIsActive = [];
+
+  for (let i = 0; i < subboardNames.length; i++) {
+    buttonsIsActive.push(true);
+    switch (i) {
+      case 1:
+        buttonsIsActive[i] = qualificationIsActive;
+        break;
+      case 2:
+        buttonsIsActive[i] = eliminationIsActive;
+        break;
+      case 3:
+        buttonsIsActive[i] = teamEliminationIsActive;
+        break;
+      case 4:
+        buttonsIsActive[i] = mixedEliminationIsActive;
+        break;
+    }
+  }
 
   for (let i = 0; i < subboardNames.length; i++) {
     buttons.push(
-      <ToggleButton className="subboard_controller_button" key={i} value={i}>
+      <ToggleButton
+        disabled={!buttonsIsActive[i]}
+        className="subboard_controller_button"
+        key={i}
+        value={i}
+      >
         {subboardNames[i]}
       </ToggleButton>
     );

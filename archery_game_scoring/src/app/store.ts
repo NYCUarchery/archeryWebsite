@@ -8,10 +8,12 @@ import { scoreControllerReducer } from "../features/RecordingBoard/LaneBoard/Sco
 import { gameReducer } from "../features/States/gameSlice";
 import { userReducer } from "../features/States/userSlice";
 import { participantsReducer } from "../features/AdministrationBoard/ParticipantsBoard/ParticipantsSlice";
-import { adminBoardListReducer } from "../features/Screen/SubGameBar/AdminList/adminBoardListSlice";
+import { adminBoardTabsReducer } from "../features/Screen/SubGameBar/AdminBoardTabs/adminBoardTabsSlice";
 import { groupsBoardReducer } from "../features/AdministrationBoard/GroupsBoard/groupsBoardSlice";
 import { groupSelectorReducer } from "../features/AdministrationBoard/GroupsBoard/GroupSelector/groupSelectorSlice";
 import { gameStructureBoardReducer } from "../features/AdministrationBoard/GameStructureBoard/gameStructureBoardSlice";
+import { gameStructureGroupMenuReducer } from "../features/AdministrationBoard/GameStructureBoard/GroupsMenu/groupsMenuSlice";
+import { qualificationStructureGroupBoardReducer } from "../features/AdministrationBoard/GameStructureBoard/QualificationBoard/GroupBoard/groupBoardSlice";
 
 const store = configureStore({
   reducer: {
@@ -23,10 +25,14 @@ const store = configureStore({
     game: gameReducer,
     user: userReducer,
     participants: participantsReducer,
-    adminBoardList: adminBoardListReducer,
+    adminBoardTabs: adminBoardTabsReducer,
+
     groupsBoard: groupsBoardReducer,
     groupSelector: groupSelectorReducer,
+
     gameStructureBoard: gameStructureBoardReducer,
+    gameStructureGroupMenu: gameStructureGroupMenuReducer,
+    qualificationStructureGroupBoard: qualificationStructureGroupBoardReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(ReduxLogger),

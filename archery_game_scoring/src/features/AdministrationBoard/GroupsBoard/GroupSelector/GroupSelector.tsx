@@ -2,9 +2,22 @@ import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { useSelector, useDispatch } from "react-redux";
 import { selectGroupId } from "./groupSelectorSlice";
 
-export default function GroupSelector() {
+interface Props {
+  groups: Group[];
+}
+interface Group {
+  id: number;
+  competition_id: number;
+  group_name: string;
+  group_range: string;
+  bow_type: string;
+  group_index: number;
+  player_num: number;
+}
+
+export default function GroupSelector({ groups }: Props) {
   const dispatch = useDispatch();
-  const groupNames = useSelector((state: any) => state.groupsBoard.groupNames);
+  const groupNames = groups?.map((group) => group.group_name);
   const groupsNum = useSelector((state: any) => state.groupsBoard.groupsNum);
   const selectedGroupId = useSelector(
     (state: any) => state.groupSelector.selectedGroupId
@@ -21,7 +34,7 @@ export default function GroupSelector() {
   for (let i = 0; i < groupsNum; i++) {
     buttons.push(
       <ToggleButton className="group_selector_button" key={i} value={i}>
-        {groupNames[i]}
+        {groupNames ? groupNames[i] : `不知道，所就叫第${i}組`}
       </ToggleButton>
     );
   }

@@ -19,9 +19,7 @@ export default function QualificationBoard(props: Props) {
   let RankingInfoBars = [];
   for (let i = 0; i < group.players.length; i++) {
     let isQudalified: boolean;
-    i < group.qualification_num
-      ? (isQudalified = true)
-      : (isQudalified = false);
+    i < group.advancing_num ? (isQudalified = true) : (isQudalified = false);
 
     RankingInfoBars.push(
       <RankingInfoBar

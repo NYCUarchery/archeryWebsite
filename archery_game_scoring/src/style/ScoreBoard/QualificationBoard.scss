@@ -4,8 +4,10 @@
   grid-template-rows: auto;
 }
 
-.qualification_board {
-  text-align: center;
+.score_board {
+  .qualification_board {
+    text-align: center;
+  }
 }
 
 .ranking_info_bar {
