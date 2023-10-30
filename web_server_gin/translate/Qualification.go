@@ -97,8 +97,6 @@ func UpdateQualificationByID(context *gin.Context) {
 	/*parse data check*/
 	if response.ErrorReceiveDataTest(context, id, "Qualification", err) {
 		return
-	} else if response.ErrorIdTest(context, id, database.GetQualificationIsExist(id), "Qualification") {
-		return
 	}
 	/*data is exist check*/
 	success, oldData := IsGetQualification(context, id)
@@ -137,18 +135,17 @@ func UpdateQualificationByID(context *gin.Context) {
 		}
 	}
 
-	/*update data*/
-	isChanged, err := database.UpdateQualification(id, data)
-	if response.ErrorInternalErrorTest(context, id, "Update Qualification", err) {
-		return
-	} else if response.ErrorIdTest(context, id, isChanged, "Qualification") {
-		return
-	}
+	fmt.Printf("\n")
 	/*update lanes' qualificationId*/
 	oldLaneStart := oldData.StartLaneNumber
 	oldLaneEnd := oldData.EndLaneNumber
+	if oldLaneStart == 0 && oldLaneEnd == 0 {
+		/*for default as 0*/
+		oldLaneStart++
+		oldLaneEnd++
+	}
 	for index := oldLaneStart; index <= oldLaneEnd; index++ {
-		laneId := noTypeLaneId + uint(index+1)
+		laneId := noTypeLaneId + uint(index)
 		fmt.Printf("laneId: %d\n", laneId)
 		fmt.Printf("index: %d\n", index)
 		success := UpdateLaneQualificationId(context, laneId, noTypeGroupId)
@@ -165,6 +162,14 @@ func UpdateQualificationByID(context *gin.Context) {
 		if !success {
 			return
 		}
+	}
+
+	/*update data*/
+	isChanged, err := database.UpdateQualification(id, data)
+	if response.ErrorInternalErrorTest(context, id, "Update Qualification", err) {
+		return
+	} else if response.ErrorIdTest(context, id, isChanged, "Qualification") {
+		return
 	}
 
 	/*return data*/
@@ -193,13 +198,15 @@ func DeleteQualificationThroughGroup(context *gin.Context, id uint) bool {
 	noTypeLaneId := competition.NoTypeLaneId
 	oldLaneStart := oldData.StartLaneNumber
 	oldLaneEnd := oldData.EndLaneNumber
-	for index := oldLaneStart; index <= oldLaneEnd; index++ {
-		laneId := noTypeLaneId + uint(index)
-		fmt.Printf("laneId: %d\n", laneId)
-		fmt.Printf("index: %d\n", index)
-		success := UpdateLaneQualificationId(context, laneId, noTypeGroupId)
-		if !success {
-			return false
+	if oldLaneStart != 0 && oldLaneEnd != 0 {
+		for index := oldLaneStart; index <= oldLaneEnd; index++ {
+			laneId := noTypeLaneId + uint(index)
+			fmt.Printf("laneId: %d\n", laneId)
+			fmt.Printf("index: %d\n", index)
+			success := UpdateLaneQualificationId(context, laneId, noTypeGroupId)
+			if !success {
+				return false
+			}
 		}
 	}
 
