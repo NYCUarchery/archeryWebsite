@@ -23,7 +23,7 @@ const docTemplate = `{
     "paths": {
         "/data/competition": {
             "post": {
-                "description": "Post one new Competition data with new id, create noTypeGroup, create Lanes which link to noTypeGroup, and return the new Competition data",
+                "description": "Post one new Competition data with new id, create noTypeGroup, create Lanes and noTypeLane which link to noTypeGroup, and return the new Competition data",
                 "consumes": [
                     "application/json"
                 ],
@@ -1033,7 +1033,7 @@ const docTemplate = `{
         },
         "/data/qualification/whole/{id}": {
             "put": {
-                "description": "Put whole new Qualification and overwrite with the id, but cannot replace groupid",
+                "description": "Put whole new Qualification and overwrite with the id, and update lanes below it ,but cannot replace groupid",
                 "consumes": [
                     "application/json"
                 ],

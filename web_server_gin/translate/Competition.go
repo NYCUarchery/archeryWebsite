@@ -98,7 +98,7 @@ func GetCompetitionWParticipantsByID(context *gin.Context) {
 // Post Competition godoc
 //
 //	@Summary		Create one Competition and related data
-//	@Description	Post one new Competition data with new id, create noTypeGroup, create Lanes which link to noTypeGroup, and return the new Competition data
+//	@Description	Post one new Competition data with new id, create noTypeGroup, create Lanes and noTypeLane which link to noTypeGroup, and return the new Competition data
 //	@Tags			Competition
 //	@Accept			json
 //	@Produce		json

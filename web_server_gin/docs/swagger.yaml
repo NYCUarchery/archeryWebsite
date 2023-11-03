@@ -14,7 +14,8 @@ paths:
       consumes:
       - application/json
       description: Post one new Competition data with new id, create noTypeGroup,
-        create Lanes which link to noTypeGroup, and return the new Competition data
+        create Lanes and noTypeLane which link to noTypeGroup, and return the new
+        Competition data
       parameters:
       - description: Competition
         in: body
@@ -711,8 +712,8 @@ paths:
     put:
       consumes:
       - application/json
-      description: Put whole new Qualification and overwrite with the id, but cannot
-        replace groupid
+      description: Put whole new Qualification and overwrite with the id, and update
+        lanes below it ,but cannot replace groupid
       parameters:
       - description: Qualification ID
         in: path

@@ -79,7 +79,7 @@ func PostQualificationThroughGroup(context *gin.Context, id uint) bool {
 // Update Qualification godoc
 //
 //	@Summary		update one Qualification
-//	@Description	Put whole new Qualification and overwrite with the id, but cannot replace groupid
+//	@Description	Put whole new Qualification and overwrite with the id, and update lanes below it ,but cannot replace groupid
 //	@Tags			Qualification
 //	@Accept			json
 //	@Produce		json
