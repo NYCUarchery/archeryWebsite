@@ -1,5 +1,5 @@
-DBuser: user
-DBpasswd: password
-DBip: mysql
-DBport: 3306
-DBname: db
+username: user
+password: password
+host: mysql
+port: 3306
+database: db

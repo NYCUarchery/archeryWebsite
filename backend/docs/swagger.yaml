@@ -1,374 +1,48 @@
-basePath: /api/
-definitions:
-  model.Competition:
-    properties:
-      date:
-        type: string
-      hostID:
-        type: integer
-      id:
-        type: integer
-      name:
-        type: string
-      overview:
-        type: string
-      scoreboardURL:
-        type: string
-    type: object
-  model.Institution:
-    properties:
-      id:
-        type: integer
-      name:
-        type: string
-    type: object
-  model.User:
-    properties:
-      email:
-        type: string
-      id:
-        type: integer
-      institutionID:
-        type: integer
-      name:
-        type: string
-      overview:
-        type: string
-    type: object
-  response.Response:
-    properties:
-      result:
-        example: result description
-        type: string
-    type: object
 host: localhost:8080
 info:
   contact:
-    email: ???
-    name: NYCU archery
+    name: NYCUArchery
     url: https://github.com/NYCUarchery
-  description: A gin server
+  description: Gin swagger
   license:
-    name: Apache 2.0
-    url: http://www.apache.org/licenses/LICENSE-2.0.html
-  title: Archery backend API
+    name: no license yet
+  title: Gin swagger
   version: "1.0"
 paths:
-  /competition:
-    get:
-      description: get id, name, date, hostID, scoreboardURL, and overview only
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: success
-          schema:
-            allOf:
-            - $ref: '#/definitions/response.Response'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/model.Competition'
-                  type: array
-              type: object
-      summary: get information of all the competitions
-      tags:
-      - competition
+  /data/competition:
     post:
       consumes:
       - application/json
-      description: create a competition and set the person as the host
+      description: Post one new Competition data with new id, create noTypeGroup,
+        create Lanes which link to noTypeGroup, and return the new Competition data
       parameters:
-      - description: competition name
-        in: formData
-        name: name
+      - description: Competition
+        in: body
+        name: Competition
         required: true
-        type: string
-      - description: date
-        in: formData
-        name: date
-        required: true
-        type: string
-      - description: a list of groups
-        in: formData
-        name: groups
-        required: true
-        type: string
-      - description: overview
-        in: formData
-        name: overview
-        type: string
-      - description: Scoreboard URL
-        in: formData
-        name: scoreboardURL
-        type: string
+        schema:
+          type: string
       produces:
       - application/json
       responses:
         "200":
-          description: success
+          description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/response.Response'
-            - properties:
-                id:
-                  type: integer
-              type: object
+            type: string
         "400":
-          description: competition name exists | cannot parse date string | invalid
-            info/groups
+          description: Bad Request
           schema:
-            $ref: '#/definitions/response.Response'
-        "500":
-          description: DB error
-          schema:
-            $ref: '#/definitions/response.Response'
-      summary: create a competition
+            type: string
+      summary: Create one Competition and related data
       tags:
-      - competition
-  /competition/{id}:
-    get:
-      description: get info, groups, participants of the competition
-      parameters:
-      - description: competition id
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: success
-          schema:
-            allOf:
-            - $ref: '#/definitions/response.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/model.Competition'
-              type: object
-        "400":
-          description: empty/invalid competition id
-          schema:
-            $ref: '#/definitions/response.Response'
-        "404":
-          description: no competition found
-          schema:
-            $ref: '#/definitions/response.Response'
-      summary: get information of the competition
-      tags:
-      - competition
-  /institution:
-    get:
-      consumes:
-      - application/json
-      description: get all institution info from db
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: success
-          schema:
-            allOf:
-            - $ref: '#/definitions/response.Response'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/model.Institution'
-                  type: array
-              type: object
-        "500":
-          description: db error
-          schema:
-            $ref: '#/definitions/response.Response'
-      summary: get all institution info
-      tags:
-      - institution
-    post:
-      consumes:
-      - application/json
-      description: add an institution to db
-      parameters:
-      - description: institution's name
-        in: formData
-        name: name
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: success
-          schema:
-            $ref: '#/definitions/response.Response'
-        "400":
-          description: empty institution name
-          schema:
-            $ref: '#/definitions/response.Response'
-        "500":
-          description: db error
-          schema:
-            $ref: '#/definitions/response.Response'
-      summary: create an institution
-      tags:
-      - institution
-  /institution/{id}:
-    get:
-      consumes:
-      - application/json
-      description: get institution info from db by id
-      parameters:
-      - description: institution's id
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: success
-          schema:
-            allOf:
-            - $ref: '#/definitions/response.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/model.Institution'
-              type: object
-        "400":
-          description: invalid id
-          schema:
-            $ref: '#/definitions/response.Response'
-        "404":
-          description: no institution found
-          schema:
-            $ref: '#/definitions/response.Response'
-      summary: get institution info by id
-      tags:
-      - institution
-  /participant/:
-    post:
-      consumes:
-      - application/json
-      description: add a particpant to the competition
-      parameters:
-      - description: competition id
-        in: formData
-        name: competitionID
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: success
-          schema:
-            $ref: '#/definitions/response.Response'
-        "400":
-          description: no user/competition found
-          schema:
-            $ref: '#/definitions/response.Response'
-      summary: join in a competition
-      tags:
-      - participant
-  /session:
+      - Competition
+  /data/competition/{id}:
     delete:
-      description: delete the session
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: success
-          schema:
-            $ref: '#/definitions/response.Response'
-      summary: logout
-      tags:
-      - session
-    post:
       consumes:
       - application/json
-      description: get a session
+      description: delete one Competition by id, delete all related lanes and groups
       parameters:
-      - description: user's name
-        in: formData
-        name: username
-        required: true
-        type: string
-      - description: password
-        in: formData
-        name: password
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: success | has loginned
-          schema:
-            $ref: '#/definitions/response.Response'
-        "401":
-          description: wrong username or password
-          schema:
-            $ref: '#/definitions/response.Response'
-      summary: login
-      tags:
-      - session
-  /user:
-    post:
-      consumes:
-      - application/json
-      description: add a user to db
-      parameters:
-      - description: user's name
-        in: formData
-        name: username
-        required: true
-        type: string
-      - description: password
-        in: formData
-        name: password
-        required: true
-        type: string
-      - description: email
-        in: formData
-        name: email
-        required: true
-        type: string
-      - description: overview
-        in: formData
-        name: overview
-        type: string
-      - description: institution ID
-        in: formData
-        name: institutionID
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: success
-          schema:
-            $ref: '#/definitions/response.Response'
-        "400":
-          description: username/email exists | empty username/password/email/institutionID
-            | invalid info
-          schema:
-            $ref: '#/definitions/response.Response'
-        "500":
-          description: db error
-          schema:
-            $ref: '#/definitions/response.Response'
-      summary: register a user
-      tags:
-      - user
-  /user/{id}:
-    get:
-      consumes:
-      - application/json
-      description: get a user's username, overview, and institution id
-      parameters:
-      - description: user's id
+      - description: Competition ID
         in: path
         name: id
         required: true
@@ -377,90 +51,608 @@ paths:
       - application/json
       responses:
         "200":
-          description: success
+          description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/response.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/model.User'
-              type: object
+            type: string
         "400":
-          description: empty/invalid user id
+          description: Bad Request
           schema:
-            $ref: '#/definitions/response.Response'
+            type: string
         "404":
-          description: no user found
+          description: Not Found
           schema:
-            $ref: '#/definitions/response.Response'
-      summary: get a user's information
+            type: string
+      summary: delete one Competition
       tags:
-      - user
+      - Competition
+    get:
+      description: Get one Competition by id without GroupInfo
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Competition without GroupInfo
+      tags:
+      - Competition
+  /data/competition/groups/{id}:
+    get:
+      description: Get one Competition by id with GroupInfos
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Competition with GroupInfos
+      tags:
+      - Competition
+  /data/competition/whole/{id}:
     put:
       consumes:
       - application/json
-      description: modify username, password, overview, and institution_id
+      description: Put whole new Competition and overwrite with the id but without
+        GroupInfo, cannot replace GroupNum, LaneNum, FirstLaneId, noTyoeGroupId
       parameters:
-      - description: user's id
+      - description: Competition ID
         in: path
         name: id
         required: true
         type: string
-      - description: original password
-        in: formData
-        name: oriPassword
+      - description: Competition
+        in: body
+        name: Competition
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: update one Competition without GroupInfo
+      tags:
+      - Competition
+  /data/groupinfo:
+    post:
+      consumes:
+      - application/json
+      description: Post one new GroupInfo data with new id, create qualification with
+        same id, and auto write GroupIndex
+      parameters:
+      - description: LaneData
+        in: body
+        name: GroupInfo
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Create one GroupInfo
+      tags:
+      - GroupInfo
+  /data/groupinfo/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete one GroupInfo by id, and delete qualification with same
+        id
+      parameters:
+      - description: GroupInfo ID
+        in: path
+        name: id
         required: true
         type: string
-      - description: modified password
-        in: formData
-        name: modPassword
-        type: string
-      - description: modified email
-        in: formData
-        name: email
-        type: string
-      - description: modified overview
-        in: formData
-        name: overview
-        type: string
-      - description: modified institution ID
-        in: formData
-        name: institutionID
-        type: string
       produces:
       - application/json
       responses:
         "200":
-          description: success
+          description: OK
           schema:
-            $ref: '#/definitions/response.Response'
+            type: string
         "400":
-          description: empty/invalid user id | invalid modified information
+          description: Bad Request
           schema:
-            $ref: '#/definitions/response.Response'
-        "403":
-          description: cannot change other's info | wrong original password
+            type: string
+        "404":
+          description: Not Found
           schema:
-            $ref: '#/definitions/response.Response'
-      summary: modify user's information
+            type: string
+      summary: delete one GroupInfo
       tags:
-      - user
-  /user/me:
+      - GroupInfo
     get:
-      description: get my uid in the session
+      description: Get one GroupInfo by id
+      parameters:
+      - description: LaneInfo ID
+        in: path
+        name: id
+        required: true
+        type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: success
+          description: OK
           schema:
-            allOf:
-            - $ref: '#/definitions/response.Response'
-            - properties:
-                id:
-                  type: integer
-              type: object
-      summary: get my uid
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one GroupInfo
       tags:
-      - user
+      - GroupInfo
+  /data/groupinfo/reorder:
+    put:
+      consumes:
+      - application/json
+      description: Put competition_id and group_ids to update GroupInfos Indexes under
+        the same Competition
+      parameters:
+      - description: GroupInfo IDs for reorder
+        in: body
+        name: groupIdsForReorder
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: update GroupInfos Indexes under the same Competition
+      tags:
+      - GroupInfo
+  /data/groupinfo/whole/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Put whole new GroupInfo and overwrite with the id, cannot overwrite
+        CompetitionId
+      parameters:
+      - description: GroupInfo ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: GroupInfo
+        in: body
+        name: GroupInfo
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: update one GroupInfo
+      tags:
+      - GroupInfo
+  /data/lane/{id}:
+    get:
+      description: Get one Lane by id
+      parameters:
+      - description: Lane ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Lane
+      tags:
+      - Lane
+  /data/lane/all/{id}:
+    get:
+      description: Get all Lane by competition id
+      parameters:
+      - description: competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show all Lane of a competition
+      tags:
+      - Lane
+  /data/oldlaneinfo:
+    post:
+      consumes:
+      - application/json
+      description: Post one new OldLaneInfo data with new id, and return the new OldLaneInfo
+        data
+      parameters:
+      - description: LaneData
+        in: body
+        name: LaneData
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Create one OldLaneInfo
+      tags:
+      - OldLaneInfo
+  /data/oldlaneinfo/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete one OldLaneInfo by id
+      parameters:
+      - description: OldLaneInfo ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+      summary: delete one OldLaneInfo
+      tags:
+      - OldLaneInfo
+    get:
+      description: Get one OldLaneInfo by id
+      parameters:
+      - description: OldLaneInfo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one OldLaneInfo
+      tags:
+      - OldLaneInfo
+  /data/oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm}:
+    put:
+      consumes:
+      - application/json
+      description: Put one OldLaneInfo confirm by index and id
+      parameters:
+      - description: OldLaneInfo ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: OldLaneInfo stage index
+        in: path
+        name: stageindex
+        required: true
+        type: string
+      - description: OldLaneInfo user index of the stage
+        in: path
+        name: userindex
+        required: true
+        type: string
+      - description: confirmation of the user
+        in: path
+        name: confirm
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: update one OldLaneInfo confirmation
+      tags:
+      - OldLaneInfo
+  /data/oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score}:
+    put:
+      consumes:
+      - application/json
+      description: Put one OldLaneInfo score by index and id
+      parameters:
+      - description: OldLaneInfo ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: OldLaneInfo stage index
+        in: path
+        name: stageindex
+        required: true
+        type: string
+      - description: OldLaneInfo user index of the stage
+        in: path
+        name: userindex
+        required: true
+        type: string
+      - description: OldLaneInfo arrow index of the user
+        in: path
+        name: arrowindex
+        required: true
+        type: string
+      - description: score of the arrow
+        in: path
+        name: score
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: update one OldLaneInfo Score
+      tags:
+      - OldLaneInfo
+  /data/oldlaneinfo/whole/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Put whole new OldLaneInfo and overwrite with the id
+      parameters:
+      - description: OldLaneInfo ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: LaneData
+        in: body
+        name: LaneData
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: update one OldLaneInfo
+      tags:
+      - OldLaneInfo
+  /data/qualification/{id}:
+    get:
+      description: Get one Qualification with Lanes by id
+      parameters:
+      - description: Qualification ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Qualification
+      tags:
+      - Qualification
+  /data/qualification/whole/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Put whole new Qualification and overwrite with the id, but cannot
+        replace groupid
+      parameters:
+      - description: Qualification ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Qualification
+        in: body
+        name: Qualification
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: update one Qualification
+      tags:
+      - Qualification
+  /swagger/doc.json:
+    get:
+      description: get Api docs in json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Show Api Docs in json
+      tags:
+      - docs
+  /views/home:
+    get:
+      description: show home page
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+      summary: Show home page
+      tags:
+      - views
 swagger: "2.0"

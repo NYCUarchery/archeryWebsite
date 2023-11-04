@@ -1,0 +1,113 @@
+.recording_board {
+  margin: 1px auto 0px;
+  max-width: 400px;
+
+  > .lane_board {
+    > .lane_number {
+      width: 100%;
+      height: 30px;
+      background-color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      & span {
+        $lane_number_sign_background_color: #fff700;
+        width: 30px;
+        height: 30px;
+        font-size: 20px;
+        font-weight: bold;
+        color: black;
+        background-color: $lane_number_sign_background_color;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+
+    > .target_signs {
+      height: 30px;
+      display: flex;
+      border-top: 1px solid $main_text_color;
+      > .target_sign {
+        height: 30px;
+        color: $main_text_color;
+        background-color: $main_color;
+        border-left: 1px solid $main_text_color;
+        flex-grow: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+
+    > .player_button_group > .player_button {
+      height: 300px;
+      align-items: start;
+      > .player_info_bar {
+        margin: 10px 0px 0px;
+        > .confirmation_signal {
+          $diameter: 20px;
+          width: $diameter;
+          height: $diameter;
+          margin: 0px auto 5px;
+          border-radius: 50%;
+          font-size: calc($diameter - 5px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          color: white;
+          &[id="true"] {
+            background-color: $confirmed-color;
+          }
+          &[id="false"] {
+            background-color: $unconfirmed-color;
+          }
+        }
+
+        > .score_bar {
+          width: 100%;
+          margin: 0px auto;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          > .score_block {
+            $diameter: 25px;
+            width: $diameter;
+            height: $diameter;
+            margin: calc($diameter/5) 0px calc($diameter/5) 0px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+        }
+      }
+    }
+
+    > .score_button_group {
+      width: 100%;
+      flex-wrap: wrap;
+      > .score_button {
+        width: 20%;
+        border: 0px;
+        border-radius: 0px;
+      }
+    }
+
+    > .controll_button_group {
+      width: 100%;
+      > .confirm_button {
+        &[id="confirmed"] {
+          background-color: $confirmed-color;
+          color: white;
+        }
+        &[id="unconfirmed"] {
+          background-color: $unconfirmed-color;
+          color: white;
+        }
+      }
+    }
+  }
+}

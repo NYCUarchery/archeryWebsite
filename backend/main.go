@@ -1,26 +1,48 @@
 package main
 
 import (
-	"backend/internal/router"
-	_ "backend/docs"
+	"fmt"
+	"web_server_gin/internal/database"
+	routers "web_server_gin/internal/routers"
+
+	"github.com/gin-gonic/gin"
 )
 
-// @title           Archery backend API
-// @version         1.0
-// @description     A gin server
+//	@title			Gin swagger
+//	@version		1.0
+//	@description	Gin swagger
 
-// @contact.name   NYCU archery
-// @contact.url    https://github.com/NYCUarchery
-// @contact.email  ???
+//	@contact.name	NYCUArchery
+//	@contact.url	https://github.com/NYCUarchery
 
-// @license.name  Apache 2.0
-// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+//	@license.name	no license yet
 
-// @host      localhost:8080
-// @BasePath  /api/
+//		@host	localhost:8080
+//	 @BasePath  /api/
+//
+// schemes http
 func main() {
+	server := gin.Default() // initialize a Gin router
+	ip := getIpByMode()
+	port := "8080"
 
-	router := router.RouterSetup()
-	
-	router.Run("0.0.0.0:8080")
+	database.DatabaseInitial()
+	routers.SetUpRouter(server, ip, port)
+
+	server.Run(fmt.Sprintf("%s:%s", ip, port))
+}
+
+func getIpByMode() string {
+	switch gin.Mode() {
+	case "release":
+		return "0.0.0.0" // attach the router to an http.Server and start the server
+	case "debug":
+		return "0.0.0.0"   // for localhost test
+		return "localhost" // for localhost test
+	case "test":
+		return "0.0.0.0"
+	default:
+		return "0.0.0.0"
+		return "127.0.0.1"
+	}
 }
