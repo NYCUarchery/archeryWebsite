@@ -1174,6 +1174,44 @@ const docTemplate = `{
                 }
             }
         },
+        "/data/player/isconfirmed/{roundendid}": {
+            "put": {
+                "description": "Update one Player isConfirmed by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Update one Player isConfirmed by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "RoundEnd ID",
+                        "name": "roundendid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/data/player/laneid/{playerid}": {
             "put": {
                 "description": "Update one Player laneId by id, update lane playernum",
@@ -1254,6 +1292,44 @@ const docTemplate = `{
                     "Player"
                 ],
                 "summary": "Create one RoundScore by RoundEnd ID",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/player/score/{roundscore}": {
+            "put": {
+                "description": "Update one Player score by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Update one Player score by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "RoundScore ID",
+                        "name": "roundscore",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",

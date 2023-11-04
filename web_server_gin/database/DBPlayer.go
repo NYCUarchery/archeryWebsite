@@ -24,7 +24,7 @@ type Round struct {
 type RoundEnd struct {
 	ID          uint          `json:"id"           gorm:"primary_key"`
 	RoundId     uint          `json:"round_id"`
-	IsComfirmed bool          `json:"is_comfirmed"`
+	IsConfirmed bool          `json:"is_confirmed"`
 	RoundScores []*RoundScore `json:"round_scores" gorm:"constraint:OnDelete:CASCADE;"`
 }
 
@@ -99,6 +99,16 @@ func UpdatePlayerGroupId(playerId uint, groupId uint) error {
 
 func UpdatePlayerLaneId(playerId uint, laneId uint) error {
 	result := DB.Table("players").Where("id = ?", playerId).Update("lane_id", laneId)
+	return result.Error
+}
+
+func UpdatePlayerIsConfirmed(roundEndId uint, isConfirmed bool) error {
+	result := DB.Table("round_ends").Where("id = ?", roundEndId).Update("is_confirmed", isConfirmed)
+	return result.Error
+}
+
+func UpdatePlayerScore(roundScoreId uint, score int) error {
+	result := DB.Table("round_scores").Where("id = ?", roundScoreId).Update("score", score)
 	return result.Error
 }
 

@@ -145,7 +145,7 @@ func PostRoundEnd(context *gin.Context) {
 	} else if response.ErrorIdTest(context, data.RoundId, database.GetRoundIsExist(data.RoundId), "Round when creating RoundEnd") {
 		return
 	}
-	data.IsComfirmed = false
+	data.IsConfirmed = false
 	data, err = database.CreateRoundEnd(data)
 	if response.ErrorInternalErrorTest(context, data.ID, "Create RoundEnd", err) {
 		return
@@ -295,6 +295,66 @@ func UpdatePlayerLaneId(context *gin.Context) {
 	}
 	response.AcceptPrint(playerId, fmt.Sprint(laneId), "Update Player laneId")
 	context.IndentedJSON(200, data)
+}
+
+// Update one Player IsConfirmed By ID godoc
+//
+//	@Summary		Update one Player isConfirmed by id
+//	@Description	Update one Player isConfirmed by id
+//	@Tags			Player
+//	@Accept			json
+//	@Produce		json
+//	@Param			roundendid	path	int	true	"RoundEnd ID"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Router			/data/player/isconfirmed/{roundendid} [put]
+func UpdatePlayerIsConfirmed(context *gin.Context) {
+	var newRoundEnd database.RoundEnd
+	roundEndId := convert2uint(context, "id")
+	err := context.BindJSON(&newRoundEnd)
+	if response.ErrorReceiveDataTest(context, roundEndId, "Update Player isConfirmed", err) {
+		return
+	}
+	if response.ErrorIdTest(context, roundEndId, database.GetPlayerIsExist(roundEndId), "RoundEnd when updating isConfirmed") {
+		return
+	}
+
+	err = database.UpdatePlayerIsConfirmed(roundEndId, newRoundEnd.IsConfirmed)
+	if response.ErrorInternalErrorTest(context, roundEndId, "Update Player isConfirmed", err) {
+		return
+	}
+
+	context.IndentedJSON(200, nil)
+}
+
+// Update one Player Score By ID godoc
+//
+//	@Summary		Update one Player score by id
+//	@Description	Update one Player score by id
+//	@Tags			Player
+//	@Accept			json
+//	@Produce		json
+//	@Param			roundscore	path	int	true	"RoundScore ID"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Router			/data/player/score/{roundscore} [put]
+func UpdatePlayerScore(context *gin.Context) {
+	var newRoundScore database.RoundScore
+	roundScoreId := convert2uint(context, "id")
+	err := context.BindJSON(&newRoundScore)
+	if response.ErrorReceiveDataTest(context, roundScoreId, "Update Player score", err) {
+		return
+	}
+	if response.ErrorIdTest(context, roundScoreId, database.GetPlayerIsExist(roundScoreId), "RoundScore when updating score") {
+		return
+	}
+
+	err = database.UpdatePlayerScore(roundScoreId, newRoundScore.Score)
+	if response.ErrorInternalErrorTest(context, roundScoreId, "Update Player score", err) {
+		return
+	}
+
+	context.IndentedJSON(200, nil)
 }
 
 // Delete one Player By ID godoc
