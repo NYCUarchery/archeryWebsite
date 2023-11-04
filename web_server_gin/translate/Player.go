@@ -9,6 +9,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type UpdateTotalScoreData struct {
+	PlayerId   uint `json:"player_id"`
+	RoundId    uint `json:"round_id"`
+	RoundEndId uint `json:"round_end_id"`
+	Score      int  `json:"score"`
+}
+
+func scorefmt(score int) int {
+	if score < 0 {
+		return 0
+	} else if score > 10 {
+		return 10
+	}
+	return score
+}
+
 func IsGetOnlyPlayer(context *gin.Context, id uint) (bool, database.Player) {
 	if response.ErrorIdTest(context, id, database.GetPlayerIsExist(id), "Player") {
 		return false, database.Player{}
@@ -165,23 +181,35 @@ func PostRoundEnd(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/data/player/roundscore [post]
 func PostRoundScore(context *gin.Context) {
-	var data database.RoundScore
+	var data UpdateTotalScoreData
 	err := context.BindJSON(&data)
-	if response.ErrorReceiveDataTest(context, data.ID, "Create RoundScore", err) {
+	playerId := data.PlayerId
+	roundId := data.RoundId
+	roundEndId := data.RoundEndId
+	score := data.Score
+	var roundScore database.RoundScore
+	roundScore.RoundEndId = roundEndId
+	roundScore.Score = score
+	if response.ErrorReceiveDataTest(context, 0, "Create RoundScore", err) {
 		return
-	} else if response.ErrorIdTest(context, data.RoundEndId, database.GetRoundEndIsExist(data.RoundEndId), "RoundEnd when creating RoundScore") {
+	} else if response.ErrorIdTest(context, roundEndId, database.GetRoundEndIsExist(roundEndId), "RoundEnd when creating RoundScore") {
 		return
 	}
 	if err != nil {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	data, err = database.CreateRoundScore(data)
-	if response.ErrorInternalErrorTest(context, data.ID, "Create RoundScore", err) {
+	newRoundScore, err := database.CreateRoundScore(roundScore)
+	if response.ErrorInternalErrorTest(context, newRoundScore.ID, "Create RoundScore", err) {
 		return
 	}
-	response.AcceptPrint(data.ID, fmt.Sprint(data), "Create RoundScore")
-	context.IndentedJSON(200, data)
+	/*auto update total score in rounds when create score*/
+	score = scorefmt(score)
+	if !UpdatePlayerTotalScore(context, playerId, roundId, score) {
+		return
+	}
+	response.AcceptPrint(newRoundScore.ID, fmt.Sprint(newRoundScore.ID), "Create RoundScore")
+	context.IndentedJSON(200, newRoundScore)
 }
 
 func IsUpdatePlayerGroupId(context *gin.Context, playerId uint, groupId uint) bool {
@@ -361,6 +389,32 @@ func UpdatePlayerIsConfirmed(context *gin.Context) {
 	context.IndentedJSON(200, nil)
 }
 
+/*auto update total score in rounds when update score*/
+func UpdatePlayerTotalScore(context *gin.Context, playerId uint, roundId uint, score int) bool {
+	if response.ErrorIdTest(context, playerId, database.GetPlayerIsExist(playerId), "Player when updating total score") {
+		return false
+	} else if response.ErrorIdTest(context, roundId, database.GetRoundIsExist(roundId), "Round when updating total score") {
+		return false
+	}
+	fmt.Printf("score: %d\n", score)
+	oldPlayerTotalScore, err := database.GetPlayerTotalScoreByPlayerId(playerId)
+	fmt.Printf("oldPlayerTotalScore: %d\n", oldPlayerTotalScore)
+	if response.ErrorInternalErrorTest(context, playerId, "Get Player total score", err) {
+		return false
+	}
+	oldPlayerRoundTotalScore, err := database.GetPlayerRoundTotalScoreByRoundId(roundId)
+	fmt.Printf("oldPlayerRoundTotalScore: %d\n", oldPlayerRoundTotalScore)
+	if response.ErrorInternalErrorTest(context, roundId, "Get Player round total score", err) {
+		return false
+	}
+	err = database.UpdatePlayerTotalScore(playerId, score+oldPlayerTotalScore)
+	if response.ErrorInternalErrorTest(context, playerId, "Update Player total score", err) {
+		return false
+	}
+	err = database.UpdatePlayerRoundTotalScore(roundId, score+oldPlayerRoundTotalScore)
+	return !response.ErrorInternalErrorTest(context, roundId, "Update Player round total score", err)
+}
+
 // Update one Player Score By ID godoc
 //
 //	@Summary		Update one Player score by id
@@ -373,18 +427,36 @@ func UpdatePlayerIsConfirmed(context *gin.Context) {
 //	@Failure		400				string	string
 //	@Router			/data/player/score/{roundscoreid} [put]
 func UpdatePlayerScore(context *gin.Context) {
-	var newRoundScore database.RoundScore
+	var scoreData UpdateTotalScoreData
 	roundScoreId := convert2uint(context, "id")
-	err := context.BindJSON(&newRoundScore)
+	err := context.BindJSON(&scoreData)
+	playerId := scoreData.PlayerId
+	roundId := scoreData.RoundId
+	score := scoreData.Score
 	if response.ErrorReceiveDataTest(context, roundScoreId, "Update Player score", err) {
 		return
+	} else if response.ErrorIdTest(context, roundScoreId, database.GetRoundScoreIsExist(roundScoreId), "RoundScore when updating score") {
+		return
+	} else if response.ErrorIdTest(context, playerId, database.GetPlayerIsExist(playerId), "Player when updating score") {
+		return
+	} else if response.ErrorIdTest(context, roundId, database.GetRoundIsExist(roundId), "Round when updating score") {
+		return
 	}
-	if response.ErrorIdTest(context, roundScoreId, database.GetPlayerIsExist(roundScoreId), "RoundScore when updating score") {
+	oldScore, err := database.GetPlayerScoreByRoundScoreId(roundScoreId)
+	if response.ErrorInternalErrorTest(context, roundScoreId, "Get Player score when update totalscore", err) {
 		return
 	}
 
-	err = database.UpdatePlayerScore(roundScoreId, newRoundScore.Score)
+	err = database.UpdatePlayerScore(roundScoreId, score)
 	if response.ErrorInternalErrorTest(context, roundScoreId, "Update Player score", err) {
+		return
+	}
+
+	/*auto update total score in rounds when update score*/
+	score = scorefmt(score)
+	fmt.Printf("oldScore: %d\n", oldScore)
+	oldScore = scorefmt(oldScore)
+	if !UpdatePlayerTotalScore(context, playerId, roundId, score-oldScore) {
 		return
 	}
 

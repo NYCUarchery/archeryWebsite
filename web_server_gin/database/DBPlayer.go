@@ -59,6 +59,12 @@ func GetRoundEndIsExist(id uint) bool {
 	return data.ID != 0
 }
 
+func GetRoundScoreIsExist(id uint) bool {
+	var data RoundScore
+	DB.Table("round_scores").Where("id = ?", id).First(&data)
+	return data.ID != 0
+}
+
 func GetOnlyPlayer(id uint) (Player, error) {
 	var data Player
 	result := DB.Table("players").Where("id = ?", id).First(&data)
@@ -73,6 +79,24 @@ func GetPlayerWScores(id uint) (Player, error) {
 		Where("id = ?", id).
 		First(&data)
 	return data, result.Error
+}
+
+func GetPlayerScoreByRoundScoreId(id uint) (int, error) {
+	var data RoundScore
+	result := DB.Table("round_scores").Where("id = ?", id).First(&data)
+	return data.Score, result.Error
+}
+
+func GetPlayerTotalScoreByPlayerId(playerId uint) (int, error) {
+	var data Player
+	result := DB.Table("players").Where("id = ?", playerId).First(&data)
+	return data.TotalScore, result.Error
+}
+
+func GetPlayerRoundTotalScoreByRoundId(roundId uint) (int, error) {
+	var data Round
+	result := DB.Table("rounds").Where("id = ?", roundId).First(&data)
+	return data.TotalScore, result.Error
 }
 
 func CreatePlayer(data Player) (Player, error) {
@@ -119,6 +143,16 @@ func UpdatePlayerScore(roundScoreId uint, score int) error {
 
 func UpdatePlayerShootoffScore(playerId uint, shootoffScore int) error {
 	result := DB.Table("players").Where("id = ?", playerId).Update("shoot_off_score", shootoffScore)
+	return result.Error
+}
+
+func UpdatePlayerTotalScore(playerId uint, totalScore int) error {
+	result := DB.Table("players").Where("id = ?", playerId).Update("total_score", totalScore)
+	return result.Error
+}
+
+func UpdatePlayerRoundTotalScore(roundId uint, totalScore int) error {
+	result := DB.Table("rounds").Where("id = ?", roundId).Update("total_score", totalScore)
 	return result.Error
 }
 
