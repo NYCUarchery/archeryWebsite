@@ -116,6 +116,11 @@ func PostCompetition(context *gin.Context) {
 	} else if response.ErrorReceiveDataNilTest(context, id, data, "Competition") {
 		return
 	}
+	/*roundsNum must > 0*/
+	if data.RoundsNum <= 0 {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "When creating Competition, roundsNum must > 0"})
+		return
+	}
 	/*auto write Groups_num, minus one for 無組別*/
 	data.GroupsNum = -1
 
@@ -157,7 +162,7 @@ func PostCompetition(context *gin.Context) {
 // Update Competition godoc
 //
 //	@Summary		update one Competition without GroupInfo
-//	@Description	Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace GroupNum, LaneNum, FirstLaneId, noTyoeGroupId
+//	@Description	Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, FirstLaneId, noTyoeGroupId
 //	@Tags			Competition
 //	@Accept			json
 //	@Produce		json
@@ -181,7 +186,8 @@ func UpdateCompetition(context *gin.Context) {
 		return
 	}
 
-	/*replace GroupNum, LaneNum, FirstLaneId, noTyoeGroupId with old one*/
+	/*replace roundNum, GroupNum, LaneNum, FirstLaneId, noTyoeGroupId with old one*/
+	data.RoundsNum = database.GetCompetitionRoundsNum(id)
 	data.GroupsNum = database.GetCompetitionGroupNum(id)
 	data.LanesNum = database.GetCompetitionLaneNum(id)
 	data.NoTypeLaneId = database.GetNoTypeLaneId(id)

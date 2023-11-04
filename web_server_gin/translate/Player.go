@@ -96,7 +96,7 @@ func PostPlayer(context *gin.Context) {
 func PostRoundEnd(context *gin.Context) {
 	var data database.RoundEnd
 	err := context.BindJSON(&data)
-	if response.ErrorReceiveDataTest(context, data.ID, "Create RoundEnd", err) {
+	if response.ErrorReceiveDataTest(context, 0, "Create RoundEnd", err) {
 		return
 	} else if response.ErrorIdTest(context, data.RoundId, database.GetRoundIsExist(data.RoundId), "Round when creating RoundEnd") {
 		return
