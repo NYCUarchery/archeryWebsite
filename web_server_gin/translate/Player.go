@@ -210,3 +210,8 @@ func DeletePlayer(context *gin.Context) {
 	}
 	response.AcceptDeleteSuccess(context, id, isChanged, "Delete Player")
 }
+
+func DeletePlayerThroughCompetition(context *gin.Context, id uint) bool {
+	_, err := database.DeletePlayer(id)
+	return !response.ErrorInternalErrorTest(context, id, "Delete Player through competition", err)
+}

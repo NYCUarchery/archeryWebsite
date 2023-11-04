@@ -242,7 +242,7 @@ func UpdateCompetition(context *gin.Context) {
 // Delete Competition by id godoc
 //
 //	@Summary		delete one Competition
-//	@Description	delete one Competition by id, delete all related lanes and groups
+//	@Description	delete one Competition by id, delete all related groups, lanes, players
 //	@Tags			Competition
 //	@Accept			json
 //	@Produce		json
@@ -254,7 +254,7 @@ func UpdateCompetition(context *gin.Context) {
 func DeleteCompetition(context *gin.Context) {
 	id := convert2uint(context, "id")
 	/*check data exist*/
-	isExist, data := IsGetCompetitionWGroup(context, id)
+	isExist, data := IsGetCompetitionWGroupsPlayers(context, id)
 	if !isExist {
 		return
 	}
@@ -271,6 +271,17 @@ func DeleteCompetition(context *gin.Context) {
 			return
 		}
 	}
+	/*delete all related player*/
+	for _, group := range data.Groups {
+		for _, player := range group.Players {
+			playerId := player.ID
+			success := DeletePlayerThroughCompetition(context, playerId)
+			if !success {
+				return
+			}
+		}
+	}
+
 	/*delete competition*/
 	affected, err := database.DeleteCompetition(id)
 	if response.ErrorInternalErrorTest(context, id, "Delete Competition with Groups", err) {

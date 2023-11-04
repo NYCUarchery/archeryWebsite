@@ -260,7 +260,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "delete one Competition by id, delete all related lanes and groups",
+                "description": "delete one Competition by id, delete all related groups, lanes, players",
                 "consumes": [
                     "application/json"
                 ],

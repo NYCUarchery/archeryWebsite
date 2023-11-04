@@ -41,7 +41,8 @@ paths:
     delete:
       consumes:
       - application/json
-      description: delete one Competition by id, delete all related lanes and groups
+      description: delete one Competition by id, delete all related groups, lanes,
+        players
       parameters:
       - description: Competition ID
         in: path
