@@ -901,6 +901,31 @@ paths:
       summary: Update one Player laneId by id
       tags:
       - Player
+  /data/player/order/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Update one Player order by id
+      parameters:
+      - description: Player ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Update one Player order by id
+      tags:
+      - Player
   /data/player/roundend:
     post:
       consumes:

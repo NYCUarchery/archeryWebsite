@@ -257,11 +257,11 @@ func UpdataPlayerGroupId(context *gin.Context) {
 	if !IsUpdatePlayerLaneId(context, playerId, noTypeLaneId) {
 		return
 	}
-	data, err = database.GetOnlyPlayer(playerId)
-	if response.ErrorInternalErrorTest(context, playerId, "Get only Player", err) {
+
+	isExist, data := IsGetOnlyPlayer(context, playerId)
+	if !isExist {
 		return
 	}
-	response.AcceptPrint(playerId, fmt.Sprint(groupId), "Update Player groupId")
 	context.IndentedJSON(200, data)
 }
 
@@ -289,11 +289,45 @@ func UpdatePlayerLaneId(context *gin.Context) {
 		return
 	}
 
-	data, err = database.GetOnlyPlayer(playerId)
-	if response.ErrorInternalErrorTest(context, playerId, "Get only Player", err) {
+	isExist, data := IsGetOnlyPlayer(context, playerId)
+	if !isExist {
 		return
 	}
-	response.AcceptPrint(playerId, fmt.Sprint(laneId), "Update Player laneId")
+	context.IndentedJSON(200, data)
+}
+
+// Update one Player Order By ID godoc
+//
+//	@Summary		Update one Player order by id
+//	@Description	Update one Player order by id
+//	@Tags			Player
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path	int	true	"Player ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/data/player/order/{id} [put]
+func UpdatePlayerOrder(context *gin.Context) {
+	var data database.Player
+	playerId := convert2uint(context, "id")
+	err := context.BindJSON(&data)
+	order := data.Order
+	if response.ErrorReceiveDataTest(context, playerId, "Update Player order", err) {
+		return
+	}
+	if response.ErrorIdTest(context, playerId, database.GetPlayerIsExist(playerId), "Player when updating order") {
+		return
+	}
+
+	err = database.UpdatePlayerOrder(playerId, order)
+	if response.ErrorInternalErrorTest(context, playerId, "Update Player order", err) {
+		return
+	}
+
+	isExist, data := IsGetOnlyPlayer(context, playerId)
+	if !isExist {
+		return
+	}
 	context.IndentedJSON(200, data)
 }
 
@@ -385,11 +419,10 @@ func UpdatePlayerShootoffScore(context *gin.Context) {
 		return
 	}
 
-	data, err = database.GetOnlyPlayer(playerId)
-	if response.ErrorInternalErrorTest(context, playerId, "Get only Player", err) {
+	isExist, data := IsGetOnlyPlayer(context, playerId)
+	if !isExist {
 		return
 	}
-	response.AcceptPrint(playerId, fmt.Sprint(shootoffScore), "Update Player shootoffScore")
 	context.IndentedJSON(200, data)
 }
 
