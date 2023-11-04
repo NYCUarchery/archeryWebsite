@@ -222,6 +222,49 @@ func IsUpdatePlayerLaneId(context *gin.Context, playerId uint, laneId uint) bool
 	return true
 }
 
+// Update one Player GroupId By ID godoc
+//
+//	@Summary		Update one Player groupId by id
+//	@Description	Update one Player groupId by id, and change player laneid to notype lane
+//	@Tags			Player
+//	@Accept			json
+//	@Produce		json
+//	@Param			playerid	path	int	true	"Player ID"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Router			/data/player/groupid/{playerid}/{groupid} [put]
+func UpdataPlayerGroupId(context *gin.Context) {
+	var data database.Player
+	playerId := convert2uint(context, "id")
+	err := context.BindJSON(&data)
+	groupId := data.GroupId
+	if response.ErrorReceiveDataTest(context, playerId, "Update Player laneId", err) {
+		return
+	}
+	if response.ErrorIdTest(context, playerId, database.GetPlayerIsExist(playerId), "Player when updating groupId") {
+		return
+	}
+	if response.ErrorIdTest(context, groupId, database.GetGroupIsExist(groupId), "Group when updating player groupId") {
+		return
+	}
+
+	if !IsUpdatePlayerGroupId(context, playerId, groupId) {
+		return
+	}
+	/*change player laneid to notype lane*/
+	_, group := IsGetGroupInfo(context, groupId)
+	noTypeLaneId := database.GetCompetitionNoTypeLaneId(group.CompetitionId)
+	if !IsUpdatePlayerLaneId(context, playerId, noTypeLaneId) {
+		return
+	}
+	data, err = database.GetOnlyPlayer(playerId)
+	if response.ErrorInternalErrorTest(context, playerId, "Get only Player", err) {
+		return
+	}
+	response.AcceptPrint(playerId, fmt.Sprint(groupId), "Update Player groupId")
+	context.IndentedJSON(200, data)
+}
+
 // Update one Player LaneId By ID godoc
 //
 //	@Summary		Update one Player laneId by id

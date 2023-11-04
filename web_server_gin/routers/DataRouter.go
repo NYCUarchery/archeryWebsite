@@ -62,7 +62,7 @@ func playerRouter(data *gin.RouterGroup) {
 	data.POST("/roundend", translate.PostRoundEnd)
 	data.POST("/roundscore", translate.PostRoundScore)
 	data.PUT("/lane/:id", translate.UpdatePlayerLaneId)
-	//data.PUT("/group/:id", translate.PutPlayerGroup)
+	data.PUT("/group/:id", translate.UpdataPlayerGroupId)
 	//data.PUT("shootoffscore/:id", translate.PutPlayerShootoffScore)
 	data.DELETE("/:id", translate.DeletePlayer)
 }
