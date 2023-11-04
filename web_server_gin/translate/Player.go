@@ -184,6 +184,76 @@ func PostRoundScore(context *gin.Context) {
 	context.IndentedJSON(200, data)
 }
 
+func IsUpdatePlayerGroupId(context *gin.Context, playerId uint, groupId uint) bool {
+	if response.ErrorIdTest(context, playerId, database.GetPlayerIsExist(playerId), "Player when updating groupId") {
+		return false
+	}
+	if response.ErrorIdTest(context, groupId, database.GetGroupIsExist(groupId), "Group when updating player groupId") {
+		return false
+	}
+	err := database.UpdatePlayerGroupId(playerId, groupId)
+	return !response.ErrorInternalErrorTest(context, playerId, "Update Player groupId", err)
+}
+
+func IsUpdatePlayerLaneId(context *gin.Context, playerId uint, laneId uint) bool {
+	if response.ErrorIdTest(context, playerId, database.GetPlayerIsExist(playerId), "Player when updating laneId") {
+		return false
+	}
+	if response.ErrorIdTest(context, laneId, database.GetLaneIsExist(laneId), "Lane when updating player laneId") {
+		return false
+	}
+
+	oldData, err := database.GetOnlyPlayer(playerId)
+	if response.ErrorInternalErrorTest(context, playerId, "Get only Player", err) {
+		return false
+	}
+	err = database.UpdatePlayerLaneId(playerId, laneId)
+	if response.ErrorInternalErrorTest(context, playerId, "Update Player laneId", err) {
+		return false
+	}
+	/*playerNum minus one in old lane*/
+	if !UpdateLanePlayerNumMinusOne(context, oldData.LaneId) {
+		return false
+	}
+	/*playerNum plus one in new lane*/
+	if !UpdateLanePlayerNumAddOne(context, laneId) {
+		return false
+	}
+	return true
+}
+
+// Update one Player LaneId By ID godoc
+//
+//	@Summary		Update one Player laneId by id
+//	@Description	Update one Player laneId by id, update lane playernum
+//	@Tags			Player
+//	@Accept			json
+//	@Produce		json
+//	@Param			playerid	path	int	true	"Player ID"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Router			/data/player/laneid/{playerid} [put]
+func UpdatePlayerLaneId(context *gin.Context) {
+	var data database.Player
+	playerId := convert2uint(context, "id")
+	err := context.BindJSON(&data)
+	laneId := data.LaneId
+	if response.ErrorReceiveDataTest(context, playerId, "Update Player laneId", err) {
+		return
+	}
+
+	if !IsUpdatePlayerLaneId(context, playerId, laneId) {
+		return
+	}
+
+	data, err = database.GetOnlyPlayer(playerId)
+	if response.ErrorInternalErrorTest(context, playerId, "Get only Player", err) {
+		return
+	}
+	response.AcceptPrint(playerId, fmt.Sprint(laneId), "Update Player laneId")
+	context.IndentedJSON(200, data)
+}
+
 // Delete one Player By ID godoc
 //
 //	@Summary		Delete one Player by id

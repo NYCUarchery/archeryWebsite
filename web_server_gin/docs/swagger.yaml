@@ -802,6 +802,31 @@ paths:
       summary: Create one Player by Participant ID
       tags:
       - Player
+  /data/player/laneid/{playerid}:
+    put:
+      consumes:
+      - application/json
+      description: Update one Player laneId by id, update lane playernum
+      parameters:
+      - description: Player ID
+        in: path
+        name: playerid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Update one Player laneId by id
+      tags:
+      - Player
   /data/player/roundend:
     post:
       consumes:

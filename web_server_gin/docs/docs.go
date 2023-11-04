@@ -1101,6 +1101,44 @@ const docTemplate = `{
                 }
             }
         },
+        "/data/player/laneid/{playerid}": {
+            "put": {
+                "description": "Update one Player laneId by id, update lane playernum",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Update one Player laneId by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "playerid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/data/player/roundend": {
             "post": {
                 "description": "Create one RoundEnd by round id, IsComfirmed is false",

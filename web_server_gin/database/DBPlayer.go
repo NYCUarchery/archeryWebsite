@@ -92,9 +92,14 @@ func CreateRoundScore(data RoundScore) (RoundScore, error) {
 	return data, result.Error
 }
 
-func UpdatePlayer(id uint, data Player) (Player, error) {
-	result := DB.Table("players").Where("id = ?", id).Updates(data)
-	return data, result.Error
+func UpdatePlayerGroupId(playerId uint, groupId uint) error {
+	result := DB.Table("players").Where("id = ?", playerId).Update("group_id", groupId)
+	return result.Error
+}
+
+func UpdatePlayerLaneId(playerId uint, laneId uint) error {
+	result := DB.Table("players").Where("id = ?", playerId).Update("lane_id", laneId)
+	return result.Error
 }
 
 func DeletePlayer(id uint) (bool, error) {
