@@ -235,7 +235,7 @@ func ReorderGroupInfo(context *gin.Context) {
 // Delete GroupInfo by id godoc
 //
 //	@Summary		delete one GroupInfo
-//	@Description	delete one GroupInfo by id, and delete qualification with same id
+//	@Description	delete one GroupInfo by id, delete qualification, and change player to noTypeGroup and noTypeLane
 //	@Tags			GroupInfo
 //	@Accept			json
 //	@Produce		json
@@ -273,6 +273,28 @@ func DeleteGroupInfoById(context *gin.Context, id uint) (bool, bool) {
 	if !isExist {
 		return false, false
 	}
+	/*change player to noTypeGroup and noTypeLane*/
+	qualification, _ := database.GetQualificationWLanesPlayersByID(id)
+	noTypeGroupId := database.GetCompetitionNoTypeGroupId(competitionId)
+	fmt.Printf("noTypeGroupId = %d\n", noTypeGroupId)
+	noTypeLaneId := database.GetCompetitionNoTypeLaneId(competitionId)
+	fmt.Printf("noTypeLaneId = %d\n", noTypeLaneId)
+	fmt.Printf("qualification.Lanes = %v\n", qualification.Lanes)
+	for _, lane := range qualification.Lanes {
+		fmt.Printf("lane.ID = %d\n", lane.ID)
+		for _, player := range lane.Players {
+			fmt.Printf("player.ID = %d\n", player.ID)
+			err := database.UpdatePlayerLaneId(player.ID, noTypeLaneId)
+			if response.ErrorInternalErrorTest(context, player.ID, "Update Player LaneId in Delete GroupInfo", err) {
+				return false, false
+			}
+			err = database.UpdatePlayerGroupId(player.ID, noTypeGroupId)
+			if response.ErrorInternalErrorTest(context, player.ID, "Update Player GroupId in Delete GroupInfo", err) {
+				return false, false
+			}
+		}
+	}
+
 	/*delete qualification*/
 	if !DeleteQualificationThroughGroup(context, id) {
 		return false, false

@@ -488,7 +488,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "delete one GroupInfo by id, and delete qualification with same id",
+                "description": "delete one GroupInfo by id, delete qualification, and change player to noTypeGroup and noTypeLane",
                 "consumes": [
                     "application/json"
                 ],
@@ -1094,6 +1094,44 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/player/groupid/{playerid}/{groupid}": {
+            "put": {
+                "description": "Update one Player groupId by id, and change player laneid to notype lane",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Update one Player groupId by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "playerid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "type": "string"
                         }
