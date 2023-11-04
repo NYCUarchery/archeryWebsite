@@ -69,8 +69,9 @@ func playerRouter(data *gin.RouterGroup) {
 
 func competitionRouter(data *gin.RouterGroup) {
 	data.GET("/:id", translate.GetOnlyCompetitionByID)
-	data.GET("/groups/:id", translate.GetCompetitionWGroupsByID)
 	data.GET("/participants/:id", translate.GetCompetitionWParticipantsByID)
+	data.GET("/groups/:id", translate.GetCompetitionWGroupsByID)
+	data.GET("/groups/players/:id", translate.GetCompetitionWGroupsPlayersByID)
 	data.POST("/", translate.PostCompetition)
 	data.PUT("/whole/:id", translate.UpdateCompetition)
 	data.DELETE("/:id", translate.DeleteCompetition)

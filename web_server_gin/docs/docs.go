@@ -61,6 +61,41 @@ const docTemplate = `{
                 }
             }
         },
+        "/data/competition/groups/players/{id}": {
+            "get": {
+                "description": "Get one Competition by id with GroupInfos and Players",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "Show one Competition with GroupInfos and Players",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/data/competition/groups/{id}": {
             "get": {
                 "description": "Get one Competition by id with GroupInfos",

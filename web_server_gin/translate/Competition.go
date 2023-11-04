@@ -33,6 +33,18 @@ func IsGetCompetitionWGroup(context *gin.Context, id uint) (bool, database.Compe
 	return true, data
 }
 
+func IsGetCompetitionWGroupsPlayers(context *gin.Context, id uint) (bool, database.Competition) {
+	if response.ErrorIdTest(context, id, database.GetCompetitionIsExist(id), "Competition") {
+		return false, database.Competition{}
+	}
+	data, err := database.GetCompetitionWGroupsPlayers(id)
+	if response.ErrorInternalErrorTest(context, id, "Get Competition", err) {
+		return false, data
+	}
+	response.AcceptPrint(id, fmt.Sprint(data), "Competition")
+	return true, data
+}
+
 // Get Only Competition By ID godoc
 //
 //	@Summary		Show one Competition without GroupInfo
@@ -46,25 +58,6 @@ func IsGetCompetitionWGroup(context *gin.Context, id uint) (bool, database.Compe
 func GetOnlyCompetitionByID(context *gin.Context) {
 	id := convert2uint(context, "id")
 	isExist, data := IsGetOnlyCompetition(context, id)
-	if !isExist {
-		return
-	}
-	context.IndentedJSON(http.StatusOK, data)
-}
-
-// Get One Competition By ID with Groups godoc
-//
-//	@Summary		Show one Competition with GroupInfos
-//	@Description	Get one Competition by id with GroupInfos
-//	@Tags			Competition
-//	@Produce		json
-//	@Param			id	path	int	true	"Competition ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
-//	@Router			/data/competition/groups/{id} [get]
-func GetCompetitionWGroupsByID(context *gin.Context) {
-	id := convert2uint(context, "id")
-	isExist, data := IsGetCompetitionWGroup(context, id)
 	if !isExist {
 		return
 	}
@@ -92,6 +85,44 @@ func GetCompetitionWParticipantsByID(context *gin.Context) {
 		return
 	}
 	response.AcceptPrint(id, fmt.Sprint(data), "Competition with participants ")
+	context.IndentedJSON(http.StatusOK, data)
+}
+
+// Get One Competition By ID with Groups godoc
+//
+//	@Summary		Show one Competition with GroupInfos
+//	@Description	Get one Competition by id with GroupInfos
+//	@Tags			Competition
+//	@Produce		json
+//	@Param			id	path	int	true	"Competition ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/data/competition/groups/{id} [get]
+func GetCompetitionWGroupsByID(context *gin.Context) {
+	id := convert2uint(context, "id")
+	isExist, data := IsGetCompetitionWGroup(context, id)
+	if !isExist {
+		return
+	}
+	context.IndentedJSON(http.StatusOK, data)
+}
+
+// Get One Competition By ID with Groups and Players godoc
+//
+//	@Summary		Show one Competition with GroupInfos and Players
+//	@Description	Get one Competition by id with GroupInfos and Players
+//	@Tags			Competition
+//	@Produce		json
+//	@Param			id	path	int	true	"Competition ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/data/competition/groups/players/{id} [get]
+func GetCompetitionWGroupsPlayersByID(context *gin.Context) {
+	id := convert2uint(context, "id")
+	isExist, data := IsGetCompetitionWGroupsPlayers(context, id)
+	if !isExist {
+		return
+	}
 	context.IndentedJSON(http.StatusOK, data)
 }
 

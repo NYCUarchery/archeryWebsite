@@ -40,6 +40,16 @@ func GetOnlyCompetition(ID uint) (Competition, error) {
 	return data, result.Error
 }
 
+func GetCompetitionWParticipants(ID uint) (Competition, error) {
+	var data Competition
+	result := DB.
+		Preload("Participants").
+		Model(&Competition{}).
+		Where("id = ?", ID).
+		Find(&data)
+	return data, result.Error
+}
+
 func GetCompetitionWGroups(ID uint) (Competition, error) {
 	var data Competition
 	result := DB.
@@ -50,13 +60,16 @@ func GetCompetitionWGroups(ID uint) (Competition, error) {
 	return data, result.Error
 }
 
-func GetCompetitionWParticipants(ID uint) (Competition, error) {
+func GetCompetitionWGroupsPlayers(ID uint) (Competition, error) {
 	var data Competition
 	result := DB.
-		Preload("Participants").
+		Preload("Groups", func(*gorm.DB) *gorm.DB {
+			return DB.Order("group_index asc").
+				Preload("Players")
+		}).
 		Model(&Competition{}).
 		Where("id = ?", ID).
-		Find(&data)
+		First(&data)
 	return data, result.Error
 }
 
