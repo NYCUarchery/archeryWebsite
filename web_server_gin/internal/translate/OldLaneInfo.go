@@ -3,7 +3,7 @@ package translate
 import (
 	"fmt"
 	"net/http"
-	"web_server_gin/database"
+	"web_server_gin/internal/database"
 
 	"github.com/gin-gonic/gin"
 )

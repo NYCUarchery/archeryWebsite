@@ -3,8 +3,8 @@ package translate
 import (
 	"fmt"
 	"net/http"
-	"web_server_gin/database"
-	response "web_server_gin/translate/Response"
+	"web_server_gin/internal/database"
+	response "web_server_gin/internal/translate/Response"
 
 	"github.com/gin-gonic/gin"
 )
@@ -214,4 +214,22 @@ func DeleteCompetition(context *gin.Context) {
 		return
 	}
 	response.AcceptDeleteSuccess(context, id, affected, "Competition with Groups")
+}
+
+// AllCompetitionInfo godoc
+// @Summary			get information of all the competitions
+// @Description		get information of all the competitions
+// @Tags			competition
+// @Produce			json
+// @Success			200	{object}	[]database.Competition "success"
+// @Failure			500	{object}	string "internal db error"
+// @Router			/competition [get]
+func GetAllCompetition(c *gin.Context) {
+	comps, err := database.GetAllCompetition()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"result": "internal db error"})
+		return
+	}
+
+	c.JSON(http.StatusOK, comps)
 }

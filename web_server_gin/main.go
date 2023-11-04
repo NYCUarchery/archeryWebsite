@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"web_server_gin/database"
-	routers "web_server_gin/routers"
+	"web_server_gin/internal/database"
+	routers "web_server_gin/internal/routers"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,6 +18,7 @@ import (
 //	@license.name	no license yet
 
 //	@host	localhost:8080
+//  @BasePath  /api/
 // schemes http
 func main() {
 	server := gin.Default() // initialize a Gin router

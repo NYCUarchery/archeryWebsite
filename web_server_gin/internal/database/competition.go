@@ -1,27 +1,29 @@
 package database
 
 import (
+	"time"
 	"gorm.io/gorm"
 )
 
 type Competition struct { // DB : game_info
-	ID                       uint     `json:"id"        gorm:"primary_key"`
-	Title                    string   `json:"title"`
-	SubTitle                 string   `json:"sub_title"`
-	HostId                   uint     `json:"host_id"`
-	GroupsNum                int      `json:"groups_num"`
-	NoTypeGroupId            int      `json:"no_type_group_id"`
-	LanesNum                 int      `json:"lanes_num"`
-	FirstLaneId              uint     `json:"first_lane_id"`
-	CurrentPhase             int      `json:"current_phase"`
-	CurrentPhaseKind         string   `json:"current_phase_kind"`
-	CurrentStage             uint     `json:"current_stage"`
-	QualificationIsActive    bool     `json:"qualification_is_active"`
-	EliminationIsActive      bool     `json:"elimination_is_active"`
-	TeamEliminationIsActive  bool     `json:"team_elimination_is_active"`
-	MixedEliminationIsActive bool     `json:"mixed_elimination_is_active"`
-	Script                   string   `json:"script"`
-	Groups                   []*Group `json:"groups" gorm:"constraint:OnDelete:CASCADE;"`
+	ID                       uint      `json:"id"        gorm:"primary_key"`
+	Title                    string    `json:"title"`
+	SubTitle                 string    `json:"sub_title"`
+	Date					 time.Time `json:"date"`
+	HostID                   uint      `json:"host_id"`
+	GroupsNum                int       `json:"groups_num"`
+	NoTypeGroupId            int       `json:"no_type_group_id"`
+	LanesNum                 int       `json:"lanes_num"`
+	FirstLaneId              uint      `json:"first_lane_id"`
+	CurrentPhase             int       `json:"current_phase"`
+	CurrentPhaseKind         string    `json:"current_phase_kind"`
+	CurrentStage             uint      `json:"current_stage"`
+	QualificationIsActive    bool      `json:"qualification_is_active"`
+	EliminationIsActive      bool      `json:"elimination_is_active"`
+	TeamEliminationIsActive  bool      `json:"team_elimination_is_active"`
+	MixedEliminationIsActive bool      `json:"mixed_elimination_is_active"`
+	Script                   string    `json:"script"`
+	Groups                   []*Group  `json:"groups" gorm:"constraint:OnDelete:CASCADE;"`
 }
 
 func InitCompetition() {
@@ -45,6 +47,12 @@ func GetCompetitionWGroups(ID int) (Competition, error) {
 	result := DB.Preload("Groups", func(*gorm.DB) *gorm.DB { return DB.Order("group_index asc") }).
 		Model(&Competition{}).Where("id = ?", ID).First(&data)
 	return data, result.Error
+}
+
+func GetAllCompetition() ([]Competition, error) {
+	var comps []Competition
+	err := DB.Find(&comps).Error
+	return comps, err
 }
 
 func PostCompetition(data Competition) (Competition, error) {

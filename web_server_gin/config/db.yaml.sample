@@ -1,0 +1,5 @@
+username: user
+password: password
+host: mysql
+port: 3306
+database: db

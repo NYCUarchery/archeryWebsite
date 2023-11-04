@@ -3,8 +3,8 @@ package translate
 import (
 	"fmt"
 	"net/http"
-	"web_server_gin/database"
-	response "web_server_gin/translate/Response"
+	"web_server_gin/internal/database"
+	response "web_server_gin/internal/translate/Response"
 
 	"github.com/gin-gonic/gin"
 )
