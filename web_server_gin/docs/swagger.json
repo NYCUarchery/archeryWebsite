@@ -558,6 +558,41 @@
                 }
             }
         },
+        "/data/lane/scores/{id}": {
+            "get": {
+                "description": "Get one Lane with players, rounds, roundends, roundscores by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Lane"
+                ],
+                "summary": "Show one Lane with players, rounds, roundends, roundscores",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Lane ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/data/lane/{id}": {
             "get": {
                 "description": "Get one Lane by id",

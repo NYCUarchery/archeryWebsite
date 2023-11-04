@@ -1,5 +1,7 @@
 package database
 
+import "gorm.io/gorm"
+
 type Lane struct {
 	ID              uint      `json:"id"`
 	CompetitionId   uint      `json:"competition_id"`
@@ -22,6 +24,25 @@ func GetLaneIsExist(id uint) bool {
 func GetLaneById(id uint) (Lane, error) {
 	var lane Lane
 	result := DB.Model(&Lane{}).Where("id = ?", id).First(&lane)
+	return lane, result.Error
+}
+
+func GetLaneWScoresById(id uint) (Lane, error) {
+	var lane Lane
+	result := DB.
+		Preload("Players", func(*gorm.DB) *gorm.DB {
+			return DB.Order("order_number asc").
+				Preload("Rounds", func(*gorm.DB) *gorm.DB {
+					return DB.Order("id asc").
+						Preload("RoundEnds", func(*gorm.DB) *gorm.DB {
+							return DB.Order("id asc").
+								Preload("RoundScores")
+						})
+				})
+		}).
+		Model(&Lane{}).
+		Where("id = ?", id).
+		First(&lane)
 	return lane, result.Error
 }
 

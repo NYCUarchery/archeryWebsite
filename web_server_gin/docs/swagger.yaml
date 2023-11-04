@@ -398,6 +398,29 @@ paths:
       summary: Show all Lane of a competition
       tags:
       - Lane
+  /data/lane/scores/{id}:
+    get:
+      description: Get one Lane with players, rounds, roundends, roundscores by id
+      parameters:
+      - description: Lane ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Lane with players, rounds, roundends, roundscores
+      tags:
+      - Lane
   /data/oldlaneinfo:
     post:
       consumes:

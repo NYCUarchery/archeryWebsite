@@ -20,6 +20,18 @@ func IsGetLane(context *gin.Context, id uint) (bool, database.Lane) {
 	return true, data
 }
 
+func IsGetLaneWPlayers(context *gin.Context, id uint) (bool, database.Lane) {
+	if response.ErrorIdTest(context, id, database.GetLaneIsExist(id), "Lane") {
+		return false, database.Lane{}
+	}
+	data, err := database.GetLaneWScoresById(id)
+	if response.ErrorInternalErrorTest(context, id, "Get Lane with players, round, scores", err) {
+		return false, data
+	}
+	response.AcceptPrint(id, fmt.Sprint(data), "Lane with players, round, scores")
+	return true, data
+}
+
 // Get One Lane By ID godoc
 //
 //	@Summary		Show one Lane
@@ -33,6 +45,25 @@ func IsGetLane(context *gin.Context, id uint) (bool, database.Lane) {
 func GetLaneByID(context *gin.Context) {
 	id := convert2uint(context, "id")
 	isExist, data := IsGetLane(context, id)
+	if !isExist {
+		return
+	}
+	context.IndentedJSON(200, data)
+}
+
+// Get One Lane with players, rounds, roundends, roundscores By ID godoc
+//
+//	@Summary		Show one Lane with players, rounds, roundends, roundscores
+//	@Description	Get one Lane with players, rounds, roundends, roundscores by id
+//	@Tags			Lane
+//	@Produce		json
+//	@Param			id	path	int	true	"Lane ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/data/lane/scores/{id} [get]
+func GetLaneWScoresByID(context *gin.Context) {
+	id := convert2uint(context, "id")
+	isExist, data := IsGetLaneWPlayers(context, id)
 	if !isExist {
 		return
 	}

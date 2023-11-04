@@ -96,7 +96,7 @@ func qualificationRouter(data *gin.RouterGroup) {
 func laneRouter(data *gin.RouterGroup) {
 	data.GET("/:id", translate.GetLaneByID)
 	data.GET("/all/:id", translate.GetAllLaneByCompetitionId)
-	// data.GET("/players/:id", translate.GetLaneWPlayers)
+	data.GET("/scores/:id", translate.GetLaneWScoresByID)
 }
 
 func oldLaneInfoRouter(data *gin.RouterGroup) {
