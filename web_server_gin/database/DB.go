@@ -69,6 +69,7 @@ func DatabaseInitial() {
 
 	InitUser()
 	InitParticipant()
+	InitPlayer()
 
 	InitCompetition()
 	InitGroupInfo()

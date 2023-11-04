@@ -54,11 +54,15 @@ func GetParticipant(context *gin.Context) {
 func PostParticipant(context *gin.Context) {
 	var data database.Participant
 	err := context.BindJSON(&data)
-	if response.ErrorReceiveDataTest(context, 0, "Participant", err) {
+	if response.ErrorReceiveDataTest(context, 0, "Create Participant", err) {
+		return
+	} else if response.ErrorIdTest(context, data.CompetitionID, database.GetCompetitionIsExist(data.CompetitionID), "Get competition when post Participant ") {
+		return
+	} else if response.ErrorIdTest(context, data.UserID, database.GetUserIsExist(data.UserID), "Get user when post Participant ") {
 		return
 	}
 	data, err = database.CreateParticipant(data)
-	if response.ErrorInternalErrorTest(context, 0, "Post User", err) {
+	if response.ErrorInternalErrorTest(context, data.ID, "Post User", err) {
 		return
 	}
 	/*check if competition id is exist*/

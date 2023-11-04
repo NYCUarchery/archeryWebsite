@@ -2,6 +2,7 @@ package translate
 
 import (
 	"fmt"
+	"net/http"
 	"web_server_gin/database"
 	response "web_server_gin/translate/Response"
 
@@ -53,13 +54,17 @@ func GetPlayerWScoresByID(context *gin.Context) {
 func PostPlayer(context *gin.Context) {
 	var data database.Player
 	/*only get participant_id*/
-	participantId := convert2uint(context, "participant_id")
+	participantId := convert2uint(context, "participantid")
 	data.ParticipantId = participantId
+	if response.ErrorIdTest(context, participantId, database.GetParticipantIsExist(participantId), "Participant when creating Player") {
+		return
+	}
 
 	/*copy data from participant, user, competition*/
 	participant, _ := database.GetParticipant(participantId)
 	userID := participant.UserID
 	competitionId := participant.CompetitionID
+	roundsNum := database.GetCompetitionRoundsNum(competitionId)
 	user, _ := database.GetUserById(userID)
 	data.GroupId = database.GetCompetitionNoTypeGroupId(competitionId)
 	data.LaneId = database.GetCompetitionNoTypeLaneId(competitionId)
@@ -74,6 +79,54 @@ func PostPlayer(context *gin.Context) {
 		return
 	}
 	response.AcceptPrint(data.ID, fmt.Sprint(data), "Create Player")
+	/*create rounds*/
+	for i := 0; i < roundsNum; i++ {
+		var round database.Round
+		round.PlayerId = data.ID
+		round.TotalScore = 0
+		round, err = database.CreateRound(round)
+		if response.ErrorInternalErrorTest(context, round.ID, "Create Round when creating player ", err) {
+			return
+		}
+		response.AcceptPrint(round.ID, fmt.Sprint(round), "Create Round when creating player ")
+	}
+	context.IndentedJSON(200, data)
+}
+
+func PostRoundEnd(context *gin.Context) {
+	var data database.RoundEnd
+	err := context.BindJSON(&data)
+	if response.ErrorReceiveDataTest(context, data.ID, "Create RoundEnd", err) {
+		return
+	} else if response.ErrorIdTest(context, data.RoundId, database.GetRoundIsExist(data.RoundId), "Round when creating RoundEnd") {
+		return
+	}
+	data.IsComfirmed = false
+	data, err = database.CreateRoundEnd(data)
+	if response.ErrorInternalErrorTest(context, data.ID, "Create RoundEnd", err) {
+		return
+	}
+	response.AcceptPrint(data.ID, fmt.Sprint(data), "Create RoundEnd")
+	context.IndentedJSON(200, data)
+}
+
+func PostRoundScore(context *gin.Context) {
+	var data database.RoundScore
+	err := context.BindJSON(&data)
+	if response.ErrorReceiveDataTest(context, data.ID, "Create RoundScore", err) {
+		return
+	} else if response.ErrorIdTest(context, data.RoundEndId, database.GetRoundEndIsExist(data.RoundEndId), "RoundEnd when creating RoundScore") {
+		return
+	}
+	if err != nil {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	data, err = database.CreateRoundScore(data)
+	if response.ErrorInternalErrorTest(context, data.ID, "Create RoundScore", err) {
+		return
+	}
+	response.AcceptPrint(data.ID, fmt.Sprint(data), "Create RoundScore")
 	context.IndentedJSON(200, data)
 }
 
