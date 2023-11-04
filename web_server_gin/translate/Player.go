@@ -79,6 +79,10 @@ func PostPlayer(context *gin.Context) {
 		return
 	}
 	response.AcceptPrint(data.ID, fmt.Sprint(data), "Create Player")
+	/*playerNum plus one in lane*/
+	if !UpdateLanePlayerNumAddOne(context, data.LaneId) {
+		return
+	}
 	/*create rounds*/
 	for i := 0; i < roundsNum; i++ {
 		var round database.Round
@@ -132,7 +136,12 @@ func PostRoundScore(context *gin.Context) {
 
 func DeletePlayer(context *gin.Context) {
 	id := convert2uint(context, "id")
-	if response.ErrorIdTest(context, id, database.GetPlayerIsExist(id), "Player") {
+	isExist, data := IsGetOnlyPlayer(context, id)
+	if !isExist {
+		return
+	}
+	/*playerNum minus one in lane*/
+	if !UpdateLanePlayerNumMinusOne(context, data.LaneId) {
 		return
 	}
 	isChanged, err := database.DeletePlayer(id)

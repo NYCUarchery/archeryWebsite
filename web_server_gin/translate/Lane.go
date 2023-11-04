@@ -109,29 +109,27 @@ func UpdateLaneQualificationId(context *gin.Context, id uint, qualificationId ui
 
 // lane need to update player num
 func UpdateLanePlayerNumAddOne(context *gin.Context, laneId uint) bool {
-	var data database.Lane
-	/*set player num*/
-	data.PlayerNum++
-	/*update data*/
-	_, err := database.UpdateLane(laneId, data)
-	if response.ErrorInternalErrorTest(context, laneId, "Update Lane Player Num", err) {
+	oldPlayerNum, err := database.GetLanePlayerNum(laneId)
+	if response.ErrorInternalErrorTest(context, laneId, "Get Lane Player Num", err) {
 		return false
 	}
-	response.AcceptPrint(laneId, fmt.Sprint(data), "Lane")
-	return true
+	/*set player num*/
+	newPlayerNum := oldPlayerNum + 1
+	/*update data*/
+	err = database.UpdateLanePlayerNum(laneId, newPlayerNum)
+	return !response.ErrorInternalErrorTest(context, laneId, "Update Lane Player Num ++", err)
 }
 
 func UpdateLanePlayerNumMinusOne(context *gin.Context, laneId uint) bool {
-	var data database.Lane
-	/*set player num*/
-	data.PlayerNum--
-	/*update data*/
-	_, err := database.UpdateLane(laneId, data)
-	if response.ErrorInternalErrorTest(context, laneId, "Update Lane Player Num", err) {
+	oldPlayerNum, err := database.GetLanePlayerNum(laneId)
+	if response.ErrorInternalErrorTest(context, laneId, "Get Lane Player Num", err) {
 		return false
 	}
-	response.AcceptPrint(laneId, fmt.Sprint(data), "Lane")
-	return true
+	/*set player num*/
+	newPlayerNum := oldPlayerNum - 1
+	/*update data*/
+	err = database.UpdateLanePlayerNum(laneId, newPlayerNum)
+	return !response.ErrorInternalErrorTest(context, laneId, "Update Lane Player Num --", err)
 }
 
 // lane is deleted when competition is deleted

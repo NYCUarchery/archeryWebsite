@@ -61,3 +61,14 @@ func DeleteLaneByCompetitionId(competitionId uint) error {
 	result := DB.Delete(&Lane{}, "competition_id =?", competitionId)
 	return result.Error
 }
+
+func GetLanePlayerNum(id uint) (int, error) {
+	var data int
+	result := DB.Model(&Lane{}).Where("id = ?", id).Pluck("player_num", &data)
+	return data, result.Error
+}
+
+func UpdateLanePlayerNum(id uint, playerNum int) error {
+	result := DB.Model(&Lane{}).Where("id = ?", id).Update("player_num", playerNum)
+	return result.Error
+}
