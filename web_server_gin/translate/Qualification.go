@@ -49,7 +49,7 @@ func GetOnlyQualificationByID(context *gin.Context) {
 //	@Param			id	path	int	true	"Qualification ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/data/qualification/{id} [get]
+//	@Router			/data/qualification/lanes/{id} [get]
 func GetQualificationWLanesByID(context *gin.Context) {
 	id := convert2uint(context, "id")
 	if response.ErrorIdTest(context, id, database.GetQualificationIsExist(id), "Qualification") {

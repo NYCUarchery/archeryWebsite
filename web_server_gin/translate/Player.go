@@ -33,6 +33,16 @@ func IsGetPlayerWScores(context *gin.Context, id uint) (bool, database.Player) {
 	return true, data
 }
 
+// Get One Player By ID godoc
+//
+//	@Summary		Show one Player without other data
+//	@Description	Get one Player without other data by id
+//	@Tags			Player
+//	@Produce		json
+//	@Param			id	path	int	true	"Player ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/data/player/{id} [get]
 func GetOnlyPlayerByID(context *gin.Context) {
 	id := convert2uint(context, "id")
 	isExist, data := IsGetOnlyPlayer(context, id)
@@ -42,6 +52,16 @@ func GetOnlyPlayerByID(context *gin.Context) {
 	context.IndentedJSON(200, data)
 }
 
+// Get One Player with Scores By ID godoc
+//
+//	@Summary		Show one Player with scores
+//	@Description	Get one Player with rounds, roundends, roundscores by id
+//	@Tags			Player
+//	@Produce		json
+//	@Param			id	path	int	true	"Player ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/data/player/scores/{id} [get]
 func GetPlayerWScoresByID(context *gin.Context) {
 	id := convert2uint(context, "id")
 	isExist, data := IsGetPlayerWScores(context, id)
@@ -51,6 +71,16 @@ func GetPlayerWScoresByID(context *gin.Context) {
 	context.IndentedJSON(200, data)
 }
 
+// Post one Player By Participant ID godoc
+//
+//	@Summary		Create one Player by Participant ID
+//	@Description	Create one Player by participant id, create realeted rounds by laneNum of competition, noTypeLane playerNum ++
+//	@Tags			Player
+//	@Produce		json
+//	@Param			participantid	path	int	true	"Participant ID"
+//	@Success		200				string	string
+//	@Failure		400				string	string
+//	@Router			/data/player/{participantid} [post]
 func PostPlayer(context *gin.Context) {
 	var data database.Player
 	/*only get participant_id*/
@@ -97,6 +127,16 @@ func PostPlayer(context *gin.Context) {
 	context.IndentedJSON(200, data)
 }
 
+// Post one RoundEnd By Round ID godoc
+//
+//	@Summary		Create one RoundEnd by Round ID
+//	@Description	Create one RoundEnd by round id, IsComfirmed is false
+//	@Tags			Player
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/data/player/roundend [post]
 func PostRoundEnd(context *gin.Context) {
 	var data database.RoundEnd
 	err := context.BindJSON(&data)
@@ -114,6 +154,16 @@ func PostRoundEnd(context *gin.Context) {
 	context.IndentedJSON(200, data)
 }
 
+// Post one RoundScore By RoundEnd ID godoc
+//
+//	@Summary		Create one RoundScore by RoundEnd ID
+//	@Description	Create one RoundScore by roundend id
+//	@Tags			Player
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/data/player/roundscore [post]
 func PostRoundScore(context *gin.Context) {
 	var data database.RoundScore
 	err := context.BindJSON(&data)
@@ -134,6 +184,16 @@ func PostRoundScore(context *gin.Context) {
 	context.IndentedJSON(200, data)
 }
 
+// Delete one Player By ID godoc
+//
+//	@Summary		Delete one Player by id
+//	@Description	Delete one Player by id, delete related round, roundend, roundscore data, and playerNum minus one in lane
+//	@Tags			Player
+//	@Produce		json
+//	@Param			id	path	int	true	"Player ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/data/player/{id} [delete]
 func DeletePlayer(context *gin.Context) {
 	id := convert2uint(context, "id")
 	isExist, data := IsGetOnlyPlayer(context, id)

@@ -90,6 +90,29 @@ paths:
       - Competition
   /data/competition/groups/{id}:
     get:
+      description: Get one Competition by id with GroupInfos
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Competition with GroupInfos
+      tags:
+      - Competition
+  /data/competition/participants/{id}:
+    get:
       description: Get one Competition by id with Participants
       parameters:
       - description: Competition ID
@@ -116,7 +139,7 @@ paths:
       consumes:
       - application/json
       description: Put whole new Competition and overwrite with the id but without
-        GroupInfo, cannot replace GroupNum, LaneNum, FirstLaneId, noTyoeGroupId
+        GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, FirstLaneId, noTyoeGroupId
       parameters:
       - description: Competition ID
         in: path
@@ -685,7 +708,161 @@ paths:
       summary: update one Participant
       tags:
       - Participant
+  /data/player/{id}:
+    delete:
+      description: Delete one Player by id, delete related round, roundend, roundscore
+        data, and playerNum minus one in lane
+      parameters:
+      - description: Player ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Delete one Player by id
+      tags:
+      - Player
+    get:
+      description: Get one Player without other data by id
+      parameters:
+      - description: Player ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Player without other data
+      tags:
+      - Player
+  /data/player/{participantid}:
+    post:
+      description: Create one Player by participant id, create realeted rounds by
+        laneNum of competition, noTypeLane playerNum ++
+      parameters:
+      - description: Participant ID
+        in: path
+        name: participantid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Create one Player by Participant ID
+      tags:
+      - Player
+  /data/player/roundend:
+    post:
+      consumes:
+      - application/json
+      description: Create one RoundEnd by round id, IsComfirmed is false
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Create one RoundEnd by Round ID
+      tags:
+      - Player
+  /data/player/roundscore:
+    post:
+      consumes:
+      - application/json
+      description: Create one RoundScore by roundend id
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Create one RoundScore by RoundEnd ID
+      tags:
+      - Player
+  /data/player/scores/{id}:
+    get:
+      description: Get one Player with rounds, roundends, roundscores by id
+      parameters:
+      - description: Player ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Player with scores
+      tags:
+      - Player
   /data/qualification/{id}:
+    get:
+      description: Get one Qualification by id
+      parameters:
+      - description: Qualification ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Qualification
+      tags:
+      - Qualification
+  /data/qualification/lanes/{id}:
     get:
       description: Get one Qualification with Lanes by id
       parameters:

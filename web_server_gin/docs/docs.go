@@ -63,6 +63,41 @@ const docTemplate = `{
         },
         "/data/competition/groups/{id}": {
             "get": {
+                "description": "Get one Competition by id with GroupInfos",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "Show one Competition with GroupInfos",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/competition/participants/{id}": {
+            "get": {
                 "description": "Get one Competition by id with Participants",
                 "produces": [
                     "application/json"
@@ -98,7 +133,7 @@ const docTemplate = `{
         },
         "/data/competition/whole/{id}": {
             "put": {
-                "description": "Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace GroupNum, LaneNum, FirstLaneId, noTyoeGroupId",
+                "description": "Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, FirstLaneId, noTyoeGroupId",
                 "consumes": [
                     "application/json"
                 ],
@@ -1031,6 +1066,237 @@ const docTemplate = `{
                 }
             }
         },
+        "/data/player/roundend": {
+            "post": {
+                "description": "Create one RoundEnd by round id, IsComfirmed is false",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Create one RoundEnd by Round ID",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/player/roundscore": {
+            "post": {
+                "description": "Create one RoundScore by roundend id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Create one RoundScore by RoundEnd ID",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/player/scores/{id}": {
+            "get": {
+                "description": "Get one Player with rounds, roundends, roundscores by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Show one Player with scores",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/player/{id}": {
+            "get": {
+                "description": "Get one Player without other data by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Show one Player without other data",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete one Player by id, delete related round, roundend, roundscore data, and playerNum minus one in lane",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Delete one Player by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/player/{participantid}": {
+            "post": {
+                "description": "Create one Player by participant id, create realeted rounds by laneNum of competition, noTypeLane playerNum ++",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Create one Player by Participant ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Participant ID",
+                        "name": "participantid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/qualification/lanes/{id}": {
+            "get": {
+                "description": "Get one Qualification with Lanes by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Qualification"
+                ],
+                "summary": "Show one Qualification",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Qualification ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/data/qualification/whole/{id}": {
             "put": {
                 "description": "Put whole new Qualification and overwrite with the id, and update lanes below it ,but cannot replace groupid",
@@ -1092,7 +1358,7 @@ const docTemplate = `{
         },
         "/data/qualification/{id}": {
             "get": {
-                "description": "Get one Qualification with Lanes by id",
+                "description": "Get one Qualification by id",
                 "produces": [
                     "application/json"
                 ],

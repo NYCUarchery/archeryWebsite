@@ -80,7 +80,7 @@ func GetCompetitionWGroupsByID(context *gin.Context) {
 //	@Param			id	path	int	true	"Competition ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/data/competition/groups/{id} [get]
+//	@Router			/data/competition/participants/{id} [get]
 func GetCompetitionWParticipantsByID(context *gin.Context) {
 	var data database.Competition
 	id := convert2uint(context, "id")
