@@ -1308,7 +1308,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/player/score/{roundscore}": {
+        "/data/player/score/{roundscoreid}": {
             "put": {
                 "description": "Update one Player score by id",
                 "consumes": [
@@ -1325,7 +1325,7 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "RoundScore ID",
-                        "name": "roundscore",
+                        "name": "roundscoreid",
                         "in": "path",
                         "required": true
                     }
@@ -1356,6 +1356,44 @@ const docTemplate = `{
                     "Player"
                 ],
                 "summary": "Show one Player with scores",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/player/shootoffscore/{id}": {
+            "put": {
+                "description": "Update one Player shootoffScore by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Update one Player shootoffScore by id",
                 "parameters": [
                     {
                         "type": "integer",

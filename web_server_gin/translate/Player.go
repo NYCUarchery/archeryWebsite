@@ -334,10 +334,10 @@ func UpdatePlayerIsConfirmed(context *gin.Context) {
 //	@Tags			Player
 //	@Accept			json
 //	@Produce		json
-//	@Param			roundscore	path	int	true	"RoundScore ID"
-//	@Success		200			string	string
-//	@Failure		400			string	string
-//	@Router			/data/player/score/{roundscore} [put]
+//	@Param			roundscoreid	path	int	true	"RoundScore ID"
+//	@Success		200				string	string
+//	@Failure		400				string	string
+//	@Router			/data/player/score/{roundscoreid} [put]
 func UpdatePlayerScore(context *gin.Context) {
 	var newRoundScore database.RoundScore
 	roundScoreId := convert2uint(context, "id")
@@ -355,6 +355,42 @@ func UpdatePlayerScore(context *gin.Context) {
 	}
 
 	context.IndentedJSON(200, nil)
+}
+
+// Update one Player ShootoffScore By ID godoc
+//
+//	@Summary		Update one Player shootoffScore by id
+//	@Description	Update one Player shootoffScore by id
+//	@Tags			Player
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path	int	true	"Player ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/data/player/shootoffscore/{id} [put]
+func UpdatePlayerShootoffScore(context *gin.Context) {
+	var data database.Player
+	playerId := convert2uint(context, "id")
+	err := context.BindJSON(&data)
+	shootoffScore := data.ShootOffScore
+	if response.ErrorReceiveDataTest(context, playerId, "Update Player shootoffScore", err) {
+		return
+	}
+	if response.ErrorIdTest(context, playerId, database.GetPlayerIsExist(playerId), "Player when updating shootoffScore") {
+		return
+	}
+
+	err = database.UpdatePlayerShootoffScore(playerId, shootoffScore)
+	if response.ErrorInternalErrorTest(context, playerId, "Update Player shootoffScore", err) {
+		return
+	}
+
+	data, err = database.GetOnlyPlayer(playerId)
+	if response.ErrorInternalErrorTest(context, playerId, "Get only Player", err) {
+		return
+	}
+	response.AcceptPrint(playerId, fmt.Sprint(shootoffScore), "Update Player shootoffScore")
+	context.IndentedJSON(200, data)
 }
 
 // Delete one Player By ID godoc

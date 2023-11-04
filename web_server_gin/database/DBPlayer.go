@@ -112,6 +112,11 @@ func UpdatePlayerScore(roundScoreId uint, score int) error {
 	return result.Error
 }
 
+func UpdatePlayerShootoffScore(playerId uint, shootoffScore int) error {
+	result := DB.Table("players").Where("id = ?", playerId).Update("shoot_off_score", shootoffScore)
+	return result.Error
+}
+
 func DeletePlayer(id uint) (bool, error) {
 	result := DB.Table("players").Where("id = ?", id).Delete(&Player{})
 	isChanged := result.RowsAffected != 0

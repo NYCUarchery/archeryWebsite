@@ -939,7 +939,7 @@ paths:
       summary: Create one RoundScore by RoundEnd ID
       tags:
       - Player
-  /data/player/score/{roundscore}:
+  /data/player/score/{roundscoreid}:
     put:
       consumes:
       - application/json
@@ -947,7 +947,7 @@ paths:
       parameters:
       - description: RoundScore ID
         in: path
-        name: roundscore
+        name: roundscoreid
         required: true
         type: integer
       produces:
@@ -985,6 +985,31 @@ paths:
           schema:
             type: string
       summary: Show one Player with scores
+      tags:
+      - Player
+  /data/player/shootoffscore/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Update one Player shootoffScore by id
+      parameters:
+      - description: Player ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Update one Player shootoffScore by id
       tags:
       - Player
   /data/qualification/{id}:
