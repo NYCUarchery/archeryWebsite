@@ -1,11 +1,12 @@
 package database
 
 type Lane struct {
-	ID              uint `json:"id"`
-	CompetitionId   uint `json:"competition_id"`
-	QualificationId uint `json:"qualification_id"`
-	PlayerNum       int  `json:"player_num"`
-	LaneNumber      int  `json:"lane_number"`
+	ID              uint      `json:"id"`
+	CompetitionId   uint      `json:"competition_id"`
+	QualificationId uint      `json:"qualification_id"`
+	PlayerNum       int       `json:"player_num"`
+	LaneNumber      int       `json:"lane_number"`
+	Players         []*Player `json:"players"`
 }
 
 func InitLane() {

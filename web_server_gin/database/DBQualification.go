@@ -39,6 +39,19 @@ func GetQualificationWLanesByID(id uint) (Qualification, error) {
 	return data, result.Error
 }
 
+func GetQualificationWLanesPlayersByID(id uint) (Qualification, error) {
+	var data Qualification
+	result := DB.
+		Preload("Lanes", func(*gorm.DB) *gorm.DB {
+			return DB.Order("id asc").
+				Preload("Players", func(*gorm.DB) *gorm.DB { return DB.Order("order_number asc") })
+		}).
+		Model(&Qualification{}).
+		Where("id = ?", id).
+		First(&data)
+	return data, result.Error
+}
+
 func PostQualification(data Qualification) (Qualification, error) {
 	result := DB.Model(&Qualification{}).Create(&data)
 	return data, result.Error

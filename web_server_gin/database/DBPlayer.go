@@ -10,7 +10,7 @@ type Player struct {
 	TotalScore    int      `json:"total_score"`
 	ShootOffScore int      `json:"shoot_off_score"`
 	Rank          int      `json:"rank"`
-	Order         int      `json:"order"`
+	Order         int      `json:"order" gorm:"column:order_number"`
 	Rounds        []*Round `json:"rounds" gorm:"constraint:OnDelete:CASCADE;"`
 }
 

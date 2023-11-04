@@ -63,6 +63,29 @@ func GetQualificationWLanesByID(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, data)
 }
 
+// Get One Qualification with Lanes and Players By ID godoc
+//
+//	@Summary		Show one Qualification
+//	@Description	Get one Qualification with Lanes and Players by id
+//	@Tags			Qualification
+//	@Produce		json
+//	@Param			id	path	int	true	"Qualification ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/data/qualification/lanes/players/{id} [get]
+func GetQualificationWLanesPlayersByID(context *gin.Context) {
+	id := convert2uint(context, "id")
+	if response.ErrorIdTest(context, id, database.GetQualificationIsExist(id), "Qualification") {
+		return
+	}
+	data, err := database.GetQualificationWLanesPlayersByID(id)
+	if response.ErrorInternalErrorTest(context, id, "Get Qualification with lanes and players", err) {
+		return
+	}
+	response.AcceptPrint(id, fmt.Sprint(data), "Qualification with lanes and players")
+	context.IndentedJSON(http.StatusOK, data)
+}
+
 // when group is created, qualification is created
 // share same id with group
 func PostQualificationThroughGroup(context *gin.Context, id uint) bool {
