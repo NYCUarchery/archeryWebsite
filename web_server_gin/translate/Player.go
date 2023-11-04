@@ -135,10 +135,9 @@ func DeletePlayer(context *gin.Context) {
 	if response.ErrorIdTest(context, id, database.GetPlayerIsExist(id), "Player") {
 		return
 	}
-	err := database.DeletePlayer(id)
+	isChanged, err := database.DeletePlayer(id)
 	if response.ErrorInternalErrorTest(context, id, "Delete Player", err) {
 		return
 	}
-	response.AcceptPrint(id, fmt.Sprint(id), "Player")
-	context.IndentedJSON(200, id)
+	response.AcceptDeleteSuccess(context, id, isChanged, "Delete Player")
 }

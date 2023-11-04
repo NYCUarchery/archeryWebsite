@@ -97,7 +97,8 @@ func UpdatePlayer(id uint, data Player) (Player, error) {
 	return data, result.Error
 }
 
-func DeletePlayer(id uint) error {
+func DeletePlayer(id uint) (bool, error) {
 	result := DB.Table("players").Where("id = ?", id).Delete(&Player{})
-	return result.Error
+	isChanged := result.RowsAffected != 0
+	return isChanged, result.Error
 }
