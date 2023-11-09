@@ -239,6 +239,49 @@ func UpdateCompetition(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, newData)
 }
 
+// Update Competition players Ranking godoc
+//
+//	@Summary		update one Competition Ranking
+//	@Description	Update update all  player ranking of different groups in one Competition
+//	@Tags			Competition
+//	@Accept			json
+//	@Produce		json
+//	@Param			id			path	string	true	"Competition ID"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Failure		404			string	string
+//	@Failure		500			string	string
+//	@Router			/data/competition/groups/players/rank/{id} [put]
+func UpdateCompetitionRank(context *gin.Context) {
+	id := convert2uint(context, "id")
+	/*check data exist*/
+	isExist, _ := IsGetOnlyCompetition(context, id)
+	if !isExist {
+		return
+	}
+
+	/*get players of each group, then update player rank*/
+	/*update all related player*/
+	groudIds, error := database.GetCompetitionGroupIds(id)
+	if response.ErrorInternalErrorTest(context, id, "Get Competition GroupIds when update ranking", error) {
+		return
+	}
+	for _, groupId := range groudIds {
+		playerIds, error := database.GetGroupPlayerIdRankOrderById(groupId)
+		if response.ErrorInternalErrorTest(context, id, "Get player ids when update ranking", error) {
+			return
+		}
+		for i, playerId := range playerIds {
+			fmt.Printf("playerId: %d, rank: %d\n", playerId, i+1)
+			error := database.UpdatePlayerRank(playerId, i+1)
+			if response.ErrorInternalErrorTest(context, id, "Update player rank when update ranking by competition id", error) {
+				return
+			}
+		}
+	}
+	context.IndentedJSON(http.StatusOK, nil)
+}
+
 // Delete Competition by id godoc
 //
 //	@Summary		delete one Competition

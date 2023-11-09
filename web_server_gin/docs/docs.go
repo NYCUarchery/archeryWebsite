@@ -61,6 +61,56 @@ const docTemplate = `{
                 }
             }
         },
+        "/data/competition/groups/players/rank/{id}": {
+            "put": {
+                "description": "Update update all  player ranking of different groups in one Competition",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "update one Competition Ranking",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/data/competition/groups/players/{id}": {
             "get": {
                 "description": "Get one Competition by id with GroupInfos and Players",
@@ -324,6 +374,41 @@ const docTemplate = `{
                         "schema": {
                             "type": "string"
                         }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/groupinfo/players/{id}": {
+            "get": {
+                "description": "Get one GroupInfo with players by id, usually ordered by rank",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GroupInfo"
+                ],
+                "summary": "Show one GroupInfo with players",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "GroupInfo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {

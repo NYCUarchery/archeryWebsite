@@ -50,6 +50,34 @@ func GetGroupInfoByID(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, data)
 }
 
+// Get GroupInfo with players By Competition ID godoc
+//
+//	@Summary		Show one GroupInfo with players
+//	@Description	Get one GroupInfo with players by id, usually ordered by rank
+//	@Tags			GroupInfo
+//	@Produce		json
+//	@Param			id	path	int	true	"GroupInfo ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/data/groupinfo/players/{id} [get]
+func GetGroupInfoWPlayersByID(context *gin.Context) {
+	id := convert2uint(context, "id")
+	isExist, _ := IsGetGroupInfo(context, id)
+	if !isExist {
+		return
+	}
+
+	if response.ErrorIdTest(context, id, database.GetGroupIsExist(id), "GroupInfo with players") {
+		return
+	}
+	data, err := database.GetGroupInfoWPlayersById(id)
+	if response.ErrorInternalErrorTest(context, id, "Get GroupInfo with players ", err) {
+		return
+	}
+	response.AcceptPrint(id, fmt.Sprint(data), "GroupInfo whith players")
+	context.IndentedJSON(http.StatusOK, data)
+}
+
 // Post GroupInfo godoc
 //
 //	@Summary		Create one GroupInfo

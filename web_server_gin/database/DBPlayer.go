@@ -131,6 +131,11 @@ func UpdatePlayerOrder(playerId uint, order int) error {
 	return result.Error
 }
 
+func UpdatePlayerRank(playerId uint, rank int) error {
+	result := DB.Table("players").Where("id = ?", playerId).Update("rank", rank)
+	return result.Error
+}
+
 func UpdatePlayerIsConfirmed(roundEndId uint, isConfirmed bool) error {
 	result := DB.Table("round_ends").Where("id = ?", roundEndId).Update("is_confirmed", isConfirmed)
 	return result.Error

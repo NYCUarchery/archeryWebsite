@@ -76,12 +76,14 @@ func competitionRouter(data *gin.RouterGroup) {
 	data.GET("/groups/:id", translate.GetCompetitionWGroupsByID)
 	data.GET("/groups/players/:id", translate.GetCompetitionWGroupsPlayersByID)
 	data.POST("/", translate.PostCompetition)
+	data.PUT("/groups/players/rank/:id", translate.UpdateCompetitionRank)
 	data.PUT("/whole/:id", translate.UpdateCompetition)
 	data.DELETE("/:id", translate.DeleteCompetition)
 }
 
 func groupInfoRouter(data *gin.RouterGroup) {
 	data.GET("/:id", translate.GetGroupInfoByID)
+	data.GET("/players/:id", translate.GetGroupInfoWPlayersByID)
 	data.POST("/", translate.PostGroupInfo)
 	data.PUT("/whole/:id", translate.UpdateGroupInfo)
 	data.PUT("/reorder", translate.ReorderGroupInfo)

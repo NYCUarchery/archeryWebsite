@@ -50,10 +50,18 @@ func GetCompetitionWParticipants(ID uint) (Competition, error) {
 	return data, result.Error
 }
 
+func GetCompetitionGroupIds(ID uint) ([]uint, error) {
+	var data []uint
+	result := DB.Table("groups").Where("competition_id = ?", ID).Pluck("id", &data)
+	return data, result.Error
+}
+
 func GetCompetitionWGroups(ID uint) (Competition, error) {
 	var data Competition
 	result := DB.
-		Preload("Groups", func(*gorm.DB) *gorm.DB { return DB.Order("group_index asc") }).
+		Preload("Groups", func(*gorm.DB) *gorm.DB {
+			return DB.Order("group_index asc")
+		}).
 		Model(&Competition{}).
 		Where("id = ?", ID).
 		First(&data)
