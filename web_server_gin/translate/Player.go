@@ -90,7 +90,7 @@ func GetPlayerWScoresByID(context *gin.Context) {
 // Post one Player By Participant ID godoc
 //
 //	@Summary		Create one Player by Participant ID
-//	@Description	Create one Player by participant id, create realeted rounds by laneNum of competition, noTypeLane playerNum ++
+//	@Description	Create one Player by participant id, create realeted rounds by laneNum of competition, create 6 roundscores for each 6 roundends, noTypeLane playerNum ++
 //	@Tags			Player
 //	@Produce		json
 //	@Param			participantid	path	int	true	"Participant ID"
@@ -139,6 +139,28 @@ func PostPlayer(context *gin.Context) {
 			return
 		}
 		response.AcceptPrint(round.ID, fmt.Sprint(round), "Create Round when creating player ")
+		/*create roundends*/
+		for j := 0; j < 6; j++ {
+			var roundEnd database.RoundEnd
+			roundEnd.RoundId = round.ID
+			roundEnd.IsConfirmed = false
+			roundEnd, err = database.CreateRoundEnd(roundEnd)
+			if response.ErrorInternalErrorTest(context, roundEnd.ID, "Create RoundEnd when creating player ", err) {
+				return
+			}
+			response.AcceptPrint(roundEnd.ID, fmt.Sprint(roundEnd), "Create RoundEnd when creating player ")
+			/*create roundscores*/
+			for k := 0; k < 6; k++ {
+				var roundScore database.RoundScore
+				roundScore.RoundEndId = roundEnd.ID
+				roundScore.Score = -1
+				roundScore, err = database.CreateRoundScore(roundScore)
+				if response.ErrorInternalErrorTest(context, roundScore.ID, "Create RoundScore when creating player ", err) {
+					return
+				}
+				response.AcceptPrint(roundScore.ID, fmt.Sprint(roundScore), "Create RoundScore when creating player ")
+			}
+		}
 	}
 	context.IndentedJSON(200, data)
 }

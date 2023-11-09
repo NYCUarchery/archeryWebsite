@@ -1612,7 +1612,7 @@ const docTemplate = `{
         },
         "/data/player/{participantid}": {
             "post": {
-                "description": "Create one Player by participant id, create realeted rounds by laneNum of competition, noTypeLane playerNum ++",
+                "description": "Create one Player by participant id, create realeted rounds by laneNum of competition, create 6 roundscores for each 6 roundends, noTypeLane playerNum ++",
                 "produces": [
                     "application/json"
                 ],
