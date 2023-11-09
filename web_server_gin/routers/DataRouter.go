@@ -94,6 +94,7 @@ func qualificationRouter(data *gin.RouterGroup) {
 	data.GET("/:id", translate.GetOnlyQualificationByID)
 	data.GET("/lanes/:id", translate.GetQualificationWLanesByID)
 	data.GET("/lanes/players/:id", translate.GetQualificationWLanesPlayersByID)
+	data.GET("/lanes/notype/:id", translate.GetQualificationWNoTypeLanesByID)
 	data.PUT("/whole/:id", translate.UpdateQualificationByID)
 
 }

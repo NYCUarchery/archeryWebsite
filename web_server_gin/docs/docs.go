@@ -1645,6 +1645,41 @@ const docTemplate = `{
                 }
             }
         },
+        "/data/qualification/lanes/notype/{id}": {
+            "get": {
+                "description": "Get one Qualification with noType Lanes by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Qualification"
+                ],
+                "summary": "Show one Qualification",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Qualification ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/data/qualification/lanes/players/{id}": {
             "get": {
                 "description": "Get one Qualification with Lanes and Players by id",

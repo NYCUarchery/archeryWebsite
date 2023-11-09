@@ -1,6 +1,8 @@
 package database
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type Qualification struct {
 	ID              uint    `json:"id"        gorm:"primary_key"`
@@ -44,11 +46,37 @@ func GetQualificationWLanesPlayersByID(id uint) (Qualification, error) {
 	result := DB.
 		Preload("Lanes", func(*gorm.DB) *gorm.DB {
 			return DB.Order("id asc").
-				Preload("Players", func(*gorm.DB) *gorm.DB { return DB.Order("order_number asc") })
+				Preload("Players", func(*gorm.DB) *gorm.DB {
+					return DB.Order("order_number asc")
+				})
 		}).
 		Model(&Qualification{}).
 		Where("id = ?", id).
 		First(&data)
+	return data, result.Error
+}
+
+func GetQualificationWNoTypeLanesByID(id uint) (Qualification, error) {
+	var data Qualification
+	subquery := DB.
+		Select("competitions.no_type_lane_id, competitions.no_type_group_id").
+		Table("competitions").
+		Joins("JOIN `groups` ON `groups`.competition_id = competitions.id").
+		Where("`groups`.id = ?", id)
+	result := DB.
+		Preload("Lanes", func(*gorm.DB) *gorm.DB {
+			return DB.Order("lane_number asc").
+				Table("lanes").
+				Joins("JOIN (?) AS B ON lanes.id = B.no_type_lane_id ", subquery).
+				Preload("Players", func(*gorm.DB) *gorm.DB {
+					return DB.Order("order_number asc").
+						Table("players").
+						Where("players.group_id = ?", id)
+				})
+		}).
+		Joins("JOIN (?) AS C ON qualifications.id = C.no_type_group_id", subquery).
+		Find(&data)
+
 	return data, result.Error
 }
 

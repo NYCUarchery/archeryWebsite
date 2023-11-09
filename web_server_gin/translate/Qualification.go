@@ -21,6 +21,42 @@ func IsGetQualification(context *gin.Context, id uint) (bool, database.Qualifica
 	return true, data
 }
 
+func IsGetQualificationWLanes(context *gin.Context, id uint) (bool, database.Qualification) {
+	if response.ErrorIdTest(context, id, database.GetQualificationIsExist(id), "Qualification") {
+		return false, database.Qualification{}
+	}
+	data, err := database.GetQualificationWLanesByID(id)
+	if response.ErrorInternalErrorTest(context, id, "Get Qualification with lanes", err) {
+		return false, data
+	}
+	response.AcceptPrint(id, fmt.Sprint(data), "Qualification with lanes")
+	return true, data
+}
+
+func IsGetQualificationWLanesPlayers(context *gin.Context, id uint) (bool, database.Qualification) {
+	if response.ErrorIdTest(context, id, database.GetQualificationIsExist(id), "Qualification") {
+		return false, database.Qualification{}
+	}
+	data, err := database.GetQualificationWLanesPlayersByID(id)
+	if response.ErrorInternalErrorTest(context, id, "Get Qualification with lanes and players", err) {
+		return false, data
+	}
+	response.AcceptPrint(id, fmt.Sprint(data), "Qualification with lanes and players")
+	return true, data
+}
+
+func IsGetQualificationWNoTypeLanes(context *gin.Context, id uint) (bool, database.Qualification) {
+	if response.ErrorIdTest(context, id, database.GetQualificationIsExist(id), "Qualification") {
+		return false, database.Qualification{}
+	}
+	data, err := database.GetQualificationWNoTypeLanesByID(id)
+	if response.ErrorInternalErrorTest(context, id, "Get Qualification with noType lanes", err) {
+		return false, data
+	}
+	response.AcceptPrint(id, fmt.Sprint(data), "Qualification with noType lanes")
+	return true, data
+}
+
 // Get One Qualification By ID godoc
 //
 //	@Summary		Show one Qualification
@@ -52,14 +88,36 @@ func GetOnlyQualificationByID(context *gin.Context) {
 //	@Router			/data/qualification/lanes/{id} [get]
 func GetQualificationWLanesByID(context *gin.Context) {
 	id := convert2uint(context, "id")
-	if response.ErrorIdTest(context, id, database.GetQualificationIsExist(id), "Qualification") {
+	isExist, data := IsGetQualification(context, id)
+	if !isExist {
 		return
 	}
-	data, err := database.GetQualificationWLanesByID(id)
-	if response.ErrorInternalErrorTest(context, id, "Get Qualification with lanes", err) {
+	context.IndentedJSON(http.StatusOK, data)
+}
+
+// Get One Qualification with noType Lanes By ID godoc
+//
+//	@Summary		Show one Qualification
+//	@Description	Get one Qualification with noType Lanes by id
+//	@Tags			Qualification
+//	@Produce		json
+//	@Param			id	path	int	true	"Qualification ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/data/qualification/lanes/notype/{id} [get]
+func GetQualificationWNoTypeLanesByID(context *gin.Context) {
+	id := convert2uint(context, "id")
+	data := []database.Qualification{}
+	isExist, wLaneData := IsGetQualificationWLanesPlayers(context, id)
+	if !isExist {
 		return
 	}
-	response.AcceptPrint(id, fmt.Sprint(data), "Qualification with lanes")
+	isExist, wNoTypeLaneData := IsGetQualificationWNoTypeLanes(context, id)
+	if !isExist {
+		return
+	}
+	data = append(data, wLaneData)
+	data = append(data, wNoTypeLaneData)
 	context.IndentedJSON(http.StatusOK, data)
 }
 
