@@ -23,7 +23,7 @@ const docTemplate = `{
     "paths": {
         "/data/competition": {
             "post": {
-                "description": "Post one new Competition data with new id, create noTypeGroup, create Lanes and noTypeLane which link to noTypeGroup, and return the new Competition data",
+                "description": "Post one new Competition data with new id, create UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup, and return the new Competition data",
                 "consumes": [
                     "application/json"
                 ],
@@ -573,7 +573,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "delete one GroupInfo by id, delete qualification, and change player to noTypeGroup and noTypeLane",
+                "description": "delete one GroupInfo by id, delete qualification, and change player to UnassignedGroup and UnassignedLane",
                 "consumes": [
                     "application/json"
                 ],
@@ -1223,7 +1223,7 @@ const docTemplate = `{
         },
         "/data/player/groupid/{playerid}/{groupid}": {
             "put": {
-                "description": "Update one Player groupId by id, and change player laneid to notype lane",
+                "description": "Update one Player groupId by id, and change player laneid to Unassigned lane",
                 "consumes": [
                     "application/json"
                 ],
@@ -1612,7 +1612,7 @@ const docTemplate = `{
         },
         "/data/player/{participantid}": {
             "post": {
-                "description": "Create one Player by participant id, create realeted rounds by laneNum of competition, create 6 roundscores for each 6 roundends, noTypeLane playerNum ++",
+                "description": "Create one Player by participant id, create realeted rounds by laneNum of competition, create 6 roundscores for each 6 roundends, UnassignedLane playerNum ++",
                 "produces": [
                     "application/json"
                 ],
@@ -1645,9 +1645,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/qualification/lanes/notype/{id}": {
+        "/data/qualification/lanes/Unassigned/{id}": {
             "get": {
-                "description": "Get one Qualification with noType Lanes by id",
+                "description": "Get one Qualification with Unassigned Lanes by id",
                 "produces": [
                     "application/json"
                 ],

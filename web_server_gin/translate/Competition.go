@@ -45,6 +45,18 @@ func IsGetCompetitionWGroupsPlayers(context *gin.Context, id uint) (bool, databa
 	return true, data
 }
 
+func IsGetCompetitionWParticipants(context *gin.Context, id uint) (bool, database.Competition) {
+	if response.ErrorIdTest(context, id, database.GetCompetitionIsExist(id), "Competition") {
+		return false, database.Competition{}
+	}
+	data, err := database.GetCompetitionWParticipants(id)
+	if response.ErrorInternalErrorTest(context, id, "Get Competition", err) {
+		return false, data
+	}
+	response.AcceptPrint(id, fmt.Sprint(data), "Competition")
+	return true, data
+}
+
 // Get Only Competition By ID godoc
 //
 //	@Summary		Show one Competition without GroupInfo
@@ -77,14 +89,10 @@ func GetOnlyCompetitionByID(context *gin.Context) {
 func GetCompetitionWParticipantsByID(context *gin.Context) {
 	var data database.Competition
 	id := convert2uint(context, "id")
-	if response.ErrorIdTest(context, id, database.GetCompetitionIsExist(id), "Competition") {
+	isExist, data := IsGetCompetitionWParticipants(context, id)
+	if !isExist {
 		return
 	}
-	data, err := database.GetCompetitionWParticipants(id)
-	if response.ErrorInternalErrorTest(context, id, "Get Competition with participants ", err) {
-		return
-	}
-	response.AcceptPrint(id, fmt.Sprint(data), "Competition with participants ")
 	context.IndentedJSON(http.StatusOK, data)
 }
 
@@ -129,7 +137,7 @@ func GetCompetitionWGroupsPlayersByID(context *gin.Context) {
 // Post Competition godoc
 //
 //	@Summary		Create one Competition and related data
-//	@Description	Post one new Competition data with new id, create noTypeGroup, create Lanes and noTypeLane which link to noTypeGroup, and return the new Competition data
+//	@Description	Post one new Competition data with new id, create UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup, and return the new Competition data
 //	@Tags			Competition
 //	@Accept			json
 //	@Produce		json
@@ -162,31 +170,32 @@ func PostCompetition(context *gin.Context) {
 	}
 	/*create無組別group*/
 	newData.GroupsNum++
-	success, noTypeGroupId := PostNoTypeGroupInfo(context, newId)
+	success, UnassignedGroupId := PostUnassignedGroupInfo(context, newId)
+	fmt.Printf("UnassignedGroupId: %v\n", UnassignedGroupId)
 	if !success {
 		return
 	}
 	/*create lanes, after get competitionId*/
 	for i := 0; i <= data.LanesNum; i++ {
-		success := PostLaneThroughCompetition(context, newId, noTypeGroupId, i)
+		success := PostLaneThroughCompetition(context, newId, UnassignedGroupId, i)
 		if !success {
 			return
 		}
 	}
-	/*auto write noTypeLaneId*/
-	newData.NoTypeLaneId = database.GetNoTypeLaneId(newId)
-	fmt.Printf("noTypeLaneId: %d\n", newData.NoTypeLaneId)
-	ischanged := database.UpdateCompetitionNoTypeLaneId(newId, newData.NoTypeLaneId)
-	if response.AcceptNotChange(context, id, ischanged, "Update Competition NoTypeLaneId") {
+	/*auto write UnassignedLaneId*/
+	newData.UnassignedLaneId = database.GetUnassignedLaneId(newId)
+	fmt.Printf("UnassignedLaneId: %d\n", newData.UnassignedLaneId)
+	ischanged := database.UpdateCompetitionUnassignedLaneId(newId, newData.UnassignedLaneId)
+	if response.AcceptNotChange(context, id, ischanged, "Update Competition UnassignedLaneId") {
 		return
 	}
-	/*auto write noTypeGroupId*/
-	newData.NoTypeGroupId = noTypeGroupId
-	ischanged = database.UpdateCompetitionNoTypeGroupId(newId, newData.NoTypeGroupId)
-	if response.AcceptNotChange(context, id, ischanged, "Update Competition FirstLaneId") {
+	/*auto write UnassignedGroupId*/
+	newData.UnassignedGroupId = UnassignedGroupId
+	ischanged = database.UpdateCompetitionUnassignedGroupId(newId, newData.UnassignedGroupId)
+	if response.AcceptNotChange(context, id, ischanged, "Update Competition UnassignedLaneId") {
 		return
 	}
-
+	response.AcceptPrint(newId, fmt.Sprint(newData), "Competition")
 	context.IndentedJSON(http.StatusOK, newData)
 }
 
@@ -221,8 +230,8 @@ func UpdateCompetition(context *gin.Context) {
 	data.RoundsNum = database.GetCompetitionRoundsNum(id)
 	data.GroupsNum = database.GetCompetitionGroupNum(id)
 	data.LanesNum = database.GetCompetitionLaneNum(id)
-	data.NoTypeLaneId = database.GetNoTypeLaneId(id)
-	data.NoTypeGroupId = database.GetCompetitionNoTypeGroupId(id)
+	data.UnassignedLaneId = database.GetUnassignedLaneId(id)
+	data.UnassignedGroupId = database.GetCompetitionUnassignedGroupId(id)
 
 	/*update and check change*/
 	isChanged, err := database.UpdateCompetition(id, data)
@@ -324,7 +333,15 @@ func DeleteCompetition(context *gin.Context) {
 			}
 		}
 	}
-
+	_, data = IsGetCompetitionWParticipants(context, id)
+	/*delete all related participant*/
+	for _, participant := range data.Participants {
+		participantId := participant.ID
+		success := DeleteParticipaint(context, participantId)
+		if !success {
+			return
+		}
+	}
 	/*delete competition*/
 	affected, err := database.DeleteCompetition(id)
 	if response.ErrorInternalErrorTest(context, id, "Delete Competition with Groups", err) {

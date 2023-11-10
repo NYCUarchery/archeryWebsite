@@ -45,15 +45,15 @@ func IsGetQualificationWLanesPlayers(context *gin.Context, id uint) (bool, datab
 	return true, data
 }
 
-func IsGetQualificationWNoTypeLanes(context *gin.Context, id uint) (bool, database.Qualification) {
+func IsGetQualificationWUnassignedLanes(context *gin.Context, id uint) (bool, database.Qualification) {
 	if response.ErrorIdTest(context, id, database.GetQualificationIsExist(id), "Qualification") {
 		return false, database.Qualification{}
 	}
-	data, err := database.GetQualificationWNoTypeLanesByID(id)
-	if response.ErrorInternalErrorTest(context, id, "Get Qualification with noType lanes", err) {
+	data, err := database.GetQualificationWUnassignedLanesByID(id)
+	if response.ErrorInternalErrorTest(context, id, "Get Qualification with Unassigned lanes", err) {
 		return false, data
 	}
-	response.AcceptPrint(id, fmt.Sprint(data), "Qualification with noType lanes")
+	response.AcceptPrint(id, fmt.Sprint(data), "Qualification with Unassigned lanes")
 	return true, data
 }
 
@@ -88,36 +88,36 @@ func GetOnlyQualificationByID(context *gin.Context) {
 //	@Router			/data/qualification/lanes/{id} [get]
 func GetQualificationWLanesByID(context *gin.Context) {
 	id := convert2uint(context, "id")
-	isExist, data := IsGetQualification(context, id)
+	isExist, data := IsGetQualificationWLanes(context, id)
 	if !isExist {
 		return
 	}
 	context.IndentedJSON(http.StatusOK, data)
 }
 
-// Get One Qualification with noType Lanes By ID godoc
+// Get One Qualification with Unassigned Lanes By ID godoc
 //
 //	@Summary		Show one Qualification
-//	@Description	Get one Qualification with noType Lanes by id
+//	@Description	Get one Qualification with Unassigned Lanes by id
 //	@Tags			Qualification
 //	@Produce		json
 //	@Param			id	path	int	true	"Qualification ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/data/qualification/lanes/notype/{id} [get]
-func GetQualificationWNoTypeLanesByID(context *gin.Context) {
+//	@Router			/data/qualification/lanes/Unassigned/{id} [get]
+func GetQualificationWUnassignedLanesByID(context *gin.Context) {
 	id := convert2uint(context, "id")
 	data := []database.Qualification{}
 	isExist, wLaneData := IsGetQualificationWLanesPlayers(context, id)
 	if !isExist {
 		return
 	}
-	isExist, wNoTypeLaneData := IsGetQualificationWNoTypeLanes(context, id)
+	isExist, wUnassignedLaneData := IsGetQualificationWUnassignedLanes(context, id)
 	if !isExist {
 		return
 	}
 	data = append(data, wLaneData)
-	data = append(data, wNoTypeLaneData)
+	data = append(data, wUnassignedLaneData)
 	context.IndentedJSON(http.StatusOK, data)
 }
 
@@ -184,17 +184,17 @@ func UpdateQualificationByID(context *gin.Context) {
 	if !success {
 		return
 	}
-	/*check if qualification is belong to noTypeGroup*/
+	/*check if qualification is belong to UnassignedGroup*/
 	_, Group := IsGetGroupInfo(context, id)
 	if Group.GroupIndex == -1 {
-		response.ErrorIdTest(context, id, false, "Qualification is belong to noTypeGroup, when update Qualification")
+		response.ErrorIdTest(context, id, false, "Qualification is belong to UnassignedGroup, when update Qualification")
 		return
 	}
 	/*check if lane start and end is valid*/
 	group, _ := database.GetGroupInfoById(id)
 	competitionId := group.CompetitionId
 	_, competition := IsGetOnlyCompetition(context, competitionId)
-	noTypeLaneId := competition.NoTypeGroupId
+	UnassignedLaneId := competition.UnassignedGroupId
 	laneNum := competition.LanesNum
 	if data.StartLaneNumber <= 0 || data.StartLaneNumber > laneNum || data.EndLaneNumber <= 0 || data.EndLaneNumber > laneNum || data.StartLaneNumber > data.EndLaneNumber {
 		errorMessage := fmt.Sprintf("Lane number is invalid start: %d end: %d", data.StartLaneNumber, data.EndLaneNumber)
@@ -203,13 +203,13 @@ func UpdateQualificationByID(context *gin.Context) {
 	}
 
 	/*check if lanes are occupied*/
-	laneQualificationIds := database.GetLaneQualificationId(noTypeLaneId, data.StartLaneNumber, data.EndLaneNumber)
-	noTypeGroupId := competition.NoTypeGroupId
+	laneQualificationIds := database.GetLaneQualificationId(UnassignedLaneId, data.StartLaneNumber, data.EndLaneNumber)
+	UnassignedGroupId := competition.UnassignedGroupId
 	for index, laneQualificationId := range laneQualificationIds {
 		lanenumber := index + data.StartLaneNumber
 		fmt.Printf("laneQualificationId: %d\n", laneQualificationId)
 		fmt.Printf("lanenumber: %d\n", lanenumber)
-		if laneQualificationId != noTypeGroupId && laneQualificationId != id {
+		if laneQualificationId != UnassignedGroupId && laneQualificationId != id {
 			errorMessage := fmt.Sprintf("Lane number %d is occupied", lanenumber)
 			context.IndentedJSON(http.StatusBadRequest, gin.H{"message": errorMessage})
 			return
@@ -226,17 +226,17 @@ func UpdateQualificationByID(context *gin.Context) {
 		oldLaneEnd++
 	}
 	for index := oldLaneStart; index <= oldLaneEnd; index++ {
-		laneId := noTypeLaneId + uint(index)
+		laneId := UnassignedLaneId + uint(index)
 		fmt.Printf("laneId: %d\n", laneId)
 		fmt.Printf("index: %d\n", index)
-		success := UpdateLaneQualificationId(context, laneId, noTypeGroupId)
+		success := UpdateLaneQualificationId(context, laneId, UnassignedGroupId)
 		if !success {
 			return
 		}
 	}
 	fmt.Printf("\n")
 	for index := data.StartLaneNumber; index <= data.EndLaneNumber; index++ {
-		laneId := noTypeLaneId + uint(index)
+		laneId := UnassignedLaneId + uint(index)
 		fmt.Printf("laneId: %d\n", laneId)
 		fmt.Printf("index: %d\n", index)
 		success := UpdateLaneQualificationId(context, laneId, id)
@@ -264,7 +264,7 @@ func UpdateQualificationByID(context *gin.Context) {
 
 // delete qualification when group is deleted
 // cannot delete qualification solely
-// update lanes' qualification id to noTypeGroup
+// update lanes' qualification id to UnassignedGroup
 func DeleteQualificationThroughGroup(context *gin.Context, id uint) bool {
 	/*check data exist*/
 	isExist, oldData := IsGetQualification(context, id)
@@ -275,16 +275,16 @@ func DeleteQualificationThroughGroup(context *gin.Context, id uint) bool {
 	group, _ := database.GetGroupInfoById(id)
 	competitionId := group.CompetitionId
 	_, competition := IsGetOnlyCompetition(context, competitionId)
-	noTypeGroupId := competition.NoTypeGroupId
-	noTypeLaneId := competition.NoTypeLaneId
+	UnassignedGroupId := competition.UnassignedGroupId
+	UnassignedLaneId := competition.UnassignedLaneId
 	oldLaneStart := oldData.StartLaneNumber
 	oldLaneEnd := oldData.EndLaneNumber
 	if oldLaneStart != 0 && oldLaneEnd != 0 {
 		for index := oldLaneStart; index <= oldLaneEnd; index++ {
-			laneId := noTypeLaneId + uint(index)
+			laneId := UnassignedLaneId + uint(index)
 			fmt.Printf("laneId: %d\n", laneId)
 			fmt.Printf("index: %d\n", index)
-			success := UpdateLaneQualificationId(context, laneId, noTypeGroupId)
+			success := UpdateLaneQualificationId(context, laneId, UnassignedGroupId)
 			if !success {
 				return false
 			}

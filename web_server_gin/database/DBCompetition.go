@@ -11,9 +11,9 @@ type Competition struct { // DB : game_info
 	HostId                   uint           `json:"host_id"`
 	RoundsNum                int            `json:"rounds_num"`
 	GroupsNum                int            `json:"groups_num"`
-	NoTypeGroupId            uint           `json:"no_type_group_id"`
+	UnassignedGroupId        uint           `json:"unassigned_group_id"`
 	LanesNum                 int            `json:"lanes_num"`
-	NoTypeLaneId             uint           `json:"no_type_lane_id"`
+	UnassignedLaneId         uint           `json:"unassigned_lane_id"`
 	CurrentPhase             int            `json:"current_phase"`
 	QualificationIsActive    bool           `json:"qualification_is_active"`
 	EliminationIsActive      bool           `json:"elimination_is_active"`
@@ -122,24 +122,24 @@ func GetCompetitionLaneNum(ID uint) int {
 	DB.Table("competitions").Where("id = ?", ID).First(&data)
 	return data.LanesNum
 }
-func GetCompetitionNoTypeLaneId(ID uint) uint {
+func GetCompetitionUnassignedLaneId(ID uint) uint {
 	var data Competition
 	DB.Table("competitions").Where("id = ?", ID).First(&data)
-	return data.NoTypeLaneId
+	return data.UnassignedLaneId
 }
-func UpdateCompetitionNoTypeLaneId(ID uint, newNoTypeLaneId uint) bool {
-	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("no_type_lane_id", newNoTypeLaneId)
+func UpdateCompetitionUnassignedLaneId(ID uint, newUnassignedLaneId uint) bool {
+	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("unassigned_lane_id", newUnassignedLaneId)
 	isChanged := result.RowsAffected != 0
 	return isChanged
 }
 
-func GetCompetitionNoTypeGroupId(ID uint) uint {
+func GetCompetitionUnassignedGroupId(ID uint) uint {
 	var data Competition
 	DB.Table("competitions").Where("id = ?", ID).First(&data)
-	return data.NoTypeGroupId
+	return data.UnassignedGroupId
 }
-func UpdateCompetitionNoTypeGroupId(ID uint, newNoTypeGroupId uint) bool {
-	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("no_type_group_id", newNoTypeGroupId)
+func UpdateCompetitionUnassignedGroupId(ID uint, newUnassignedGroupId uint) bool {
+	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("unassigned_group_id", newUnassignedGroupId)
 	isChanged := result.RowsAffected != 0
 	return isChanged
 }

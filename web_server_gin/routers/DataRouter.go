@@ -52,7 +52,7 @@ func participantRouter(data *gin.RouterGroup) {
 	data.GET("/:id", translate.GetParticipant)
 	data.POST("/", translate.PostParticipant)
 	data.PUT("/whole/:id", translate.UpdateParticipant)
-	data.DELETE("/:id", translate.DeleteParticipant)
+	data.DELETE("/:id", translate.DeleteParticipantById)
 }
 
 func playerRouter(data *gin.RouterGroup) {
@@ -94,7 +94,7 @@ func qualificationRouter(data *gin.RouterGroup) {
 	data.GET("/:id", translate.GetOnlyQualificationByID)
 	data.GET("/lanes/:id", translate.GetQualificationWLanesByID)
 	data.GET("/lanes/players/:id", translate.GetQualificationWLanesPlayersByID)
-	data.GET("/lanes/notype/:id", translate.GetQualificationWNoTypeLanesByID)
+	data.GET("/lanes/unassigned/:id", translate.GetQualificationWUnassignedLanesByID)
 	data.PUT("/whole/:id", translate.UpdateQualificationByID)
 
 }

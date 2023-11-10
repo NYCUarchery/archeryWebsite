@@ -13,9 +13,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Post one new Competition data with new id, create noTypeGroup,
-        create Lanes and noTypeLane which link to noTypeGroup, and return the new
-        Competition data
+      description: Post one new Competition data with new id, create UnassignedGroup,
+        create Lanes and UnassignedLane which link to UnassignedGroup, and return
+        the new Competition data
       parameters:
       - description: Competition
         in: body
@@ -263,7 +263,7 @@ paths:
       consumes:
       - application/json
       description: delete one GroupInfo by id, delete qualification, and change player
-        to noTypeGroup and noTypeLane
+        to UnassignedGroup and UnassignedLane
       parameters:
       - description: GroupInfo ID
         in: path
@@ -860,7 +860,7 @@ paths:
   /data/player/{participantid}:
     post:
       description: Create one Player by participant id, create realeted rounds by
-        laneNum of competition, create 6 roundscores for each 6 roundends, noTypeLane
+        laneNum of competition, create 6 roundscores for each 6 roundends, UnassignedLane
         playerNum ++
       parameters:
       - description: Participant ID
@@ -886,7 +886,7 @@ paths:
     put:
       consumes:
       - application/json
-      description: Update one Player groupId by id, and change player laneid to notype
+      description: Update one Player groupId by id, and change player laneid to Unassigned
         lane
       parameters:
       - description: Player ID
@@ -1140,9 +1140,9 @@ paths:
       summary: Show one Qualification
       tags:
       - Qualification
-  /data/qualification/lanes/notype/{id}:
+  /data/qualification/lanes/Unassigned/{id}:
     get:
-      description: Get one Qualification with noType Lanes by id
+      description: Get one Qualification with Unassigned Lanes by id
       parameters:
       - description: Qualification ID
         in: path

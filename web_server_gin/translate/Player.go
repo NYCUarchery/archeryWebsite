@@ -90,7 +90,7 @@ func GetPlayerWScoresByID(context *gin.Context) {
 // Post one Player By Participant ID godoc
 //
 //	@Summary		Create one Player by Participant ID
-//	@Description	Create one Player by participant id, create realeted rounds by laneNum of competition, create 6 roundscores for each 6 roundends, noTypeLane playerNum ++
+//	@Description	Create one Player by participant id, create realeted rounds by laneNum of competition, create 6 roundscores for each 6 roundends, UnassignedLane playerNum ++
 //	@Tags			Player
 //	@Produce		json
 //	@Param			participantid	path	int	true	"Participant ID"
@@ -112,8 +112,8 @@ func PostPlayer(context *gin.Context) {
 	competitionId := participant.CompetitionID
 	roundsNum := database.GetCompetitionRoundsNum(competitionId)
 	user, _ := database.GetUserById(userID)
-	data.GroupId = database.GetCompetitionNoTypeGroupId(competitionId)
-	data.LaneId = database.GetCompetitionNoTypeLaneId(competitionId)
+	data.GroupId = database.GetCompetitionUnassignedGroupId(competitionId)
+	data.LaneId = database.GetCompetitionUnassignedLaneId(competitionId)
 	data.Name = user.Name
 	data.TotalScore = 0
 	data.ShootOffScore = 0
@@ -275,7 +275,7 @@ func IsUpdatePlayerLaneId(context *gin.Context, playerId uint, laneId uint) bool
 // Update one Player GroupId By ID godoc
 //
 //	@Summary		Update one Player groupId by id
-//	@Description	Update one Player groupId by id, and change player laneid to notype lane
+//	@Description	Update one Player groupId by id, and change player laneid to Unassigned lane
 //	@Tags			Player
 //	@Accept			json
 //	@Produce		json
@@ -301,10 +301,10 @@ func UpdataPlayerGroupId(context *gin.Context) {
 	if !IsUpdatePlayerGroupId(context, playerId, groupId) {
 		return
 	}
-	/*change player laneid to notype lane*/
+	/*change player laneid to Unassigned lane*/
 	_, group := IsGetGroupInfo(context, groupId)
-	noTypeLaneId := database.GetCompetitionNoTypeLaneId(group.CompetitionId)
-	if !IsUpdatePlayerLaneId(context, playerId, noTypeLaneId) {
+	UnassignedLaneId := database.GetCompetitionUnassignedLaneId(group.CompetitionId)
+	if !IsUpdatePlayerLaneId(context, playerId, UnassignedLaneId) {
 		return
 	}
 

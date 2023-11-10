@@ -119,7 +119,7 @@ func PostGroupInfo(context *gin.Context) {
 }
 
 // Post 無組別 group, when competition is created
-func PostNoTypeGroupInfo(context *gin.Context, competitionId uint) (bool, uint) {
+func PostUnassignedGroupInfo(context *gin.Context, competitionId uint) (bool, uint) {
 	var data database.Group
 	/*auto write GroupIndex*/
 	data.GroupIndex = database.GetCompetitionGroupNum(competitionId)
@@ -175,7 +175,7 @@ func UpdateGroupInfo(context *gin.Context) {
 		return
 		/*cannot update 無組別*/
 	} else if oldData.GroupIndex == -1 {
-		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "noTypeGroup cannot update"})
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "UnassignedGroup cannot update"})
 		return
 	}
 	data.CompetitionId = oldData.CompetitionId
@@ -213,7 +213,7 @@ func ReorderGroupInfo(context *gin.Context) {
 	err := context.BindJSON(&idArray)
 	groupIds := idArray.GroupIds
 	competitionId := idArray.CompetitionId
-	noTypeGroupId := database.GetCompetitionNoTypeGroupId(competitionId)
+	UnassignedGroupId := database.GetCompetitionUnassignedGroupId(competitionId)
 	/*parse data check*/
 	if response.ErrorReceiveDataTest(context, 0, "groupIdsForReorder of GroupInfo", err) {
 		return
@@ -230,10 +230,10 @@ func ReorderGroupInfo(context *gin.Context) {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Groups_num 與 GroupIds 長度不符, Group_num = " + fmt.Sprint(gamedata.GroupsNum) + ", GroupIds = " + fmt.Sprint(groupIds)})
 		return
 	}
-	/*check if there're no noTypeGroupId*/
+	/*check if there're no UnassignedGroupId*/
 	for _, id := range groupIds {
-		if id == noTypeGroupId {
-			context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "GroupIds cannot include noTypeGroupId"})
+		if id == UnassignedGroupId {
+			context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "GroupIds cannot include UnassignedGroupId"})
 			return
 		}
 	}
@@ -263,7 +263,7 @@ func ReorderGroupInfo(context *gin.Context) {
 // Delete GroupInfo by id godoc
 //
 //	@Summary		delete one GroupInfo
-//	@Description	delete one GroupInfo by id, delete qualification, and change player to noTypeGroup and noTypeLane
+//	@Description	delete one GroupInfo by id, delete qualification, and change player to UnassignedGroup and UnassignedLane
 //	@Tags			GroupInfo
 //	@Accept			json
 //	@Produce		json
@@ -279,7 +279,7 @@ func DeleteGroupInfo(context *gin.Context) {
 	if !success {
 		return
 	} else if group.GroupIndex == -1 {
-		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "noTypeGroup cannot delete"})
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "UnassignedGroup cannot delete"})
 		return
 	}
 	success, affected := DeleteGroupInfoById(context, id)
@@ -301,22 +301,22 @@ func DeleteGroupInfoById(context *gin.Context, id uint) (bool, bool) {
 	if !isExist {
 		return false, false
 	}
-	/*change player to noTypeGroup and noTypeLane*/
+	/*change player to UnassignedGroup and UnassignedLane*/
 	qualification, _ := database.GetQualificationWLanesPlayersByID(id)
-	noTypeGroupId := database.GetCompetitionNoTypeGroupId(competitionId)
-	fmt.Printf("noTypeGroupId = %d\n", noTypeGroupId)
-	noTypeLaneId := database.GetCompetitionNoTypeLaneId(competitionId)
-	fmt.Printf("noTypeLaneId = %d\n", noTypeLaneId)
+	UnassignedGroupId := database.GetCompetitionUnassignedGroupId(competitionId)
+	fmt.Printf("UnassignedGroupId = %d\n", UnassignedGroupId)
+	UnassignedLaneId := database.GetCompetitionUnassignedLaneId(competitionId)
+	fmt.Printf("UnassignedLaneId = %d\n", UnassignedLaneId)
 	fmt.Printf("qualification.Lanes = %v\n", qualification.Lanes)
 	for _, lane := range qualification.Lanes {
 		fmt.Printf("lane.ID = %d\n", lane.ID)
 		for _, player := range lane.Players {
 			fmt.Printf("player.ID = %d\n", player.ID)
-			err := database.UpdatePlayerLaneId(player.ID, noTypeLaneId)
+			err := database.UpdatePlayerLaneId(player.ID, UnassignedLaneId)
 			if response.ErrorInternalErrorTest(context, player.ID, "Update Player LaneId in Delete GroupInfo", err) {
 				return false, false
 			}
-			err = database.UpdatePlayerGroupId(player.ID, noTypeGroupId)
+			err = database.UpdatePlayerGroupId(player.ID, UnassignedGroupId)
 			if response.ErrorInternalErrorTest(context, player.ID, "Update Player GroupId in Delete GroupInfo", err) {
 				return false, false
 			}

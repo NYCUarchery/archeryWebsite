@@ -56,10 +56,10 @@ func GetQualificationWLanesPlayersByID(id uint) (Qualification, error) {
 	return data, result.Error
 }
 
-func GetQualificationWNoTypeLanesByID(id uint) (Qualification, error) {
+func GetQualificationWUnassignedLanesByID(id uint) (Qualification, error) {
 	var data Qualification
 	subquery := DB.
-		Select("competitions.no_type_lane_id, competitions.no_type_group_id").
+		Select("competitions.unassigned_lane_id, competitions.unassigned_group_id").
 		Table("competitions").
 		Joins("JOIN `groups` ON `groups`.competition_id = competitions.id").
 		Where("`groups`.id = ?", id)
@@ -67,14 +67,14 @@ func GetQualificationWNoTypeLanesByID(id uint) (Qualification, error) {
 		Preload("Lanes", func(*gorm.DB) *gorm.DB {
 			return DB.Order("lane_number asc").
 				Table("lanes").
-				Joins("JOIN (?) AS B ON lanes.id = B.no_type_lane_id ", subquery).
+				Joins("JOIN (?) AS B ON lanes.id = B.unassigned_lane_id ", subquery).
 				Preload("Players", func(*gorm.DB) *gorm.DB {
 					return DB.Order("order_number asc").
 						Table("players").
 						Where("players.group_id = ?", id)
 				})
 		}).
-		Joins("JOIN (?) AS C ON qualifications.id = C.no_type_group_id", subquery).
+		Joins("JOIN (?) AS C ON qualifications.id = C.unassigned_group_id", subquery).
 		Find(&data)
 
 	return data, result.Error

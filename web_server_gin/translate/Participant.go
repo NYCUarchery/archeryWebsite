@@ -136,17 +136,22 @@ func UpdateParticipant(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Failure		404	string	string
 //	@Router			/data/participant/{id} [delete]
-func DeleteParticipant(context *gin.Context) {
+func DeleteParticipantById(context *gin.Context) {
 	id := convert2uint(context, "id")
+	DeleteParticipaint(context, id)
+}
+
+func DeleteParticipaint(context *gin.Context, id uint) bool {
 	if response.ErrorIdTest(context, id, database.GetParticipantIsExist(id), "Participant") {
-		return
+		return false
 	}
 	success, err := database.DeleteParticipant(id)
 	if response.ErrorInternalErrorTest(context, id, "Delete Participant", err) {
-		return
+		return false
 	} else if !success {
 		response.ErrorIdTest(context, id, success, "Participant")
-		return
+		return false
 	}
 	response.AcceptDeleteSuccess(context, id, success, "Participant")
+	return true
 }
