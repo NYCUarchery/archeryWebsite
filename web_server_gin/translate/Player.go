@@ -399,7 +399,7 @@ func UpdatePlayerIsConfirmed(context *gin.Context) {
 	if response.ErrorReceiveDataTest(context, roundEndId, "Update Player isConfirmed", err) {
 		return
 	}
-	if response.ErrorIdTest(context, roundEndId, database.GetPlayerIsExist(roundEndId), "RoundEnd when updating isConfirmed") {
+	if response.ErrorIdTest(context, roundEndId, database.GetRoundEndIsExist(roundEndId), "RoundEnd when updating isConfirmed") {
 		return
 	}
 

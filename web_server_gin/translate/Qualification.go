@@ -193,8 +193,10 @@ func UpdateQualificationByID(context *gin.Context) {
 	/*check if lane start and end is valid*/
 	group, _ := database.GetGroupInfoById(id)
 	competitionId := group.CompetitionId
+	fmt.Printf("competitionId: %d\n", competitionId)
 	_, competition := IsGetOnlyCompetition(context, competitionId)
-	UnassignedLaneId := competition.UnassignedGroupId
+	UnassignedLaneId := competition.UnassignedLaneId
+	fmt.Printf("UnassignedLaneId: %d\n", UnassignedLaneId)
 	laneNum := competition.LanesNum
 	if data.StartLaneNumber <= 0 || data.StartLaneNumber > laneNum || data.EndLaneNumber <= 0 || data.EndLaneNumber > laneNum || data.StartLaneNumber > data.EndLaneNumber {
 		errorMessage := fmt.Sprintf("Lane number is invalid start: %d end: %d", data.StartLaneNumber, data.EndLaneNumber)
