@@ -4,17 +4,6 @@ import (
 	"log"
 )
 
-// old code
-// type User struct {
-// 	ID uint `json:"id"      gorm:"primary_key"`
-
-// 	Ranking     int64  `json:"rank"`
-// 	Target      string `json:"target"`
-// 	Name        string `json:"name"`
-// 	Institution string `json:"institution"`
-// 	Score       int64  `json:"score"`
-// }
-
 type User struct {
 	ID       	 	uint   	`gorm:"primaryKey;autoIncrement" json:"id"`
 	Name     	 	string 	`gorm:"unique;not null" json:"name"`

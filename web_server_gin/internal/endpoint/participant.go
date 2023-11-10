@@ -11,7 +11,7 @@ import (
 // JoinInCompetition godoc
 // @Summary			join in a competition
 // @Description		add a particpant to the competition
-// @Tags			participant
+// @Tags			Participant
 // @Accept			json
 // @Produce			json
 // @Param			competitionID	formData int true "competition id"

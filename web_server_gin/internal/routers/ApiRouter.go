@@ -15,7 +15,6 @@ func AddApiRouter(api *gin.RouterGroup) {
 	api.GET("/eliminationInfo/:gameName", translate.GetEliminationInfo)
 	api.GET("/phaseInfo/:gameName", translate.GetPhaseInfo)
 	api.GET("/teamEliminationInfo/:gameName", translate.GetTeamEliminationInfo)
-	api.GET("/userInfo/:userName", translate.GetUserInfo)
 
 	competition := api.Group("competition")
 	competitionRouter(competition)
