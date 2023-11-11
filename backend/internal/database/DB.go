@@ -39,6 +39,7 @@ func DatabaseInitial() {
 	InitInstitution()
 	InitOldLaneInfo()
 	InitCompetition()
+	InitParticipant()
 	InitGroupInfo()
 	InitQualification()
 	InitLane()
