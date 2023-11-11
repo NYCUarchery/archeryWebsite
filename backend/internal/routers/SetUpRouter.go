@@ -3,7 +3,7 @@ package routers
 import (
 	"github.com/gin-gonic/gin"
 
-	"web_server_gin/internal/pkg"
+	"backend/internal/pkg"
 )
 
 func SetUpRouter(router *gin.Engine, ip string, port string) {

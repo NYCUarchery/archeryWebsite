@@ -1,11 +1,12 @@
 package endpoint
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
 
-	"web_server_gin/internal/database"
+	"github.com/gin-gonic/gin"
+
+	"backend/internal/database"
 )
 
 // CreateInstitution godoc
@@ -63,7 +64,7 @@ func InstitutionInfo(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"result": "success",
-		"data": institution,
+		"data":   institution,
 	})
 }
 
@@ -85,6 +86,6 @@ func AllInstitutionInfo(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"result": "success",
-		"data": institutions,
+		"data":   institutions,
 	})
 }

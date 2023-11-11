@@ -1,9 +1,9 @@
 package routers
 
 import (
-	"web_server_gin/internal/translate"
-	"web_server_gin/internal/endpoint"
-	"web_server_gin/internal/pkg"
+	"backend/internal/endpoint"
+	"backend/internal/pkg"
+	"backend/internal/translate"
 
 	"github.com/gin-gonic/gin"
 )

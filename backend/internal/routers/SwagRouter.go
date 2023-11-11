@@ -1,8 +1,8 @@
 package routers
 
 import (
+	_ "backend/docs"
 	"fmt"
-	_ "web_server_gin/docs"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -10,6 +10,7 @@ import (
 )
 
 // ShowApiDocs godoc
+//
 //	@Summary		Show Api Docs in json
 //	@Description	get Api docs in json
 //	@Tags			docs

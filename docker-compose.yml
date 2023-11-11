@@ -4,28 +4,28 @@ services:
   frontend-scoring:
     build: ./frontend_scoring
     restart: always
-    ports:
-      - 3000:3000
   frontend-profile:
     build: ./frontend_profile
+    # entrypoint: sleep infinity
     restart: always
     ports:
-      - 3001:3000
-  # mysql:
-  #   image: mysql:8
-  #   environment:
-  #     MYSQL_ROOT_PASSWORD: root
-  #     MYSQL_DATABASE: db
-  #     MYSQL_USER: user
-  #     MYSQL_PASSWORD: password
-  #   restart: always
+      - 3000:3000
+  mysql:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    restart: always
     # volumes:
     #   - ./data/db_data:/var/lib/mysql
   backend:
     build: ./backend
     restart: always
-    # depends_on:
-    #   - mysql
+    entrypoint: sleep infinity
+    depends_on:
+      - mysql
   reverse-proxy:
     build: ./reverse-proxy
     restart: always
