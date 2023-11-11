@@ -28,6 +28,9 @@ func AddApiRouter(api *gin.RouterGroup) {
 	lane := api.Group("lane")
 	laneRouter(lane)
 
+	elimination := api.Group("elimination")
+	eliminationRouter(elimination)
+
 	oldlaneinfo := api.Group("oldlaneinfo")
 	oldLaneInfoRouter(oldlaneinfo)
 
@@ -62,6 +65,16 @@ func laneRouter(api *gin.RouterGroup) {
 	api.GET("/:id", translate.GetLaneByID)
 	api.GET("/all/:id", translate.GetAllLaneByCompetitionId)
 	// api.GET("/players/:id", translate.GetLaneWPlayers)
+}
+
+func eliminationRouter(api *gin.RouterGroup) {
+	api.GET("/:id", translate.GetOnlyEliminationById)
+	api.GET("/stages/:id", translate.GetEliminationWStagesById)
+	api.POST("/", translate.PostElimination)
+	api.POST("/stage", translate.PostStage)
+	api.POST("/match", translate.PostMatch)
+	api.PUT("/whole/:id", translate.PutElimination)
+	api.DELETE("/:id", translate.DeleteElimination)
 }
 
 func oldLaneInfoRouter(api *gin.RouterGroup) {

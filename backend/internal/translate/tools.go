@@ -19,3 +19,9 @@ func convert2bool(c *gin.Context, name string) bool {
 	data, _ := strconv.ParseBool(dataStr)
 	return data
 }
+
+func convert2uint(c *gin.Context, name string) uint {
+	dataStr := c.Param(name)
+	data, _ := strconv.ParseUint(dataStr, 10, 32)
+	return uint(data)
+}

@@ -2,8 +2,9 @@ package database
 
 import (
 	"fmt"
-	"os"
 	"log"
+	"os"
+
 	"gopkg.in/yaml.v2"
 
 	"gorm.io/driver/mysql"
@@ -11,42 +12,47 @@ import (
 )
 
 type conf struct {
-    Username 		string 
-	Password 		string 
-	Host 			string 
-	Port 			int    
-	Database 		string 
+	Username string
+	Password string
+	Host     string
+	Port     int
+	Database string
 }
 
 var DB *gorm.DB
 
 func getConf() (c conf) {
-    yamlFile, err := os.ReadFile("config/db.yaml")
-    if err != nil {
-        log.Printf("yamlFile.Get err   #%v ", err)
-    }
-	
-    err = yaml.Unmarshal(yamlFile, &c)
-    if err != nil {
-        log.Fatalf("Unmarshal: %v", err)
-    }
+	yamlFile, err := os.ReadFile("config/db.yaml")
+	if err != nil {
+		log.Printf("yamlFile.Get err   #%v ", err)
+	}
+
+	err = yaml.Unmarshal(yamlFile, &c)
+	if err != nil {
+		log.Fatalf("Unmarshal: %v", err)
+	}
 	return
 }
 
 func DatabaseInitial() {
 	connectDB()
+
 	InitUser()
 	InitInstitution()
-	InitOldLaneInfo()
+
 	InitCompetition()
 	InitGroupInfo()
 	InitQualification()
 	InitLane()
+	InitElimination()
+	InitMatchResult()
+
+	InitOldLaneInfo()
 }
 
 func connectDB() {
 	DSN := getConf()
-	
+
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify",
 		DSN.Username, DSN.Password, DSN.Host, DSN.Port, DSN.Database)
 	var err error
