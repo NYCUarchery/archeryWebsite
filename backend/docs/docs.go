@@ -21,6 +21,217 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/api/competition": {
+            "post": {
+                "description": "Post one new Competition data with new id, create noTypeGroup, create Lanes which link to noTypeGroup, and return the new Competition data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "Create one Competition and related data",
+                "parameters": [
+                    {
+                        "description": "Competition",
+                        "name": "Competition",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/competition/groups/{id}": {
+            "get": {
+                "description": "Get one Competition by id with GroupInfos",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "Show one Competition with GroupInfos",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/competition/whole/{id}": {
+            "put": {
+                "description": "Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace GroupNum, LaneNum, FirstLaneId, noTyoeGroupId",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "update one Competition without GroupInfo",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Competition",
+                        "name": "Competition",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/competition/{id}": {
+            "get": {
+                "description": "Get one Competition by id without GroupInfo",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "Show one Competition without GroupInfo",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "delete one Competition by id, delete all related lanes and groups",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "delete one Competition",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/elimination": {
             "post": {
                 "description": "Post one new Elimination data with new id",
@@ -300,247 +511,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/competition": {
-            "get": {
-                "description": "get information of all the competitions",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "get information of all the competitions",
-                "responses": {
-                    "200": {
-                        "description": "success",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/database.Competition"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "internal db error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/data/competition": {
-            "post": {
-                "description": "Post one new Competition data with new id, create noTypeGroup, create Lanes which link to noTypeGroup, and return the new Competition data",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "Create one Competition and related data",
-                "parameters": [
-                    {
-                        "description": "Competition",
-                        "name": "Competition",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/data/competition/groups/{id}": {
-            "get": {
-                "description": "Get one Competition by id with GroupInfos",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "Show one Competition with GroupInfos",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/data/competition/whole/{id}": {
-            "put": {
-                "description": "Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace GroupNum, LaneNum, FirstLaneId, noTyoeGroupId",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "update one Competition without GroupInfo",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Competition",
-                        "name": "Competition",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/data/competition/{id}": {
-            "get": {
-                "description": "Get one Competition by id without GroupInfo",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "Show one Competition without GroupInfo",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "delete one Competition by id, delete all related lanes and groups",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "delete one Competition",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/data/groupinfo": {
+        "/api/groupinfo": {
             "post": {
                 "description": "Post one new GroupInfo data with new id, create qualification with same id, and auto write GroupIndex",
                 "consumes": [
@@ -580,7 +551,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/groupinfo/reorder": {
+        "/api/groupinfo/reorder": {
             "put": {
                 "description": "Put competition_id and group_ids to update GroupInfos Indexes under the same Competition",
                 "consumes": [
@@ -632,7 +603,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/groupinfo/whole/{id}": {
+        "/api/groupinfo/whole/{id}": {
             "put": {
                 "description": "Put whole new GroupInfo and overwrite with the id, cannot overwrite CompetitionId",
                 "consumes": [
@@ -691,7 +662,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/groupinfo/{id}": {
+        "/api/groupinfo/{id}": {
             "get": {
                 "description": "Get one GroupInfo by id",
                 "produces": [
@@ -768,7 +739,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/lane/all/{id}": {
+        "/api/lane/all/{id}": {
             "get": {
                 "description": "Get all Lane by competition id",
                 "produces": [
@@ -803,7 +774,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/lane/{id}": {
+        "/api/lane/{id}": {
             "get": {
                 "description": "Get one Lane by id",
                 "produces": [
@@ -831,6 +802,164 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/qualification/lanes/{id}": {
+            "get": {
+                "description": "Get one Qualification with Lanes by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Qualification"
+                ],
+                "summary": "Show one Qualification",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Qualification ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/qualification/whole/{id}": {
+            "put": {
+                "description": "Put whole new Qualification and overwrite with the id, but cannot replace groupid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Qualification"
+                ],
+                "summary": "update one Qualification",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Qualification ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Qualification",
+                        "name": "Qualification",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/qualification/{id}": {
+            "get": {
+                "description": "Get one Qualification by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Qualification"
+                ],
+                "summary": "Show one Qualification",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Qualification ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/competition": {
+            "get": {
+                "description": "get information of all the competitions",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "get information of all the competitions",
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/database.Competition"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error",
                         "schema": {
                             "type": "string"
                         }
@@ -1156,135 +1285,6 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/data/qualification/lanes/{id}": {
-            "get": {
-                "description": "Get one Qualification with Lanes by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Qualification"
-                ],
-                "summary": "Show one Qualification",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Qualification ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/data/qualification/whole/{id}": {
-            "put": {
-                "description": "Put whole new Qualification and overwrite with the id, but cannot replace groupid",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Qualification"
-                ],
-                "summary": "update one Qualification",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Qualification ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Qualification",
-                        "name": "Qualification",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/data/qualification/{id}": {
-            "get": {
-                "description": "Get one Qualification by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Qualification"
-                ],
-                "summary": "Show one Qualification",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Qualification ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
                         "schema": {
                             "type": "string"
                         }

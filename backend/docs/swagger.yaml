@@ -95,6 +95,147 @@ info:
   title: Gin swagger
   version: "1.0"
 paths:
+  /api/competition:
+    post:
+      consumes:
+      - application/json
+      description: Post one new Competition data with new id, create noTypeGroup,
+        create Lanes which link to noTypeGroup, and return the new Competition data
+      parameters:
+      - description: Competition
+        in: body
+        name: Competition
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Create one Competition and related data
+      tags:
+      - Competition
+  /api/competition/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete one Competition by id, delete all related lanes and groups
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+      summary: delete one Competition
+      tags:
+      - Competition
+    get:
+      description: Get one Competition by id without GroupInfo
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Competition without GroupInfo
+      tags:
+      - Competition
+  /api/competition/groups/{id}:
+    get:
+      description: Get one Competition by id with GroupInfos
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Competition with GroupInfos
+      tags:
+      - Competition
+  /api/competition/whole/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Put whole new Competition and overwrite with the id but without
+        GroupInfo, cannot replace GroupNum, LaneNum, FirstLaneId, noTyoeGroupId
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Competition
+        in: body
+        name: Competition
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: update one Competition without GroupInfo
+      tags:
+      - Competition
   /api/elimination:
     post:
       consumes:
@@ -279,167 +420,7 @@ paths:
       summary: Update one Elimination
       tags:
       - Elimination
-  /competition:
-    get:
-      description: get information of all the competitions
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: success
-          schema:
-            items:
-              $ref: '#/definitions/database.Competition'
-            type: array
-        "500":
-          description: internal db error
-          schema:
-            type: string
-      summary: get information of all the competitions
-      tags:
-      - Competition
-  /data/competition:
-    post:
-      consumes:
-      - application/json
-      description: Post one new Competition data with new id, create noTypeGroup,
-        create Lanes which link to noTypeGroup, and return the new Competition data
-      parameters:
-      - description: Competition
-        in: body
-        name: Competition
-        required: true
-        schema:
-          type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Create one Competition and related data
-      tags:
-      - Competition
-  /data/competition/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: delete one Competition by id, delete all related lanes and groups
-      parameters:
-      - description: Competition ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-      summary: delete one Competition
-      tags:
-      - Competition
-    get:
-      description: Get one Competition by id without GroupInfo
-      parameters:
-      - description: Competition ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Show one Competition without GroupInfo
-      tags:
-      - Competition
-  /data/competition/groups/{id}:
-    get:
-      description: Get one Competition by id with GroupInfos
-      parameters:
-      - description: Competition ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Show one Competition with GroupInfos
-      tags:
-      - Competition
-  /data/competition/whole/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Put whole new Competition and overwrite with the id but without
-        GroupInfo, cannot replace GroupNum, LaneNum, FirstLaneId, noTyoeGroupId
-      parameters:
-      - description: Competition ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Competition
-        in: body
-        name: Competition
-        required: true
-        schema:
-          type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      summary: update one Competition without GroupInfo
-      tags:
-      - Competition
-  /data/groupinfo:
+  /api/groupinfo:
     post:
       consumes:
       - application/json
@@ -466,7 +447,7 @@ paths:
       summary: Create one GroupInfo
       tags:
       - GroupInfo
-  /data/groupinfo/{id}:
+  /api/groupinfo/{id}:
     delete:
       consumes:
       - application/json
@@ -518,7 +499,7 @@ paths:
       summary: Show one GroupInfo
       tags:
       - GroupInfo
-  /data/groupinfo/reorder:
+  /api/groupinfo/reorder:
     put:
       consumes:
       - application/json
@@ -553,7 +534,7 @@ paths:
       summary: update GroupInfos Indexes under the same Competition
       tags:
       - GroupInfo
-  /data/groupinfo/whole/{id}:
+  /api/groupinfo/whole/{id}:
     put:
       consumes:
       - application/json
@@ -593,7 +574,7 @@ paths:
       summary: update one GroupInfo
       tags:
       - GroupInfo
-  /data/lane/{id}:
+  /api/lane/{id}:
     get:
       description: Get one Lane by id
       parameters:
@@ -616,7 +597,7 @@ paths:
       summary: Show one Lane
       tags:
       - Lane
-  /data/lane/all/{id}:
+  /api/lane/all/{id}:
     get:
       description: Get all Lane by competition id
       parameters:
@@ -639,6 +620,111 @@ paths:
       summary: Show all Lane of a competition
       tags:
       - Lane
+  /api/qualification/{id}:
+    get:
+      description: Get one Qualification by id
+      parameters:
+      - description: Qualification ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Qualification
+      tags:
+      - Qualification
+  /api/qualification/lanes/{id}:
+    get:
+      description: Get one Qualification with Lanes by id
+      parameters:
+      - description: Qualification ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Qualification
+      tags:
+      - Qualification
+  /api/qualification/whole/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Put whole new Qualification and overwrite with the id, but cannot
+        replace groupid
+      parameters:
+      - description: Qualification ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Qualification
+        in: body
+        name: Qualification
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: update one Qualification
+      tags:
+      - Qualification
+  /competition:
+    get:
+      description: get information of all the competitions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            items:
+              $ref: '#/definitions/database.Competition'
+            type: array
+        "500":
+          description: internal db error
+          schema:
+            type: string
+      summary: get information of all the competitions
+      tags:
+      - Competition
   /data/oldlaneinfo:
     post:
       consumes:
@@ -857,92 +943,6 @@ paths:
       summary: update one OldLaneInfo
       tags:
       - OldLaneInfo
-  /data/qualification/{id}:
-    get:
-      description: Get one Qualification by id
-      parameters:
-      - description: Qualification ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Show one Qualification
-      tags:
-      - Qualification
-  /data/qualification/lanes/{id}:
-    get:
-      description: Get one Qualification with Lanes by id
-      parameters:
-      - description: Qualification ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Show one Qualification
-      tags:
-      - Qualification
-  /data/qualification/whole/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Put whole new Qualification and overwrite with the id, but cannot
-        replace groupid
-      parameters:
-      - description: Qualification ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Qualification
-        in: body
-        name: Qualification
-        required: true
-        schema:
-          type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      summary: update one Qualification
-      tags:
-      - Qualification
   /institution:
     get:
       consumes:
