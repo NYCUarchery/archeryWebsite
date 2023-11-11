@@ -37,7 +37,6 @@ func getIpByMode() string {
 	case "release":
 		return "0.0.0.0" // attach the router to an http.Server and start the server
 	case "debug":
-		return "0.0.0.0"   // for localhost test
 		return "localhost" // for localhost test
 	case "test":
 		return "0.0.0.0"
