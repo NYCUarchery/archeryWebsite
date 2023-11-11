@@ -1,4 +1,4 @@
-import { useState, Dispatch, SetStateAction, FC } from 'react';
+import { useState } from 'react';
 
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -15,15 +15,11 @@ import OneLineField from '../components/formFields/OneLineField';
 import SecretField from '../components/formFields/SecretField';
 import MultiLineInput from '../components/formFields/MultiLineField';
 
-import { host, api } from '../util/api';
 import routing from '../util/routing';
+import { registerUser } from '../util/api';
 
-interface SignupPageProps {
-	setPath: Dispatch<SetStateAction<string>>;
-  setAuthorized: Dispatch<SetStateAction<boolean>>;
-}
 
-const SignupPage: FC<SignupPageProps> = ({setPath, setAuthorized}) => {
+const SignupPage = () => {
 	const [showPassword, setShowPassword] = useState(false);
 	const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 
@@ -59,47 +55,26 @@ const SignupPage: FC<SignupPageProps> = ({setPath, setAuthorized}) => {
 						<Formik
 							initialValues={{
 								username: "",
+								overview: "",
 								password: "",
 								passwordConfirm: "",
-								overview: "",
-								organization: "",
+								email: "",
+								institutionID: "",
 							}}
 							validationSchema={Yup.object().shape({
 								username: Yup.string().max(255).required('Username is required'),
 								password: Yup.string().min(6, "Password should be longer than 6 characters").max(255).required('Password is required'),
 								passwordConfirm: Yup.string().oneOf([Yup.ref("password"), ""], "Password must match").required('Confirm your password'),
 							})}
-							onSubmit={(values, { setErrors, setStatus, setSubmitting }) => {
-								console.log("try to send");
-								const body = new FormData();
-								body.append("username", values.username);
-								body.append("password", values.password);
-								body.append("overview", values.overview);
-								body.append("organization", values.organization);
-								// body.append("confirmPassword", values.passwordConfirm);
-								fetch(`${host}/${api.user.register}`, {
-									method: "POST",
-									body,
-								})
-								.then((res) => {
-									console.log("res: ", res);
-									if (res.status === 200) {
+							onSubmit={async (values: any) => {
+								try {
+									const result = await registerUser(values);
+									if (result.result === "success") {
 										window.alert("成功註冊 讚");
-										setPath("/Login")
 										navigate(routing.Login);
-									} else if (res.status === 400) {
-										window.alert("此帳號已存在");
-									} else if (res.status === 500) {
-										window.alert("後端好像壞啦ouo 怕爆><");
 									}
-									return res.json();
-								})
-								.then((resjson) => {
-								})
-								.catch((err) => {
-									console.log(err)
-								});;
-						}}
+								} catch (error) { }
+							}}
 						>
 							{({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
 								<form noValidate onSubmit={handleSubmit}>
@@ -150,13 +125,24 @@ const SignupPage: FC<SignupPageProps> = ({setPath, setAuthorized}) => {
 										</Grid>
 										<Grid item xs={2}>
 											<OneLineField
-												touched={touched.username && touched.password && touched.passwordConfirm}
-												error={errors.organization}
+												touched={touched.email}
+												error={errors.email}
 												handleChange={handleChange}
 												handleBlur={handleBlur}
-												name={"organization"}
+												name={"email"}
+												label={"電子郵件"}
+												value={values.email}
+											/>
+										</Grid>
+										<Grid item xs={2}>
+											<OneLineField
+												touched={touched.username && touched.password && touched.passwordConfirm}
+												error={errors.institutionID}
+												handleChange={handleChange}
+												handleBlur={handleBlur}
+												name={"institutionID"}
 												label={"所屬組織"}
-												value={values.organization}
+												value={values.institutionID}
 											/>
 										</Grid>
 										<Grid item xs={2}>
@@ -194,7 +180,6 @@ const SignupPage: FC<SignupPageProps> = ({setPath, setAuthorized}) => {
 												variant="caption"
 												component={Button}
 												onClick={() => {
-													setPath("/Login");
 													navigate(routing.Login);
 												}}
 												color="secondary"

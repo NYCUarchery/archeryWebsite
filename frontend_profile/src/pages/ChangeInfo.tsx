@@ -7,20 +7,23 @@ import Button from '@mui/material/Button';
 import { useNavigate } from 'react-router-dom';
 import avatar from "../assets/images/avatar.jpg";
 import { Formik } from 'formik';
-import { host, api } from '../util/api';
 import routing from '../util/routing';
-import { useContext, useState } from 'react';
+import { useEffect, useState } from 'react';
 import OneLineField from '../components/formFields/OneLineField';
 import MultiLineField from '../components/formFields/MultiLineField';
 import SecretField from '../components/formFields/SecretField';
-import UserContext from '../util/userContext';
+import { userStore } from '../util/userReducer';
+import { ModifyUserInfo } from '../util/api';
+
 
 const ChangeInfo = () => {
 	const navigate = useNavigate();
-	const { uid } = useContext(UserContext);
 	const [showPassword, setShowPassword] = useState(false);
 	const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
 	const [showOriPassword, setShowOriPassword] = useState(false);
+
+	const userinfo = userStore.getState().userInfo;
+	
 	const handleClickShowPassword = () => {
 		setShowPassword(!showPassword);
 	};
@@ -49,78 +52,20 @@ const ChangeInfo = () => {
 			<CardContent>
 				<Formik
 					initialValues={{
-						username: "",
+						username: userinfo.name,
 						overview: "你以為你躲起來就找不到你了嗎，沒有用的。你是那樣拉風的男人，不管在什麼地方，就好像漆黑中的螢火蟲一樣，是那樣的鮮明，那樣的出眾。你那憂鬱的眼神，唏噓的鬍渣子，隨意叼著的牙籤，還有那杯 dry martine ，都深深的迷住了我。張嘉航,你真是電競界的罪人,你害怕你強大的天賦會蓋過其他人,選擇在接觸遊戲十年後再出道,而放棄與你的宿敵 FAKER 競爭神的寶座,今年該是你奪回神寶座的時候了。",
 						oriPassword: "",
 						password: "",
 						passwordConfirm: "",
-						organization: "",
+						email: userinfo.email,
+						institutionID: userinfo.institutionID,
 					}}
-					onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
-						const body = new FormData();
-						
-						// body.append("nickname", values.nickname);
-						body.append("username", values.username);
-						body.append("overview", values.overview);
-						body.append("oriPassword", values.oriPassword);
-						body.append("modPassword", values.password);
-						body.append("organization", values.organization);
-						console.log("body: ", body);
-						fetch(`${host}/${api.user.modifyInfo}/${uid}`, {
-							method: "PUT",
-							credentials: "include",
-							body,
-						})
-						.then((res) => {
-							console.log("res: ", res);
-							switch(res.status) {
-								case 200:
-									window.alert("修改成功");
-									navigate(routing.Personal);
-									break;
-								case 400:
-									// window.alert("不正確的 uid");
-									break;
-								case 403:
-									// window.alert("查無此人ㄛ");
-									break;
-								case 404:
-									window.alert("查無此人ㄛ");
-									break;
-							}
-							return res.json();
-						})
-						.then((resjson) => {
-							resjson["result"] && console.log("result: ", resjson["result"])
-							if (!resjson["result"]) {return;}
-							switch(resjson["result"]) {
-								case "need user id":
-									window.alert("需要 uid");
-									break;
-								case "invalid user id":
-									window.alert("無效 uid");
-									break;
-								case "username can't be empty":
-									window.alert("請輸入 username");
-									break;
-								case "username exists":
-									window.alert("username 已存在");
-									break;
-								case "original password can't be empty":
-									window.alert("請輸入原密碼");
-									break;
-								case "original & modified passwords are the same":
-									window.alert("原密碼和新密碼重複");
-									break;
-								case "cannot change other's info":
-									window.alert("不要偷改別人密碼");
-									break;
-								case "wrong original password":
-									window.alert("不正確的原密碼");
-									break;
-							}
-						})
-						.catch((err) => console.log(err));
+					onSubmit={async (values) => {
+						try {
+							const uid = userStore.getState().uid; 
+							await ModifyUserInfo(uid, values);
+							navigate(routing.Personal)
+						} catch (error) {}
 					}}
 				>
 					{({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values, setFieldValue }) => (
@@ -143,13 +88,13 @@ const ChangeInfo = () => {
 									</Grid>
 									<Grid item xs={12} sx={{mt: 2}}>
 										<OneLineField
-											touched={touched.organization}
-											error={errors.organization}
+											touched={touched.email}
+											error={errors.email}
 											handleChange={handleChange}
 											handleBlur={handleBlur}
-											name={"organization"}
-											label={"所屬組織"}
-											value={values.organization}
+											name={"email"}
+											label={"電子郵件"}
+											value={values.email}
 										/>
 									</Grid>
 									<Grid item xs={12} sx={{mt: 2}}>
@@ -177,6 +122,7 @@ const ChangeInfo = () => {
 												mousedown: handleMouseDownOriPassword,
 												show: showOriPassword,
 											}}
+											required={true}
 										/>
 									</Grid>
 									<Grid item xs={12} sx={{mt: 2}}>

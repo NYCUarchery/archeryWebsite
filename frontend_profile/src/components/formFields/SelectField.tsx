@@ -1,9 +1,10 @@
 import { FormControl } from '@mui/material';
-import TextField from '@mui/material/TextField';
+import Select, { SelectChangeEvent } from '@mui/material/Select';
 import FormHelperText from '@mui/material/FormHelperText';
+import MenuItem from '@mui/material/MenuItem';
 import { FC } from 'react';
 
-interface OneLineFieldProp {
+interface SelectFieldProp {
 	touched: any,
 	error: any,
 	handleChange: any,
@@ -11,21 +12,28 @@ interface OneLineFieldProp {
 	name: any,
 	label: any,
 	value: any,
+	menuitems: any,
 	required?: any,
 	sx?: any,
 }
 
-const OneLineField: FC<OneLineFieldProp> = ({ touched, error, handleChange, handleBlur, name, label, value, required, sx }) => {
+const SelectField: FC<SelectFieldProp> = ({ touched, error, handleChange, handleBlur, name, label, value, menuitems, required, sx }) => {
 	return (
 		<FormControl sx={sx == undefined?{width: "300px"}: sx} error={Boolean(touched)}>
-			<TextField
+			<Select
 				required={required == undefined? false:required}
 				label={label}
 				value={value}
 				name={name} // input
 				onChange={handleChange}
 				onBlur={handleBlur}
-			/>
+			>
+				{menuitems.map((i: any, v: any) => (
+					<MenuItem key={i} value={i}>
+						{v}
+					</MenuItem>
+				))}
+			</Select>
 			{error && (
 				<FormHelperText error id="standard-weight-helper-text-email-login">
 					{error}
@@ -35,4 +43,4 @@ const OneLineField: FC<OneLineFieldProp> = ({ touched, error, handleChange, hand
 	)
 }
 
-export default OneLineField;
+export default SelectField;

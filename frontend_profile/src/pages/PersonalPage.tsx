@@ -10,45 +10,33 @@ import { useNavigate } from 'react-router-dom';
 import avatar from "../assets/images/avatar.jpg";
 
 import routing from '../util/routing';
-import UserContext from '../util/userContext';
-import { useContext, useEffect, useState } from 'react';
-import { api, host } from '../util/api';
+import { useEffect, useState } from 'react';
+import { userStore } from '../util/userReducer';
+import { GetUserInfo } from '../util/api';
 
 interface UserInfo {
-  overview: string;
-	organization: string;
 	name: string;
+  overview: string;
+	institutionID: string;
+	email: string;
 }
 
 const PersonalPage = () => {
 	const navigate = useNavigate();
-	const { uid } = useContext(UserContext);
 	const [ userinfo, setUserinfo ] = useState<UserInfo | undefined>(undefined);
 	useEffect(() => {
-		fetch(`${host}/${api.user.info}/${uid}`, {
-			method: "GET",
-			credentials: "include",
-		})
-		.then((res) => {
-			console.log("res: ", res);
-			switch(res.status) {
-				case 200:
-					break;
-				case 400:
-					window.alert("不正確的 uid");
-					break;
-				case 404:
-					window.alert("查無此人ㄛ");
-					break;
-			}
-			return res.json();
-		})
-		.then((resjson) => {
-			console.log("resjson: ", resjson);
-			setUserinfo(resjson);
-		})
-		.catch((err) => console.log(err));
+		const uid = userStore.getState().uid;
+		const fetchData = async () => {
+      try {
+        const info = await GetUserInfo(uid);
+        setUserinfo(info);
+      } catch (error) { }
+    };
+		fetchData();
 	}, [])
+	userStore.subscribe(() => {
+		setUserinfo(userStore.getState().userInfo)
+	})
 	
 	return (
 		<Card sx={{p: 2, mb: 2}}>
@@ -67,29 +55,21 @@ const PersonalPage = () => {
 							</Grid>
 							<Grid item xs={2}>
 								<Typography variant="h6" component="div">
-									{userinfo?.organization}
+									{/* {userinfo?.institutionID} */}
 								</Typography>
 							</Grid>
 							<Grid item xs={2} sx={{mt: 2}}>
-								<Typography variant="body2" component="div" sx={{ maxHeight: "200px", overflowY: "scroll", p: "5px",
-									'&::-webkit-scrollbar': {
-										width: '1px'
-									}, 
-									'&::-webkit-scrollbar-track': {
-										boxShadow: 'inset 0 0 1px #000',
-										webkitBoxShadow: 'inset 0 0 1px #000'
-									},
-									'&::-webkit-scrollbar-thumb': {
-										backgroundColor: '#2074d410',
-										outline: '1px solid #2074d4'
-									},
-									'userSelect': 'none',
-								}}>
+								<Typography variant="h6" component="div">
+									{userinfo?.email}
+								</Typography>
+							</Grid>
+							<Grid item xs={2} sx={{mt: 2}}>
+								<Typography variant="body2" component="div" sx={styles.overview}>
 									{userinfo?.overview}
 								</Typography>
 							</Grid>
 							<Grid item xs={2} sx={{mt: 2}}>
-								<Button variant="text" onClick={() => navigate(routing.ChangeInfo)} sx={{ color: "#2074d4" }}>
+								<Button variant="text" onClick={() => navigate(routing.ChangeInfo)} sx={styles.button}>
 									<Typography variant="body1" component="div">
 										修改個人資料
 									</Typography>
@@ -102,5 +82,28 @@ const PersonalPage = () => {
 		</Card>
 	)
 }
+
+const styles = {
+  overview: {
+    maxHeight: "200px",
+    overflowY: "scroll",
+    p: "5px",
+    '&::-webkit-scrollbar': {
+      width: '1px',
+    },
+    '&::-webkit-scrollbar-track': {
+      boxShadow: 'inset 0 0 1px #000',
+      webkitBoxShadow: 'inset 0 0 1px #000',
+    },
+    '&::-webkit-scrollbar-thumb': {
+      backgroundColor: '#2074d410',
+      outline: '1px solid #2074d4',
+    },
+    userSelect: 'none',
+  },
+  button: {
+    color: "#2074d4",
+  },
+};
 
 export default PersonalPage;
