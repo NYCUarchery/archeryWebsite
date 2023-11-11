@@ -8,8 +8,6 @@ services:
     build: ./frontend_profile
     # entrypoint: sleep infinity
     restart: always
-    ports:
-      - 3000:3000
   mysql:
     image: mysql:8
     environment:
