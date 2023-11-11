@@ -1,9 +1,9 @@
 package routers
 
 import (
-	"web_server_gin/internal/translate"
-	"web_server_gin/internal/endpoint"
-	"web_server_gin/internal/pkg"
+	"backend/internal/endpoint"
+	"backend/internal/pkg"
+	"backend/internal/translate"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,7 +15,6 @@ func AddApiRouter(api *gin.RouterGroup) {
 	api.GET("/eliminationInfo/:gameName", translate.GetEliminationInfo)
 	api.GET("/phaseInfo/:gameName", translate.GetPhaseInfo)
 	api.GET("/teamEliminationInfo/:gameName", translate.GetTeamEliminationInfo)
-	api.GET("/userInfo/:userName", translate.GetUserInfo)
 
 	competition := api.Group("competition")
 	competitionRouter(competition)

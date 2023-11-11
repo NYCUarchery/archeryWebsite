@@ -1,18 +1,19 @@
 package endpoint
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 
-	"web_server_gin/internal/pkg"
-	"web_server_gin/internal/database"
+	"github.com/gin-gonic/gin"
+
+	"backend/internal/database"
+	"backend/internal/pkg"
 	"strconv"
 )
 
 // Register godoc
 // @Summary			register a user
 // @Description		add a user to db
-// @Tags			user
+// @Tags			User
 // @Accept			json
 // @Produce			json
 // @Param			username		formData string true "user's name"
@@ -58,7 +59,7 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "empty institution ID"})
 		return
 	}
-	
+
 	insID, err := strconv.Atoi(insIDStr)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "invalid institution ID"})
@@ -78,7 +79,7 @@ func Register(c *gin.Context) {
 // Login godoc
 // @Summary			login
 // @Description		get a session
-// @Tags			session
+// @Tags			Session
 // @Accept			json
 // @Produce			json
 // @Param			username	formData	string	true	"user's name"
@@ -107,7 +108,7 @@ func Login(c *gin.Context) {
 	// Wrong password
 	if err := pkg.Compare(user.Password, password); err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"result": "wrong username or password"})
-		return 
+		return
 	}
 
 	pkg.SaveAuthSession(c, user.ID, user.Name)
@@ -117,7 +118,7 @@ func Login(c *gin.Context) {
 // Logout godoc
 // @Summary			logout
 // @Description		delete the session
-// @Tags			session
+// @Tags			Session
 // @Produce			json
 // @Success			200	{object}	response.Response "success"
 // @Router			/session [delete]
@@ -129,7 +130,7 @@ func Logout(c *gin.Context) {
 // ModifyInfo godoc
 // @Summary			modify user's information
 // @Description		modify username, password, overview, and institution_id
-// @Tags			user
+// @Tags			User
 // @Accept			json
 // @Produce			json
 // @Param			id				path		string true "user's id"
@@ -205,17 +206,17 @@ func ModifyInfo(c *gin.Context) {
 
 	if err := pkg.Compare(user.Password, oriPassword); err != nil {
 		c.JSON(http.StatusForbidden, gin.H{"result": "wrong original password"})
-		return 
+		return
 	}
 
 	if modPassword != "" {
 		if err := pkg.Compare(user.Password, modPassword); err == nil {
 			c.JSON(http.StatusBadRequest, gin.H{"result": "original & modified passwords are the same"})
-			return 
+			return
 		}
 		user.Password = pkg.EncryptPassword(modPassword)
 	}
-	
+
 	user.Email = modEmail
 	user.Overview = modOverview
 	user.InstitutionID = modInstitutionID
@@ -228,7 +229,7 @@ func ModifyInfo(c *gin.Context) {
 // GetUserID godoc
 // @Summary		get my uid
 // @Description	get my uid in the session
-// @Tags		user
+// @Tags		User
 // @Produce		json
 // @Success		200	{object}	response.Response{id=uint}	"success"
 // @Router		/user/me [get]
@@ -240,7 +241,7 @@ func GetUserID(c *gin.Context) {
 // UserInfo godoc
 // @Summary		get a user's information
 // @Description	get a user's username, overview, and institution id
-// @Tags		user
+// @Tags		User
 // @Accept		json
 // @Produce		json
 // @Param		id		path		string true "user's id"
@@ -269,6 +270,6 @@ func UserInfo(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"result": "success",
-		"data": user,
+		"data":   user,
 	})
 }

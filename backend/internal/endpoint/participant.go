@@ -1,17 +1,18 @@
 package endpoint
 
 import (
-	"github.com/gin-gonic/gin"
+	"backend/internal/database"
+	"backend/internal/pkg"
 	"net/http"
-	"web_server_gin/internal/database"
-	"web_server_gin/internal/pkg"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 // JoinInCompetition godoc
 // @Summary			join in a competition
 // @Description		add a particpant to the competition
-// @Tags			participant
+// @Tags			Participant
 // @Accept			json
 // @Produce			json
 // @Param			competitionID	formData int true "competition id"
@@ -59,7 +60,7 @@ func JoinInCompetition(c *gin.Context) {
 	par.UserID = userID
 	par.CompetitionID = compID
 	par.Status = "pending"
-	
+
 	database.AddParticipant(&par)
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }

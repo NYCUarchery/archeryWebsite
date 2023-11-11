@@ -1,9 +1,9 @@
 package translate
 
 import (
+	"backend/internal/database"
+	response "backend/internal/translate/Response"
 	"fmt"
-	"web_server_gin/internal/database"
-	response "web_server_gin/internal/translate/Response"
 
 	"github.com/gin-gonic/gin"
 )

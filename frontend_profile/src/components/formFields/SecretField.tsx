@@ -48,8 +48,7 @@ const SecretField: FC<secretFieldProp> = ({ touched, error, handleChange, handle
 
 			{touched && error && (
 				<FormHelperText error id="standard-weight-helper-text-email-login">
-					{' '}
-					{error}{' '}
+					{error}
 				</FormHelperText>
 			)}
 		</FormControl>

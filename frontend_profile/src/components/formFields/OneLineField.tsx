@@ -28,8 +28,7 @@ const OneLineField: FC<OneLineFieldProp> = ({ touched, error, handleChange, hand
 			/>
 			{error && (
 				<FormHelperText error id="standard-weight-helper-text-email-login">
-					{' '}
-					{error}{' '}
+					{error}
 				</FormHelperText>
 			)}
 		</FormControl>

@@ -1,10 +1,10 @@
 package translate
 
 import (
+	"backend/internal/database"
+	response "backend/internal/translate/Response"
 	"fmt"
 	"net/http"
-	"web_server_gin/internal/database"
-	response "web_server_gin/internal/translate/Response"
 
 	"github.com/gin-gonic/gin"
 )
@@ -219,7 +219,7 @@ func DeleteCompetition(context *gin.Context) {
 // AllCompetitionInfo godoc
 // @Summary			get information of all the competitions
 // @Description		get information of all the competitions
-// @Tags			competition
+// @Tags			Competition
 // @Produce			json
 // @Success			200	{object}	[]database.Competition "success"
 // @Failure			500	{object}	string "internal db error"

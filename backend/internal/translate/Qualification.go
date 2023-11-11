@@ -1,10 +1,10 @@
 package translate
 
 import (
+	"backend/internal/database"
+	response "backend/internal/translate/Response"
 	"fmt"
 	"net/http"
-	"web_server_gin/internal/database"
-	response "web_server_gin/internal/translate/Response"
 
 	"github.com/gin-gonic/gin"
 )
@@ -49,7 +49,7 @@ func GetOnlyQualificationByID(context *gin.Context) {
 //	@Param			id	path	int	true	"Qualification ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/data/qualification/{id} [get]
+//	@Router			/data/qualification/lanes/{id} [get]
 func GetQualificationWLanesByID(context *gin.Context) {
 	id := convert2int(context, "id")
 	if response.ErrorIdTest(context, id, database.GetQualificationIsExist(id), "Qualification") {

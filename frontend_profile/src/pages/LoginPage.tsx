@@ -1,5 +1,5 @@
 
-import { useState, Dispatch, SetStateAction, FC } from 'react';
+import { useState } from 'react';
 
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -16,15 +16,12 @@ import { Formik } from 'formik';
 import OneLineField from '../components/formFields/OneLineField';
 import SecretField from '../components/formFields/SecretField';
 
-import { host, api } from '../util/api';
 import routing from '../util/routing';
+import { GetUid, Login } from '../util/api';
 
-interface LoginPageProps {
-  setAuthorized: Dispatch<SetStateAction<boolean>>;
-	setPath: Dispatch<SetStateAction<string>>;
-}
 
-const LoginPage: FC<LoginPageProps> = ({setAuthorized, setPath}) => {
+
+const LoginPage = () => {
 	const [showPassword, setShowPassword] = useState(false);
 
 	const handleClickShowPassword = () => {
@@ -34,25 +31,7 @@ const LoginPage: FC<LoginPageProps> = ({setAuthorized, setPath}) => {
 	const handleMouseDownPassword = (e: any) => {
 		e.preventDefault();
 	};
-
 	const navigate = useNavigate();
-
-	// fetch(`${host}/${api.user.getUserID}`, {
-  //   method: "GET",
-  //   credentials: "include",
-  // })
-  // .then((res) => {
-	// 	// console.log("res: ", res)
-  //   return res.json();
-  // })
-  // .then((resjson) => {
-  //   console.log(resjson);
-  //   if (resjson["uid"]) {
-  //     setAuthorized(true);
-	// 		navigate(routing.Home);
-  //   }
-  // });
-
 	return (
 		<Card sx={{p: 2, mb: 2}}>
 			<CardContent>
@@ -73,38 +52,24 @@ const LoginPage: FC<LoginPageProps> = ({setAuthorized, setPath}) => {
 								password: Yup.string().max(255).required('Password is required')
 							})}
 							onSubmit={(values, { setErrors, setStatus, setSubmitting }) => {
-								const body = new FormData();
-								body.append("username", values.username);
-								body.append("password", values.password);
-								fetch(`${host}/${api.user.login}`, {
-									method: "POST",
-									body,
-									credentials: "include",
-								})
-								.then((res) => {
-									console.log("res: ", res);
-									switch(res.status) {
-										case 200:
-											setAuthorized(true);
+								const login = async () => {
+									try {
+										const res = await Login(values.username, values.password)
+										if (res.result == "Success") {
+											GetUid();
 											navigate(routing.Home);
-											break;
-										case 401:
-											window.alert("有人帳號或密碼打錯囉");
-											break;
-									}
-									return res.json();
-								})
-								.then((resjson) => {
-								})
-								.catch((err) => {
-									console.log(err)
-								});
+										}
+										else navigate(routing.Login);
+									} catch (error) {}
+								}
 								
+								login();
+
 							}}
 						>
 							{({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
 								<form noValidate onSubmit={handleSubmit}>
-
+									
 									<Grid container direction="column" alignItems="center" justifyContent="center" spacing={2}>
 										<Grid item xs={2}>
 											<OneLineField
@@ -175,11 +140,8 @@ const LoginPage: FC<LoginPageProps> = ({setAuthorized, setPath}) => {
 												variant="caption"
 												component={Button}
 												onClick={() => {
-													setPath("/Signup");
 													navigate(routing.Signup);
 												}}
-												// component={Link}
-												// to={props.login ? '/pages/forgot-password/forgot-password' + props.login : '#'}
 												color="secondary"
 												noWrap={true}
 												sx={{ textDecoration: 'none'}}
@@ -199,27 +161,3 @@ const LoginPage: FC<LoginPageProps> = ({setAuthorized, setPath}) => {
 }
 
 export default LoginPage;
-
-
-{/* <Grid container direction="column" alignItems="center" justifyContent="center" spacing={2}>
-<Grid item xs={2}>
-	<Typography variant="h6" component="div">
-		ARCHERY
-	</Typography>
-</Grid>
-<Grid item xs={2}>
-	<TextField
-		required
-		label="Username"
-		value={values.username}
-		onChange={handleChange}
-		onBlur={handleBlur}
-	/>
-</Grid>
-<Grid item xs={2}>
-	<TextField
-		required
-		label="Password"
-		value={values.password}
-		onChange={handleChange}
-	/> */}

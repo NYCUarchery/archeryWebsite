@@ -1,4 +1,4 @@
-module web_server_gin
+module backend
 
 go 1.20
 

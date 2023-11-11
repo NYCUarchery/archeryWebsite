@@ -1,9 +1,9 @@
 package main
 
 import (
+	"backend/internal/database"
+	routers "backend/internal/routers"
 	"fmt"
-	"web_server_gin/internal/database"
-	routers "web_server_gin/internal/routers"
 
 	"github.com/gin-gonic/gin"
 )

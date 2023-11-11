@@ -1,17 +1,18 @@
 package endpoint
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
 
-	"web_server_gin/internal/database"
+	"github.com/gin-gonic/gin"
+
+	"backend/internal/database"
 )
 
 // CreateInstitution godoc
 // @Summary			create an institution
 // @Description		add an institution to db
-// @Tags			institution
+// @Tags			Institution
 // @Accept			json
 // @Produce			json
 // @Param			name	formData string true "institution's name"
@@ -39,7 +40,7 @@ func CreateInstitution(c *gin.Context) {
 // InstitutionInfo godoc
 // @Summary			get institution info by id
 // @Description		get institution info from db by id
-// @Tags			institution
+// @Tags			Institution
 // @Accept			json
 // @Produce			json
 // @Param			id		path string true "institution's id"
@@ -63,14 +64,14 @@ func InstitutionInfo(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"result": "success",
-		"data": institution,
+		"data":   institution,
 	})
 }
 
 // AllInstitutionInfo godoc
 // @Summary			get all institution info
 // @Description		get all institution info from db
-// @Tags			institution
+// @Tags			Institution
 // @Accept			json
 // @Produce			json
 // @Success			200	{object}	response.Response{data=[]database.Institution} "success"
@@ -85,6 +86,6 @@ func AllInstitutionInfo(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"result": "success",
-		"data": institutions,
+		"data":   institutions,
 	})
 }

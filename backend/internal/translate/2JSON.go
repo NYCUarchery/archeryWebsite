@@ -98,18 +98,6 @@ func GetTeamEliminationInfo(context *gin.Context) {
 	//////// medal
 }
 
-// 使用者資料
-func GetUserInfo(context *gin.Context) {
-	userName := context.Param("userName")
-	fmt.Printf("GetUserInfo worked, return info of %s", userName)
-	// id
-	// name
-	// role
-	// group
-	// lane
-	// target
-}
-
 // 'json:"name"' specify what a field’s name should be when the struct’s contents are serialized into JSON
 type Album struct {
 	Ranking     int64  `json:"rank"`

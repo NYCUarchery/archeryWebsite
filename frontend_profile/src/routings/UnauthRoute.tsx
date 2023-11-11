@@ -1,23 +1,22 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, useNavigate } from 'react-router-dom';
 import LoginPage from '../pages/LoginPage';
 
-import { Dispatch, SetStateAction, FC, useState } from 'react';
+import { useEffect } from 'react';
 import SignupPage from '../pages/SignupPage';
 import routing from '../util/routing';
 
-interface UnauthRouteProps {
-  setAuthorized: Dispatch<SetStateAction<boolean>>;
-}
+import { GetUid } from '../util/api';
 
-const UnauthRoute: FC<UnauthRouteProps> = ({setAuthorized}) => {
-	const [path, setPath] = useState(routing.Login);
-	const navigator = (<Navigate to={path}/>)
+const UnauthRoute = () => {
+	const navigate = useNavigate();
+	useEffect(() => {
+		GetUid(() => {navigate(routing.Home)}, () => navigate(routing.Login))
+  }, [])
 	return (
 		<>
-			{navigator}
 			<Routes>
-				<Route path={routing.Login} element={<LoginPage setAuthorized={setAuthorized} setPath={setPath}/>}/>
-				<Route path={routing.Signup} element={<SignupPage setAuthorized={setAuthorized} setPath={setPath}/>}/>
+				<Route path={routing.Login} element={<LoginPage/>}/>
+				<Route path={routing.Signup} element={<SignupPage/>}/>
 			</Routes>
 		</>
 	)

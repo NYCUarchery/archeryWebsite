@@ -1,13 +1,14 @@
 package pkg
 
 import (
+	"io/ioutil"
+	"log"
+	"net/http"
+
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
-	"net/http"
 	"gopkg.in/yaml.v2"
-    "io/ioutil"
-	"log"
 )
 
 type SessionConf struct {
@@ -15,21 +16,21 @@ type SessionConf struct {
 }
 
 func getConf(c *SessionConf) {
-    yamlFile, err := ioutil.ReadFile("config/session.yaml")
-    if err != nil {
-        log.Printf("yamlFile.Get err   #%v ", err)
-    }
-    err = yaml.Unmarshal(yamlFile, c)
-    if err != nil {
-        log.Fatalf("Unmarshal: %v", err)
-    }
+	yamlFile, err := ioutil.ReadFile("config/session.yaml")
+	if err != nil {
+		log.Printf("yamlFile.Get err   #%v ", err)
+	}
+	err = yaml.Unmarshal(yamlFile, c)
+	if err != nil {
+		log.Fatalf("Unmarshal: %v", err)
+	}
 }
 
 func EnableCookieSessionMiddleware() gin.HandlerFunc {
 	var c SessionConf
 	getConf(&c)
-    store := cookie.NewStore([]byte(c.SessionKey))
-    return sessions.Sessions("mysession", store)
+	store := cookie.NewStore([]byte(c.SessionKey))
+	return sessions.Sessions("mysession", store)
 }
 
 func AuthSessionMiddleware() gin.HandlerFunc {
@@ -37,10 +38,8 @@ func AuthSessionMiddleware() gin.HandlerFunc {
 		if !IsAuthenticated(c) {
 			c.JSON(http.StatusUnauthorized, gin.H{"result": "require login"})
 			c.Abort()
-			
 			return
 		}
-		
 		c.Next()
 	}
 }
@@ -54,19 +53,19 @@ func IsAuthenticated(c *gin.Context) bool {
 }
 
 func SaveAuthSession(c *gin.Context, id uint, username string) {
-    session := sessions.Default(c)
-    session.Set("username", username)
+	session := sessions.Default(c)
+	session.Set("username", username)
 	session.Set("id", id)
-    session.Save()
+	session.Save()
 }
 
 func ClearAuthSession(c *gin.Context) {
 	session := sessions.Default(c)
-    session.Clear()
-    session.Save()
+	session.Clear()
+	session.Save()
 }
 
-func QuerySession(c *gin.Context, item string) interface{}{
+func QuerySession(c *gin.Context, item string) interface{} {
 	session := sessions.Default(c)
 	return session.Get(item)
 }
