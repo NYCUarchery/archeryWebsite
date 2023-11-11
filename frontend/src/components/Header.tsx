@@ -108,10 +108,10 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen }) => {
                               <MenuItem
                                 onClick={() => {
                                   handleClose();
-                                  Logout(() => navigate(routing.Login))
+                                  uid > 0? Logout(() => navigate(routing.Login)):navigate(routing.Login)
                                 }}
                               >
-                                {uid >=0? "登出":"登入"}
+                                {uid > 0? "登出":"登入"}
                               </MenuItem>
                             </MenuList>
                           </Box>

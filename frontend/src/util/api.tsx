@@ -2,7 +2,8 @@ import host from "./config"
 import axios from 'axios'
 import formatISO from 'date-fns/formatISO';
 
-import { setUid, resetUid, userStore } from './userReducer';
+import { setUid, resetUid, userStore, setOverview, setInstitutionID, setEmail, resetDirty, setDirty, setName, resetAllInfo } from './userReducer';
+import { de } from "date-fns/locale";
 
 const api = {
 	user: {
@@ -15,10 +16,13 @@ const api = {
 	},
 	competition: {
 		create: `${host}/api/competition/`,
-		join: `${host}/api/competition/join`,
+		all: `${host}/api/competition/`,
 	},
-};
+  participant: {
+    join: `${host}/api/participant/`,
+  },
 
+};
 
 const Login = async (username: string, password: string, successHandler?: any) => {
   try {
@@ -29,8 +33,6 @@ const Login = async (username: string, password: string, successHandler?: any) =
     const response = await axios.post(api.user.login, body, {
       withCredentials: true,
     });
-
-    console.log("Logging successfully");
 
     if (successHandler) successHandler();
     return {result: "Success"}
@@ -52,8 +54,8 @@ const Logout = async (successHandler?: any, failHandler?: any) => {
       withCredentials: true,
     });
 
-    console.log("resetUid ing");
     userStore.dispatch(resetUid());
+    userStore.dispatch(resetAllInfo());
 
     if (response?.data?.result === "success" && successHandler) {
       successHandler();
@@ -71,12 +73,9 @@ const GetUid = async (successHandler?: any, failHandler?: any) => {
       withCredentials: true,
     });
 
-    console.log("res: ", response);
-
-    if (response.data.uid) {
-      userStore.dispatch(setUid(response.data.uid));
-      var uid = response.data.uid;
-      console.log("setting uid: ", uid);
+    if (response.data.id > 0) {
+      userStore.dispatch(setUid(response.data.id));
+      var uid = response.data.id;
 
       if (successHandler) successHandler();
 
@@ -93,11 +92,34 @@ const GetUid = async (successHandler?: any, failHandler?: any) => {
 
 const GetUserInfo = async (uid: number, successHandler?: any, failHandler?: any) => {
   try {
-    const response = await axios.get(`${api.user.info}/${uid}`, { withCredentials: true });
+    if (userStore.getState().dirty > 0) {
+      const response = await axios.get(`${api.user.info}/${uid}`, { withCredentials: true });
+      for (const [key, value] of Object.entries(response.data.data)) {
+        if (value === "") continue;
+        switch (key) {
+          case "name":
+            userStore.dispatch(setName(response.data.name));
+            break;
+          case "overview":
+            userStore.dispatch(setOverview(response.data.data.overview));
+            break;
+          case "email":
+            userStore.dispatch(setEmail(response.data.data.email));
+            break;
+          case "institutionID":
+            userStore.dispatch(setInstitutionID(response.data.data.institutionID));
+            break;
+        }
+      }
+      userStore.dispatch(resetDirty());
+      return response.data.data;
+    }
+    else {
+      const response = userStore.getState().userInfo;
+      return response;
+    }
+    
 
-    console.log(response);
-
-    return response;
   } catch (error: any) {
     if (error.response) {
       switch (error.response.status) {
@@ -117,11 +139,30 @@ const GetUserInfo = async (uid: number, successHandler?: any, failHandler?: any)
 const ModifyUserInfo = async (uid: any, values: any, successHandler?: any, failHandler?: any) => {
   try {
     const body = new FormData();
-    body.append("username", values.username);
-    body.append("overview", values.overview);
-    body.append("oriPassword", values.oriPassword);
-    body.append("modPassword", values.password);
-    body.append("organization", values.organization);
+    for (const [key, value] of Object.entries(values)) {
+
+      if (value === "") continue;
+      switch(key) {
+        case "username":
+          body.append("id", values.username);
+          break;
+        case "overview":
+          body.append("overview", values.overview);
+          break;
+        case "oriPassword":
+          body.append("oriPassword", values.oriPassword);
+          break;
+        case "password":
+          body.append("modPassword", values.password);
+          break;
+        case "email":
+          body.append("email", values.email);
+          break;
+        case "institutionID":
+          body.append("institutionID", values.institutionID);
+          break;
+      }
+    }
 
     const response = await axios.put(`${api.user.modifyInfo}/${uid}`, body, {
       withCredentials: true,
@@ -130,6 +171,7 @@ const ModifyUserInfo = async (uid: any, values: any, successHandler?: any, failH
     switch (response.status) {
       case 200:
         window.alert("修改成功");
+        userStore.dispatch(setDirty());
         if (successHandler) successHandler();
         break;
       case 400:
@@ -237,40 +279,72 @@ const registerUser = async (values: any) => {
   try {
     const body = new FormData();
     body.append("username", values.username);
-    body.append("password", values.password);
     body.append("overview", values.overview);
-    body.append("organization", values.organization);
+    body.append("password", values.password);
+    body.append("institutionID", values.institutionID);
+    body.append("email", values.email);
 
     const response = await axios.post(api.user.register, body);
-
-    if (response.status === 200) {
-      return { success: true };
-    }
-
-    return { success: false, error: "Server error" };
+    return { result: response.data.result };
   } catch (error: any) {
-    return { success: false, error: error.message };
+    switch (error.response.data.result) {
+      case "username exists":
+        window.alert("帳號已存在");
+        break;
+      case "email exists":
+        window.alert("信箱已存在");
+        break;
+      case "invalid institution ID":
+        window.alert("無效學校代碼");
+        break;
+      default:
+        window.alert("未知錯誤");
+        break;
+    }
+    return { result: error.response.data.result };
   }
 };
 
-const joinCompetition = async () => {
+const joinCompetition = async (competitionID: any) => {
   try {
     const body = new FormData();
-    body.append("competitionID", "aaaa"); // Replace "aaaa" with the actual competition ID
+    body.append("competitionID", competitionID);
 
-    const response = await fetch(api.competition.join, {
-      method: "POST",
-      credentials: "include",
-      body: body,
-    });
+    const response = await axios.post(api.participant.join, body, { withCredentials: true });
 
-    const resjson = await response.json();
-
-    return resjson;
+    return { result: response.data.result };
   } catch (error: any) {
-    console.log(error);
-    return { error: error.message };
+    switch (error.response.data.statusText) {
+      case "cannot parse competitionID": 
+        window.alert("比賽ID有誤");
+        break;
+      case "no competition found":
+        window.alert("找不到比賽");
+        break;
+      case "participant exists":
+        window.alert("已報名過");
+        break;
+      case "no user found":
+        window.alert("找不到使用者");
+        break;
+      default:
+        window.alert("未知錯誤");
+        break;
+    }
+    return { result: error.response.data.statusText };
   }
 };
 
-export { Login, Logout, GetUid, GetUserInfo, ModifyUserInfo, createCompetition, registerUser, joinCompetition };
+const getCompetitions = async () => {
+  try {
+    const response = await axios.get(`${api.competition.all}/`, { withCredentials: true });
+
+
+    return response;
+  } catch (error: any) {
+
+    return error;
+  }
+};
+
+export { Login, Logout, GetUid, GetUserInfo, ModifyUserInfo, createCompetition, registerUser, joinCompetition, getCompetitions };

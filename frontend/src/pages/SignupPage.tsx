@@ -55,10 +55,11 @@ const SignupPage = () => {
 						<Formik
 							initialValues={{
 								username: "",
+								overview: "",
 								password: "",
 								passwordConfirm: "",
-								overview: "",
-								organization: "",
+								email: "",
+								institutionID: "",
 							}}
 							validationSchema={Yup.object().shape({
 								username: Yup.string().max(255).required('Username is required'),
@@ -68,16 +69,11 @@ const SignupPage = () => {
 							onSubmit={async (values: any) => {
 								try {
 									const result = await registerUser(values);
-							
-									if (result.success) {
+									if (result.result === "success") {
 										window.alert("成功註冊 讚");
 										navigate(routing.Login);
-									} else {
-										window.alert(result.error || "An error occurred");
 									}
-								} catch (error) {
-									console.log(error);
-								}
+								} catch (error) { }
 							}}
 						>
 							{({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
@@ -129,13 +125,24 @@ const SignupPage = () => {
 										</Grid>
 										<Grid item xs={2}>
 											<OneLineField
-												touched={touched.username && touched.password && touched.passwordConfirm}
-												error={errors.organization}
+												touched={touched.email}
+												error={errors.email}
 												handleChange={handleChange}
 												handleBlur={handleBlur}
-												name={"organization"}
+												name={"email"}
+												label={"電子郵件"}
+												value={values.email}
+											/>
+										</Grid>
+										<Grid item xs={2}>
+											<OneLineField
+												touched={touched.username && touched.password && touched.passwordConfirm}
+												error={errors.institutionID}
+												handleChange={handleChange}
+												handleBlur={handleBlur}
+												name={"institutionID"}
 												label={"所屬組織"}
-												value={values.organization}
+												value={values.institutionID}
 											/>
 										</Grid>
 										<Grid item xs={2}>

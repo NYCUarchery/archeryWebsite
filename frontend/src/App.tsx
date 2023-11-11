@@ -16,6 +16,9 @@ import { GetUid } from './util/api';
 function App() {
   const [sideBarOpen, setSideBarOpen] = useState(false);
   const [subpage, setSubpage] = useState(<UnauthRoute />);
+  useEffect(() => {
+    GetUid()
+  }, [])
   userStore.subscribe(() => {
     if (userStore.getState().uid > 0) {
       setSubpage(<PageRoute />);
@@ -24,23 +27,20 @@ function App() {
       setSubpage(<UnauthRoute />);
     }
   })
-	useEffect(() => {
-		GetUid()
-  }, [])
   
   return (
     <div>
       <BrowserRouter>
-          <Header setSideBarOpen={setSideBarOpen} />
-          <div style={{display: "flex"}}>
-            <Sidebar setSideBarOpen={setSideBarOpen} sideBarOpen={sideBarOpen} />
-            <div style={{position: "fixed", minHeight: "calc(100vh - 64px)", minWidth: "100vw", top: "64px", height: "calc(100vh - 64px)", overflowY: "scroll"}}>
+        <Header setSideBarOpen={setSideBarOpen} />
+        <div style={{display: "flex"}}>
+          <Sidebar setSideBarOpen={setSideBarOpen} sideBarOpen={sideBarOpen} />
+          <div style={{position: "fixed", minHeight: "calc(100vh - 64px)", minWidth: "100vw", top: "64px", height: "calc(100vh - 64px)", overflowY: "scroll"}}>
 
-              <PageContainer>
-                {subpage}
-              </PageContainer>
-            </div>
+            <PageContainer>
+              {subpage}
+            </PageContainer>
           </div>
+        </div>
       </BrowserRouter>
     </div>
   );
