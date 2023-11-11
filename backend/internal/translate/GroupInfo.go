@@ -40,7 +40,7 @@ func IsGetGroupInfo(context *gin.Context, id int) (bool, database.Group) {
 //	@Param			id	path	int	true	"LaneInfo ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/data/groupinfo/{id} [get]
+//	@Router			/groupinfo/{id} [get]
 func GetGroupInfoByID(context *gin.Context) {
 	id := convert2int(context, "id")
 	isExist, data := IsGetGroupInfo(context, id)
@@ -60,7 +60,7 @@ func GetGroupInfoByID(context *gin.Context) {
 //	@Param			GroupInfo	body	string	true	"LaneData"
 //	@Success		200			string	string
 //	@Failure		400			string	string
-//	@Router			/data/groupinfo [post]
+//	@Router			/groupinfo [post]
 func PostGroupInfo(context *gin.Context) {
 	var data database.Group
 	err := context.BindJSON(&data)
@@ -127,7 +127,7 @@ func PostNoTypeGroupInfo(context *gin.Context, competitionId int) (bool, uint) {
 //	@Failure		400			string	string
 //	@Failure		404			string	string
 //	@Failure		500			string	string
-//	@Router			/data/groupinfo/whole/{id} [put]
+//	@Router			/groupinfo/whole/{id} [put]
 func UpdateGroupInfo(context *gin.Context) {
 	var data database.Group
 	id := convert2int(context, "id")
@@ -179,7 +179,7 @@ func UpdateGroupInfo(context *gin.Context) {
 //	@Failure		400					string	string
 //	@Failure		404					string	string
 //	@Failure		500					string	string
-//	@Router			/data/groupinfo/reorder [put]
+//	@Router			/groupinfo/reorder [put]
 func ReorderGroupInfo(context *gin.Context) {
 	var idArray groupIdsForReorder
 	err := context.BindJSON(&idArray)
@@ -243,7 +243,7 @@ func ReorderGroupInfo(context *gin.Context) {
 //	@Success		200	string	string
 //	@Failure		400	string	string
 //	@Failure		404	string	string
-//	@Router			/data/groupinfo/{id} [delete]
+//	@Router			/groupinfo/{id} [delete]
 func DeleteGroupInfo(context *gin.Context) {
 	id := convert2int(context, "id")
 	/*cannot delete 無組別*/

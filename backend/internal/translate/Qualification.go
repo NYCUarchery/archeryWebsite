@@ -30,7 +30,7 @@ func IsGetQualification(context *gin.Context, id int) (bool, database.Qualificat
 //	@Param			id	path	int	true	"Qualification ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/data/qualification/{id} [get]
+//	@Router			/qualification/{id} [get]
 func GetOnlyQualificationByID(context *gin.Context) {
 	id := convert2int(context, "id")
 	isExist, data := IsGetQualification(context, id)
@@ -49,7 +49,7 @@ func GetOnlyQualificationByID(context *gin.Context) {
 //	@Param			id	path	int	true	"Qualification ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/data/qualification/lanes/{id} [get]
+//	@Router			/qualification/lanes/{id} [get]
 func GetQualificationWLanesByID(context *gin.Context) {
 	id := convert2int(context, "id")
 	if response.ErrorIdTest(context, id, database.GetQualificationIsExist(id), "Qualification") {
@@ -89,7 +89,7 @@ func PostQualificationThroughGroup(context *gin.Context, id int) bool {
 //	@Failure		400				string	string
 //	@Failure		404				string	string
 //	@Failure		500				string	string
-//	@Router			/data/qualification/whole/{id} [put]
+//	@Router			/qualification/whole/{id} [put]
 func UpdateQualificationByID(context *gin.Context) {
 	var data database.Qualification
 	err := context.BindJSON(&data)

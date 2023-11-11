@@ -48,9 +48,7 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/data/competition": {
+            },
             "post": {
                 "description": "Post one new Competition data with new id, create noTypeGroup, create Lanes which link to noTypeGroup, and return the new Competition data",
                 "consumes": [
@@ -90,7 +88,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/competition/groups/{id}": {
+        "/competition/groups/{id}": {
             "get": {
                 "description": "Get one Competition by id with GroupInfos",
                 "produces": [
@@ -125,7 +123,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/competition/whole/{id}": {
+        "/competition/whole/{id}": {
             "put": {
                 "description": "Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace GroupNum, LaneNum, FirstLaneId, noTyoeGroupId",
                 "consumes": [
@@ -184,7 +182,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/competition/{id}": {
+        "/competition/{id}": {
             "get": {
                 "description": "Get one Competition by id without GroupInfo",
                 "produces": [
@@ -261,7 +259,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/groupinfo": {
+        "/groupinfo": {
             "post": {
                 "description": "Post one new GroupInfo data with new id, create qualification with same id, and auto write GroupIndex",
                 "consumes": [
@@ -301,7 +299,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/groupinfo/reorder": {
+        "/groupinfo/reorder": {
             "put": {
                 "description": "Put competition_id and group_ids to update GroupInfos Indexes under the same Competition",
                 "consumes": [
@@ -353,7 +351,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/groupinfo/whole/{id}": {
+        "/groupinfo/whole/{id}": {
             "put": {
                 "description": "Put whole new GroupInfo and overwrite with the id, cannot overwrite CompetitionId",
                 "consumes": [
@@ -412,7 +410,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/groupinfo/{id}": {
+        "/groupinfo/{id}": {
             "get": {
                 "description": "Get one GroupInfo by id",
                 "produces": [
@@ -482,530 +480,6 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/data/lane/all/{id}": {
-            "get": {
-                "description": "Get all Lane by competition id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Lane"
-                ],
-                "summary": "Show all Lane of a competition",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/data/lane/{id}": {
-            "get": {
-                "description": "Get one Lane by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Lane"
-                ],
-                "summary": "Show one Lane",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Lane ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/data/oldlaneinfo": {
-            "post": {
-                "description": "Post one new OldLaneInfo data with new id, and return the new OldLaneInfo data",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "OldLaneInfo"
-                ],
-                "summary": "Create one OldLaneInfo",
-                "parameters": [
-                    {
-                        "description": "LaneData",
-                        "name": "LaneData",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/data/oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm}": {
-            "put": {
-                "description": "Put one OldLaneInfo confirm by index and id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "OldLaneInfo"
-                ],
-                "summary": "update one OldLaneInfo confirmation",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "OldLaneInfo ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "OldLaneInfo stage index",
-                        "name": "stageindex",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "OldLaneInfo user index of the stage",
-                        "name": "userindex",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "confirmation of the user",
-                        "name": "confirm",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/data/oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score}": {
-            "put": {
-                "description": "Put one OldLaneInfo score by index and id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "OldLaneInfo"
-                ],
-                "summary": "update one OldLaneInfo Score",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "OldLaneInfo ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "OldLaneInfo stage index",
-                        "name": "stageindex",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "OldLaneInfo user index of the stage",
-                        "name": "userindex",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "OldLaneInfo arrow index of the user",
-                        "name": "arrowindex",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "score of the arrow",
-                        "name": "score",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/data/oldlaneinfo/whole/{id}": {
-            "put": {
-                "description": "Put whole new OldLaneInfo and overwrite with the id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "OldLaneInfo"
-                ],
-                "summary": "update one OldLaneInfo",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "OldLaneInfo ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "LaneData",
-                        "name": "LaneData",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/data/oldlaneinfo/{id}": {
-            "get": {
-                "description": "Get one OldLaneInfo by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "OldLaneInfo"
-                ],
-                "summary": "Show one OldLaneInfo",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "OldLaneInfo ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "delete one OldLaneInfo by id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "OldLaneInfo"
-                ],
-                "summary": "delete one OldLaneInfo",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "OldLaneInfo ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/data/qualification/lanes/{id}": {
-            "get": {
-                "description": "Get one Qualification with Lanes by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Qualification"
-                ],
-                "summary": "Show one Qualification",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Qualification ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/data/qualification/whole/{id}": {
-            "put": {
-                "description": "Put whole new Qualification and overwrite with the id, but cannot replace groupid",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Qualification"
-                ],
-                "summary": "update one Qualification",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Qualification ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Qualification",
-                        "name": "Qualification",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/data/qualification/{id}": {
-            "get": {
-                "description": "Get one Qualification by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Qualification"
-                ],
-                "summary": "Show one Qualification",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Qualification ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
                         "schema": {
                             "type": "string"
                         }
@@ -1155,6 +629,401 @@ const docTemplate = `{
                 }
             }
         },
+        "/lane/all/{id}": {
+            "get": {
+                "description": "Get all Lane by competition id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Lane"
+                ],
+                "summary": "Show all Lane of a competition",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/lane/{id}": {
+            "get": {
+                "description": "Get one Lane by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Lane"
+                ],
+                "summary": "Show one Lane",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Lane ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/oldlaneinfo": {
+            "post": {
+                "description": "Post one new OldLaneInfo data with new id, and return the new OldLaneInfo data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OldLaneInfo"
+                ],
+                "summary": "Create one OldLaneInfo",
+                "parameters": [
+                    {
+                        "description": "LaneData",
+                        "name": "LaneData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm}": {
+            "put": {
+                "description": "Put one OldLaneInfo confirm by index and id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OldLaneInfo"
+                ],
+                "summary": "update one OldLaneInfo confirmation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "OldLaneInfo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "OldLaneInfo stage index",
+                        "name": "stageindex",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "OldLaneInfo user index of the stage",
+                        "name": "userindex",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "confirmation of the user",
+                        "name": "confirm",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score}": {
+            "put": {
+                "description": "Put one OldLaneInfo score by index and id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OldLaneInfo"
+                ],
+                "summary": "update one OldLaneInfo Score",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "OldLaneInfo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "OldLaneInfo stage index",
+                        "name": "stageindex",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "OldLaneInfo user index of the stage",
+                        "name": "userindex",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "OldLaneInfo arrow index of the user",
+                        "name": "arrowindex",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "score of the arrow",
+                        "name": "score",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/oldlaneinfo/whole/{id}": {
+            "put": {
+                "description": "Put whole new OldLaneInfo and overwrite with the id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OldLaneInfo"
+                ],
+                "summary": "update one OldLaneInfo",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "OldLaneInfo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "LaneData",
+                        "name": "LaneData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/oldlaneinfo/{id}": {
+            "get": {
+                "description": "Get one OldLaneInfo by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OldLaneInfo"
+                ],
+                "summary": "Show one OldLaneInfo",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "OldLaneInfo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "delete one OldLaneInfo by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OldLaneInfo"
+                ],
+                "summary": "delete one OldLaneInfo",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "OldLaneInfo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/participant/": {
             "post": {
                 "description": "add a particpant to the competition",
@@ -1194,6 +1063,135 @@ const docTemplate = `{
                         "description": "internal db error",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/qualification/lanes/{id}": {
+            "get": {
+                "description": "Get one Qualification with Lanes by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Qualification"
+                ],
+                "summary": "Show one Qualification",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Qualification ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/qualification/whole/{id}": {
+            "put": {
+                "description": "Put whole new Qualification and overwrite with the id, but cannot replace groupid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Qualification"
+                ],
+                "summary": "update one Qualification",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Qualification ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Qualification",
+                        "name": "Qualification",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/qualification/{id}": {
+            "get": {
+                "description": "Get one Qualification by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Qualification"
+                ],
+                "summary": "Show one Qualification",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Qualification ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
@@ -1656,7 +1654,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8080",
+	Host:             "localhost:6969",
 	BasePath:         "/api/",
 	Schemes:          []string{},
 	Title:            "Gin swagger",
