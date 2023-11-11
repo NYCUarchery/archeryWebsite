@@ -1,3 +1,89 @@
+basePath: /api/
+definitions:
+  database.Competition:
+    properties:
+      current_phase:
+        type: integer
+      current_phase_kind:
+        type: string
+      current_stage:
+        type: integer
+      date:
+        type: string
+      elimination_is_active:
+        type: boolean
+      first_lane_id:
+        type: integer
+      groups:
+        items:
+          $ref: '#/definitions/database.Group'
+        type: array
+      groups_num:
+        type: integer
+      host_id:
+        type: integer
+      id:
+        type: integer
+      lanes_num:
+        type: integer
+      mixed_elimination_is_active:
+        type: boolean
+      no_type_group_id:
+        type: integer
+      qualification_is_active:
+        type: boolean
+      script:
+        type: string
+      sub_title:
+        type: string
+      team_elimination_is_active:
+        type: boolean
+      title:
+        type: string
+    type: object
+  database.Group:
+    properties:
+      bow_type:
+        type: string
+      competition_id:
+        type: integer
+      group_index:
+        type: integer
+      group_name:
+        type: string
+      group_range:
+        type: string
+      id:
+        type: integer
+      player_num:
+        type: integer
+    type: object
+  database.Institution:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  database.User:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      institutionID:
+        type: integer
+      name:
+        type: string
+      overview:
+        type: string
+    type: object
+  response.Response:
+    properties:
+      result:
+        example: result description
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact:
@@ -9,6 +95,25 @@ info:
   title: Gin swagger
   version: "1.0"
 paths:
+  /competition:
+    get:
+      description: get information of all the competitions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            items:
+              $ref: '#/definitions/database.Competition'
+            type: array
+        "500":
+          description: internal db error
+          schema:
+            type: string
+      summary: get information of all the competitions
+      tags:
+      - Competition
   /data/competition:
     post:
       consumes:
@@ -570,6 +675,29 @@ paths:
       - OldLaneInfo
   /data/qualification/{id}:
     get:
+      description: Get one Qualification by id
+      parameters:
+      - description: Qualification ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Qualification
+      tags:
+      - Qualification
+  /data/qualification/lanes/{id}:
+    get:
       description: Get one Qualification with Lanes by id
       parameters:
       - description: Qualification ID
@@ -631,6 +759,165 @@ paths:
       summary: update one Qualification
       tags:
       - Qualification
+  /institution:
+    get:
+      consumes:
+      - application/json
+      description: get all institution info from db
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/database.Institution'
+                  type: array
+              type: object
+        "500":
+          description: db error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: get all institution info
+      tags:
+      - Institution
+    post:
+      consumes:
+      - application/json
+      description: add an institution to db
+      parameters:
+      - description: institution's name
+        in: formData
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: empty institution name
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: db error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: create an institution
+      tags:
+      - Institution
+  /institution/{id}:
+    get:
+      consumes:
+      - application/json
+      description: get institution info from db by id
+      parameters:
+      - description: institution's id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/database.Institution'
+              type: object
+        "400":
+          description: invalid id
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: no institution found
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: get institution info by id
+      tags:
+      - Institution
+  /participant/:
+    post:
+      consumes:
+      - application/json
+      description: add a particpant to the competition
+      parameters:
+      - description: competition id
+        in: formData
+        name: competitionID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: no user/competition found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: internal db error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: join in a competition
+      tags:
+      - Participant
+  /session:
+    delete:
+      description: delete the session
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: logout
+      tags:
+      - Session
+    post:
+      consumes:
+      - application/json
+      description: get a session
+      parameters:
+      - description: user's name
+        in: formData
+        name: username
+        required: true
+        type: string
+      - description: password
+        in: formData
+        name: password
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success | has loginned
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: wrong username or password
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: login
+      tags:
+      - Session
   /swagger/doc.json:
     get:
       description: get Api docs in json
@@ -644,15 +931,158 @@ paths:
       summary: Show Api Docs in json
       tags:
       - docs
-  /views/home:
-    get:
-      description: show home page
+  /user:
+    post:
+      consumes:
+      - application/json
+      description: add a user to db
+      parameters:
+      - description: user's name
+        in: formData
+        name: username
+        required: true
+        type: string
+      - description: password
+        in: formData
+        name: password
+        required: true
+        type: string
+      - description: email
+        in: formData
+        name: email
+        required: true
+        type: string
+      - description: overview
+        in: formData
+        name: overview
+        type: string
+      - description: institution ID
+        in: formData
+        name: institutionID
+        required: true
+        type: string
+      produces:
+      - application/json
       responses:
         "200":
-          description: OK
+          description: a user object
           schema:
-            type: string
-      summary: Show home page
+            $ref: '#/definitions/database.User'
+        "400":
+          description: username/email exists | empty username/password/email/institutionID
+            | invalid info
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: db error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: register a user
       tags:
-      - views
+      - User
+  /user/{id}:
+    get:
+      consumes:
+      - application/json
+      description: get a user's username, overview, and institution id
+      parameters:
+      - description: user's id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/database.User'
+              type: object
+        "400":
+          description: empty/invalid user id
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: no user found
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: get a user's information
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      description: modify username, password, overview, and institution_id
+      parameters:
+      - description: user's id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: original password
+        in: formData
+        name: oriPassword
+        required: true
+        type: string
+      - description: modified password
+        in: formData
+        name: modPassword
+        type: string
+      - description: modified email
+        in: formData
+        name: email
+        type: string
+      - description: modified overview
+        in: formData
+        name: overview
+        type: string
+      - description: modified institution ID
+        in: formData
+        name: institutionID
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: empty/invalid user id | invalid modified information
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: cannot change other's info | wrong original password
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: internal db error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: modify user's information
+      tags:
+      - User
+  /user/me:
+    get:
+      description: get my uid in the session
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                id:
+                  type: integer
+              type: object
+      summary: get my uid
+      tags:
+      - User
 swagger: "2.0"
