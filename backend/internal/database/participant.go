@@ -8,6 +8,10 @@ type Participant struct {
 	Status 			string `gorm:"not null" json:"status"`
 }
 
+func InitParticipant() {
+	DB.AutoMigrate(&Participant{})
+}
+
 func AddParticipant(par *Participant) {
 	DB.Create(par)
 }

@@ -1165,6 +1165,7 @@ const docTemplate = `{
         "/qualification/{id}": {
             "get": {
                 "description": "Get one Qualification by id",
+                "description": "Get one Qualification by id",
                 "produces": [
                     "application/json"
                 ],
@@ -1352,19 +1353,378 @@ const docTemplate = `{
             }
         },
         "/user/me": {
-            "get": {
-                "description": "get my uid in the session",
+        "/user": {
+            "post": {
+                "description": "add a user to db",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "User"
                 ],
+                "summary": "register a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user's name",
+                        "name": "username",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "password",
+                        "name": "password",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "email",
+                        "name": "email",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "overview",
+                        "name": "overview",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "institution ID",
+                        "name": "institutionID",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "a user object",
+                        "schema": {
+                            "$ref": "#/definitions/database.User"
+                        }
+                    },
+                    "400": {
+                        "description": "username/email exists | empty username/password/email/institutionID | invalid info",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "db error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/me": {
+            "get": {
+                "description": "get my uid in the session",
+                "produces": [
+                    "application/json"
+                ],
+                "description": "get my uid in the session",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                    "User"
+                ],
+                "summary": "get my uid",
                 "summary": "get my uid",
                 "responses": {
                     "200": {
                         "description": "success",
+                        "description": "success",
                         "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{id}": {
+            "get": {
+                "description": "get a user's username, overview, and institution id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "get a user's information",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user's id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/database.User"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "empty/invalid user id",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "no user found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "modify username, password, overview, and institution_id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "modify user's information",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user's id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "original password",
+                        "name": "oriPassword",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "modified password",
+                        "name": "modPassword",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "modified email",
+                        "name": "email",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "modified overview",
+                        "name": "overview",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "modified institution ID",
+                        "name": "institutionID",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "empty/invalid user id | invalid modified information",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "cannot change other's info | wrong original password",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "database.Competition": {
+            "type": "object",
+            "properties": {
+                "current_phase": {
+                    "type": "integer"
+                },
+                "current_phase_kind": {
+                    "type": "string"
+                },
+                "current_stage": {
+                    "type": "integer"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "elimination_is_active": {
+                    "type": "boolean"
+                },
+                "first_lane_id": {
+                    "type": "integer"
+                },
+                "groups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.Group"
+                    }
+                },
+                "groups_num": {
+                    "type": "integer"
+                },
+                "host_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "lanes_num": {
+                    "type": "integer"
+                },
+                "mixed_elimination_is_active": {
+                    "type": "boolean"
+                },
+                "no_type_group_id": {
+                    "type": "integer"
+                },
+                "qualification_is_active": {
+                    "type": "boolean"
+                },
+                "script": {
+                    "type": "string"
+                },
+                "sub_title": {
+                    "type": "string"
+                },
+                "team_elimination_is_active": {
+                    "type": "boolean"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "database.Group": {
+            "type": "object",
+            "properties": {
+                "bow_type": {
+                    "type": "string"
+                },
+                "competition_id": {
+                    "type": "integer"
+                },
+                "group_index": {
+                    "type": "integer"
+                },
+                "group_name": {
+                    "type": "string"
+                },
+                "group_range": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "player_num": {
+                    "type": "integer"
+                }
+            }
+        },
+        "database.Institution": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "database.User": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "institutionID": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "overview": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.Response": {
+            "type": "object",
+            "properties": {
+                "result": {
+                    "type": "string",
+                    "example": "result description"
                             "allOf": [
                                 {
                                     "$ref": "#/definitions/response.Response"
