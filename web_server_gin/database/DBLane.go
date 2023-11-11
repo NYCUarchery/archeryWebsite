@@ -1,44 +1,66 @@
 package database
 
+import "gorm.io/gorm"
+
 type Lane struct {
-	ID              uint `json:"id"`
-	CompetitionId   uint `json:"competition_id"`
-	QualificationId uint `json:"qualification_id"`
-	PlayerNum       int  `json:"player_num"`
-	LaneNumber      int  `json:"lane_number"`
+	ID              uint      `json:"id"`
+	CompetitionId   uint      `json:"competition_id"`
+	QualificationId uint      `json:"qualification_id"`
+	PlayerNum       int       `json:"player_num"`
+	LaneNumber      int       `json:"lane_number"`
+	Players         []*Player `json:"players"`
 }
 
 func InitLane() {
 	DB.AutoMigrate(&Lane{})
 }
 
-func GetLaneIsExist(id int) bool {
+func GetLaneIsExist(id uint) bool {
 	var lane Lane
 	DB.Model(&Lane{}).Where("id = ?", id).First(&lane)
 	return lane.ID != 0
 }
 
-func GetLaneById(id int) (Lane, error) {
+func GetLaneById(id uint) (Lane, error) {
 	var lane Lane
 	result := DB.Model(&Lane{}).Where("id = ?", id).First(&lane)
 	return lane, result.Error
 }
 
-func GetFirstLaneId(competitionId uint) int {
-	var data Lane
-	DB.Model(&Lane{}).Where("competition_id = ?", competitionId).First(&data)
-	return int(data.ID)
+func GetLaneWScoresById(id uint) (Lane, error) {
+	var lane Lane
+	result := DB.
+		Preload("Players", func(*gorm.DB) *gorm.DB {
+			return DB.Order("order_number asc").
+				Preload("Rounds", func(*gorm.DB) *gorm.DB {
+					return DB.Order("id asc").
+						Preload("RoundEnds", func(*gorm.DB) *gorm.DB {
+							return DB.Order("id asc").
+								Preload("RoundScores")
+						})
+				})
+		}).
+		Model(&Lane{}).
+		Where("id = ?", id).
+		First(&lane)
+	return lane, result.Error
 }
 
-func GetAllLaneByCompetitionId(competitionId int) ([]Lane, error) {
+func GetUnassignedLaneId(competitionId uint) uint {
+	var data Lane
+	DB.Model(&Lane{}).Where("competition_id = ?", competitionId).First(&data)
+	return data.ID
+}
+
+func GetAllLaneByCompetitionId(competitionId uint) ([]Lane, error) {
 	var data []Lane
 	result := DB.Model(&Lane{}).Where("competition_id = ?", competitionId).Order("`lane_number` asc").Find(&data)
 	return data, result.Error
 }
 
-func GetLaneQualificationId(firstLaneId int, start int, end int) []int {
-	var data []int
-	DB.Model(&Lane{}).Where("id >= ? AND id <= ?", firstLaneId+start-1, firstLaneId+end-1).Pluck("qualification_id", &data)
+func GetLaneQualificationId(UnassignedLaneId uint, start int, end int) []uint {
+	var data []uint
+	DB.Model(&Lane{}).Where("id >= ? AND id <= ?", UnassignedLaneId+uint(start), UnassignedLaneId+uint(end)).Pluck("qualification_id", &data)
 	return data
 }
 
@@ -47,17 +69,28 @@ func PostLane(lane Lane) (Lane, error) {
 	return lane, result.Error
 }
 
-func UpdateLane(id int, lane Lane) (bool, error) {
+func UpdateLane(id uint, lane Lane) (bool, error) {
 	result := DB.Model(&Lane{}).Where("id = ?", id).Updates(&lane)
 	return true, result.Error
 }
 
-func UpdateLaneQualificationId(id int, qualificationId int) error {
+func UpdateLaneQualificationId(id uint, qualificationId uint) error {
 	result := DB.Model(&Lane{}).Where("id = ?", id).Update("qualification_id", qualificationId)
 	return result.Error
 }
 
-func DeleteLane(competitionId int) error {
+func DeleteLaneByCompetitionId(competitionId uint) error {
 	result := DB.Delete(&Lane{}, "competition_id =?", competitionId)
+	return result.Error
+}
+
+func GetLanePlayerNum(id uint) (int, error) {
+	var data int
+	result := DB.Model(&Lane{}).Where("id = ?", id).Pluck("player_num", &data)
+	return data, result.Error
+}
+
+func UpdateLanePlayerNum(id uint, playerNum int) error {
+	result := DB.Model(&Lane{}).Where("id = ?", id).Update("player_num", playerNum)
 	return result.Error
 }

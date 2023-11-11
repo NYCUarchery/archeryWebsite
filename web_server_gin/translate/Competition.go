@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func IsGetOnlyCompetition(context *gin.Context, id int) (bool, database.Competition) {
+func IsGetOnlyCompetition(context *gin.Context, id uint) (bool, database.Competition) {
 	if response.ErrorIdTest(context, id, database.GetCompetitionIsExist(id), "Competition") {
 		return false, database.Competition{}
 	}
@@ -21,11 +21,35 @@ func IsGetOnlyCompetition(context *gin.Context, id int) (bool, database.Competit
 	return true, data
 }
 
-func IsGetCompetitionWGroup(context *gin.Context, id int) (bool, database.Competition) {
+func IsGetCompetitionWGroup(context *gin.Context, id uint) (bool, database.Competition) {
 	if response.ErrorIdTest(context, id, database.GetCompetitionIsExist(id), "Competition") {
 		return false, database.Competition{}
 	}
 	data, err := database.GetCompetitionWGroups(id)
+	if response.ErrorInternalErrorTest(context, id, "Get Competition", err) {
+		return false, data
+	}
+	response.AcceptPrint(id, fmt.Sprint(data), "Competition")
+	return true, data
+}
+
+func IsGetCompetitionWGroupsPlayers(context *gin.Context, id uint) (bool, database.Competition) {
+	if response.ErrorIdTest(context, id, database.GetCompetitionIsExist(id), "Competition") {
+		return false, database.Competition{}
+	}
+	data, err := database.GetCompetitionWGroupsPlayers(id)
+	if response.ErrorInternalErrorTest(context, id, "Get Competition", err) {
+		return false, data
+	}
+	response.AcceptPrint(id, fmt.Sprint(data), "Competition")
+	return true, data
+}
+
+func IsGetCompetitionWParticipants(context *gin.Context, id uint) (bool, database.Competition) {
+	if response.ErrorIdTest(context, id, database.GetCompetitionIsExist(id), "Competition") {
+		return false, database.Competition{}
+	}
+	data, err := database.GetCompetitionWParticipants(id)
 	if response.ErrorInternalErrorTest(context, id, "Get Competition", err) {
 		return false, data
 	}
@@ -44,8 +68,28 @@ func IsGetCompetitionWGroup(context *gin.Context, id int) (bool, database.Compet
 //	@Failure		400	string	string
 //	@Router			/data/competition/{id} [get]
 func GetOnlyCompetitionByID(context *gin.Context) {
-	id := convert2int(context, "id")
+	id := convert2uint(context, "id")
 	isExist, data := IsGetOnlyCompetition(context, id)
+	if !isExist {
+		return
+	}
+	context.IndentedJSON(http.StatusOK, data)
+}
+
+// Get One Competition By ID with Participants godoc
+//
+//	@Summary		Show one Competition with Participants
+//	@Description	Get one Competition by id with Participants
+//	@Tags			Competition
+//	@Produce		json
+//	@Param			id	path	int	true	"Competition ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/data/competition/participants/{id} [get]
+func GetCompetitionWParticipantsByID(context *gin.Context) {
+	var data database.Competition
+	id := convert2uint(context, "id")
+	isExist, data := IsGetCompetitionWParticipants(context, id)
 	if !isExist {
 		return
 	}
@@ -63,8 +107,27 @@ func GetOnlyCompetitionByID(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/data/competition/groups/{id} [get]
 func GetCompetitionWGroupsByID(context *gin.Context) {
-	id := convert2int(context, "id")
+	id := convert2uint(context, "id")
 	isExist, data := IsGetCompetitionWGroup(context, id)
+	if !isExist {
+		return
+	}
+	context.IndentedJSON(http.StatusOK, data)
+}
+
+// Get One Competition By ID with Groups and Players godoc
+//
+//	@Summary		Show one Competition with GroupInfos and Players
+//	@Description	Get one Competition by id with GroupInfos and Players
+//	@Tags			Competition
+//	@Produce		json
+//	@Param			id	path	int	true	"Competition ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/data/competition/groups/players/{id} [get]
+func GetCompetitionWGroupsPlayersByID(context *gin.Context) {
+	id := convert2uint(context, "id")
+	isExist, data := IsGetCompetitionWGroupsPlayers(context, id)
 	if !isExist {
 		return
 	}
@@ -74,7 +137,7 @@ func GetCompetitionWGroupsByID(context *gin.Context) {
 // Post Competition godoc
 //
 //	@Summary		Create one Competition and related data
-//	@Description	Post one new Competition data with new id, create noTypeGroup, create Lanes which link to noTypeGroup, and return the new Competition data
+//	@Description	Post one new Competition data with new id, create UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup, and return the new Competition data
 //	@Tags			Competition
 //	@Accept			json
 //	@Produce		json
@@ -85,53 +148,61 @@ func GetCompetitionWGroupsByID(context *gin.Context) {
 func PostCompetition(context *gin.Context) {
 	var data database.Competition
 	err := context.BindJSON(&data)
-	id := int(data.ID)
+	id := data.ID
 	/*parse data check*/
 	if response.ErrorReceiveDataTest(context, id, "Competition", err) {
 		return
 	} else if response.ErrorReceiveDataNilTest(context, id, data, "Competition") {
 		return
 	}
+	/*roundsNum must > 0*/
+	if data.RoundsNum <= 0 {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "When creating Competition, roundsNum must > 0"})
+		return
+	}
 	/*auto write Groups_num, minus one for 無組別*/
 	data.GroupsNum = -1
 
 	newData, err := database.PostCompetition(data)
-	newId := int(newData.ID)
+	newId := newData.ID
 	if response.ErrorInternalErrorTest(context, newId, "Post GroupInfo", err) {
 		return
 	}
 	/*create無組別group*/
 	newData.GroupsNum++
-	success, noTypeGroupId := PostNoTypeGroupInfo(context, newId)
+	success, UnassignedGroupId := PostUnassignedGroupInfo(context, newId)
+	fmt.Printf("UnassignedGroupId: %v\n", UnassignedGroupId)
 	if !success {
 		return
 	}
 	/*create lanes, after get competitionId*/
-	for i := 0; i < data.LanesNum; i++ {
-		success := PostLaneThroughCompetition(context, newId, int(noTypeGroupId), i+1)
+	for i := 0; i <= data.LanesNum; i++ {
+		success := PostLaneThroughCompetition(context, newId, UnassignedGroupId, i)
 		if !success {
 			return
 		}
 	}
-	/*auto write firstLaneId and noTypeGroupId*/
-	newData.FirstLaneId = uint(database.GetFirstLaneId(uint(newId)))
-	ischanged := database.UpdateCompetitionFirstLaneId(newId, int(newData.FirstLaneId))
-	if response.AcceptNotChange(context, id, ischanged, "Update Competition FirstLaneId") {
+	/*auto write UnassignedLaneId*/
+	newData.UnassignedLaneId = database.GetUnassignedLaneId(newId)
+	fmt.Printf("UnassignedLaneId: %d\n", newData.UnassignedLaneId)
+	ischanged := database.UpdateCompetitionUnassignedLaneId(newId, newData.UnassignedLaneId)
+	if response.AcceptNotChange(context, id, ischanged, "Update Competition UnassignedLaneId") {
 		return
 	}
-	newData.NoTypeGroupId = int(noTypeGroupId)
-	ischanged = database.UpdateCompetitionNoTypeGroupId(newId, int(newData.NoTypeGroupId))
-	if response.AcceptNotChange(context, id, ischanged, "Update Competition FirstLaneId") {
+	/*auto write UnassignedGroupId*/
+	newData.UnassignedGroupId = UnassignedGroupId
+	ischanged = database.UpdateCompetitionUnassignedGroupId(newId, newData.UnassignedGroupId)
+	if response.AcceptNotChange(context, id, ischanged, "Update Competition UnassignedLaneId") {
 		return
 	}
-
+	response.AcceptPrint(newId, fmt.Sprint(newData), "Competition")
 	context.IndentedJSON(http.StatusOK, newData)
 }
 
 // Update Competition godoc
 //
 //	@Summary		update one Competition without GroupInfo
-//	@Description	Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace GroupNum, LaneNum, FirstLaneId, noTyoeGroupId
+//	@Description	Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, FirstLaneId, noTyoeGroupId
 //	@Tags			Competition
 //	@Accept			json
 //	@Produce		json
@@ -144,9 +215,9 @@ func PostCompetition(context *gin.Context) {
 //	@Router			/data/competition/whole/{id} [put]
 func UpdateCompetition(context *gin.Context) {
 	var data database.Competition
-	id := convert2int(context, "id")
+	id := convert2uint(context, "id")
 	/*write id for update success*/
-	data.ID = uint(id)
+	data.ID = id
 	err := context.BindJSON(&data)
 	/*parse data check*/
 	if response.ErrorReceiveDataTest(context, id, "Competition", err) {
@@ -155,11 +226,12 @@ func UpdateCompetition(context *gin.Context) {
 		return
 	}
 
-	/*replace GroupNum, LaneNum, FirstLaneId, noTyoeGroupId with old one*/
+	/*replace roundNum, GroupNum, LaneNum, FirstLaneId, noTyoeGroupId with old one*/
+	data.RoundsNum = database.GetCompetitionRoundsNum(id)
 	data.GroupsNum = database.GetCompetitionGroupNum(id)
 	data.LanesNum = database.GetCompetitionLaneNum(id)
-	data.FirstLaneId = uint(database.GetFirstLaneId(uint(id)))
-	data.NoTypeGroupId = database.GetCompetitionNoTypeGroupId(id)
+	data.UnassignedLaneId = database.GetUnassignedLaneId(id)
+	data.UnassignedGroupId = database.GetCompetitionUnassignedGroupId(id)
 
 	/*update and check change*/
 	isChanged, err := database.UpdateCompetition(id, data)
@@ -176,10 +248,53 @@ func UpdateCompetition(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, newData)
 }
 
+// Update Competition players Ranking godoc
+//
+//	@Summary		update one Competition Ranking
+//	@Description	Update update all  player ranking of different groups in one Competition
+//	@Tags			Competition
+//	@Accept			json
+//	@Produce		json
+//	@Param			id			path	string	true	"Competition ID"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Failure		404			string	string
+//	@Failure		500			string	string
+//	@Router			/data/competition/groups/players/rank/{id} [put]
+func UpdateCompetitionRank(context *gin.Context) {
+	id := convert2uint(context, "id")
+	/*check data exist*/
+	isExist, _ := IsGetOnlyCompetition(context, id)
+	if !isExist {
+		return
+	}
+
+	/*get players of each group, then update player rank*/
+	/*update all related player*/
+	groudIds, error := database.GetCompetitionGroupIds(id)
+	if response.ErrorInternalErrorTest(context, id, "Get Competition GroupIds when update ranking", error) {
+		return
+	}
+	for _, groupId := range groudIds {
+		playerIds, error := database.GetGroupPlayerIdRankOrderById(groupId)
+		if response.ErrorInternalErrorTest(context, id, "Get player ids when update ranking", error) {
+			return
+		}
+		for i, playerId := range playerIds {
+			fmt.Printf("playerId: %d, rank: %d\n", playerId, i+1)
+			error := database.UpdatePlayerRank(playerId, i+1)
+			if response.ErrorInternalErrorTest(context, id, "Update player rank when update ranking by competition id", error) {
+				return
+			}
+		}
+	}
+	context.IndentedJSON(http.StatusOK, nil)
+}
+
 // Delete Competition by id godoc
 //
 //	@Summary		delete one Competition
-//	@Description	delete one Competition by id, delete all related lanes and groups
+//	@Description	delete one Competition by id, delete all related groups, lanes, players
 //	@Tags			Competition
 //	@Accept			json
 //	@Produce		json
@@ -189,9 +304,9 @@ func UpdateCompetition(context *gin.Context) {
 //	@Failure		404	string	string
 //	@Router			/data/competition/{id} [delete]
 func DeleteCompetition(context *gin.Context) {
-	id := convert2int(context, "id")
+	id := convert2uint(context, "id")
 	/*check data exist*/
-	isExist, data := IsGetCompetitionWGroup(context, id)
+	isExist, data := IsGetCompetitionWGroupsPlayers(context, id)
 	if !isExist {
 		return
 	}
@@ -202,8 +317,27 @@ func DeleteCompetition(context *gin.Context) {
 	}
 	/*delete all related groups*/
 	for _, group := range data.Groups {
-		groupId := int(group.ID)
-		success, _ := DeleteGroupInfoById(context, groupId)
+		groupId := group.ID
+		success, _ := DeleteGroupInfoByIdThroughCompetition(context, groupId)
+		if !success {
+			return
+		}
+	}
+	/*delete all related player*/
+	for _, group := range data.Groups {
+		for _, player := range group.Players {
+			playerId := player.ID
+			success := DeletePlayerThroughCompetition(context, playerId)
+			if !success {
+				return
+			}
+		}
+	}
+	_, data = IsGetCompetitionWParticipants(context, id)
+	/*delete all related participant*/
+	for _, participant := range data.Participants {
+		participantId := participant.ID
+		success := DeleteParticipaint(context, participantId)
 		if !success {
 			return
 		}

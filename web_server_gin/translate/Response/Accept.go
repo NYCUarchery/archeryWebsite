@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func AcceptDeleteSuccess(context *gin.Context, id int, isChanged bool, message string) {
+func AcceptDeleteSuccess(context *gin.Context, id uint, isChanged bool, message string) {
 	if isChanged {
 		errorMessage := fmt.Sprintf("Delete ID(%d): %s success", id, message)
 		context.IndentedJSON(http.StatusOK, gin.H{"message": errorMessage})
@@ -17,7 +17,7 @@ func AcceptDeleteSuccess(context *gin.Context, id int, isChanged bool, message s
 	}
 }
 
-func AcceptNotChange(context *gin.Context, id int, isChange bool, message string) bool {
+func AcceptNotChange(context *gin.Context, id uint, isChange bool, message string) bool {
 	if !isChange {
 		errorMessage := fmt.Sprintf("Delete ID(%d): %s no change ", id, message)
 		context.IndentedJSON(http.StatusNoContent, gin.H{"message": errorMessage})
@@ -26,6 +26,6 @@ func AcceptNotChange(context *gin.Context, id int, isChange bool, message string
 	return false
 }
 
-func AcceptPrint(id int, data string, message string) {
+func AcceptPrint(id uint, data string, message string) {
 	fmt.Printf("%s with ID(%d) -> %v\n", message, id, data)
 }

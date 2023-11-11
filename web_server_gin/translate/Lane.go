@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func IsGetLane(context *gin.Context, id int) (bool, database.Lane) {
+func IsGetLane(context *gin.Context, id uint) (bool, database.Lane) {
 	if response.ErrorIdTest(context, id, database.GetLaneIsExist(id), "Lane") {
 		return false, database.Lane{}
 	}
@@ -17,6 +17,18 @@ func IsGetLane(context *gin.Context, id int) (bool, database.Lane) {
 		return false, data
 	}
 	response.AcceptPrint(id, fmt.Sprint(data), "Lane")
+	return true, data
+}
+
+func IsGetLaneWPlayers(context *gin.Context, id uint) (bool, database.Lane) {
+	if response.ErrorIdTest(context, id, database.GetLaneIsExist(id), "Lane") {
+		return false, database.Lane{}
+	}
+	data, err := database.GetLaneWScoresById(id)
+	if response.ErrorInternalErrorTest(context, id, "Get Lane with players, round, scores", err) {
+		return false, data
+	}
+	response.AcceptPrint(id, fmt.Sprint(data), "Lane with players, round, scores")
 	return true, data
 }
 
@@ -31,8 +43,27 @@ func IsGetLane(context *gin.Context, id int) (bool, database.Lane) {
 //	@Failure		400	string	string
 //	@Router			/data/lane/{id} [get]
 func GetLaneByID(context *gin.Context) {
-	id := convert2int(context, "id")
+	id := convert2uint(context, "id")
 	isExist, data := IsGetLane(context, id)
+	if !isExist {
+		return
+	}
+	context.IndentedJSON(200, data)
+}
+
+// Get One Lane with players, rounds, roundends, roundscores By ID godoc
+//
+//	@Summary		Show one Lane with players, rounds, roundends, roundscores
+//	@Description	Get one Lane with players, rounds, roundends, roundscores by id
+//	@Tags			Lane
+//	@Produce		json
+//	@Param			id	path	int	true	"Lane ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/data/lane/scores/{id} [get]
+func GetLaneWScoresByID(context *gin.Context) {
+	id := convert2uint(context, "id")
+	isExist, data := IsGetLaneWPlayers(context, id)
 	if !isExist {
 		return
 	}
@@ -50,7 +81,7 @@ func GetLaneByID(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/data/lane/all/{id} [get]
 func GetAllLaneByCompetitionId(context *gin.Context) {
-	competitionId := convert2int(context, "id")
+	competitionId := convert2uint(context, "id")
 	var data []database.Lane
 	/*get data*/
 	data, err := database.GetAllLaneByCompetitionId(competitionId)
@@ -65,19 +96,20 @@ func GetAllLaneByCompetitionId(context *gin.Context) {
 }
 
 // when competition is created, lane is created
-func PostLaneThroughCompetition(context *gin.Context, competitionId int, noTypeGroupId int, laneNumber int) bool {
+// noTypeLane with LaneNumber == 0
+func PostLaneThroughCompetition(context *gin.Context, competitionId uint, noTypeGroupId uint, laneNumber int) bool {
 	var data database.Lane
 	/*set competition ID*/
 	/*set qualification ID = 無組別id*/
 	/*set player num = 0*/
 	/*set LaneNumber*/
-	data.CompetitionId = uint(competitionId)
-	data.QualificationId = uint(noTypeGroupId)
+	data.CompetitionId = competitionId
+	data.QualificationId = noTypeGroupId
 	data.PlayerNum = 0
 	data.LaneNumber = laneNumber
 	/*insert data*/
 	data, err := database.PostLane(data)
-	landId := int(data.ID)
+	landId := data.ID
 	if response.ErrorInternalErrorTest(context, landId, "Post Lane through competition", err) {
 		return false
 	}
@@ -86,7 +118,17 @@ func PostLaneThroughCompetition(context *gin.Context, competitionId int, noTypeG
 }
 
 // lane need to update qualification id
-func UpdateLaneQualificationId(context *gin.Context, id int, qualificationId int) bool {
+// noTypeLane cannot be updated
+func UpdateLaneQualificationId(context *gin.Context, id uint, qualificationId uint) bool {
+	IsExist, data := IsGetLane(context, id)
+	/*check noTypeLane*/
+	if !IsExist {
+		response.ErrorIdTest(context, id, IsExist, "Lane")
+		return false
+	} else if data.LaneNumber == 0 {
+		response.ErrorIdTest(context, id, false, "Lane noTypeLane cannot be updated")
+		return false
+	}
 	/*update data*/
 	err := database.UpdateLaneQualificationId(id, qualificationId)
 	if response.ErrorInternalErrorTest(context, id, "Update Lane Qualification", err) {
@@ -97,39 +139,37 @@ func UpdateLaneQualificationId(context *gin.Context, id int, qualificationId int
 }
 
 // lane need to update player num
-func UpdateLanePlayerNumAddOne(context *gin.Context, laneId int) bool {
-	var data database.Lane
-	/*set player num*/
-	data.PlayerNum++
-	/*update data*/
-	_, err := database.UpdateLane(laneId, data)
-	if response.ErrorInternalErrorTest(context, laneId, "Update Lane Player Num", err) {
+func UpdateLanePlayerNumAddOne(context *gin.Context, laneId uint) bool {
+	oldPlayerNum, err := database.GetLanePlayerNum(laneId)
+	if response.ErrorInternalErrorTest(context, laneId, "Get Lane Player Num", err) {
 		return false
 	}
-	response.AcceptPrint(laneId, fmt.Sprint(data), "Lane")
-	return true
+	/*set player num*/
+	newPlayerNum := oldPlayerNum + 1
+	/*update data*/
+	err = database.UpdateLanePlayerNum(laneId, newPlayerNum)
+	return !response.ErrorInternalErrorTest(context, laneId, "Update Lane Player Num ++", err)
 }
 
-func UpdateLanePlayerNumMinusOne(context *gin.Context, laneId int) bool {
-	var data database.Lane
-	/*set player num*/
-	data.PlayerNum--
-	/*update data*/
-	_, err := database.UpdateLane(laneId, data)
-	if response.ErrorInternalErrorTest(context, laneId, "Update Lane Player Num", err) {
+func UpdateLanePlayerNumMinusOne(context *gin.Context, laneId uint) bool {
+	oldPlayerNum, err := database.GetLanePlayerNum(laneId)
+	if response.ErrorInternalErrorTest(context, laneId, "Get Lane Player Num", err) {
 		return false
 	}
-	response.AcceptPrint(laneId, fmt.Sprint(data), "Lane")
-	return true
+	/*set player num*/
+	newPlayerNum := oldPlayerNum - 1
+	/*update data*/
+	err = database.UpdateLanePlayerNum(laneId, newPlayerNum)
+	return !response.ErrorInternalErrorTest(context, laneId, "Update Lane Player Num --", err)
 }
 
 // lane is deleted when competition is deleted
-func DeleteLaneByCompetitionId(context *gin.Context, competitionId int) bool {
+func DeleteLaneByCompetitionId(context *gin.Context, competitionId uint) bool {
 	/*delete data*/
-	err := database.DeleteLane(competitionId)
-	if response.ErrorInternalErrorTest(context, competitionId, "Delete Qualification", err) {
+	err := database.DeleteLaneByCompetitionId(competitionId)
+	if response.ErrorInternalErrorTest(context, competitionId, "Delete Lane by competition ", err) {
 		return false
 	}
-	response.AcceptPrint(competitionId, fmt.Sprint(competitionId), "Qualification")
+	response.AcceptPrint(competitionId, fmt.Sprint(competitionId), "Delete Lane by competition")
 	return true
 }
