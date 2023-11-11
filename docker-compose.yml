@@ -6,7 +6,6 @@ services:
     restart: always
   frontend-profile:
     build: ./frontend_profile
-    # entrypoint: sleep infinity
     restart: always
   mysql:
     image: mysql:8
@@ -21,7 +20,6 @@ services:
   backend:
     build: ./backend
     restart: always
-    entrypoint: sleep infinity
     depends_on:
       - mysql
   reverse-proxy:
