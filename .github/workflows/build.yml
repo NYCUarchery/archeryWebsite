@@ -8,9 +8,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      DEBIAN_FRONTEND: noninteractive
-      TZ: Asia/Taipei
     steps:
       - name: Checkout
         uses: actions/checkout@v4
