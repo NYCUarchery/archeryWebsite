@@ -17,8 +17,8 @@ import (
 
 //	@license.name	no license yet
 
-//		@host	localhost:8080
-//	 @BasePath  /api/
+//	@host		localhost:8080
+//	@BasePath	/api/
 //
 // schemes http
 func main() {

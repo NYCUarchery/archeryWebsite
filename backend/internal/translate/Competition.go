@@ -217,13 +217,13 @@ func DeleteCompetition(context *gin.Context) {
 }
 
 // AllCompetitionInfo godoc
-// @Summary			get information of all the competitions
-// @Description		get information of all the competitions
-// @Tags			Competition
-// @Produce			json
-// @Success			200	{object}	[]database.Competition "success"
-// @Failure			500	{object}	string "internal db error"
-// @Router			/competition [get]
+//	@Summary		get information of all the competitions
+//	@Description	get information of all the competitions
+//	@Tags			Competition
+//	@Produce		json
+//	@Success		200	{object}	[]database.Competition	"success"
+//	@Failure		500	{object}	string					"internal db error"
+//	@Router			/competition [get]
 func GetAllCompetition(c *gin.Context) {
 	comps, err := database.GetAllCompetition()
 	if err != nil {

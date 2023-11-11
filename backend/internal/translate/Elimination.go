@@ -36,6 +36,16 @@ func IsGetEliminationWStagesById(context *gin.Context) (bool, database.Eliminati
 	return true, data
 }
 
+// Get one Elimination By ID godoc
+//
+//	@Summary		Show one Elimination
+//	@Description	Get one Elimination by id
+//	@Tags			Elimination
+//	@Produce		json
+//	@Param			id	path	int	true	"Elimination ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/api/elimination/{id} [get]
 func GetOnlyEliminationById(context *gin.Context) {
 	isExist, data := IsGetEliminationById(context)
 	if !isExist {
@@ -44,6 +54,16 @@ func GetOnlyEliminationById(context *gin.Context) {
 	context.IndentedJSON(200, data)
 }
 
+// Get one Elimination By ID with stages godoc
+//
+//	@Summary		Show one Elimination with stages
+//	@Description	Get one Elimination with stages by id
+//	@Tags			Elimination
+//	@Produce		json
+//	@Param			id	path	int	true	"Elimination ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/api/elimination/stages/{id} [get]
 func GetEliminationWStagesById(context *gin.Context) {
 	isExist, data := IsGetEliminationWStagesById(context)
 	if !isExist {
@@ -52,6 +72,17 @@ func GetEliminationWStagesById(context *gin.Context) {
 	context.IndentedJSON(200, data)
 }
 
+// Post one Elimination godoc
+//
+//	@Summary		Create one Elimination
+//	@Description	Post one new Elimination data with new id
+//	@Tags			Elimination
+//	@Accept			json
+//	@Produce		json
+//	@Param			Elimination	body	string	true	"Elimination"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Router			/api/elimination [post]
 func PostElimination(context *gin.Context) {
 	var data database.Elimination
 	err := context.BindJSON(&data) // require review after player branch merge
@@ -69,6 +100,17 @@ func PostElimination(context *gin.Context) {
 	context.IndentedJSON(200, data)
 }
 
+// Post one Stage godoc
+//
+//	@Summary		Create one Stage
+//	@Description	Post one new Stage data with new id
+//	@Tags			Elimination
+//	@Accept			json
+//	@Produce		json
+//	@Param			Stage	body	string	true	"Stage"
+//	@Success		200		string	string
+//	@Failure		400		string	string
+//	@Router			/api/elimination/stage [post]
 func PostStage(context *gin.Context) {
 	var data database.Stage
 	err := context.BindJSON(&data) // require review after player branch merge
@@ -86,6 +128,17 @@ func PostStage(context *gin.Context) {
 	context.IndentedJSON(200, data)
 }
 
+// Post one Match godoc
+//
+//	@Summary		Create one Match
+//	@Description	Post one new Match data with new id
+//	@Tags			Elimination
+//	@Accept			json
+//	@Produce		json
+//	@Param			Match	body	string	true	"Match"
+//	@Success		200		string	string
+//	@Failure		400		string	string
+//	@Router			/api/elimination/match [post]
 func PostMatch(context *gin.Context) {
 	var data database.Match
 	err := context.BindJSON(&data) // require review after player branch merge
@@ -117,6 +170,18 @@ func PutEliminationById(context *gin.Context, uid uint, data database.Eliminatio
 	return true
 }
 
+// Put one Elimination godoc
+//
+//	@Summary		Update one Elimination
+//	@Description	Update one Elimination data by id, can't update id, group id, team size
+//	@Tags			Elimination
+//	@Accept			json
+//	@Produce		json
+//	@Param			id			path	int		true	"Elimination ID"
+//	@Param			Elimination	body	string	true	"Elimination"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Router			/api/elimination/whole/{id} [put]
 func PutElimination(context *gin.Context) {
 	var data database.Elimination
 	err := context.BindJSON(&data)
@@ -147,6 +212,18 @@ func PutElimination(context *gin.Context) {
 	context.IndentedJSON(200, newData)
 }
 
+// Delete Elimination godoc
+//
+//	@Summary		Delete one Elimination, and related stages and matches
+//	@Description	Delete one Elimination by id, and related stages and matches
+//	@Tags			Elimination
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path	int	true	"Elimination ID"
+//	@Success		200	string	string
+//	@Success		204	string	string
+//	@Failure		400	string	string
+//	@Router			/api/elimination/{id} [delete]
 func DeleteElimination(context *gin.Context) {
 	uid := convert2uint(context, "id") // require review after player branch merge
 	id := int(uid)

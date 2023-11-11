@@ -10,16 +10,16 @@ import (
 )
 
 // CreateInstitution godoc
-// @Summary			create an institution
-// @Description		add an institution to db
-// @Tags			Institution
-// @Accept			json
-// @Produce			json
-// @Param			name	formData string true "institution's name"
-// @Success			200		{object}	response.Response "success"
-// @Failure			400		{object}	response.Response "empty institution name"
-// @Failure			500		{object}	response.Response "db error"
-// @Router			/institution [post]
+//	@Summary		create an institution
+//	@Description	add an institution to db
+//	@Tags			Institution
+//	@Accept			json
+//	@Produce		json
+//	@Param			name	formData	string				true	"institution's name"
+//	@Success		200		{object}	response.Response	"success"
+//	@Failure		400		{object}	response.Response	"empty institution name"
+//	@Failure		500		{object}	response.Response	"db error"
+//	@Router			/institution [post]
 func CreateInstitution(c *gin.Context) {
 	name := c.PostForm("name")
 	if name == "" {
@@ -38,16 +38,16 @@ func CreateInstitution(c *gin.Context) {
 }
 
 // InstitutionInfo godoc
-// @Summary			get institution info by id
-// @Description		get institution info from db by id
-// @Tags			Institution
-// @Accept			json
-// @Produce			json
-// @Param			id		path string true "institution's id"
-// @Success			200		{object}	response.Response{data=database.Institution} "success"
-// @Failure			400		{object}	response.Response "invalid id"
-// @Failure			404		{object}	response.Response "no institution found"
-// @Router			/institution/{id} [get]
+//	@Summary		get institution info by id
+//	@Description	get institution info from db by id
+//	@Tags			Institution
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string											true	"institution's id"
+//	@Success		200	{object}	response.Response{data=database.Institution}	"success"
+//	@Failure		400	{object}	response.Response								"invalid id"
+//	@Failure		404	{object}	response.Response								"no institution found"
+//	@Router			/institution/{id} [get]
 func InstitutionInfo(c *gin.Context) {
 	idstr := c.Param("id")
 	id, err := strconv.Atoi(idstr)
@@ -69,14 +69,14 @@ func InstitutionInfo(c *gin.Context) {
 }
 
 // AllInstitutionInfo godoc
-// @Summary			get all institution info
-// @Description		get all institution info from db
-// @Tags			Institution
-// @Accept			json
-// @Produce			json
-// @Success			200	{object}	response.Response{data=[]database.Institution} "success"
-// @Failure			500	{object}	response.Response "db error"
-// @Router			/institution [get]
+//	@Summary		get all institution info
+//	@Description	get all institution info from db
+//	@Tags			Institution
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	response.Response{data=[]database.Institution}	"success"
+//	@Failure		500	{object}	response.Response								"db error"
+//	@Router			/institution [get]
 func AllInstitutionInfo(c *gin.Context) {
 	institutions, err := database.AllInstitutionInfo()
 	if err != nil {
