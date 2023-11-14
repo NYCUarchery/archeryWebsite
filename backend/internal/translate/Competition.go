@@ -5,6 +5,7 @@ import (
 	response "backend/internal/translate/Response"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -94,7 +95,7 @@ func PostCompetition(context *gin.Context) {
 	}
 	/*auto write Groups_num, minus one for 無組別*/
 	data.GroupsNum = -1
-
+	data.Date = time.Now();
 	newData, err := database.PostCompetition(data)
 	newId := int(newData.ID)
 	if response.ErrorInternalErrorTest(context, newId, "Post GroupInfo", err) {
