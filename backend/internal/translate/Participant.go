@@ -1,10 +1,10 @@
 package translate
 
 import (
+	"backend/internal/database"
+	response "backend/internal/translate/Response"
 	"fmt"
 	"net/http"
-	"web_server_gin/database"
-	response "web_server_gin/translate/Response"
 
 	"github.com/gin-gonic/gin"
 )
@@ -30,7 +30,7 @@ func IsGetParticipant(context *gin.Context, id uint) (bool, database.Participant
 //	@Param			id	path	int	true	"Participant ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/data/participant/{id} [get]
+//	@Router			/api/participant/{id} [get]
 func GetParticipant(context *gin.Context) {
 	id := convert2uint(context, "id")
 	isExist, data := IsGetParticipant(context, id)
@@ -50,7 +50,7 @@ func GetParticipant(context *gin.Context) {
 //	@Param			Participant	body	string	true	"Participant"
 //	@Success		200			string	string
 //	@Failure		400			string	string
-//	@Router			/data/participant [post]
+//	@Router			/api/participant [post]
 func PostParticipant(context *gin.Context) {
 	var data database.Participant
 	err := context.BindJSON(&data)
@@ -97,7 +97,7 @@ func PostParticipant(context *gin.Context) {
 //	@Failure		400			string	string
 //	@Failure		404			string	string
 //	@Failure		500			string	string
-//	@Router			/data/participant/whole/{id} [put]
+//	@Router			/api/participant/whole/{id} [put]
 func UpdateParticipant(context *gin.Context) {
 	var data database.Participant
 	err := context.BindJSON(&data)
@@ -135,7 +135,7 @@ func UpdateParticipant(context *gin.Context) {
 //	@Success		200	string	string
 //	@Failure		400	string	string
 //	@Failure		404	string	string
-//	@Router			/data/participant/{id} [delete]
+//	@Router			/api/participant/{id} [delete]
 func DeleteParticipantById(context *gin.Context) {
 	id := convert2uint(context, "id")
 	DeleteParticipaint(context, id)

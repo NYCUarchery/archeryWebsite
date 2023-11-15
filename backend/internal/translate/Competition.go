@@ -66,7 +66,7 @@ func IsGetCompetitionWParticipants(context *gin.Context, id uint) (bool, databas
 //	@Param			id	path	int	true	"Competition ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/data/competition/{id} [get]
+//	@Router			/api/competition/{id} [get]
 func GetOnlyCompetitionByID(context *gin.Context) {
 	id := convert2uint(context, "id")
 	isExist, data := IsGetOnlyCompetition(context, id)
@@ -85,7 +85,7 @@ func GetOnlyCompetitionByID(context *gin.Context) {
 //	@Param			id	path	int	true	"Competition ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/data/competition/participants/{id} [get]
+//	@Router			/api/competition/participants/{id} [get]
 func GetCompetitionWParticipantsByID(context *gin.Context) {
 	var data database.Competition
 	id := convert2uint(context, "id")
@@ -105,7 +105,7 @@ func GetCompetitionWParticipantsByID(context *gin.Context) {
 //	@Param			id	path	int	true	"Competition ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/data/competition/groups/{id} [get]
+//	@Router			/api/competition/groups/{id} [get]
 func GetCompetitionWGroupsByID(context *gin.Context) {
 	id := convert2uint(context, "id")
 	isExist, data := IsGetCompetitionWGroup(context, id)
@@ -124,7 +124,7 @@ func GetCompetitionWGroupsByID(context *gin.Context) {
 //	@Param			id	path	int	true	"Competition ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/data/competition/groups/players/{id} [get]
+//	@Router			/api/competition/groups/players/{id} [get]
 func GetCompetitionWGroupsPlayersByID(context *gin.Context) {
 	id := convert2uint(context, "id")
 	isExist, data := IsGetCompetitionWGroupsPlayers(context, id)
@@ -144,7 +144,7 @@ func GetCompetitionWGroupsPlayersByID(context *gin.Context) {
 //	@Param			Competition	body	string	true	"Competition"
 //	@Success		200			string	string
 //	@Failure		400			string	string
-//	@Router			/data/competition [post]
+//	@Router			/api/competition [post]
 func PostCompetition(context *gin.Context) {
 	var data database.Competition
 	err := context.BindJSON(&data)
@@ -212,7 +212,7 @@ func PostCompetition(context *gin.Context) {
 //	@Failure		400			string	string
 //	@Failure		404			string	string
 //	@Failure		500			string	string
-//	@Router			/data/competition/whole/{id} [put]
+//	@Router			/api/competition/whole/{id} [put]
 func UpdateCompetition(context *gin.Context) {
 	var data database.Competition
 	id := convert2uint(context, "id")
@@ -260,7 +260,7 @@ func UpdateCompetition(context *gin.Context) {
 //	@Failure		400			string	string
 //	@Failure		404			string	string
 //	@Failure		500			string	string
-//	@Router			/data/competition/groups/players/rank/{id} [put]
+//	@Router			/api/competition/groups/players/rank/{id} [put]
 func UpdateCompetitionRank(context *gin.Context) {
 	id := convert2uint(context, "id")
 	/*check data exist*/
@@ -302,7 +302,7 @@ func UpdateCompetitionRank(context *gin.Context) {
 //	@Success		200	string	string
 //	@Failure		400	string	string
 //	@Failure		404	string	string
-//	@Router			/data/competition/{id} [delete]
+//	@Router			/api/competition/{id} [delete]
 func DeleteCompetition(context *gin.Context) {
 	id := convert2uint(context, "id")
 	/*check data exist*/

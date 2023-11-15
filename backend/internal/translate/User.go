@@ -1,10 +1,10 @@
 package translate
 
 import (
+	"backend/internal/database"
+	response "backend/internal/translate/Response"
 	"fmt"
 	"net/http"
-	"web_server_gin/database"
-	response "web_server_gin/translate/Response"
 
 	"github.com/gin-gonic/gin"
 )
@@ -30,7 +30,7 @@ func IsGetUser(context *gin.Context, id uint) (bool, database.User) {
 //	@Param			id	path	int	true	"User ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/data/user/{id} [get]
+//	@Router			/api/user/{id} [get]
 func GetOnlyUserById(context *gin.Context) {
 	var data database.User
 	id := convert2uint(context, "id")
@@ -66,7 +66,7 @@ func GetUserWParticipantsById(context *gin.Context) {
 //	@Param			User	body	string	true	"User"
 //	@Success		200		string	string
 //	@Failure		400		string	string
-//	@Router			/data/user [post]
+//	@Router			/api/user [post]
 func PostUser(context *gin.Context) {
 	var data database.User
 	err := context.BindJSON(&data)
@@ -100,7 +100,7 @@ func PostUser(context *gin.Context) {
 //	@Failure		400		string	string
 //	@Failure		404		string	string
 //	@Failure		500		string	string
-//	@Router			/data/user/whole/{id} [put]
+//	@Router			/api/user/whole/{id} [put]
 func PutUser(context *gin.Context) {
 	var data database.User
 	err := context.BindJSON(&data)
@@ -135,7 +135,7 @@ func PutUser(context *gin.Context) {
 //	@Success		200	string	string
 //	@Failure		400	string	string
 //	@Failure		404	string	string
-//	@Router			/data/user/{id} [delete]
+//	@Router			/api/user/{id} [delete]
 func DeleteUser(context *gin.Context) {
 	id := convert2uint(context, "id")
 	success, err := database.DeleteUser(id)

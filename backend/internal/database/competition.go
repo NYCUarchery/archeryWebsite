@@ -1,8 +1,9 @@
 package database
 
 import (
-	"gorm.io/gorm"
 	"time"
+
+	"gorm.io/gorm"
 )
 
 type Competition struct { // DB : game_info
@@ -81,6 +82,12 @@ func GetCompetitionWGroupsPlayers(ID uint) (Competition, error) {
 		Where("id = ?", ID).
 		First(&data)
 	return data, result.Error
+}
+
+func GetAllCompetition() ([]Competition, error) {
+	var comps []Competition
+	err := DB.Find(&comps).Error
+	return comps, err
 }
 
 func PostCompetition(data Competition) (Competition, error) {

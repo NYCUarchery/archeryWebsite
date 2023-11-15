@@ -1,10 +1,10 @@
 package translate
 
 import (
+	"backend/internal/database"
+	response "backend/internal/translate/Response"
 	"fmt"
 	"net/http"
-	"web_server_gin/database"
-	response "web_server_gin/translate/Response"
 
 	"github.com/gin-gonic/gin"
 )
@@ -58,7 +58,7 @@ func IsGetPlayerWScores(context *gin.Context, id uint) (bool, database.Player) {
 //	@Param			id	path	int	true	"Player ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/data/player/{id} [get]
+//	@Router			/api/player/{id} [get]
 func GetOnlyPlayerByID(context *gin.Context) {
 	id := convert2uint(context, "id")
 	isExist, data := IsGetOnlyPlayer(context, id)
@@ -77,7 +77,7 @@ func GetOnlyPlayerByID(context *gin.Context) {
 //	@Param			id	path	int	true	"Player ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/data/player/scores/{id} [get]
+//	@Router			/api/player/scores/{id} [get]
 func GetPlayerWScoresByID(context *gin.Context) {
 	id := convert2uint(context, "id")
 	isExist, data := IsGetPlayerWScores(context, id)
@@ -96,7 +96,7 @@ func GetPlayerWScoresByID(context *gin.Context) {
 //	@Param			participantid	path	int	true	"Participant ID"
 //	@Success		200				string	string
 //	@Failure		400				string	string
-//	@Router			/data/player/{participantid} [post]
+//	@Router			/api/player/{participantid} [post]
 func PostPlayer(context *gin.Context) {
 	var data database.Player
 	/*only get participant_id*/
@@ -174,7 +174,7 @@ func PostPlayer(context *gin.Context) {
 //	@Produce		json
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/data/player/roundend [post]
+//	@Router			/api/player/roundend [post]
 func PostRoundEnd(context *gin.Context) {
 	var data database.RoundEnd
 	err := context.BindJSON(&data)
@@ -201,7 +201,7 @@ func PostRoundEnd(context *gin.Context) {
 //	@Produce		json
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/data/player/roundscore [post]
+//	@Router			/api/player/roundscore [post]
 func PostRoundScore(context *gin.Context) {
 	var data UpdateTotalScoreData
 	err := context.BindJSON(&data)
@@ -282,7 +282,7 @@ func IsUpdatePlayerLaneId(context *gin.Context, playerId uint, laneId uint) bool
 //	@Param			playerid	path	int	true	"Player ID"
 //	@Success		200			string	string
 //	@Failure		400			string	string
-//	@Router			/data/player/groupid/{playerid}/{groupid} [put]
+//	@Router			/api/player/groupid/{playerid}/{groupid} [put]
 func UpdataPlayerGroupId(context *gin.Context) {
 	var data database.Player
 	playerId := convert2uint(context, "id")
@@ -325,7 +325,7 @@ func UpdataPlayerGroupId(context *gin.Context) {
 //	@Param			playerid	path	int	true	"Player ID"
 //	@Success		200			string	string
 //	@Failure		400			string	string
-//	@Router			/data/player/laneid/{playerid} [put]
+//	@Router			/api/player/laneid/{playerid} [put]
 func UpdatePlayerLaneId(context *gin.Context) {
 	var data database.Player
 	playerId := convert2uint(context, "id")
@@ -356,7 +356,7 @@ func UpdatePlayerLaneId(context *gin.Context) {
 //	@Param			id	path	int	true	"Player ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/data/player/order/{id} [put]
+//	@Router			/api/player/order/{id} [put]
 func UpdatePlayerOrder(context *gin.Context) {
 	var data database.Player
 	playerId := convert2uint(context, "id")
@@ -391,7 +391,7 @@ func UpdatePlayerOrder(context *gin.Context) {
 //	@Param			roundendid	path	int	true	"RoundEnd ID"
 //	@Success		200			string	string
 //	@Failure		400			string	string
-//	@Router			/data/player/isconfirmed/{roundendid} [put]
+//	@Router			/api/player/isconfirmed/{roundendid} [put]
 func UpdatePlayerIsConfirmed(context *gin.Context) {
 	var newRoundEnd database.RoundEnd
 	roundEndId := convert2uint(context, "id")
@@ -447,7 +447,7 @@ func UpdatePlayerTotalScore(context *gin.Context, playerId uint, roundId uint, s
 //	@Param			roundscoreid	path	int	true	"RoundScore ID"
 //	@Success		200				string	string
 //	@Failure		400				string	string
-//	@Router			/data/player/score/{roundscoreid} [put]
+//	@Router			/api/player/score/{roundscoreid} [put]
 func UpdatePlayerScore(context *gin.Context) {
 	var scoreData UpdateTotalScoreData
 	roundScoreId := convert2uint(context, "id")
@@ -495,7 +495,7 @@ func UpdatePlayerScore(context *gin.Context) {
 //	@Param			id	path	int	true	"Player ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/data/player/shootoffscore/{id} [put]
+//	@Router			/api/player/shootoffscore/{id} [put]
 func UpdatePlayerShootoffScore(context *gin.Context) {
 	var data database.Player
 	playerId := convert2uint(context, "id")
@@ -529,7 +529,7 @@ func UpdatePlayerShootoffScore(context *gin.Context) {
 //	@Param			id	path	int	true	"Player ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/data/player/{id} [delete]
+//	@Router			/api/player/{id} [delete]
 func DeletePlayer(context *gin.Context) {
 	id := convert2uint(context, "id")
 	isExist, data := IsGetOnlyPlayer(context, id)
