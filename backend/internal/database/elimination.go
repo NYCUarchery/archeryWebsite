@@ -42,7 +42,7 @@ func GetStageIsExist(id uint) bool {
 
 func GetMatchIsExist(id uint) bool {
 	var data Match
-	DB.Table("matchs").Where("id = ?", id).First(&data)
+	DB.Table("matches").Where("id = ?", id).First(&data)
 	return data.ID != 0
 }
 
@@ -62,6 +62,40 @@ func GetEliminationWStagesById(id uint) (Elimination, error) {
 		Where("id = ?", id).
 		First(&data)
 	return data, result.Error
+}
+
+func GetEliminationWScoresById(id uint) (Elimination, error) {
+	var data Elimination
+	result := DB.
+		Preload("Stages.Matchs.MatchResults.MatchEnds.MatchScores", func(*gorm.DB) *gorm.DB {
+			return DB.Order("id asc")
+		}).
+		Model(&Elimination{}).
+		Where("id = ?", id).
+		First(&data)
+	return data, result.Error
+}
+
+func GetEliminationTeamSizeByMatchResultId(matchResultId uint) (int, error) {
+	var teamSize int
+	subQueryA := DB.
+		Table("match_results").
+		Select("match_results.match_id").
+		Where("match_results.id = ?", matchResultId)
+	subQueryB := DB.
+		Table("matches").
+		Select("matches.stage_id").
+		Joins("JOIN (?) AS A ON A.match_id = matches.id", subQueryA)
+	subQueryC := DB.
+		Table("stages").
+		Select("stages.elimination_id").
+		Joins("JOIN (?) AS B ON B.stage_id = stages.id", subQueryB)
+	result := DB.Table("eliminations").
+		Select("eliminations.team_size").
+		Joins("JOIN (?) AS C ON C.elimination_id = eliminations.id", subQueryC).
+		Scan(&teamSize)
+
+	return teamSize, result.Error
 }
 
 func CreateElimination(data Elimination) (Elimination, error) {

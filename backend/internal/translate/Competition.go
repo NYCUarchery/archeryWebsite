@@ -97,7 +97,7 @@ func PostCompetition(context *gin.Context) {
 
 	newData, err := database.PostCompetition(data)
 	newId := int(newData.ID)
-	if response.ErrorInternalErrorTest(context, newId, "Post GroupInfo", err) {
+	if response.ErrorInternalErrorTest(context, newId, "Post Competition", err) {
 		return
 	}
 	/*create無組別group*/
