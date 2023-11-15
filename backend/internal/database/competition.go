@@ -2,12 +2,14 @@ package database
 
 import (
 	"gorm.io/gorm"
+	"time"
 )
 
 type Competition struct { // DB : game_info
 	ID                       uint           `json:"id"        gorm:"primary_key"`
 	Title                    string         `json:"title"`
 	SubTitle                 string         `json:"sub_title"`
+	Date                     time.Time      `json:"date"`
 	HostId                   uint           `json:"host_id"`
 	RoundsNum                int            `json:"rounds_num"`
 	GroupsNum                int            `json:"groups_num"`

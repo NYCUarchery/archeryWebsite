@@ -1,9 +1,9 @@
 package translate
 
 import (
+	"backend/internal/database"
 	"fmt"
 	"net/http"
-	"web_server_gin/database"
 
 	"github.com/gin-gonic/gin"
 )
@@ -62,7 +62,7 @@ func GetOldLaneInfoByID(context *gin.Context) {
 //	@Param			LaneData	body	string	true	"LaneData"
 //	@Success		200			string	string
 //	@Failure		400			string	string
-//	@Router			/data/oldlaneinfo [post]
+//	@Router			/oldlaneinfo [post]
 func PostOldLaneInfo(context *gin.Context) {
 	data := database.LaneData{}
 	err := context.BindJSON(&data)

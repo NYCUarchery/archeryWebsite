@@ -1,9 +1,9 @@
 package translate
 
 import (
+	"backend/internal/database"
+	response "backend/internal/translate/Response"
 	"fmt"
-	"web_server_gin/database"
-	response "web_server_gin/translate/Response"
 
 	"github.com/gin-gonic/gin"
 )
@@ -96,15 +96,15 @@ func GetAllLaneByCompetitionId(context *gin.Context) {
 }
 
 // when competition is created, lane is created
-// noTypeLane with LaneNumber == 0
-func PostLaneThroughCompetition(context *gin.Context, competitionId uint, noTypeGroupId uint, laneNumber int) bool {
+// unassignedLane with LaneNumber == 0
+func PostLaneThroughCompetition(context *gin.Context, competitionId uint, unassignedGroupId uint, laneNumber int) bool {
 	var data database.Lane
 	/*set competition ID*/
 	/*set qualification ID = 無組別id*/
 	/*set player num = 0*/
 	/*set LaneNumber*/
 	data.CompetitionId = competitionId
-	data.QualificationId = noTypeGroupId
+	data.QualificationId = unassignedGroupId
 	data.PlayerNum = 0
 	data.LaneNumber = laneNumber
 	/*insert data*/
@@ -118,15 +118,15 @@ func PostLaneThroughCompetition(context *gin.Context, competitionId uint, noType
 }
 
 // lane need to update qualification id
-// noTypeLane cannot be updated
+// unassignedLane cannot be updated
 func UpdateLaneQualificationId(context *gin.Context, id uint, qualificationId uint) bool {
 	IsExist, data := IsGetLane(context, id)
-	/*check noTypeLane*/
+	/*check unassignedLane*/
 	if !IsExist {
 		response.ErrorIdTest(context, id, IsExist, "Lane")
 		return false
 	} else if data.LaneNumber == 0 {
-		response.ErrorIdTest(context, id, false, "Lane noTypeLane cannot be updated")
+		response.ErrorIdTest(context, id, false, "Lane unassignedLane cannot be updated")
 		return false
 	}
 	/*update data*/

@@ -1,18 +1,17 @@
-.DS_Store
+
+data
+**/.DS_Store
 
 # 內含dsn隱密資訊
 # 格式：DBname    UserName   PassWord     HostName     PortNumber 
 dsn_config.txt
 test_dsn_config.txt
-db.yaml 
-session.yaml
 # 測試檔案
 test.ts
-```
+
 # unecessary files
 views
 dist/
 pkg/mod/
 node_modules/
-package-lock.json
 FakeLaneInfo.json

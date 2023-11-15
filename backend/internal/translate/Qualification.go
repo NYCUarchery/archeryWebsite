@@ -1,10 +1,10 @@
 package translate
 
 import (
+	"backend/internal/database"
+	response "backend/internal/translate/Response"
 	"fmt"
 	"net/http"
-	"web_server_gin/database"
-	response "web_server_gin/translate/Response"
 
 	"github.com/gin-gonic/gin"
 )
@@ -217,36 +217,6 @@ func UpdateQualificationByID(context *gin.Context) {
 			return
 		}
 	}
-
-	fmt.Printf("\n")
-	/*update lanes' qualificationId*/
-	oldLaneStart := oldData.StartLaneNumber
-	oldLaneEnd := oldData.EndLaneNumber
-	if oldLaneStart == 0 && oldLaneEnd == 0 {
-		/*for default as 0*/
-		oldLaneStart++
-		oldLaneEnd++
-	}
-	for index := oldLaneStart; index <= oldLaneEnd; index++ {
-		laneId := UnassignedLaneId + uint(index)
-		fmt.Printf("laneId: %d\n", laneId)
-		fmt.Printf("index: %d\n", index)
-		success := UpdateLaneQualificationId(context, laneId, UnassignedGroupId)
-		if !success {
-			return
-		}
-	}
-	fmt.Printf("\n")
-	for index := data.StartLaneNumber; index <= data.EndLaneNumber; index++ {
-		laneId := UnassignedLaneId + uint(index)
-		fmt.Printf("laneId: %d\n", laneId)
-		fmt.Printf("index: %d\n", index)
-		success := UpdateLaneQualificationId(context, laneId, id)
-		if !success {
-			return
-		}
-	}
-
 	/*update data*/
 	isChanged, err := database.UpdateQualification(id, data)
 	if response.ErrorInternalErrorTest(context, id, "Update Qualification", err) {

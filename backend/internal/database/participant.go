@@ -1,17 +1,18 @@
 package database
 
 type Participant struct {
-	ID            uint   `json:"id" gorm:"primary_key"`
-	CompetitionID uint   `json:"competition_id"`
-	UserID        uint   `json:"user_id"`
-	Status        string `json:"status"`
-	Role          string `json:"role"`
+	ID            uint   `gorm:"primaryKey;autoIncrement" json:"id"`
+	UserID        uint   `gorm:"not null" json:"userID"`
+	CompetitionID uint   `gorm:"not null" json:"competitionID"`
+	Role          string `gorm:"not null" json:"role"`
+	Status        string `gorm:"not null" json:"status"`
 }
 
 func InitParticipant() {
 	DB.AutoMigrate(&Participant{})
 }
 
+/*mushroom*/
 func GetParticipantIsExist(id uint) bool {
 	var data Participant
 	DB.Model(&Participant{}).Where("id = ?", id).First(&data)
@@ -39,4 +40,25 @@ func DeleteParticipant(ID uint) (bool, error) {
 	result := DB.Delete(&Participant{}, "id =?", ID)
 	isChanged := result.RowsAffected != 0
 	return isChanged, result.Error
+}
+
+/*JSON*/
+func AddParticipant(par *Participant) {
+	DB.Create(par)
+}
+
+func CheckParticipantExist(userID uint, compID uint) bool {
+	var par Participant
+	err := DB.Where("user_id = ? AND competition_id = ?", userID, compID).First(&par).Error
+	return err == nil
+}
+
+func CompetitionParticipants(compID uint) (pars []Participant, err error) {
+	result := DB.Where("competition_id = ?", compID).Find(&pars)
+
+	if result.Error != nil {
+		err = result.Error
+		return
+	}
+	return
 }

@@ -1,72 +1,41 @@
 package database
 
 import (
-	"bufio"
 	"fmt"
+	"log"
 	"os"
-	"path/filepath"
-	"strings"
 
-	"github.com/gin-gonic/gin"
+	"gopkg.in/yaml.v2"
+
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
-type dsn_details struct {
-	database string
-	username string
-	password string
-	host     string
-	port     string
+type conf struct {
+	Username string
+	Password string
+	Host     string
+	Port     int
+	Database string
 }
 
 var DB *gorm.DB
-var DSN dsn_details
 
-func GetDb() *gorm.DB {
-	return DB
-}
-
-func getDSNFileByMode() string {
-	switch gin.Mode() {
-	case "release":
-		return "../dsn_config.txt"
-	case "debug":
-		return "../test_dsn_config.txt"
-	case "test":
-		return "../dsn_config.txt"
-	default:
-		return "../text_dsn_config.txt"
-	}
-}
-
-func getDSN() {
-	Pwd, _ := os.Getwd()
-	FilePath := filepath.Join(Pwd, getDSNFileByMode())
-	file, err := os.Open(FilePath)
+func getConf() (c conf) {
+	yamlFile, err := os.ReadFile("config/db.yaml")
 	if err != nil {
-		fmt.Println("Error opening file:", err)
-		return
+		log.Printf("yamlFile.Get err   #%v ", err)
 	}
-	defer file.Close()
-	scanner := bufio.NewScanner(file)
-	if scanner.Scan() {
-		line := scanner.Text()
-		values := strings.Fields(line)
-		DSN.database = values[0]
-		DSN.username = values[1]
-		DSN.password = values[2]
-		DSN.host = values[3]
-		DSN.port = values[4]
-	} else {
-		fmt.Println("Error reading file:", scanner.Err())
+
+	err = yaml.Unmarshal(yamlFile, &c)
+	if err != nil {
+		log.Fatalf("Unmarshal: %v", err)
 	}
+	return
 }
 
 func DatabaseInitial() {
 	connectDB()
-	InitOldLaneInfo()
-
 	InitUser()
 	InitParticipant()
 	InitPlayer()
@@ -75,14 +44,15 @@ func DatabaseInitial() {
 	InitGroupInfo()
 	InitQualification()
 	InitLane()
+	InitOldLaneInfo()
+
 }
 
 func connectDB() {
-	// 建立資料庫連線
-	// reference https://github.com/go-sql-driver/mysql#dsn-data-source-name
-	getDSN()
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify",
-		DSN.username, DSN.password, DSN.host, DSN.port, DSN.database)
+	DSN := getConf()
+
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify",
+		DSN.Username, DSN.Password, DSN.Host, DSN.Port, DSN.Database)
 	var err error
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {

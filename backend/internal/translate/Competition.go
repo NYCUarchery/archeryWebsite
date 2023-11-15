@@ -1,10 +1,10 @@
 package translate
 
 import (
+	"backend/internal/database"
+	response "backend/internal/translate/Response"
 	"fmt"
 	"net/http"
-	"web_server_gin/database"
-	response "web_server_gin/translate/Response"
 
 	"github.com/gin-gonic/gin"
 )
@@ -202,7 +202,7 @@ func PostCompetition(context *gin.Context) {
 // Update Competition godoc
 //
 //	@Summary		update one Competition without GroupInfo
-//	@Description	Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, FirstLaneId, noTyoeGroupId
+//	@Description	Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, FirstLaneId, unassignedGroupId
 //	@Tags			Competition
 //	@Accept			json
 //	@Produce		json
@@ -348,4 +348,22 @@ func DeleteCompetition(context *gin.Context) {
 		return
 	}
 	response.AcceptDeleteSuccess(context, id, affected, "Competition with Groups")
+}
+
+// AllCompetitionInfo godoc
+// @Summary			get information of all the competitions
+// @Description		get information of all the competitions
+// @Tags			Competition
+// @Produce			json
+// @Success			200	{object}	[]database.Competition "success"
+// @Failure			500	{object}	string "internal db error"
+// @Router			/competition [get]
+func GetAllCompetition(c *gin.Context) {
+	comps, err := database.GetAllCompetition()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"result": "internal db error"})
+		return
+	}
+
+	c.JSON(http.StatusOK, comps)
 }

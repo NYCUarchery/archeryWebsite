@@ -1,10 +1,10 @@
 package translate
 
 import (
+	"backend/internal/database"
+	response "backend/internal/translate/Response"
 	"fmt"
 	"net/http"
-	"web_server_gin/database"
-	response "web_server_gin/translate/Response"
 
 	"github.com/gin-gonic/gin"
 )
@@ -126,7 +126,7 @@ func PostUnassignedGroupInfo(context *gin.Context, competitionId uint) (bool, ui
 	/*auto write CompetitionId*/
 	data.CompetitionId = uint(competitionId)
 	/*auto write GroupName*/
-	data.GroupName = "無組別"
+	data.GroupName = "unassigned"
 
 	newData, err := database.CreateGroupInfo(data)
 	if response.ErrorInternalErrorTest(context, newData.ID, "Post GroupInfo", err) {
@@ -138,7 +138,7 @@ func PostUnassignedGroupInfo(context *gin.Context, competitionId uint) (bool, ui
 	}
 	/*update competition.groupnum*/
 	database.AddOneCompetitionGroupNum(competitionId)
-	response.AcceptPrint(newData.ID, fmt.Sprint(newData), "GroupInfo 無組別 ")
+	response.AcceptPrint(newData.ID, fmt.Sprint(newData), "GroupInfo unassigned ")
 	return true, newData.ID
 }
 

@@ -2,13 +2,14 @@ package routers
 
 import (
 	"github.com/gin-gonic/gin"
+
+	"backend/internal/pkg"
 )
 
 func SetUpRouter(router *gin.Engine, ip string, port string) {
-	data := router.Group("/data")
-	views := router.Group("/views")
+	router.Use(pkg.EnableCookieSessionMiddleware())
 
-	AddViewsRouter(views, router)
-	AddDataRouter(data)
+	api := router.Group("/api")
+	AddApiRouter(api)
 	SwagSetUp(router, ip, port)
 }
