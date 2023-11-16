@@ -69,8 +69,7 @@ func JoinInCompetition(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
 
-// mushroom
-
+// mushroom // hope be edited by JSON
 func IsGetParticipant(context *gin.Context, id uint) (bool, database.Participant) {
 	if response.ErrorIdTest(context, id, database.GetParticipantIsExist(id), "Participant") {
 		return false, database.Participant{}

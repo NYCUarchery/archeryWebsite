@@ -11,9 +11,7 @@ func AddApiRouter(api *gin.RouterGroup) {
 	api.GET("/albums", endpoint.GetAlbums)          // "pass data" action through api(link)
 	api.GET("/txt/:dataName", endpoint.GetHTTPData) // response "name".txt data file with /translate/2JSON method
 
-	// user := api.Group("user")
-	// userRouter(user)
-
+	// hope be edited by JSON
 	// participant := api.Group("participant")
 	// participantRouter(participant)
 
@@ -37,21 +35,6 @@ func AddApiRouter(api *gin.RouterGroup) {
 
 	profileRouter(api)
 }
-
-// func userRouter(data *gin.RouterGroup) {
-// 	data.GET("/:id", translate.GetOnlyUserById)
-// 	data.GET("/participants/:id", translate.GetUserWParticipantsById)
-// 	data.POST("/", translate.PostUser)
-// 	data.PUT("/whole/:id", translate.PutUser)
-// 	data.DELETE("/:id", translate.DeleteUser)
-// }
-
-// func participantRouter(data *gin.RouterGroup) {
-// 	data.GET("/:id", translate.GetParticipant)
-// 	data.POST("/", translate.PostParticipant)
-// 	data.PUT("/whole/:id", translate.UpdateParticipant)
-// 	data.DELETE("/:id", translate.DeleteParticipantById)
-// }
 
 func playerRouter(data *gin.RouterGroup) {
 	data.GET("/:id", endpoint.GetOnlyPlayerByID)
@@ -130,6 +113,14 @@ func profileRouter(api *gin.RouterGroup) {
 	parssr := api.Group("/participant")
 	{
 		parssr.POST("/", pkg.AuthSessionMiddleware(), endpoint.JoinInCompetition)
+		// hope be edited by JSON
+		//
+		// func participantRouter(data *gin.RouterGroup) {
+		// 	data.GET("/:id", endpoint.GetParticipant)
+		// 	data.POST("/", endpoint.PostParticipant)
+		// 	data.PUT("/whole/:id", endpoint.UpdateParticipant)
+		// 	data.DELETE("/:id", endpoint.DeleteParticipantById)
+		// }
 	}
 
 	insr := api.Group("/institution")

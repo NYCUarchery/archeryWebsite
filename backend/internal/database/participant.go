@@ -12,6 +12,27 @@ func InitParticipant() {
 	DB.AutoMigrate(&Participant{})
 }
 
+/*JSON*/
+func AddParticipant(par *Participant) {
+	DB.Create(par)
+}
+
+func CheckParticipantExist(userID uint, compID uint) bool {
+	var par Participant
+	err := DB.Where("user_id = ? AND competition_id = ?", userID, compID).First(&par).Error
+	return err == nil
+}
+
+func CompetitionParticipants(compID uint) (pars []Participant, err error) {
+	result := DB.Where("competition_id = ?", compID).Find(&pars)
+
+	if result.Error != nil {
+		err = result.Error
+		return
+	}
+	return
+}
+
 /*mushroom*/
 func GetParticipantIsExist(id uint) bool {
 	var data Participant
@@ -60,25 +81,4 @@ func DeleteParticipant(ID uint) (bool, error) {
 	result := DB.Delete(&Participant{}, "id =?", ID)
 	isChanged := result.RowsAffected != 0
 	return isChanged, result.Error
-}
-
-/*JSON*/
-func AddParticipant(par *Participant) {
-	DB.Create(par)
-}
-
-func CheckParticipantExist(userID uint, compID uint) bool {
-	var par Participant
-	err := DB.Where("user_id = ? AND competition_id = ?", userID, compID).First(&par).Error
-	return err == nil
-}
-
-func CompetitionParticipants(compID uint) (pars []Participant, err error) {
-	result := DB.Where("competition_id = ?", compID).Find(&pars)
-
-	if result.Error != nil {
-		err = result.Error
-		return
-	}
-	return
 }
