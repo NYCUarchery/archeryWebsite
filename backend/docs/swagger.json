@@ -1039,9 +1039,9 @@
                 }
             }
         },
-        "/api/participant": {
+        "/api/participant/": {
             "post": {
-                "description": "Post one new Participant data with new id",
+                "description": "add a particpant to the competition",
                 "consumes": [
                     "application/json"
                 ],
@@ -1051,15 +1051,139 @@
                 "tags": [
                     "Participant"
                 ],
-                "summary": "Create one Participant",
+                "summary": "join in a competition",
                 "parameters": [
                     {
-                        "description": "Participant",
-                        "name": "Participant",
+                        "type": "integer",
+                        "description": "competition id",
+                        "name": "competitionID",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "no user/competition found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/participant/competition": {
+            "get": {
+                "description": "Get Participants By competition ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Participant"
+                ],
+                "summary": "Show Participants By competition ID",
+                "parameters": [
+                    {
+                        "description": "competition ID",
+                        "name": "competition_id",
                         "in": "body",
                         "required": true,
                         "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
                             "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/participant/competition/user": {
+            "get": {
+                "description": "Get Participants By competition ID and user ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Participant"
+                ],
+                "summary": "Show Participants By competition ID and user ID",
+                "parameters": [
+                    {
+                        "description": "competition ID",
+                        "name": "competition_id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "user ID",
+                        "name": "user_id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/participant/user": {
+            "get": {
+                "description": "Get Participants By user ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Participant"
+                ],
+                "summary": "Show Participants By user ID",
+                "parameters": [
+                    {
+                        "description": "user ID",
+                        "name": "user_id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
                         }
                     }
                 ],
@@ -2002,50 +2126,6 @@
                     },
                     "404": {
                         "description": "no institution found",
-                        "schema": {
-                            "$ref": "#/definitions/response.Response"
-                        }
-                    }
-                }
-            }
-        },
-        "/participant/": {
-            "post": {
-                "description": "add a particpant to the competition",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Participant"
-                ],
-                "summary": "join in a competition",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "competition id",
-                        "name": "competitionID",
-                        "in": "formData",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "success",
-                        "schema": {
-                            "$ref": "#/definitions/response.Response"
-                        }
-                    },
-                    "400": {
-                        "description": "no user/competition found",
-                        "schema": {
-                            "$ref": "#/definitions/response.Response"
-                        }
-                    },
-                    "500": {
-                        "description": "internal db error",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }

@@ -11,20 +11,25 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type Participants struct {
+	Participants []database.Participant `json:"participants"`
+}
+
 //JSON
 
 // JoinInCompetition godoc
-// @Summary			join in a competition
-// @Description		add a particpant to the competition
-// @Tags			Participant
-// @Accept			json
-// @Produce			json
-// @Param			competitionID	formData int true "competition id"
-// @Success			200  {object}	response.Response "success"
-// @Failure			400  {object}	response.Response "cannot parse competitionID | participant exists"
-// @Failure			400  {object}	response.Response "no user/competition found"
-// @Failure			500  {object}	response.Response "internal db error"
-// @Router			/participant/ [post]
+//
+//	@Summary		join in a competition
+//	@Description	add a particpant to the competition
+//	@Tags			Participant
+//	@Accept			json
+//	@Produce		json
+//	@Param			competitionID	formData	int					true	"competition id"
+//	@Success		200				{object}	response.Response	"success"
+//	@Failure		400				{object}	response.Response	"cannot parse competitionID | participant exists"
+//	@Failure		400				{object}	response.Response	"no user/competition found"
+//	@Failure		500				{object}	response.Response	"internal db error"
+//	@Router			/api/participant/ [post]
 func JoinInCompetition(c *gin.Context) {
 	userID := pkg.QuerySession(c, "id").(uint)
 	compIDu64, err := strconv.ParseUint(c.PostForm("competitionID"), 10, 32)
@@ -92,7 +97,7 @@ func IsGetParticipant(context *gin.Context, id uint) (bool, database.Participant
 //	@Success		200	string	string
 //	@Failure		400	string	string
 //	@Router			/api/participant/{id} [get]
-func GetParticipant(context *gin.Context) {
+func GetParticipantById(context *gin.Context) {
 	id := convert2uint(context, "id")
 	isExist, data := IsGetParticipant(context, id)
 	if !isExist {
@@ -101,47 +106,94 @@ func GetParticipant(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, data)
 }
 
-// Post Participant godoc
+// Get Participants By user ID godoc
 //
-//	@Summary		Create one Participant
-//	@Description	Post one new Participant data with new id
+//	@Summary		Show Participants By user ID
+//	@Description	Get Participants By user ID
 //	@Tags			Participant
-//	@Accept			json
 //	@Produce		json
-//	@Param			Participant	body	string	true	"Participant"
-//	@Success		200			string	string
-//	@Failure		400			string	string
-//	@Router			/api/participant [post]
-func PostParticipant(context *gin.Context) {
-	var data database.Participant
+//	@Param			user_id	body	int	true	"user ID"
+//	@Success		200		string	string
+//	@Failure		400		string	string
+//	@Router			/api/participant/user [get]
+func GetParticipantByUserId(context *gin.Context) {
+	type userData struct {
+		UserID uint `json:"user_id"`
+	}
+	var newData Participants
+	var data userData
 	err := context.BindJSON(&data)
-	if response.ErrorReceiveDataTest(context, 0, "Create Participant", err) {
+	if response.ErrorReceiveDataTest(context, data.UserID, "Get participants by user id", err) {
 		return
-	} else if response.ErrorIdTest(context, data.CompetitionID, database.GetCompetitionIsExist(data.CompetitionID), "Get competition when post Participant ") {
-		return
-	} else if response.ErrorIdTest(context, data.UserID, database.GetUserIsExist(data.UserID), "Get user when post Participant ") {
+	} else if response.ErrorIdTest(context, data.UserID, database.GetUserIsExist(data.UserID), "User ID when getting participants") {
 		return
 	}
-	data, err = database.CreateParticipant(data)
-	if response.ErrorInternalErrorTest(context, data.ID, "Post User", err) {
+	newData.Participants, err = database.GetParticipantByUserId(data.UserID)
+	if response.ErrorInternalErrorTest(context, data.UserID, "Get Participants by user id", err) {
 		return
 	}
-	/*check if competition id is exist*/
-	competitionId := data.CompetitionID
-	if response.ErrorIdTest(context, competitionId, database.GetCompetitionIsExist(competitionId), "Competition when post Participant ") {
+	context.IndentedJSON(http.StatusOK, newData)
+}
+
+// Get Participants By competition ID godoc
+//
+//	@Summary		Show Participants By competition ID
+//	@Description	Get Participants By competition ID
+//	@Tags			Participant
+//	@Produce		json
+//	@Param			competition_id	body	int	true	"competition ID"
+//	@Success		200				string	string
+//	@Failure		400				string	string
+//	@Router			/api/participant/competition [get]
+func GetParticipantByCompetitionId(context *gin.Context) {
+	type CompetitionData struct {
+		CompetitionId uint `json:"competition_id"`
+	}
+	var newData Participants
+	var data CompetitionData
+	err := context.BindJSON(&data)
+	if response.ErrorReceiveDataTest(context, data.CompetitionId, "Get participants by competition id ", err) {
+		return
+	} else if response.ErrorIdTest(context, data.CompetitionId, database.GetCompetitionIsExist(data.CompetitionId), "Competition ID when getting participants") {
 		return
 	}
-	/*check if User id is exist*/
-	userId := data.UserID
-	if response.ErrorIdTest(context, userId, database.GetUserIsExist(userId), "User when post Participant ") {
+	newData.Participants, err = database.GetParticipantByCompetitionId(data.CompetitionId)
+	if response.ErrorInternalErrorTest(context, data.CompetitionId, "Get Participants by competition id", err) {
 		return
 	}
-	id := data.ID
-	IsExist, newData := IsGetParticipant(context, id)
-	if !IsExist {
+	context.IndentedJSON(http.StatusOK, newData)
+}
+
+// Get Participants By competition ID and user ID godoc
+//
+//	@Summary		Show Participants By competition ID and user ID
+//	@Description	Get Participants By competition ID and user ID
+//	@Tags			Participant
+//	@Produce		json
+//	@Param			competition_id	body	int	true	"competition ID"
+//	@Param			user_id			body	int	true	"user ID"
+//	@Success		200				string	string
+//	@Failure		400				string	string
+//	@Router			/api/participant/competition/user [get]
+func GetParticipantByCompetitionIdUserId(context *gin.Context) {
+	type bodyData struct {
+		CompetitionId uint `json:"competition_id"`
+		UserId        uint `json:"user_id"`
+	}
+	var newData Participants
+	var data bodyData
+	err := context.BindJSON(&data)
+	if response.ErrorReceiveDataTest(context, 0, "Get participants by competition id and user id", err) {
+		return
+	} else if response.ErrorIdTest(context, data.UserId, database.GetUserIsExist(data.UserId), "User ID when getting participants") {
+		return
+	} else if response.ErrorIdTest(context, data.CompetitionId, database.GetCompetitionIsExist(data.CompetitionId), "Competition ID when getting participants") {
 		return
 	}
-	response.AcceptPrint(id, fmt.Sprint(newData), "Participant")
+	newData.Participants, err = database.GetParticipantByCompetitionIdUserId(data.CompetitionId, data.UserId)
+	if response.ErrorInternalErrorTest(context, data.CompetitionId, "Get Participants by competition id and user id", err) {
+		return
+	}
 	context.IndentedJSON(http.StatusOK, newData)
 }
 

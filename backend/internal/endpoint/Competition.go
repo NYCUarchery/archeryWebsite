@@ -5,6 +5,7 @@ import (
 	response "backend/internal/response"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -162,7 +163,8 @@ func PostCompetition(context *gin.Context) {
 	}
 	/*auto write Groups_num, minus one for 無組別*/
 	data.GroupsNum = -1
-
+	/*set time is now*/
+	data.Date = time.Now()
 	newData, err := database.PostCompetition(data)
 	newId := newData.ID
 	if response.ErrorInternalErrorTest(context, newId, "Post GroupInfo", err) {
@@ -224,6 +226,8 @@ func UpdateCompetition(context *gin.Context) {
 		return
 	} else if response.ErrorReceiveDataNilTest(context, id, data, "Competition") {
 		return
+	} else if response.ErrorIdTest(context, id, database.GetCompetitionIsExist(id), "Competition") {
+		return
 	}
 
 	/*replace roundNum, GroupNum, LaneNum, FirstLaneId, noTyoeGroupId with old one*/
@@ -255,11 +259,11 @@ func UpdateCompetition(context *gin.Context) {
 //	@Tags			Competition
 //	@Accept			json
 //	@Produce		json
-//	@Param			id			path	string	true	"Competition ID"
-//	@Success		200			string	string
-//	@Failure		400			string	string
-//	@Failure		404			string	string
-//	@Failure		500			string	string
+//	@Param			id	path	string	true	"Competition ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Failure		404	string	string
+//	@Failure		500	string	string
 //	@Router			/api/competition/groups/players/rank/{id} [put]
 func UpdateCompetitionRank(context *gin.Context) {
 	id := convert2uint(context, "id")
@@ -351,13 +355,13 @@ func DeleteCompetition(context *gin.Context) {
 }
 
 // AllCompetitionInfo godoc
-// @Summary			get information of all the competitions
-// @Description		get information of all the competitions
-// @Tags			Competition
-// @Produce			json
-// @Success			200	{object}	[]database.Competition "success"
-// @Failure			500	{object}	string "internal db error"
-// @Router			/competition [get]
+//	@Summary		get information of all the competitions
+//	@Description	get information of all the competitions
+//	@Tags			Competition
+//	@Produce		json
+//	@Success		200	{object}	[]database.Competition	"success"
+//	@Failure		500	{object}	string					"internal db error"
+//	@Router			/competition [get]
 func GetAllCompetition(c *gin.Context) {
 	comps, err := database.GetAllCompetition()
 	if err != nil {

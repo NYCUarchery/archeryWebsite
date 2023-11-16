@@ -858,30 +858,33 @@ paths:
       summary: update one OldLaneInfo
       tags:
       - OldLaneInfo
-  /api/participant:
+  /api/participant/:
     post:
       consumes:
       - application/json
-      description: Post one new Participant data with new id
+      description: add a particpant to the competition
       parameters:
-      - description: Participant
-        in: body
-        name: Participant
+      - description: competition id
+        in: formData
+        name: competitionID
         required: true
-        schema:
-          type: string
+        type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/response.Response'
         "400":
-          description: Bad Request
+          description: no user/competition found
           schema:
-            type: string
-      summary: Create one Participant
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: internal db error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: join in a competition
       tags:
       - Participant
   /api/participant/{id}:
@@ -933,6 +936,84 @@ paths:
           schema:
             type: string
       summary: Show One Participant By ID
+      tags:
+      - Participant
+  /api/participant/competition:
+    get:
+      description: Get Participants By competition ID
+      parameters:
+      - description: competition ID
+        in: body
+        name: competition_id
+        required: true
+        schema:
+          type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show Participants By competition ID
+      tags:
+      - Participant
+  /api/participant/competition/user:
+    get:
+      description: Get Participants By competition ID and user ID
+      parameters:
+      - description: competition ID
+        in: body
+        name: competition_id
+        required: true
+        schema:
+          type: integer
+      - description: user ID
+        in: body
+        name: user_id
+        required: true
+        schema:
+          type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show Participants By competition ID and user ID
+      tags:
+      - Participant
+  /api/participant/user:
+    get:
+      description: Get Participants By user ID
+      parameters:
+      - description: user ID
+        in: body
+        name: user_id
+        required: true
+        schema:
+          type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show Participants By user ID
       tags:
       - Participant
   /api/participant/whole/{id}:
@@ -1496,35 +1577,6 @@ paths:
       summary: get institution info by id
       tags:
       - Institution
-  /participant/:
-    post:
-      consumes:
-      - application/json
-      description: add a particpant to the competition
-      parameters:
-      - description: competition id
-        in: formData
-        name: competitionID
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: success
-          schema:
-            $ref: '#/definitions/response.Response'
-        "400":
-          description: no user/competition found
-          schema:
-            $ref: '#/definitions/response.Response'
-        "500":
-          description: internal db error
-          schema:
-            $ref: '#/definitions/response.Response'
-      summary: join in a competition
-      tags:
-      - Participant
   /session:
     delete:
       description: delete the session
