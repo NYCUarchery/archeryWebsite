@@ -1,4 +1,167 @@
-host: localhost:8080
+basePath: /api/
+definitions:
+  database.Competition:
+    properties:
+      current_phase:
+        type: integer
+      date:
+        type: string
+      elimination_is_active:
+        type: boolean
+      groups:
+        items:
+          $ref: '#/definitions/database.Group'
+        type: array
+      groups_num:
+        type: integer
+      host_id:
+        type: integer
+      id:
+        type: integer
+      lanes_num:
+        type: integer
+      mixed_elimination_is_active:
+        type: boolean
+      participants:
+        items:
+          $ref: '#/definitions/database.Participant'
+        type: array
+      qualification_is_active:
+        type: boolean
+      rounds_num:
+        type: integer
+      script:
+        type: string
+      sub_title:
+        type: string
+      team_elimination_is_active:
+        type: boolean
+      title:
+        type: string
+      unassigned_group_id:
+        type: integer
+      unassigned_lane_id:
+        type: integer
+    type: object
+  database.Group:
+    properties:
+      bow_type:
+        type: string
+      competition_id:
+        type: integer
+      group_index:
+        type: integer
+      group_name:
+        type: string
+      group_range:
+        type: string
+      id:
+        type: integer
+      players:
+        items:
+          $ref: '#/definitions/database.Player'
+        type: array
+    type: object
+  database.Institution:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  database.Participant:
+    properties:
+      competitionID:
+        type: integer
+      id:
+        type: integer
+      role:
+        type: string
+      status:
+        type: string
+      userID:
+        type: integer
+    type: object
+  database.Player:
+    properties:
+      group_id:
+        type: integer
+      id:
+        type: integer
+      lane_id:
+        type: integer
+      name:
+        type: string
+      order:
+        type: integer
+      participant_id:
+        type: integer
+      rank:
+        type: integer
+      rounds:
+        items:
+          $ref: '#/definitions/database.Round'
+        type: array
+      shoot_off_score:
+        type: integer
+      total_score:
+        type: integer
+    type: object
+  database.Round:
+    properties:
+      id:
+        type: integer
+      player_id:
+        type: integer
+      round_ends:
+        items:
+          $ref: '#/definitions/database.RoundEnd'
+        type: array
+      total_score:
+        type: integer
+    type: object
+  database.RoundEnd:
+    properties:
+      id:
+        type: integer
+      is_confirmed:
+        type: boolean
+      round_id:
+        type: integer
+      round_scores:
+        items:
+          $ref: '#/definitions/database.RoundScore'
+        type: array
+    type: object
+  database.RoundScore:
+    properties:
+      id:
+        type: integer
+      round_end_id:
+        type: integer
+      score:
+        type: integer
+    type: object
+  database.User:
+    properties:
+      email:
+        type: string
+      id:
+        type: integer
+      institutionID:
+        type: integer
+      name:
+        type: string
+      overview:
+        type: string
+    type: object
+  response.Response:
+    properties:
+      result:
+        example: result description
+        type: string
+    type: object
+host: localhost:6969
 info:
   contact:
     name: NYCUArchery
@@ -9,7 +172,7 @@ info:
   title: Gin swagger
   version: "1.0"
 paths:
-  /data/competition:
+  /api/competition:
     post:
       consumes:
       - application/json
@@ -37,7 +200,7 @@ paths:
       summary: Create one Competition and related data
       tags:
       - Competition
-  /data/competition/{id}:
+  /api/competition/{id}:
     delete:
       consumes:
       - application/json
@@ -89,7 +252,7 @@ paths:
       summary: Show one Competition without GroupInfo
       tags:
       - Competition
-  /data/competition/groups/{id}:
+  /api/competition/groups/{id}:
     get:
       description: Get one Competition by id with GroupInfos
       parameters:
@@ -112,7 +275,7 @@ paths:
       summary: Show one Competition with GroupInfos
       tags:
       - Competition
-  /data/competition/groups/players/{id}:
+  /api/competition/groups/players/{id}:
     get:
       description: Get one Competition by id with GroupInfos and Players
       parameters:
@@ -135,7 +298,7 @@ paths:
       summary: Show one Competition with GroupInfos and Players
       tags:
       - Competition
-  /data/competition/groups/players/rank/{id}:
+  /api/competition/groups/players/rank/{id}:
     put:
       consumes:
       - application/json
@@ -168,7 +331,7 @@ paths:
       summary: update one Competition Ranking
       tags:
       - Competition
-  /data/competition/participants/{id}:
+  /api/competition/participants/{id}:
     get:
       description: Get one Competition by id with Participants
       parameters:
@@ -191,12 +354,12 @@ paths:
       summary: Show one Competition with Participants
       tags:
       - Competition
-  /data/competition/whole/{id}:
+  /api/competition/whole/{id}:
     put:
       consumes:
       - application/json
       description: Put whole new Competition and overwrite with the id but without
-        GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, FirstLaneId, noTyoeGroupId
+        GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, FirstLaneId, unassignedGroupId
       parameters:
       - description: Competition ID
         in: path
@@ -231,7 +394,7 @@ paths:
       summary: update one Competition without GroupInfo
       tags:
       - Competition
-  /data/groupinfo:
+  /api/groupinfo:
     post:
       consumes:
       - application/json
@@ -258,7 +421,7 @@ paths:
       summary: Create one GroupInfo
       tags:
       - GroupInfo
-  /data/groupinfo/{id}:
+  /api/groupinfo/{id}:
     delete:
       consumes:
       - application/json
@@ -310,7 +473,7 @@ paths:
       summary: Show one GroupInfo
       tags:
       - GroupInfo
-  /data/groupinfo/players/{id}:
+  /api/groupinfo/players/{id}:
     get:
       description: Get one GroupInfo with players by id, usually ordered by rank
       parameters:
@@ -333,7 +496,7 @@ paths:
       summary: Show one GroupInfo with players
       tags:
       - GroupInfo
-  /data/groupinfo/reorder:
+  /api/groupinfo/reorder:
     put:
       consumes:
       - application/json
@@ -368,7 +531,7 @@ paths:
       summary: update GroupInfos Indexes under the same Competition
       tags:
       - GroupInfo
-  /data/groupinfo/whole/{id}:
+  /api/groupinfo/whole/{id}:
     put:
       consumes:
       - application/json
@@ -408,7 +571,7 @@ paths:
       summary: update one GroupInfo
       tags:
       - GroupInfo
-  /data/lane/{id}:
+  /api/lane/{id}:
     get:
       description: Get one Lane by id
       parameters:
@@ -431,7 +594,7 @@ paths:
       summary: Show one Lane
       tags:
       - Lane
-  /data/lane/all/{id}:
+  /api/lane/all/{id}:
     get:
       description: Get all Lane by competition id
       parameters:
@@ -454,7 +617,7 @@ paths:
       summary: Show all Lane of a competition
       tags:
       - Lane
-  /data/lane/scores/{id}:
+  /api/lane/scores/{id}:
     get:
       description: Get one Lane with players, rounds, roundends, roundscores by id
       parameters:
@@ -477,7 +640,7 @@ paths:
       summary: Show one Lane with players, rounds, roundends, roundscores
       tags:
       - Lane
-  /data/oldlaneinfo:
+  /api/oldlaneinfo:
     post:
       consumes:
       - application/json
@@ -504,7 +667,7 @@ paths:
       summary: Create one OldLaneInfo
       tags:
       - OldLaneInfo
-  /data/oldlaneinfo/{id}:
+  /api/oldlaneinfo/{id}:
     delete:
       consumes:
       - application/json
@@ -555,7 +718,7 @@ paths:
       summary: Show one OldLaneInfo
       tags:
       - OldLaneInfo
-  /data/oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm}:
+  /api/oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm}:
     put:
       consumes:
       - application/json
@@ -603,7 +766,7 @@ paths:
       summary: update one OldLaneInfo confirmation
       tags:
       - OldLaneInfo
-  /data/oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score}:
+  /api/oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score}:
     put:
       consumes:
       - application/json
@@ -656,7 +819,7 @@ paths:
       summary: update one OldLaneInfo Score
       tags:
       - OldLaneInfo
-  /data/oldlaneinfo/whole/{id}:
+  /api/oldlaneinfo/whole/{id}:
     put:
       consumes:
       - application/json
@@ -695,7 +858,7 @@ paths:
       summary: update one OldLaneInfo
       tags:
       - OldLaneInfo
-  /data/participant:
+  /api/participant:
     post:
       consumes:
       - application/json
@@ -721,7 +884,7 @@ paths:
       summary: Create one Participant
       tags:
       - Participant
-  /data/participant/{id}:
+  /api/participant/{id}:
     delete:
       consumes:
       - application/json
@@ -772,7 +935,7 @@ paths:
       summary: Show One Participant By ID
       tags:
       - Participant
-  /data/participant/whole/{id}:
+  /api/participant/whole/{id}:
     put:
       consumes:
       - application/json
@@ -811,7 +974,7 @@ paths:
       summary: update one Participant
       tags:
       - Participant
-  /data/player/{id}:
+  /api/player/{id}:
     delete:
       description: Delete one Player by id, delete related round, roundend, roundscore
         data, and playerNum minus one in lane
@@ -857,7 +1020,7 @@ paths:
       summary: Show one Player without other data
       tags:
       - Player
-  /data/player/{participantid}:
+  /api/player/{participantid}:
     post:
       description: Create one Player by participant id, create realeted rounds by
         laneNum of competition, create 6 roundscores for each 6 roundends, UnassignedLane
@@ -882,7 +1045,7 @@ paths:
       summary: Create one Player by Participant ID
       tags:
       - Player
-  /data/player/groupid/{playerid}/{groupid}:
+  /api/player/groupid/{playerid}/{groupid}:
     put:
       consumes:
       - application/json
@@ -908,7 +1071,7 @@ paths:
       summary: Update one Player groupId by id
       tags:
       - Player
-  /data/player/isconfirmed/{roundendid}:
+  /api/player/isconfirmed/{roundendid}:
     put:
       consumes:
       - application/json
@@ -933,7 +1096,7 @@ paths:
       summary: Update one Player isConfirmed by id
       tags:
       - Player
-  /data/player/laneid/{playerid}:
+  /api/player/laneid/{playerid}:
     put:
       consumes:
       - application/json
@@ -958,7 +1121,7 @@ paths:
       summary: Update one Player laneId by id
       tags:
       - Player
-  /data/player/order/{id}:
+  /api/player/order/{id}:
     put:
       consumes:
       - application/json
@@ -983,7 +1146,7 @@ paths:
       summary: Update one Player order by id
       tags:
       - Player
-  /data/player/roundend:
+  /api/player/roundend:
     post:
       consumes:
       - application/json
@@ -1002,7 +1165,7 @@ paths:
       summary: Create one RoundEnd by Round ID
       tags:
       - Player
-  /data/player/roundscore:
+  /api/player/roundscore:
     post:
       consumes:
       - application/json
@@ -1021,7 +1184,7 @@ paths:
       summary: Create one RoundScore by RoundEnd ID
       tags:
       - Player
-  /data/player/score/{roundscoreid}:
+  /api/player/score/{roundscoreid}:
     put:
       consumes:
       - application/json
@@ -1046,7 +1209,7 @@ paths:
       summary: Update one Player score by id
       tags:
       - Player
-  /data/player/scores/{id}:
+  /api/player/scores/{id}:
     get:
       description: Get one Player with rounds, roundends, roundscores by id
       parameters:
@@ -1069,7 +1232,7 @@ paths:
       summary: Show one Player with scores
       tags:
       - Player
-  /data/player/shootoffscore/{id}:
+  /api/player/shootoffscore/{id}:
     put:
       consumes:
       - application/json
@@ -1094,6 +1257,25 @@ paths:
       summary: Update one Player shootoffScore by id
       tags:
       - Player
+  /competition:
+    get:
+      description: get information of all the competitions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            items:
+              $ref: '#/definitions/database.Competition'
+            type: array
+        "500":
+          description: internal db error
+          schema:
+            type: string
+      summary: get information of all the competitions
+      tags:
+      - Competition
   /data/qualification/{id}:
     get:
       description: Get one Qualification by id
@@ -1226,39 +1408,67 @@ paths:
       summary: update one Qualification
       tags:
       - Qualification
-  /data/user:
-    post:
+  /institution:
+    get:
       consumes:
       - application/json
-      description: Post one new User data with new id
-      parameters:
-      - description: User
-        in: body
-        name: User
-        required: true
-        schema:
-          type: string
+      description: get all institution info from db
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
-        "400":
-          description: Bad Request
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  items:
+                    $ref: '#/definitions/database.Institution'
+                  type: array
+              type: object
+        "500":
+          description: db error
           schema:
-            type: string
-      summary: Create one User
+            $ref: '#/definitions/response.Response'
+      summary: get all institution info
       tags:
-      - User
-  /data/user/{id}:
-    delete:
+      - Institution
+    post:
       consumes:
       - application/json
-      description: delete one User by id
+      description: add an institution to db
       parameters:
-      - description: User ID
+      - description: institution's name
+        in: formData
+        name: name
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: empty institution name
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: db error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: create an institution
+      tags:
+      - Institution
+  /institution/{id}:
+    get:
+      consumes:
+      - application/json
+      description: get institution info from db by id
+      parameters:
+      - description: institution's id
         in: path
         name: id
         required: true
@@ -1267,81 +1477,96 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/database.Institution'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid id
           schema:
-            type: string
+            $ref: '#/definitions/response.Response'
         "404":
-          description: Not Found
+          description: no institution found
           schema:
-            type: string
-      summary: delete one User
+            $ref: '#/definitions/response.Response'
+      summary: get institution info by id
       tags:
-      - User
-    get:
-      description: Get One User By ID
+      - Institution
+  /participant/:
+    post:
+      consumes:
+      - application/json
+      description: add a particpant to the competition
       parameters:
-      - description: User ID
-        in: path
-        name: id
+      - description: competition id
+        in: formData
+        name: competitionID
         required: true
         type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/response.Response'
         "400":
-          description: Bad Request
+          description: no user/competition found
           schema:
-            type: string
-      summary: Show One User By ID
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: internal db error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: join in a competition
       tags:
-      - User
-  /data/user/whole/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Put whole new User and overwrite with the id
-      parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: User
-        in: body
-        name: User
-        required: true
-        schema:
-          type: string
+      - Participant
+  /session:
+    delete:
+      description: delete the session
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      summary: update one User
+            $ref: '#/definitions/response.Response'
+      summary: logout
       tags:
-      - User
+      - Session
+    post:
+      consumes:
+      - application/json
+      description: get a session
+      parameters:
+      - description: user's name
+        in: formData
+        name: username
+        required: true
+        type: string
+      - description: password
+        in: formData
+        name: password
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success | has loginned
+          schema:
+            $ref: '#/definitions/response.Response'
+        "401":
+          description: wrong username or password
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: login
+      tags:
+      - Session
   /swagger/doc.json:
     get:
       description: get Api docs in json
@@ -1355,15 +1580,158 @@ paths:
       summary: Show Api Docs in json
       tags:
       - docs
-  /views/home:
-    get:
-      description: show home page
+  /user:
+    post:
+      consumes:
+      - application/json
+      description: add a user to db
+      parameters:
+      - description: user's name
+        in: formData
+        name: username
+        required: true
+        type: string
+      - description: password
+        in: formData
+        name: password
+        required: true
+        type: string
+      - description: email
+        in: formData
+        name: email
+        required: true
+        type: string
+      - description: overview
+        in: formData
+        name: overview
+        type: string
+      - description: institution ID
+        in: formData
+        name: institutionID
+        required: true
+        type: string
+      produces:
+      - application/json
       responses:
         "200":
-          description: OK
+          description: a user object
           schema:
-            type: string
-      summary: Show home page
+            $ref: '#/definitions/database.User'
+        "400":
+          description: username/email exists | empty username/password/email/institutionID
+            | invalid info
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: db error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: register a user
       tags:
-      - views
+      - User
+  /user/{id}:
+    get:
+      consumes:
+      - application/json
+      description: get a user's username, overview, and institution id
+      parameters:
+      - description: user's id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                data:
+                  $ref: '#/definitions/database.User'
+              type: object
+        "400":
+          description: empty/invalid user id
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: no user found
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: get a user's information
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      description: modify username, password, overview, and institution_id
+      parameters:
+      - description: user's id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: original password
+        in: formData
+        name: oriPassword
+        required: true
+        type: string
+      - description: modified password
+        in: formData
+        name: modPassword
+        type: string
+      - description: modified email
+        in: formData
+        name: email
+        type: string
+      - description: modified overview
+        in: formData
+        name: overview
+        type: string
+      - description: modified institution ID
+        in: formData
+        name: institutionID
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: empty/invalid user id | invalid modified information
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: cannot change other's info | wrong original password
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: internal db error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: modify user's information
+      tags:
+      - User
+  /user/me:
+    get:
+      description: get my uid in the session
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            allOf:
+            - $ref: '#/definitions/response.Response'
+            - properties:
+                id:
+                  type: integer
+              type: object
+      summary: get my uid
+      tags:
+      - User
 swagger: "2.0"

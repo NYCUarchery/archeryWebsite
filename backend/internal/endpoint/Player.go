@@ -1,8 +1,8 @@
-package translate
+package endpoint
 
 import (
 	"backend/internal/database"
-	response "backend/internal/translate/Response"
+	response "backend/internal/response"
 	"fmt"
 	"net/http"
 
@@ -111,7 +111,7 @@ func PostPlayer(context *gin.Context) {
 	userID := participant.UserID
 	competitionId := participant.CompetitionID
 	roundsNum := database.GetCompetitionRoundsNum(competitionId)
-	user, _ := database.GetUserById(userID)
+	user, _ := database.FindByUserID(userID)
 	data.GroupId = database.GetCompetitionUnassignedGroupId(competitionId)
 	data.LaneId = database.GetCompetitionUnassignedLaneId(competitionId)
 	data.Name = user.Name

@@ -1,8 +1,8 @@
-package translate
+package endpoint
 
 import (
 	"backend/internal/database"
-	response "backend/internal/translate/Response"
+	response "backend/internal/response"
 	"fmt"
 	"net/http"
 

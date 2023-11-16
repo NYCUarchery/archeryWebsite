@@ -21,7 +21,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/data/competition": {
+        "/api/competition": {
             "post": {
                 "description": "Post one new Competition data with new id, create UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup, and return the new Competition data",
                 "consumes": [
@@ -61,7 +61,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/competition/groups/players/rank/{id}": {
+        "/api/competition/groups/players/rank/{id}": {
             "put": {
                 "description": "Update update all  player ranking of different groups in one Competition",
                 "consumes": [
@@ -111,7 +111,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/competition/groups/players/{id}": {
+        "/api/competition/groups/players/{id}": {
             "get": {
                 "description": "Get one Competition by id with GroupInfos and Players",
                 "produces": [
@@ -146,7 +146,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/competition/groups/{id}": {
+        "/api/competition/groups/{id}": {
             "get": {
                 "description": "Get one Competition by id with GroupInfos",
                 "produces": [
@@ -181,7 +181,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/competition/participants/{id}": {
+        "/api/competition/participants/{id}": {
             "get": {
                 "description": "Get one Competition by id with Participants",
                 "produces": [
@@ -216,9 +216,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/competition/whole/{id}": {
+        "/api/competition/whole/{id}": {
             "put": {
-                "description": "Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, FirstLaneId, noTyoeGroupId",
+                "description": "Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, FirstLaneId, unassignedGroupId",
                 "consumes": [
                     "application/json"
                 ],
@@ -275,7 +275,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/competition/{id}": {
+        "/api/competition/{id}": {
             "get": {
                 "description": "Get one Competition by id without GroupInfo",
                 "produces": [
@@ -352,7 +352,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/groupinfo": {
+        "/api/groupinfo": {
             "post": {
                 "description": "Post one new GroupInfo data with new id, create qualification with same id, and auto write GroupIndex",
                 "consumes": [
@@ -392,7 +392,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/groupinfo/players/{id}": {
+        "/api/groupinfo/players/{id}": {
             "get": {
                 "description": "Get one GroupInfo with players by id, usually ordered by rank",
                 "produces": [
@@ -427,7 +427,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/groupinfo/reorder": {
+        "/api/groupinfo/reorder": {
             "put": {
                 "description": "Put competition_id and group_ids to update GroupInfos Indexes under the same Competition",
                 "consumes": [
@@ -479,7 +479,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/groupinfo/whole/{id}": {
+        "/api/groupinfo/whole/{id}": {
             "put": {
                 "description": "Put whole new GroupInfo and overwrite with the id, cannot overwrite CompetitionId",
                 "consumes": [
@@ -538,7 +538,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/groupinfo/{id}": {
+        "/api/groupinfo/{id}": {
             "get": {
                 "description": "Get one GroupInfo by id",
                 "produces": [
@@ -615,7 +615,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/lane/all/{id}": {
+        "/api/lane/all/{id}": {
             "get": {
                 "description": "Get all Lane by competition id",
                 "produces": [
@@ -650,7 +650,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/lane/scores/{id}": {
+        "/api/lane/scores/{id}": {
             "get": {
                 "description": "Get one Lane with players, rounds, roundends, roundscores by id",
                 "produces": [
@@ -685,7 +685,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/lane/{id}": {
+        "/api/lane/{id}": {
             "get": {
                 "description": "Get one Lane by id",
                 "produces": [
@@ -720,7 +720,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/oldlaneinfo": {
+        "/api/oldlaneinfo": {
             "post": {
                 "description": "Post one new OldLaneInfo data with new id, and return the new OldLaneInfo data",
                 "consumes": [
@@ -760,7 +760,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm}": {
+        "/api/oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm}": {
             "put": {
                 "description": "Put one OldLaneInfo confirm by index and id",
                 "consumes": [
@@ -831,7 +831,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score}": {
+        "/api/oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score}": {
             "put": {
                 "description": "Put one OldLaneInfo score by index and id",
                 "consumes": [
@@ -909,7 +909,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/oldlaneinfo/whole/{id}": {
+        "/api/oldlaneinfo/whole/{id}": {
             "put": {
                 "description": "Put whole new OldLaneInfo and overwrite with the id",
                 "consumes": [
@@ -968,7 +968,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/oldlaneinfo/{id}": {
+        "/api/oldlaneinfo/{id}": {
             "get": {
                 "description": "Get one OldLaneInfo by id",
                 "produces": [
@@ -1045,7 +1045,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/participant": {
+        "/api/participant": {
             "post": {
                 "description": "Post one new Participant data with new id",
                 "consumes": [
@@ -1085,7 +1085,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/participant/whole/{id}": {
+        "/api/participant/whole/{id}": {
             "put": {
                 "description": "Put whole new Participant and overwrite with the id",
                 "consumes": [
@@ -1144,7 +1144,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/participant/{id}": {
+        "/api/participant/{id}": {
             "get": {
                 "description": "Get One Participant By ID",
                 "produces": [
@@ -1221,7 +1221,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/player/groupid/{playerid}/{groupid}": {
+        "/api/player/groupid/{playerid}/{groupid}": {
             "put": {
                 "description": "Update one Player groupId by id, and change player laneid to Unassigned lane",
                 "consumes": [
@@ -1259,7 +1259,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/player/isconfirmed/{roundendid}": {
+        "/api/player/isconfirmed/{roundendid}": {
             "put": {
                 "description": "Update one Player isConfirmed by id",
                 "consumes": [
@@ -1297,7 +1297,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/player/laneid/{playerid}": {
+        "/api/player/laneid/{playerid}": {
             "put": {
                 "description": "Update one Player laneId by id, update lane playernum",
                 "consumes": [
@@ -1335,7 +1335,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/player/order/{id}": {
+        "/api/player/order/{id}": {
             "put": {
                 "description": "Update one Player order by id",
                 "consumes": [
@@ -1373,7 +1373,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/player/roundend": {
+        "/api/player/roundend": {
             "post": {
                 "description": "Create one RoundEnd by round id, IsComfirmed is false",
                 "consumes": [
@@ -1402,7 +1402,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/player/roundscore": {
+        "/api/player/roundscore": {
             "post": {
                 "description": "Create one RoundScore by roundend id",
                 "consumes": [
@@ -1431,7 +1431,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/player/score/{roundscoreid}": {
+        "/api/player/score/{roundscoreid}": {
             "put": {
                 "description": "Update one Player score by id",
                 "consumes": [
@@ -1469,7 +1469,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/player/scores/{id}": {
+        "/api/player/scores/{id}": {
             "get": {
                 "description": "Get one Player with rounds, roundends, roundscores by id",
                 "produces": [
@@ -1504,7 +1504,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/player/shootoffscore/{id}": {
+        "/api/player/shootoffscore/{id}": {
             "put": {
                 "description": "Update one Player shootoffScore by id",
                 "consumes": [
@@ -1542,7 +1542,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/player/{id}": {
+        "/api/player/{id}": {
             "get": {
                 "description": "Get one Player without other data by id",
                 "produces": [
@@ -1610,7 +1610,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/player/{participantid}": {
+        "/api/player/{participantid}": {
             "post": {
                 "description": "Create one Player by participant id, create realeted rounds by laneNum of competition, create 6 roundscores for each 6 roundends, UnassignedLane playerNum ++",
                 "produces": [
@@ -1638,6 +1638,35 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/competition": {
+            "get": {
+                "description": "get information of all the competitions",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "get information of all the competitions",
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/database.Competition"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error",
                         "schema": {
                             "type": "string"
                         }
@@ -1844,9 +1873,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/user": {
-            "post": {
-                "description": "Post one new User data with new id",
+        "/institution": {
+            "get": {
+                "description": "get all institution info from db",
                 "consumes": [
                     "application/json"
                 ],
@@ -1854,109 +1883,99 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "User"
+                    "Institution"
                 ],
-                "summary": "Create one User",
-                "parameters": [
-                    {
-                        "description": "User",
-                        "name": "User",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
+                "summary": "get all institution info",
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/data/user/whole/{id}": {
-            "put": {
-                "description": "Put whole new User and overwrite with the id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "update one User",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "User",
-                        "name": "User",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/database.Institution"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "db error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "add an institution to db",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Institution"
+                ],
+                "summary": "create an institution",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "institution's name",
+                        "name": "name",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "empty institution name",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "db error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
             }
         },
-        "/data/user/{id}": {
+        "/institution/{id}": {
             "get": {
-                "description": "Get One User By ID",
+                "description": "get institution info from db by id",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "User"
+                    "Institution"
                 ],
-                "summary": "Show One User By ID",
+                "summary": "get institution info by id",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "User ID",
+                        "type": "string",
+                        "description": "institution's id",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1964,57 +1983,140 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/database.Institution"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "no institution found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/participant/": {
+            "post": {
+                "description": "add a particpant to the competition",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Participant"
+                ],
+                "summary": "join in a competition",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "competition id",
+                        "name": "competitionID",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "no user/competition found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/session": {
+            "post": {
+                "description": "get a session",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Session"
+                ],
+                "summary": "login",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user's name",
+                        "name": "username",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "password",
+                        "name": "password",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success | has loginned",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "401": {
+                        "description": "wrong username or password",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
             },
             "delete": {
-                "description": "delete one User by id",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "delete the session",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "User"
+                    "Session"
                 ],
-                "summary": "delete one User",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
+                "summary": "logout",
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -2040,20 +2142,489 @@ const docTemplate = `{
                 }
             }
         },
-        "/views/home": {
-            "get": {
-                "description": "show home page",
-                "tags": [
-                    "views"
+        "/user": {
+            "post": {
+                "description": "add a user to db",
+                "consumes": [
+                    "application/json"
                 ],
-                "summary": "Show home page",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "register a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user's name",
+                        "name": "username",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "password",
+                        "name": "password",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "email",
+                        "name": "email",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "overview",
+                        "name": "overview",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "institution ID",
+                        "name": "institutionID",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "a user object",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/database.User"
+                        }
+                    },
+                    "400": {
+                        "description": "username/email exists | empty username/password/email/institutionID | invalid info",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "db error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
+                }
+            }
+        },
+        "/user/me": {
+            "get": {
+                "description": "get my uid in the session",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "get my uid",
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "id": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/user/{id}": {
+            "get": {
+                "description": "get a user's username, overview, and institution id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "get a user's information",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user's id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/response.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/database.User"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "empty/invalid user id",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "no user found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "modify username, password, overview, and institution_id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "modify user's information",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user's id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "original password",
+                        "name": "oriPassword",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "modified password",
+                        "name": "modPassword",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "modified email",
+                        "name": "email",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "modified overview",
+                        "name": "overview",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "modified institution ID",
+                        "name": "institutionID",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "empty/invalid user id | invalid modified information",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "cannot change other's info | wrong original password",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "database.Competition": {
+            "type": "object",
+            "properties": {
+                "current_phase": {
+                    "type": "integer"
+                },
+                "date": {
+                    "type": "string"
+                },
+                "elimination_is_active": {
+                    "type": "boolean"
+                },
+                "groups": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.Group"
+                    }
+                },
+                "groups_num": {
+                    "type": "integer"
+                },
+                "host_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "lanes_num": {
+                    "type": "integer"
+                },
+                "mixed_elimination_is_active": {
+                    "type": "boolean"
+                },
+                "participants": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.Participant"
+                    }
+                },
+                "qualification_is_active": {
+                    "type": "boolean"
+                },
+                "rounds_num": {
+                    "type": "integer"
+                },
+                "script": {
+                    "type": "string"
+                },
+                "sub_title": {
+                    "type": "string"
+                },
+                "team_elimination_is_active": {
+                    "type": "boolean"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "unassigned_group_id": {
+                    "type": "integer"
+                },
+                "unassigned_lane_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "database.Group": {
+            "type": "object",
+            "properties": {
+                "bow_type": {
+                    "type": "string"
+                },
+                "competition_id": {
+                    "type": "integer"
+                },
+                "group_index": {
+                    "type": "integer"
+                },
+                "group_name": {
+                    "type": "string"
+                },
+                "group_range": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "players": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.Player"
+                    }
+                }
+            }
+        },
+        "database.Institution": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "database.Participant": {
+            "type": "object",
+            "properties": {
+                "competitionID": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "userID": {
+                    "type": "integer"
+                }
+            }
+        },
+        "database.Player": {
+            "type": "object",
+            "properties": {
+                "group_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "lane_id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "order": {
+                    "type": "integer"
+                },
+                "participant_id": {
+                    "type": "integer"
+                },
+                "rank": {
+                    "type": "integer"
+                },
+                "rounds": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.Round"
+                    }
+                },
+                "shoot_off_score": {
+                    "type": "integer"
+                },
+                "total_score": {
+                    "type": "integer"
+                }
+            }
+        },
+        "database.Round": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "player_id": {
+                    "type": "integer"
+                },
+                "round_ends": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.RoundEnd"
+                    }
+                },
+                "total_score": {
+                    "type": "integer"
+                }
+            }
+        },
+        "database.RoundEnd": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "is_confirmed": {
+                    "type": "boolean"
+                },
+                "round_id": {
+                    "type": "integer"
+                },
+                "round_scores": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.RoundScore"
+                    }
+                }
+            }
+        },
+        "database.RoundScore": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "round_end_id": {
+                    "type": "integer"
+                },
+                "score": {
+                    "type": "integer"
+                }
+            }
+        },
+        "database.User": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "institutionID": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "overview": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.Response": {
+            "type": "object",
+            "properties": {
+                "result": {
+                    "type": "string",
+                    "example": "result description"
                 }
             }
         }
@@ -2063,8 +2634,8 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8080",
-	BasePath:         "",
+	Host:             "localhost:6969",
+	BasePath:         "/api/",
 	Schemes:          []string{},
 	Title:            "Gin swagger",
 	Description:      "Gin swagger",

@@ -25,6 +25,26 @@ func GetParticipant(ID uint) (Participant, error) {
 	return data, result.Error
 }
 
+func GetParticipantByUserId(userID uint) (pars []Participant, err error) {
+	result := DB.Where("user_id = ?", userID).Find(&pars)
+
+	if result.Error != nil {
+		err = result.Error
+		return
+	}
+	return
+}
+
+func GetParticipantByCompetitionIdUserId(compID uint, userID uint) (pars []Participant, err error) {
+	result := DB.Where("competition_id = ? AND user_id = ?", compID, userID).Find(&pars)
+
+	if result.Error != nil {
+		err = result.Error
+		return
+	}
+	return
+}
+
 func CreateParticipant(data Participant) (Participant, error) {
 	result := DB.Create(&data)
 	return data, result.Error
