@@ -1,20 +1,15 @@
 package routers
 
 import (
-	"backend/internal/endpoint"
+	endpoint "backend/internal/endpoint"
 	"backend/internal/pkg"
-	"backend/internal/translate"
 
 	"github.com/gin-gonic/gin"
 )
 
 func AddApiRouter(api *gin.RouterGroup) {
-	api.GET("/albums", translate.GetAlbums)          // "pass data" action through api(link)
-	api.GET("/txt/:dataName", translate.GetHTTPData) // response "name".txt data file with /translate/2JSON method
-
-	api.GET("/eliminationInfo/:gameName", translate.GetEliminationInfo)
-	api.GET("/phaseInfo/:gameName", translate.GetPhaseInfo)
-	api.GET("/teamEliminationInfo/:gameName", translate.GetTeamEliminationInfo)
+	api.GET("/albums", endpoint.GetAlbums)          // "pass data" action through api(link)
+	api.GET("/txt/:dataName", endpoint.GetHTTPData) // response "name".txt data file with /translate/2JSON method
 
 	competition := api.Group("competition")
 	competitionRouter(competition)
@@ -41,65 +36,65 @@ func AddApiRouter(api *gin.RouterGroup) {
 }
 
 func competitionRouter(api *gin.RouterGroup) {
-	api.GET("/", translate.GetAllCompetition)
-	api.GET("/:id", translate.GetOnlyCompetitionByID)
-	api.GET("/groups/:id", translate.GetCompetitionWGroupsByID)
-	api.POST("/", translate.PostCompetition)
-	api.PUT("/whole/:id", translate.UpdateCompetition)
-	api.DELETE("/:id", translate.DeleteCompetition)
+	api.GET("/", endpoint.GetAllCompetition)
+	api.GET("/:id", endpoint.GetOnlyCompetitionByID)
+	api.GET("/groups/:id", endpoint.GetCompetitionWGroupsByID)
+	api.POST("/", endpoint.PostCompetition)
+	api.PUT("/whole/:id", endpoint.UpdateCompetition)
+	api.DELETE("/:id", endpoint.DeleteCompetition)
 }
 
 func groupInfoRouter(api *gin.RouterGroup) {
-	api.GET("/:id", translate.GetGroupInfoByID)
-	api.POST("/", translate.PostGroupInfo)
-	api.PUT("/whole/:id", translate.UpdateGroupInfo)
-	api.PUT("/reorder", translate.ReorderGroupInfo)
-	api.DELETE("/:id", translate.DeleteGroupInfo)
+	api.GET("/:id", endpoint.GetGroupInfoByID)
+	api.POST("/", endpoint.PostGroupInfo)
+	api.PUT("/whole/:id", endpoint.UpdateGroupInfo)
+	api.PUT("/reorder", endpoint.ReorderGroupInfo)
+	api.DELETE("/:id", endpoint.DeleteGroupInfo)
 }
 
 func qualificationRouter(api *gin.RouterGroup) {
-	api.GET("/:id", translate.GetOnlyQualificationByID)
-	api.GET("/lanes/:id", translate.GetQualificationWLanesByID)
-	api.PUT("/whole/:id", translate.UpdateQualificationByID)
+	api.GET("/:id", endpoint.GetOnlyQualificationByID)
+	api.GET("/lanes/:id", endpoint.GetQualificationWLanesByID)
+	api.PUT("/whole/:id", endpoint.UpdateQualificationByID)
 
 }
 
 func laneRouter(api *gin.RouterGroup) {
-	api.GET("/:id", translate.GetLaneByID)
-	api.GET("/all/:id", translate.GetAllLaneByCompetitionId)
+	api.GET("/:id", endpoint.GetLaneByID)
+	api.GET("/all/:id", endpoint.GetAllLaneByCompetitionId)
 	// api.GET("/players/:id", translate.GetLaneWPlayers)
 }
 
 func eliminationRouter(api *gin.RouterGroup) {
-	api.GET("/:id", translate.GetOnlyEliminationById)
-	api.GET("/stages/:id", translate.GetEliminationWStagesById)
-	api.POST("/", translate.PostElimination)
-	api.POST("/stage", translate.PostStage)
-	api.POST("/match", translate.PostMatch)
-	api.PUT("/whole/:id", translate.PutElimination)
-	api.DELETE("/:id", translate.DeleteElimination)
+	api.GET("/:id", endpoint.GetOnlyEliminationById)
+	api.GET("/stages/:id", endpoint.GetEliminationWStagesById)
+	api.POST("/", endpoint.PostElimination)
+	api.POST("/stage", endpoint.PostStage)
+	api.POST("/match", endpoint.PostMatch)
+	api.PUT("/whole/:id", endpoint.PutElimination)
+	api.DELETE("/:id", endpoint.DeleteElimination)
 }
 
 func matchResultRouter(api *gin.RouterGroup) {
-	api.GET("/:id", translate.GetMatchResultById)
-	api.GET("/scores/:id", translate.GetMatchResultWScoresById)
-	api.POST("/", translate.PostMatchResult)
-	api.PUT("/totalpoints/:id", translate.PutMatchResultTotalPointsById)
-	api.PUT("/shootoffscore/:id", translate.PutMatchResultShootOffScoreById)
-	api.PUT("/iswinner/:id", translate.PutMatchResultIsWinnerById)
-	api.PUT("/matchend/totalscore/:id", translate.PutMatchEndsTotalScoresById)
-	api.PUT("/matchend/isconfirm/:id", translate.PutMatchEndsIsConfirmedById)
-	api.PUT("/matchscore/score/:id", translate.PutMatchScoreScoreById)
-	api.DELETE("/:id", translate.DeleteMatchResultById)
+	api.GET("/:id", endpoint.GetMatchResultById)
+	api.GET("/scores/:id", endpoint.GetMatchResultWScoresById)
+	api.POST("/", endpoint.PostMatchResult)
+	api.PUT("/totalpoints/:id", endpoint.PutMatchResultTotalPointsById)
+	api.PUT("/shootoffscore/:id", endpoint.PutMatchResultShootOffScoreById)
+	api.PUT("/iswinner/:id", endpoint.PutMatchResultIsWinnerById)
+	api.PUT("/matchend/totalscore/:id", endpoint.PutMatchEndsTotalScoresById)
+	api.PUT("/matchend/isconfirm/:id", endpoint.PutMatchEndsIsConfirmedById)
+	api.PUT("/matchscore/score/:id", endpoint.PutMatchScoreScoreById)
+	api.DELETE("/:id", endpoint.DeleteMatchResultById)
 }
 
 func oldLaneInfoRouter(api *gin.RouterGroup) {
-	api.GET("/:id", translate.GetOldLaneInfoByID)
-	api.POST("/", translate.PostOldLaneInfo)
-	api.PUT("/whole/:id", translate.UpdateOldLaneInfo)
-	api.PUT("/score/:id/:stageindex/:userindex/:arrowindex/:score", translate.UpdataOldLaneScore)
-	api.PUT("/confirm/:id/:stageindex/:userindex/:confirm", translate.UpdataOldLaneConfirm)
-	api.DELETE("/:id", translate.DeleteOldLaneInfoByID)
+	api.GET("/:id", endpoint.GetOldLaneInfoByID)
+	api.POST("/", endpoint.PostOldLaneInfo)
+	api.PUT("/whole/:id", endpoint.UpdateOldLaneInfo)
+	api.PUT("/score/:id/:stageindex/:userindex/:arrowindex/:score", endpoint.UpdataOldLaneScore)
+	api.PUT("/confirm/:id/:stageindex/:userindex/:confirm", endpoint.UpdataOldLaneConfirm)
+	api.DELETE("/:id", endpoint.DeleteOldLaneInfoByID)
 }
 
 func profileRouter(api *gin.RouterGroup) {

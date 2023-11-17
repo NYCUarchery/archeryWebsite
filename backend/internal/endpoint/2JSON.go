@@ -1,4 +1,4 @@
-package translate
+package endpoint
 
 import (
 	"bufio"
@@ -11,92 +11,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 )
-
-// 對抗賽資料
-func GetEliminationInfo(context *gin.Context) {
-	gameName := context.Param("gameName")
-	fmt.Printf("GetEliminationInfo worked, return info of %s", gameName)
-	// phase（項目名字）
-	// groups （所有人的資訊）
-	//// players
-	////// name
-	////// rank
-	////// score
-	//// stages (八強、四強、季殿、冠亞)
-	////// matches （兩個對打）
-	//////// players
-	////////// name
-	////////// scores
-	////////// points
-	////////// is_winner
-	//// result
-	////// players
-	//////// name
-	//////// medal
-}
-
-// 比賽資訊
-func GetGameInfo(context *gin.Context) {
-	gameName := context.Param("gameName")
-	fmt.Printf("GetGameInfo worked, return info of %s", gameName)
-	// title 比賽名字
-	// sub_title 比賽第幾屆
-	// current_phase 現在的項目
-	// current_phase_kind 現在項目得名字
-	// current_stage 第幾局
-}
-
-// 項目資訊
-func GetGroupInfo(context *gin.Context) {
-	gameName := context.Param("gameName")
-	fmt.Printf("GetGroupInfo worked, return info of %s", gameName)
-	// groups 比賽有的各個項目的名字
-}
-
-// 對抗、資格、團體
-func GetPhaseInfo(context *gin.Context) {
-	gameName := context.Param("gameName")
-	fmt.Printf("GetPhaseInfo worked, return info of %s", gameName)
-	// phases 對抗、資格、團體
-	// phase_kinds 類別
-}
-
-// 資格賽
-func GetQualificationInfo(context *gin.Context) {
-	gameName := context.Param("gameName")
-	fmt.Printf("GetQualificationInfo worked, return info of %s", gameName)
-	// phase 項目名
-	// groups (新生 公開 大專)
-	//// name 類別名
-	//// player_num 總人數
-	//// qualfication_num 篩選人數
-	//// players
-	////// rank 排名
-	////// target 靶道
-	////// name
-	////// institution
-	////// score
-}
-
-// 團體賽
-func GetTeamEliminationInfo(context *gin.Context) {
-	gameName := context.Param("gameName")
-	fmt.Printf("GetTeamEliminationInfo worked, return info of %s", gameName)
-	// phase
-	// groups （新生 大專 公開）
-	//// playsers
-	////// name 隊伍名字
-	////// rank 隊伍排名
-	////// score 隊伍總分
-	//// stages
-	////// matches 比賽四強
-	////// matches 冠亞
-	////// matches 季殿
-	//// result
-	////// playsers
-	//////// name
-	//////// medal
-}
 
 // 'json:"name"' specify what a field’s name should be when the struct’s contents are serialized into JSON
 type Album struct {
