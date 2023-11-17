@@ -72,6 +72,31 @@ func GetEliminationWStagesById(context *gin.Context) {
 	context.IndentedJSON(200, data)
 }
 
+// Get one Elimination By ID with all scores godoc
+//
+//	@Summary		Show one Elimination with all scores
+//	@Description	Get one Elimination with stages, matches, matchResults, matchEnds, scores by id
+//	@Tags			Elimination
+//	@Produce		json
+//	@Param			id	path	int	true	"Elimination ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/api/elimination/scores/{id} [get]
+func GetEliminationWScoresById(context *gin.Context) {
+	uid := convert2uint(context, "id") // require review after player branch merge
+	id := int(uid)
+	isExist, _ := IsGetEliminationById(context)
+	if !isExist {
+		return
+	}
+	data, err := database.GetEliminationWScoresById(uid)
+	if response.ErrorInternalErrorTest(context, id, "Get Elimination with scores", err) {
+		return
+	}
+	response.AcceptPrint(id, fmt.Sprint(data), "Elimination with scores")
+	context.IndentedJSON(200, data)
+}
+
 // Post one Elimination godoc
 //
 //	@Summary		Create one Elimination

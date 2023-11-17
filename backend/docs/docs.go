@@ -312,6 +312,41 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/elimination/scores/{id}": {
+            "get": {
+                "description": "Get one Elimination with stages, matches, matchResults, matchEnds, scores by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Elimination"
+                ],
+                "summary": "Show one Elimination with all scores",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Elimination ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/elimination/stage": {
             "post": {
                 "description": "Post one new Stage data with new id",

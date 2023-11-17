@@ -68,6 +68,7 @@ func laneRouter(api *gin.RouterGroup) {
 func eliminationRouter(api *gin.RouterGroup) {
 	api.GET("/:id", endpoint.GetOnlyEliminationById)
 	api.GET("/stages/:id", endpoint.GetEliminationWStagesById)
+	api.GET("/scores/:id", endpoint.GetEliminationWScoresById)
 	api.POST("/", endpoint.PostElimination)
 	api.POST("/stage", endpoint.PostStage)
 	api.POST("/match", endpoint.PostMatch)
