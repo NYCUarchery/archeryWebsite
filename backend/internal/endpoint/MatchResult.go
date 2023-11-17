@@ -97,12 +97,18 @@ func PostMatchResult(context *gin.Context) {
 	if response.ErrorInternalErrorTest(context, id, "Post MatchResult", err) {
 		return
 	}
-	PostMatchEnd(context, newData.ID) // need to be deleted after test
+	{ // need to be deleted after test
+		// teamsize, err := database.GetEliminationTeamSizeByMatchResultId(matchResultId)
+		// if response.ErrorInternalErrorTest(context, int(matchResultId), "Get Elimination TeamSize by matchResultId", err) {
+		// 	return
+		// }
+		// PostMatchEndByMatchResultId(context, newData.ID, teamsize)
+	}
 	_, newData = IsGetMatchResultWScoresById(context, newData.ID)
 	response.AcceptPrint(id, fmt.Sprint(newData), "MatchResult")
 	context.IndentedJSON(200, newData)
 }
-func PostMatchEnd(context *gin.Context, matchResultId uint) bool {
+func PostMatchEndByMatchResultId(context *gin.Context, matchResultId uint, teamsize int) bool {
 	var data database.MatchEnd
 	if response.ErrorIdTest(context, int(matchResultId), database.GetMatchResultIsExist(matchResultId), "MatchResult when creating matchEnd") {
 		return false
@@ -115,10 +121,6 @@ func PostMatchEnd(context *gin.Context, matchResultId uint) bool {
 		return false
 	}
 	/*create arrows*/
-	teamsize, err := database.GetEliminationTeamSizeByMatchResultId(matchResultId)
-	if response.ErrorInternalErrorTest(context, int(matchResultId), "Get Elimination TeamSize by matchResultId", err) {
-		return false
-	}
 	var arrowNum int
 	switch teamsize {
 	case 1:
@@ -134,9 +136,39 @@ func PostMatchEnd(context *gin.Context, matchResultId uint) bool {
 	for i := 0; i < arrowNum; i++ {
 		PostMatchScore(context, newData.ID)
 	}
-
 	response.AcceptPrint(int(matchResultId), fmt.Sprint(data), "MatchEnd")
 	return true
+}
+
+// Post MatchEnd godoc
+//
+//	@Summary		Create one MatchEnd
+//	@Description	Post one new MatchEnd data, and auto write totalScores IsConfirmed, and auto create matchScores by teamSize
+//	@Tags			MatchEnd
+//	@Accept			json
+//	@Produce		json
+//	@Param			matchEndData	body	string	true	"matchEndData"
+//	@Success		200				string	string
+//	@Failure		400				string	string
+//	@Router			/api/matchresult/matchend [post]
+func PostMatchEnd(context *gin.Context) {
+	type matchEndData struct {
+		MatchResultId uint `json:"match_result_id"`
+		TeamSize      int  `json:"team_size"`
+	}
+	var data matchEndData
+	err := context.BindJSON(&data)
+	if response.ErrorReceiveDataTest(context, int(data.MatchResultId), "MatchEndData when creating matchEnd", err) {
+		return
+	} else if response.ErrorIdTest(context, int(data.MatchResultId), database.GetMatchResultIsExist(data.MatchResultId), "MatchResult when creating matchEnd") {
+		return
+	}
+	/*create matchend*/
+	isCreated := PostMatchEndByMatchResultId(context, data.MatchResultId, data.TeamSize)
+	if !isCreated {
+		return
+	}
+	context.IndentedJSON(200, nil)
 }
 func PostMatchScore(context *gin.Context, matchEndId uint) bool {
 	var data database.MatchScore
@@ -145,11 +177,11 @@ func PostMatchScore(context *gin.Context, matchEndId uint) bool {
 	}
 	data.MatchEndId = matchEndId
 	data.Score = -1
-	_, err := database.CreateMatchScore(data)
-	if response.ErrorInternalErrorTest(context, int(matchEndId), "Post MatchScore", err) {
+	newData, err := database.CreateMatchScore(data)
+	if response.ErrorInternalErrorTest(context, int(newData.ID), "Post MatchScore", err) {
 		return false
 	}
-	response.AcceptPrint(int(matchEndId), fmt.Sprint(data), "MatchScore")
+	response.AcceptPrint(int(newData.ID), fmt.Sprint(newData), "MatchScore")
 	return true
 }
 
@@ -160,7 +192,7 @@ func PostMatchScore(context *gin.Context, matchEndId uint) bool {
 //	@Tags			MatchResult
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path	int	true	"MatchResult ID"
+//	@Param			id			path	int		true	"MatchResult ID"
 //	@Param			MatchResult	body	string	true	"MatchResult"
 //	@Success		200			string	string
 //	@Failure		400			string	string
@@ -189,7 +221,7 @@ func PutMatchResultTotalPointsById(context *gin.Context) {
 //	@Tags			MatchResult
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path	int	true	"MatchResult ID"
+//	@Param			id			path	int		true	"MatchResult ID"
 //	@Param			MatchResult	body	string	true	"MatchResult"
 //	@Success		200			string	string
 //	@Failure		400			string	string
@@ -218,7 +250,7 @@ func PutMatchResultShootOffScoreById(context *gin.Context) {
 //	@Tags			MatchResult
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path	int	true	"MatchResult ID"
+//	@Param			id			path	int		true	"MatchResult ID"
 //	@Param			MatchResult	body	string	true	"MatchResult"
 //	@Success		200			string	string
 //	@Failure		400			string	string
@@ -247,7 +279,7 @@ func PutMatchResultIsWinnerById(context *gin.Context) {
 //	@Tags			MatchEnd
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path	int	true	"MatchEnd ID"
+//	@Param			id			path	int		true	"MatchEnd ID"
 //	@Param			MatchEnd	body	string	true	"MatchEnd"
 //	@Success		200			string	string
 //	@Failure		400			string	string
@@ -276,7 +308,7 @@ func PutMatchEndsTotalScoresById(context *gin.Context) {
 //	@Tags			MatchEnd
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path	int	true	"MatchEnd ID"
+//	@Param			id			path	int		true	"MatchEnd ID"
 //	@Param			MatchEnd	body	string	true	"MatchEnd"
 //	@Success		200			string	string
 //	@Failure		400			string	string
@@ -305,7 +337,7 @@ func PutMatchEndsIsConfirmedById(context *gin.Context) {
 //	@Tags			MatchScore
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path	int	true	"MatchScore ID"
+//	@Param			id			path	int		true	"MatchScore ID"
 //	@Param			MatchScore	body	string	true	"MatchScore"
 //	@Success		200			string	string
 //	@Failure		400			string	string

@@ -785,6 +785,33 @@ paths:
       summary: Update one MatchResult isWinner
       tags:
       - MatchResult
+  /api/matchresult/matchend:
+    post:
+      consumes:
+      - application/json
+      description: Post one new MatchEnd data, and auto write totalScores IsConfirmed,
+        and auto create matchScores by teamSize
+      parameters:
+      - description: matchEndData
+        in: body
+        name: matchEndData
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Create one MatchEnd
+      tags:
+      - MatchEnd
   /api/matchresult/scores/{id}:
     get:
       description: Get one MatchResult with match_ends and match_scores by id

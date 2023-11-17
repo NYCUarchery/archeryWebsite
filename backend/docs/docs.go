@@ -990,6 +990,46 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/matchresult/matchend": {
+            "post": {
+                "description": "Post one new MatchEnd data, and auto write totalScores IsConfirmed, and auto create matchScores by teamSize",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MatchEnd"
+                ],
+                "summary": "Create one MatchEnd",
+                "parameters": [
+                    {
+                        "description": "matchEndData",
+                        "name": "matchEndData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/matchresult/scores/{id}": {
             "get": {
                 "description": "Get one MatchResult with match_ends and match_scores by id",

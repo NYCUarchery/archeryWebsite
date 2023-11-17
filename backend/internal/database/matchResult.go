@@ -57,7 +57,7 @@ func GetMatchResultWScoresById(id uint) (MatchResult, error) {
 	var data MatchResult
 	result := DB.
 		Preload("MatchEnds.MatchScores", func(*gorm.DB) *gorm.DB {
-			return DB.Order("score asc")
+			return DB.Order("score DESC")
 		}).
 		Model(&MatchResult{}).
 		Where("id = ?", id).
