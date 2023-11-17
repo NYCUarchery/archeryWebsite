@@ -661,8 +661,6 @@ paths:
         required: true
         schema:
           type: string
-      produces:
-      - application/json
       responses:
         "200":
           description: OK
@@ -694,8 +692,6 @@ paths:
         required: true
         schema:
           type: string
-      produces:
-      - application/json
       responses:
         "200":
           description: OK
@@ -725,8 +721,6 @@ paths:
         required: true
         schema:
           type: string
-      produces:
-      - application/json
       responses:
         "200":
           description: OK
@@ -775,8 +769,6 @@ paths:
         name: id
         required: true
         type: integer
-      produces:
-      - application/json
       responses:
         "200":
           description: OK
@@ -828,8 +820,6 @@ paths:
         required: true
         schema:
           type: string
-      produces:
-      - application/json
       responses:
         "200":
           description: OK
@@ -840,6 +830,35 @@ paths:
           schema:
             type: string
       summary: Update one MatchResult isWinner
+      tags:
+      - MatchResult
+  /api/matchresult/lanenumber/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Update one MatchResult laneNumber by id
+      parameters:
+      - description: MatchResult ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: MatchResult
+        in: body
+        name: MatchResult
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Update one MatchResult laneNumber
       tags:
       - MatchResult
   /api/matchresult/matchend:
@@ -909,8 +928,6 @@ paths:
         required: true
         schema:
           type: string
-      produces:
-      - application/json
       responses:
         "200":
           description: OK
@@ -940,8 +957,6 @@ paths:
         required: true
         schema:
           type: string
-      produces:
-      - application/json
       responses:
         "200":
           description: OK
@@ -971,8 +986,6 @@ paths:
         required: true
         schema:
           type: string
-      produces:
-      - application/json
       responses:
         "200":
           description: OK

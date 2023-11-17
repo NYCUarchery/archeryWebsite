@@ -9,6 +9,7 @@ type MatchResult struct {
 	TotalPoints   int         `json:"total_points"`
 	ShootOffScore int         `json:"shoot_off_score"`
 	IsWinner      bool        `json:"is_winner"`
+	LaneNumber    int         `json:"lane_number"`
 	MatchEnds     []*MatchEnd `json:"match_ends" gorm:"constraint:OnDelete:CASCADE;"`
 }
 
@@ -102,6 +103,10 @@ func UpdateMatchShootOffScoreById(id uint, shootOffScore int) error {
 }
 func UpdateMatchResultIsWinnerById(id uint, isWinner bool) error {
 	result := DB.Table("match_results").Where("id = ?", id).Update("is_winner", isWinner)
+	return result.Error
+}
+func UpdateMatchResultLaneNumberById(id uint, laneNumber int) error {
+	result := DB.Table("match_results").Where("id = ?", id).Update("lane_number", laneNumber)
 	return result.Error
 }
 func UpdateMatchEndsTotalScoresById(id uint, totalScore int) error {

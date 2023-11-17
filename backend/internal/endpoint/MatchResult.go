@@ -191,7 +191,6 @@ func PostMatchScore(context *gin.Context, matchEndId uint) bool {
 //	@Description	Update one MatchResult totalPoints by id
 //	@Tags			MatchResult
 //	@Accept			json
-//	@Produce		json
 //	@Param			id			path	int		true	"MatchResult ID"
 //	@Param			MatchResult	body	string	true	"MatchResult"
 //	@Success		200			string	string
@@ -220,7 +219,6 @@ func PutMatchResultTotalPointsById(context *gin.Context) {
 //	@Description	Update one MatchResult shootOffScore by id
 //	@Tags			MatchResult
 //	@Accept			json
-//	@Produce		json
 //	@Param			id			path	int		true	"MatchResult ID"
 //	@Param			MatchResult	body	string	true	"MatchResult"
 //	@Success		200			string	string
@@ -249,7 +247,6 @@ func PutMatchResultShootOffScoreById(context *gin.Context) {
 //	@Description	Update one MatchResult isWinner by id
 //	@Tags			MatchResult
 //	@Accept			json
-//	@Produce		json
 //	@Param			id			path	int		true	"MatchResult ID"
 //	@Param			MatchResult	body	string	true	"MatchResult"
 //	@Success		200			string	string
@@ -272,13 +269,40 @@ func PutMatchResultIsWinnerById(context *gin.Context) {
 	context.IndentedJSON(200, nil)
 }
 
+// Put MatchResult laneNumber godoc
+//
+//	@Summary		Update one MatchResult laneNumber
+//	@Description	Update one MatchResult laneNumber by id
+//	@Tags			MatchResult
+//	@Accept			json
+//	@Param			id			path	int		true	"MatchResult ID"
+//	@Param			MatchResult	body	string	true	"MatchResult"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Router			/api/matchresult/lanenumber/{id} [put]
+func PutMatchResultLaneNumberById(context *gin.Context) {
+	id := convert2uint(context, "id")
+	var data database.MatchResult
+	err := context.BindJSON(&data)
+	if response.ErrorIdTest(context, int(id), database.GetMatchResultIsExist(id), "MatchResult when updating laneNumber") {
+		return
+	} else if response.ErrorReceiveDataTest(context, int(id), "MatchResult when updating laneNumber", err) {
+		return
+	}
+	err = database.UpdateMatchResultLaneNumberById(id, data.LaneNumber)
+	if response.ErrorInternalErrorTest(context, int(id), "Update MatchResult laneNumber", err) {
+		return
+	}
+	response.AcceptPrint(int(id), fmt.Sprint(data), "MatchResult laneNumber")
+	context.IndentedJSON(200, nil)
+}
+
 // Put MatchEnd totalScores godoc
 //
 //	@Summary		Update one MatchEnd totalScores
 //	@Description	Update one MatchEnd totalScores by id
 //	@Tags			MatchEnd
 //	@Accept			json
-//	@Produce		json
 //	@Param			id			path	int		true	"MatchEnd ID"
 //	@Param			MatchEnd	body	string	true	"MatchEnd"
 //	@Success		200			string	string
@@ -308,7 +332,6 @@ func PutMatchEndsTotalScoresById(context *gin.Context) {
 //	@Description	MatchScore ids and scores must be the same length
 //	@Tags			MatchEnd
 //	@Accept			json
-//	@Produce		json
 //	@Param			id					path	int		true	"MatchEnd ID"
 //	@Param			matchEndScoresData	body	string	true	"matchEndScoresData"
 //	@Success		200					string	string
@@ -357,7 +380,6 @@ func PutMatchEndsScoresById(context *gin.Context) {
 //	@Description	Update one MatchEnd isConfirmed by id
 //	@Tags			MatchEnd
 //	@Accept			json
-//	@Produce		json
 //	@Param			id			path	int		true	"MatchEnd ID"
 //	@Param			MatchEnd	body	string	true	"MatchEnd"
 //	@Success		200			string	string
@@ -386,7 +408,6 @@ func PutMatchEndsIsConfirmedById(context *gin.Context) {
 //	@Description	Update one MatchScore score by id
 //	@Tags			MatchScore
 //	@Accept			json
-//	@Produce		json
 //	@Param			id			path	int		true	"MatchScore ID"
 //	@Param			MatchScore	body	string	true	"MatchScore"
 //	@Success		200			string	string
@@ -414,7 +435,6 @@ func PutMatchScoreScoreById(context *gin.Context) {
 //	@Summary		Delete one MatchResult
 //	@Description	Delete one MatchResult with matchEnds and matchScores by id
 //	@Tags			MatchResult
-//	@Produce		json
 //	@Param			id	path	int	true	"MatchResult ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string

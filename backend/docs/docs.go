@@ -850,9 +850,6 @@ const docTemplate = `{
                 "consumes": [
                     "application/json"
                 ],
-                "produces": [
-                    "application/json"
-                ],
                 "tags": [
                     "MatchEnd"
                 ],
@@ -897,9 +894,6 @@ const docTemplate = `{
                 "consumes": [
                     "application/json"
                 ],
-                "produces": [
-                    "application/json"
-                ],
                 "tags": [
                     "MatchEnd"
                 ],
@@ -942,9 +936,6 @@ const docTemplate = `{
             "put": {
                 "description": "Update one MatchEnd totalScores by id",
                 "consumes": [
-                    "application/json"
-                ],
-                "produces": [
                     "application/json"
                 ],
                 "tags": [
@@ -1031,13 +1022,54 @@ const docTemplate = `{
                 "consumes": [
                     "application/json"
                 ],
-                "produces": [
+                "tags": [
+                    "MatchResult"
+                ],
+                "summary": "Update one MatchResult isWinner",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MatchResult ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "MatchResult",
+                        "name": "MatchResult",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/matchresult/lanenumber/{id}": {
+            "put": {
+                "description": "Update one MatchResult laneNumber by id",
+                "consumes": [
                     "application/json"
                 ],
                 "tags": [
                     "MatchResult"
                 ],
-                "summary": "Update one MatchResult isWinner",
+                "summary": "Update one MatchResult laneNumber",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1153,9 +1185,6 @@ const docTemplate = `{
                 "consumes": [
                     "application/json"
                 ],
-                "produces": [
-                    "application/json"
-                ],
                 "tags": [
                     "MatchResult"
                 ],
@@ -1198,9 +1227,6 @@ const docTemplate = `{
             "put": {
                 "description": "Update one MatchResult totalPoints by id",
                 "consumes": [
-                    "application/json"
-                ],
-                "produces": [
                     "application/json"
                 ],
                 "tags": [
@@ -1277,9 +1303,6 @@ const docTemplate = `{
             },
             "delete": {
                 "description": "Delete one MatchResult with matchEnds and matchScores by id",
-                "produces": [
-                    "application/json"
-                ],
                 "tags": [
                     "MatchResult"
                 ],
@@ -1313,9 +1336,6 @@ const docTemplate = `{
             "put": {
                 "description": "Update one MatchScore score by id",
                 "consumes": [
-                    "application/json"
-                ],
-                "produces": [
                     "application/json"
                 ],
                 "tags": [
