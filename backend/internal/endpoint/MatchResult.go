@@ -4,7 +4,6 @@ import (
 	"backend/internal/database"
 	response "backend/internal/response"
 	"fmt"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -330,8 +329,7 @@ func PutMatchEndsScoresById(context *gin.Context) {
 	} else if response.ErrorReceiveDataTest(context, int(matchEndId), "MatchEnd when updating scores", err) {
 		return
 	} else if len(data.MatchScoreIds) != len(data.Scores) {
-		errorMessage := fmt.Sprintf("bad request data : matchScoreIds and scores length not match when updating scores")
-		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+		response.ErrorReceiveDataFormat(context, "matchScoreIds and scores length not match when updating scores")
 		return
 	}
 	for i := 0; i < len(data.MatchScoreIds); i++ {
