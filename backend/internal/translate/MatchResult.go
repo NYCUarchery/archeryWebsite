@@ -97,6 +97,7 @@ func PostMatchResult(context *gin.Context) {
 	if response.ErrorInternalErrorTest(context, id, "Post MatchResult", err) {
 		return
 	}
+	PostMatchEnd(context, newData.ID) // need to be deleted after test
 	_, newData = IsGetMatchResultWScoresById(context, newData.ID)
 	response.AcceptPrint(id, fmt.Sprint(newData), "MatchResult")
 	context.IndentedJSON(200, newData)
@@ -152,6 +153,18 @@ func PostMatchScore(context *gin.Context, matchEndId uint) bool {
 	return true
 }
 
+// Put MatchResult totalpoints godoc
+//
+//	@Summary		Update one MatchResult totalPoints
+//	@Description	Update one MatchResult totalPoints by id
+//	@Tags			MatchResult
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path	int	true	"MatchResult ID"
+//	@Param			MatchResult	body	string	true	"MatchResult"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Router			/api/matchresult/totalpoints/{id} [put]
 func PutMatchResultTotalPointsById(context *gin.Context) {
 	id := convert2uint(context, "id")
 	var data database.MatchResult
@@ -160,14 +173,157 @@ func PutMatchResultTotalPointsById(context *gin.Context) {
 		return
 	} else if response.ErrorReceiveDataTest(context, int(id), "MatchResult when updating totalPoints", err) {
 		return
-	} else if response.ErrorReceiveDataNilTest(context, int(id), data.TotalPoints, "MatchResult when updating totalPoints, totalPoints is nil") {
-		return
 	}
 	err = database.UpdateMatchResultTotalPointsById(id, data.TotalPoints)
 	if response.ErrorInternalErrorTest(context, int(id), "Update MatchResult totalPoints", err) {
 		return
 	}
 	response.AcceptPrint(int(id), fmt.Sprint(data), "MatchResult totalPoints")
+	context.IndentedJSON(200, nil)
+}
+
+// Put MatchResult shootOffScore godoc
+//
+//	@Summary		Update one MatchResult shootOffScore
+//	@Description	Update one MatchResult shootOffScore by id
+//	@Tags			MatchResult
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path	int	true	"MatchResult ID"
+//	@Param			MatchResult	body	string	true	"MatchResult"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Router			/api/matchresult/shootoffscore/{id} [put]
+func PutMatchResultShootOffScoreById(context *gin.Context) {
+	id := convert2uint(context, "id")
+	var data database.MatchResult
+	err := context.BindJSON(&data)
+	if response.ErrorIdTest(context, int(id), database.GetMatchResultIsExist(id), "MatchResult when updating shootOffScore") {
+		return
+	} else if response.ErrorReceiveDataTest(context, int(id), "MatchResult when updating shootOffScore", err) {
+		return
+	}
+	err = database.UpdateMatchShootOffScoreById(id, data.ShootOffScore)
+	if response.ErrorInternalErrorTest(context, int(id), "Update MatchResult shootOffScore", err) {
+		return
+	}
+	response.AcceptPrint(int(id), fmt.Sprint(data), "MatchResult shootOffScore")
+	context.IndentedJSON(200, nil)
+}
+
+// Put MatchResult isWinner godoc
+//
+//	@Summary		Update one MatchResult isWinner
+//	@Description	Update one MatchResult isWinner by id
+//	@Tags			MatchResult
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path	int	true	"MatchResult ID"
+//	@Param			MatchResult	body	string	true	"MatchResult"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Router			/api/matchresult/iswinner/{id} [put]
+func PutMatchResultIsWinnerById(context *gin.Context) {
+	id := convert2uint(context, "id")
+	var data database.MatchResult
+	err := context.BindJSON(&data)
+	if response.ErrorIdTest(context, int(id), database.GetMatchResultIsExist(id), "MatchResult when updating isWinner") {
+		return
+	} else if response.ErrorReceiveDataTest(context, int(id), "MatchResult when updating isWinner", err) {
+		return
+	}
+	err = database.UpdateMatchResultIsWinnerById(id, data.IsWinner)
+	if response.ErrorInternalErrorTest(context, int(id), "Update MatchResult isWinner", err) {
+		return
+	}
+	response.AcceptPrint(int(id), fmt.Sprint(data), "MatchResult isWinner")
+	context.IndentedJSON(200, nil)
+}
+
+// Put MatchEnd totalScores godoc
+//
+//	@Summary		Update one MatchEnd totalScores
+//	@Description	Update one MatchEnd totalScores by id
+//	@Tags			MatchEnd
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path	int	true	"MatchEnd ID"
+//	@Param			MatchEnd	body	string	true	"MatchEnd"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Router			/api/matchend/totalscores/{id} [put]
+func PutMatchEndsTotalScoresById(context *gin.Context) {
+	id := convert2uint(context, "id")
+	var data database.MatchEnd
+	err := context.BindJSON(&data)
+	if response.ErrorIdTest(context, int(id), database.GetMatchEndIsExist(id), "MatchEnd when updating totalScores") {
+		return
+	} else if response.ErrorReceiveDataTest(context, int(id), "MatchEnd when updating totalScores", err) {
+		return
+	}
+	err = database.UpdateMatchEndsTotalScoresById(id, data.TotalScore)
+	if response.ErrorInternalErrorTest(context, int(id), "Update MatchEnd totalScores", err) {
+		return
+	}
+	response.AcceptPrint(int(id), fmt.Sprint(data), "MatchEnd totalScores")
+	context.IndentedJSON(200, nil)
+}
+
+// Put MatchEnd isConfirmed godoc
+//
+//	@Summary		Update one MatchEnd isConfirmed
+//	@Description	Update one MatchEnd isConfirmed by id
+//	@Tags			MatchEnd
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path	int	true	"MatchEnd ID"
+//	@Param			MatchEnd	body	string	true	"MatchEnd"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Router			/api/matchend/isconfirmed/{id} [put]
+func PutMatchEndsIsConfirmedById(context *gin.Context) {
+	id := convert2uint(context, "id")
+	var data database.MatchEnd
+	err := context.BindJSON(&data)
+	if response.ErrorIdTest(context, int(id), database.GetMatchEndIsExist(id), "MatchEnd when updating isConfirmed") {
+		return
+	} else if response.ErrorReceiveDataTest(context, int(id), "MatchEnd when updating isConfirmed", err) {
+		return
+	}
+	err = database.UpdateMatchEndsIsConfirmedById(id, data.IsConfirmed)
+	if response.ErrorInternalErrorTest(context, int(id), "Update MatchEnd isConfirmed", err) {
+		return
+	}
+	response.AcceptPrint(int(id), fmt.Sprint(data), "MatchEnd isConfirmed")
+	context.IndentedJSON(200, nil)
+}
+
+// Put MatchScore score godoc
+//
+//	@Summary		Update one MatchScore score
+//	@Description	Update one MatchScore score by id
+//	@Tags			MatchScore
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path	int	true	"MatchScore ID"
+//	@Param			MatchScore	body	string	true	"MatchScore"
+//	@Success		200			string	string
+//	@Failure		400			string	string
+//	@Router			/api/matchscore/score/{id} [put]
+func PutMatchScoreScoreById(context *gin.Context) {
+	id := convert2uint(context, "id")
+	var data database.MatchScore
+	err := context.BindJSON(&data)
+	if response.ErrorIdTest(context, int(id), database.GetMatchScoreIsExist(id), "MatchScore when updating score") {
+		return
+	} else if response.ErrorReceiveDataTest(context, int(id), "MatchScore when updating score", err) {
+		return
+	}
+	err = database.UpdateMatchScoreScoreById(id, data.Score)
+	if response.ErrorInternalErrorTest(context, int(id), "Update MatchScore score", err) {
+		return
+	}
+	response.AcceptPrint(int(id), fmt.Sprint(data), "MatchScore score")
 	context.IndentedJSON(200, nil)
 }
 

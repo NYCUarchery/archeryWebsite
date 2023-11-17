@@ -85,6 +85,11 @@ func matchResultRouter(api *gin.RouterGroup) {
 	api.GET("/scores/:id", translate.GetMatchResultWScoresById)
 	api.POST("/", translate.PostMatchResult)
 	api.PUT("/totalpoints/:id", translate.PutMatchResultTotalPointsById)
+	api.PUT("/shootoffscore/:id", translate.PutMatchResultShootOffScoreById)
+	api.PUT("/iswinner/:id", translate.PutMatchResultIsWinnerById)
+	api.PUT("/matchend/totalscore/:id", translate.PutMatchEndsTotalScoresById)
+	api.PUT("/matchend/isconfirm/:id", translate.PutMatchEndsIsConfirmedById)
+	api.PUT("/matchscore/score/:id", translate.PutMatchScoreScoreById)
 	api.DELETE("/:id", translate.DeleteMatchResultById)
 }
 

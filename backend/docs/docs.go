@@ -809,6 +809,100 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/matchend/isconfirmed/{id}": {
+            "put": {
+                "description": "Update one MatchEnd isConfirmed by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MatchEnd"
+                ],
+                "summary": "Update one MatchEnd isConfirmed",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MatchEnd ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "MatchEnd",
+                        "name": "MatchEnd",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/matchend/totalscores/{id}": {
+            "put": {
+                "description": "Update one MatchEnd totalScores by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MatchEnd"
+                ],
+                "summary": "Update one MatchEnd totalScores",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MatchEnd ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "MatchEnd",
+                        "name": "MatchEnd",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/matchresult": {
             "post": {
                 "description": "Post one new MatchResult data with new id, and auto write totalPoints ShootOffScore IsWinner",
@@ -823,6 +917,53 @@ const docTemplate = `{
                 ],
                 "summary": "Create one MatchResult",
                 "parameters": [
+                    {
+                        "description": "MatchResult",
+                        "name": "MatchResult",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/matchresult/iswinner/{id}": {
+            "put": {
+                "description": "Update one MatchResult isWinner by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MatchResult"
+                ],
+                "summary": "Update one MatchResult isWinner",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MatchResult ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "description": "MatchResult",
                         "name": "MatchResult",
@@ -866,6 +1007,100 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/matchresult/shootoffscore/{id}": {
+            "put": {
+                "description": "Update one MatchResult shootOffScore by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MatchResult"
+                ],
+                "summary": "Update one MatchResult shootOffScore",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MatchResult ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "MatchResult",
+                        "name": "MatchResult",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/matchresult/totalpoints/{id}": {
+            "put": {
+                "description": "Update one MatchResult totalPoints by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MatchResult"
+                ],
+                "summary": "Update one MatchResult totalPoints",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MatchResult ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "MatchResult",
+                        "name": "MatchResult",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {
@@ -934,6 +1169,53 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/matchscore/score/{id}": {
+            "put": {
+                "description": "Update one MatchScore score by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MatchScore"
+                ],
+                "summary": "Update one MatchScore score",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MatchScore ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "MatchScore",
+                        "name": "MatchScore",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {
