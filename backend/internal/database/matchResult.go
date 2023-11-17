@@ -47,6 +47,11 @@ func GetMatchScoreIsExist(id uint) bool {
 	DB.Table("match_scores").Where("id = ?", id).First(&data)
 	return data.ID != 0
 }
+func GetMatchScoreWMEndIdIsExist(id uint, match_end_id uint) bool {
+	var data MatchScore
+	DB.Table("match_scores").Where("id = ? AND match_end_id = ?", id, match_end_id).First(&data)
+	return data.ID != 0
+}
 
 func GetMatchResultById(id uint) (MatchResult, error) {
 	var data MatchResult
@@ -109,6 +114,10 @@ func UpdateMatchEndsIsConfirmedById(id uint, isConfirmed bool) error {
 }
 func UpdateMatchScoreScoreById(id uint, score int) error {
 	result := DB.Table("match_scores").Where("id = ?", id).Update("score", score)
+	return result.Error
+}
+func UpdateMatchScoreScoresByMatchEndId(id uint, match_end_id uint, score int) error {
+	result := DB.Table("match_scores").Where("id = ? AND match_end_id = ?", id, match_end_id).Update("score", score)
 	return result.Error
 }
 

@@ -4,6 +4,7 @@ import (
 	"backend/internal/database"
 	response "backend/internal/response"
 	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -298,6 +299,57 @@ func PutMatchEndsTotalScoresById(context *gin.Context) {
 		return
 	}
 	response.AcceptPrint(int(id), fmt.Sprint(data), "MatchEnd totalScores")
+	context.IndentedJSON(200, nil)
+}
+
+// Put MatchEnds scores godoc
+//
+//	@Summary		Update one MatchEnd scores
+//	@Description	Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids
+//	@Description	MatchScore ids and scores must be the same length
+//	@Tags			MatchEnd
+//	@Accept			json
+//	@Produce		json
+//	@Param			id					path	int		true	"MatchEnd ID"
+//	@Param			matchEndScoresData	body	string	true	"matchEndScoresData"
+//	@Success		200					string	string
+//	@Failure		400					string	string
+//	@Router			/api/matchend/scores/{id} [put]
+func PutMatchEndsScoresById(context *gin.Context) {
+	type matchEndScoresData struct {
+		TotalScore    int    `json:"total_scores"`
+		MatchScoreIds []uint `json:"match_score_ids"`
+		Scores        []int  `json:"scores"`
+	}
+	matchEndId := convert2uint(context, "id")
+	var data matchEndScoresData
+	err := context.BindJSON(&data)
+	/*check data*/
+	if response.ErrorIdTest(context, int(matchEndId), database.GetMatchEndIsExist(matchEndId), "MatchEnd when updating scores") {
+		return
+	} else if response.ErrorReceiveDataTest(context, int(matchEndId), "MatchEnd when updating scores", err) {
+		return
+	} else if len(data.MatchScoreIds) != len(data.Scores) {
+		errorMessage := fmt.Sprintf("bad request data : matchScoreIds and scores length not match when updating scores")
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+		return
+	}
+	for i := 0; i < len(data.MatchScoreIds); i++ {
+		if response.ErrorIdTest(context, int(data.MatchScoreIds[i]), database.GetMatchScoreWMEndIdIsExist(data.MatchScoreIds[i], matchEndId), "MatchScore when updating scores") {
+			return
+		}
+	}
+	/*update data*/
+	err = database.UpdateMatchEndsTotalScoresById(matchEndId, data.TotalScore)
+	if response.ErrorInternalErrorTest(context, int(matchEndId), "Update MatchEnd totalScores when updating scores", err) {
+		return
+	}
+	for i := 0; i < len(data.MatchScoreIds); i++ {
+		err = database.UpdateMatchScoreScoresByMatchEndId(data.MatchScoreIds[i], matchEndId, data.Scores[i])
+		if response.ErrorInternalErrorTest(context, int(data.MatchScoreIds[i]), "Update MatchScore score when updating scores", err) {
+			return
+		}
+	}
 	context.IndentedJSON(200, nil)
 }
 

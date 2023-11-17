@@ -651,6 +651,39 @@ paths:
       summary: Update one MatchEnd isConfirmed
       tags:
       - MatchEnd
+  /api/matchend/scores/{id}:
+    put:
+      consumes:
+      - application/json
+      description: |-
+        Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids
+        MatchScore ids and scores must be the same length
+      parameters:
+      - description: MatchEnd ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: matchEndScoresData
+        in: body
+        name: matchEndScoresData
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Update one MatchEnd scores
+      tags:
+      - MatchEnd
   /api/matchend/totalscores/{id}:
     put:
       consumes:
