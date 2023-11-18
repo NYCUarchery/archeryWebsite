@@ -2,7 +2,7 @@ package main
 
 import (
 	"backend/internal/database"
-	routers "backend/internal/routers"
+	"backend/internal/routers"
 	"fmt"
 
 	"github.com/gin-gonic/gin"

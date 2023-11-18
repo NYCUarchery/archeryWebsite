@@ -5,12 +5,12 @@ import (
 )
 
 type User struct {
-	ID       	 	uint   	`gorm:"primaryKey;autoIncrement" json:"id"`
-	Name     	 	string 	`gorm:"unique;not null" json:"name"`
-	Password 	 	string 	`gorm:"not null" json:"-"`
-	Email 		 	string 	`gorm:"unique;not null" json:"email"`
-	InstitutionID 	uint   	`json:"institutionID"`
-	Overview	 	string 	`json:"overview"`
+	ID            uint   `gorm:"primaryKey;autoIncrement" json:"id"`
+	Name          string `gorm:"unique;not null" json:"name"`
+	Password      string `gorm:"not null" json:"-"`
+	Email         string `gorm:"unique;not null" json:"email"`
+	InstitutionID uint   `json:"institutionID"`
+	Overview      string `json:"overview"`
 }
 
 /*initiate 'User' structure in the database*/
@@ -66,4 +66,11 @@ func CheckEmailExistExclude(email string, uid uint) bool {
 
 func SaveUserInfo(user *User) {
 	DB.Save(user)
+}
+
+/*mushroom*/
+func GetUserIsExist(id uint) bool {
+	var user User
+	DB.Table("users").Where("id = ?", id).First(&user)
+	return user.ID != 0
 }
