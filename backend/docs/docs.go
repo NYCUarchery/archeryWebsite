@@ -234,7 +234,7 @@ const docTemplate = `{
         },
         "/api/elimination": {
             "post": {
-                "description": "Post one new Elimination data with new id",
+                "description": "Post one new Elimination data, and three medals",
                 "consumes": [
                     "application/json"
                 ],
@@ -1439,6 +1439,76 @@ const docTemplate = `{
                         "schema": {
                             "type": "string"
                         }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/medal/elimination/{id}": {
+            "get": {
+                "description": "get medals of elimination by elimination id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Medal"
+                ],
+                "summary": "Show medals of elimination by elimination id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "elimination ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/medal/{id}": {
+            "get": {
+                "description": "get one medal by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Medal"
+                ],
+                "summary": "Show one medal by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Medal ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {

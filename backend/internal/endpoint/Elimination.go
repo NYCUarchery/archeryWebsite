@@ -100,7 +100,7 @@ func GetEliminationWScoresById(context *gin.Context) {
 // Post one Elimination godoc
 //
 //	@Summary		Create one Elimination
-//	@Description	Post one new Elimination data with new id
+//	@Description	Post one new Elimination data, and three medals
 //	@Tags			Elimination
 //	@Accept			json
 //	@Produce		json
@@ -123,6 +123,16 @@ func PostElimination(context *gin.Context) {
 		return
 	}
 	id := int(data.ID) // require review after player branch merge
+	/*create medals*/
+	for i := 0; i < 3; i++ {
+		var medal database.Medal
+		medal.EliminationId = data.ID
+		medal.Type = i
+		medal, err = database.CreateMedal(medal)
+		if response.ErrorInternalErrorTest(context, id, "Create Medal when creating elimination", err) {
+			return
+		}
+	}
 	response.AcceptPrint(id, fmt.Sprint(data), "Elimination")
 	context.IndentedJSON(200, data)
 }

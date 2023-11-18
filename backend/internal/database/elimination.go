@@ -9,6 +9,7 @@ type Elimination struct {
 	CurrentEnd   uint     `json:"current_end"`
 	TeamSize     uint     `json:"team_size"`
 	Stages       []*Stage `json:"stages" gorm:"constraint:OnDelete:CASCADE;"`
+	Medals       []*Medal `json:"medals" gorm:"constraint:OnDelete:CASCADE;"`
 }
 type Stage struct {
 	ID            uint     `json:"id"        gorm:"primary_key"`

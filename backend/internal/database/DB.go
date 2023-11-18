@@ -44,8 +44,10 @@ func DatabaseInitial() {
 	InitGroupInfo()
 	InitQualification()
 	InitLane()
+
 	InitElimination()
 	InitMatchResult()
+	InitMedal()
 
 	InitOldLaneInfo()
 }

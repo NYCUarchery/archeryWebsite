@@ -240,7 +240,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Post one new Elimination data with new id
+      description: Post one new Elimination data, and three medals
       parameters:
       - description: Elimination
         in: body
@@ -1050,6 +1050,52 @@ paths:
       summary: Update one MatchScore score
       tags:
       - MatchScore
+  /api/medal/{id}:
+    get:
+      description: get one medal by id
+      parameters:
+      - description: Medal ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one medal by id
+      tags:
+      - Medal
+  /api/medal/elimination/{id}:
+    get:
+      description: get medals of elimination by elimination id
+      parameters:
+      - description: elimination ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show medals of elimination by elimination id
+      tags:
+      - Medal
   /api/qualification/{id}:
     get:
       description: Get one Qualification by id

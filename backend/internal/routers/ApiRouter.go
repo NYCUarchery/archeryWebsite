@@ -29,6 +29,9 @@ func AddApiRouter(api *gin.RouterGroup) {
 	matchResult := api.Group("matchresult")
 	matchResultRouter(matchResult)
 
+	medal := api.Group("medal")
+	medalRouter(medal)
+
 	oldlaneinfo := api.Group("oldlaneinfo")
 	oldLaneInfoRouter(oldlaneinfo)
 
@@ -98,6 +101,12 @@ func matchResultRouter(api *gin.RouterGroup) {
 
 	api.PUT("/matchscore/score/:id", endpoint.PutMatchScoreScoreById)
 	api.DELETE("/:id", endpoint.DeleteMatchResultById)
+}
+
+func medalRouter(api *gin.RouterGroup) {
+	api.GET("/:id", endpoint.GetMedalById)
+	api.GET("/elimination/:id", endpoint.GetMedalInfoByEliminationId)
+	// api.PUT("/playersetid/:id", translate.PutMedalPlayerSetIdById)
 }
 
 func oldLaneInfoRouter(api *gin.RouterGroup) {
