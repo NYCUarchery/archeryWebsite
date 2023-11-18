@@ -266,6 +266,134 @@
                 }
             }
         },
+        "/api/elimination/currentend/minus/{id}": {
+            "put": {
+                "description": "Update one Elimination current end minus one by id",
+                "tags": [
+                    "Elimination"
+                ],
+                "summary": "Update one Elimination current end minus one",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Elimination ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/elimination/currentend/plus/{id}": {
+            "put": {
+                "description": "Update one Elimination current end plus one by id",
+                "tags": [
+                    "Elimination"
+                ],
+                "summary": "Update one Elimination current end plus one",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Elimination ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/elimination/currentstage/minus/{id}": {
+            "put": {
+                "description": "Update one Elimination current stage minus one by id",
+                "tags": [
+                    "Elimination"
+                ],
+                "summary": "Update one Elimination current stage minus one",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Elimination ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/elimination/currentstage/plus/{id}": {
+            "put": {
+                "description": "Update one Elimination current stage plus one by id",
+                "tags": [
+                    "Elimination"
+                ],
+                "summary": "Update one Elimination current stage plus one",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Elimination ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/elimination/match": {
             "post": {
                 "description": "Post one new Match data with new id",
@@ -398,53 +526,6 @@
                         "name": "id",
                         "in": "path",
                         "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/elimination/whole/{id}": {
-            "put": {
-                "description": "Update one Elimination data by id, can't update id, group id, team size",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Elimination"
-                ],
-                "summary": "Update one Elimination",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Elimination ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Elimination",
-                        "name": "Elimination",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 ],
                 "responses": {

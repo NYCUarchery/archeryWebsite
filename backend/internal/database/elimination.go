@@ -113,9 +113,33 @@ func CreateMatch(data Match) (Match, error) {
 	return data, result.Error
 }
 
-func UpdateElimination(id uint, data Elimination) (Elimination, error) {
-	result := DB.Model(&Elimination{}).Where("id = ?", data.ID).Updates(&data)
-	return data, result.Error
+func UpdateEliminationCurrentStagePlus(id uint) error {
+	result := DB.
+		Model(&Elimination{}).
+		Where("id = ?", id).
+		Update("CurrentStage", gorm.Expr("current_stage + ?", 1))
+	return result.Error
+}
+func UpdateEliminationCurrentStageMinus(id uint) error {
+	result := DB.
+		Model(&Elimination{}).
+		Where("id = ?", id).
+		Update("CurrentStage", gorm.Expr("current_stage - ?", 1))
+	return result.Error
+}
+func UpdateEliminationCurrentEndPlus(id uint) error {
+	result := DB.
+		Model(&Elimination{}).
+		Where("id = ?", id).
+		Update("CurrentEnd", gorm.Expr("current_end + ?", 1))
+	return result.Error
+}
+func UpdateEliminationCurrentEndMinus(id uint) error {
+	result := DB.
+		Model(&Elimination{}).
+		Where("id = ?", id).
+		Update("CurrentEnd", gorm.Expr("current_end - ?", 1))
+	return result.Error
 }
 
 func DeleteElimination(id uint) (bool, error) {

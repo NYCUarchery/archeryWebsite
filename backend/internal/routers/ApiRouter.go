@@ -69,10 +69,15 @@ func eliminationRouter(api *gin.RouterGroup) {
 	api.GET("/:id", endpoint.GetOnlyEliminationById)
 	api.GET("/stages/:id", endpoint.GetEliminationWStagesById)
 	api.GET("/scores/:id", endpoint.GetEliminationWScoresById)
+
 	api.POST("/", endpoint.PostElimination)
 	api.POST("/stage", endpoint.PostStage)
 	api.POST("/match", endpoint.PostMatch)
-	api.PUT("/whole/:id", endpoint.PutElimination)
+
+	api.PUT("/currentstage/plus/:id", endpoint.PutEliminationCurrentStagePlusById)
+	api.PUT("/currentstage/minus/:id", endpoint.PutEliminationCurrentStageMinusById)
+	api.PUT("/currentend/plus/:id", endpoint.PutEliminationCurrentEndPlusById)
+	api.PUT("/currentend/minus/:id", endpoint.PutEliminationCurrentEndMinusById)
 	api.DELETE("/:id", endpoint.DeleteElimination)
 }
 
