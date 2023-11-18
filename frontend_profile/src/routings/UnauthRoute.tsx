@@ -10,7 +10,15 @@ import { GetUid } from '../util/api';
 const UnauthRoute = () => {
 	const navigate = useNavigate();
 	useEffect(() => {
-		GetUid(() => {navigate(routing.Home)}, () => navigate(routing.Login))
+		const fetchData = async () => {
+			try {
+				const response = await GetUid();
+				if (response?.result === "Fail") {
+					navigate(routing.Login);
+				}
+			} catch (error) {}
+		};
+		fetchData();
   }, [])
 	return (
 		<>

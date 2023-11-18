@@ -1,14 +1,22 @@
 version: '3.9'
 
 services:
-  frontend:
+  # frontend-scoring:
+  #   build:
+  #     context: ./frontend_scoring
+  #     dockerfile: Dockerfile-dev
+  #   restart: always
+  #   volumes:
+  #     - ./frontend_scoring:/app
+  #     - /app/node_modules
+  frontend-profile:
     build:
-      context: ./frontend
+      context: ./frontend_profile
       dockerfile: Dockerfile-dev
-    restart: always
     volumes:
-      - ./frontend:/app
+      - ./frontend_profile:/app
       - /app/node_modules
+    restart: always
   # mysql:
   #   image: mysql:8
   #   environment:
@@ -25,10 +33,13 @@ services:
     # depends_on:
     #   - mysql
   reverse-proxy:
-    build: ./reverse-proxy
+    build:
+      context: ./reverse-proxy
+      dockerfile: Dockerfile-dev
     restart: always
     ports:
       - 6969:80
     depends_on:
-      - frontend
+      # - frontend-scoring
+      - frontend-profile
       - backend

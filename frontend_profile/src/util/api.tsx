@@ -76,18 +76,13 @@ const GetUid = async (successHandler?: any, failHandler?: any) => {
     if (response.data.id > 0) {
       userStore.dispatch(setUid(response.data.id));
       var uid = response.data.id;
-
-      if (successHandler) successHandler();
-
-      return uid;
+      return {result: "Success", uid: uid};
     }
-
+    return {result: "Fail", uid: 0};
   } catch (error) {
     console.log("err: ", error);
-    if (failHandler) failHandler();
+    return {result: "Fail", uid: 0};
   }
-
-  return 0;
 };
 
 const GetUserInfo = async (uid: number, successHandler?: any, failHandler?: any) => {
@@ -285,7 +280,8 @@ const registerUser = async (values: any) => {
     body.append("email", values.email);
 
     const response = await axios.post(api.user.register, body);
-    return { result: response.data.result };
+    if (response.status === 200)  return { result: "success" };
+    return { result: "fail" };
   } catch (error: any) {
     switch (error.response.data.result) {
       case "username exists":
