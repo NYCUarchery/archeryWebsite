@@ -8,7 +8,9 @@ import store from "./app/store.ts";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 const queryClient = new QueryClient();
-const router = createBrowserRouter([{ path: "/scoring", element: <App /> }]);
+const router = createBrowserRouter([
+  { path: "/:competitionID", element: <App /> },
+]);
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
