@@ -12,6 +12,29 @@ const participantsSlice = createSlice({
   name: "participants",
   initialState: initialState,
   reducers: {
+    initialize: (state, action) => {
+      state.players = [];
+      state.playerApplications = [];
+      state.admins = [];
+      state.adminApplications = [];
+      for (let i = 0; i < action.payload.length; i++) {
+        const participant = action.payload[i];
+        if (participant.role === "player") {
+          if (participant.status === "pending") {
+            state.playerApplications.push(participant);
+            continue;
+          }
+          state.players.push(participant);
+        } else if (participant.role === "admin") {
+          if (participant.status === "pending") {
+            state.adminApplications.push(participant);
+            continue;
+          }
+          state.admins.push(participant);
+        }
+      }
+    },
+
     deletePlayerApplication: (state, action) => {
       state.playerApplications.splice(action.payload, 1);
     },
@@ -59,3 +82,4 @@ export const confirmPlayer = participantsSlice.actions.confirmPlayer;
 export const confirmAdmin = participantsSlice.actions.confirmAdmin;
 export const deletePlayer = participantsSlice.actions.deletePlayer;
 export const deleteAdmin = participantsSlice.actions.deleteAdmin;
+export const initialize = participantsSlice.actions.initialize;

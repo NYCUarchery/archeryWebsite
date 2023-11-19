@@ -116,7 +116,7 @@ func PostPlayer(context *gin.Context) {
 	data.LaneId = database.GetCompetitionUnassignedLaneId(competitionId)
 	data.Name = user.Name
 	data.TotalScore = 0
-	data.ShootOffScore = 0
+	data.ShootOffScore = -1
 	data.Rank = 0
 	data.Order = 0
 
