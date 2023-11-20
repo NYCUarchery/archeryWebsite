@@ -4,7 +4,6 @@ import (
 	"backend/internal/database"
 	response "backend/internal/response"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -20,11 +19,11 @@ import (
 //	@Failure		400	string	string
 //	@Router			/api/medal/{id} [get]
 func GetMedalById(context *gin.Context) {
-	id, err := strconv.Atoi(context.Param("id"))
-	if response.ErrorReceiveDataTest(context, id, "id", err) {
+	id := convert2uint(context, "id")
+	if response.ErrorIdTest(context, id, database.GetMedalIsExist(id), "Medal") {
 		return
 	}
-	data, err := database.GetMedalById(uint(id))
+	data, err := database.GetMedalById(id)
 	if response.ErrorInternalErrorTest(context, id, "get medal by id", err) {
 		return
 	}
@@ -45,11 +44,12 @@ func GetMedalInfoByEliminationId(context *gin.Context) {
 	type MedalsData struct {
 		Medals []database.Medal `json:"medals"`
 	}
-	eliminationId, err := strconv.Atoi(context.Param("id"))
-	if response.ErrorReceiveDataTest(context, eliminationId, "id", err) {
+	eliminationId := convert2uint(context, "id")
+	if response.ErrorIdTest(context, eliminationId, database.GetEliminationIsExist(eliminationId), "Elimination") {
 		return
 	}
 	var data MedalsData
+	var err error
 	data.Medals, err = database.GetMedalInfoByEliminationId(uint(eliminationId))
 	if response.ErrorInternalErrorTest(context, eliminationId, "get medals by elimination id", err) {
 		return

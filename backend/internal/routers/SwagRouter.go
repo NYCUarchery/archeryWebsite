@@ -2,7 +2,6 @@ package routers
 
 import (
 	_ "backend/docs"
-	"fmt"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -18,6 +17,6 @@ import (
 //	@Success		200	string	string
 //	@Router			/swagger/doc.json [get]
 func SwagSetUp(router *gin.Engine, ip string, port string) {
-	url := ginSwagger.URL(fmt.Sprintf("http://%s:%s/swagger/doc.json", ip, port))
+	url := ginSwagger.URL("/swagger/doc.json")
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 }

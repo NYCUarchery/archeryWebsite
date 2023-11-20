@@ -9,10 +9,9 @@ import (
 )
 
 func IsGetEliminationById(context *gin.Context) (bool, database.Elimination) {
-	uid := convert2uint(context, "id") // require review after player branch merge
-	id := int(uid)
-	data, err := database.GetEliminationById(uid)
-	isExist := (data.ID == uid) // require review after player branch merge
+	id := convert2uint(context, "id")
+	data, err := database.GetEliminationById(id)
+	isExist := (data.ID == id)
 	if response.ErrorIdTest(context, id, isExist, "Elimination") {
 		return false, database.Elimination{}
 	} else if response.ErrorInternalErrorTest(context, id, "Get Elimination", err) {
@@ -23,10 +22,9 @@ func IsGetEliminationById(context *gin.Context) (bool, database.Elimination) {
 }
 
 func IsGetEliminationWStagesById(context *gin.Context) (bool, database.Elimination) {
-	uid := convert2uint(context, "id") // require review after player branch merge
-	id := int(uid)
-	data, err := database.GetEliminationWStagesById(uid)
-	isExist := (data.ID == uid) // require review after player branch merge
+	id := convert2uint(context, "id")
+	data, err := database.GetEliminationWStagesById(id)
+	isExist := (data.ID == id)
 	if response.ErrorIdTest(context, id, isExist, "Elimination") {
 		return false, database.Elimination{}
 	} else if response.ErrorInternalErrorTest(context, id, "Get Elimination with stages", err) {
@@ -83,13 +81,12 @@ func GetEliminationWStagesById(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/elimination/scores/{id} [get]
 func GetEliminationWScoresById(context *gin.Context) {
-	uid := convert2uint(context, "id") // require review after player branch merge
-	id := int(uid)
+	id := convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
 	if !isExist {
 		return
 	}
-	data, err := database.GetEliminationWScoresById(uid)
+	data, err := database.GetEliminationWScoresById(id)
 	if response.ErrorInternalErrorTest(context, id, "Get Elimination with scores", err) {
 		return
 	}
@@ -99,14 +96,14 @@ func GetEliminationWScoresById(context *gin.Context) {
 
 func PostEliminationById(context *gin.Context, data database.Elimination) (bool, database.Elimination) {
 	newdata, err := database.CreateElimination(data)
-	if response.ErrorInternalErrorTest(context, int(newdata.ID), "Create Elimination", err) {
+	if response.ErrorInternalErrorTest(context, newdata.ID, "Create Elimination", err) {
 		return false, database.Elimination{}
 	}
-	id := int(newdata.ID) // require review after player branch merge
+	id := newdata.ID
 	/*create medals*/
 	for i := 0; i < 3; i++ {
 		var medal database.Medal
-		medal.EliminationId = newdata.ID
+		medal.EliminationId = id
 		medal.Type = i
 		medal, err = database.CreateMedal(medal)
 		if response.ErrorInternalErrorTest(context, id, "Create Medal when creating elimination", err) {
@@ -130,10 +127,10 @@ func PostEliminationById(context *gin.Context, data database.Elimination) (bool,
 //	@Router			/api/elimination [post]
 func PostElimination(context *gin.Context) {
 	var data database.Elimination
-	err := context.BindJSON(&data) // require review after player branch merge
+	err := context.BindJSON(&data)
 	if response.ErrorReceiveDataTest(context, 0, "Elimination", err) {
 		return
-	} else if response.ErrorIdTest(context, int(data.GroupId), database.GetGroupIsExist(int(data.GroupId)), "group when creating elimination") {
+	} else if response.ErrorIdTest(context, data.GroupId, database.GetGroupIsExist(data.GroupId), "group when creating elimination") {
 		return
 	}
 	data.CurrentEnd = 0
@@ -158,17 +155,17 @@ func PostElimination(context *gin.Context) {
 //	@Router			/api/elimination/stage [post]
 func PostStage(context *gin.Context) {
 	var data database.Stage
-	err := context.BindJSON(&data) // require review after player branch merge
+	err := context.BindJSON(&data)
 	if response.ErrorReceiveDataTest(context, 0, "Stage", err) {
 		return
-	} else if response.ErrorIdTest(context, int(data.EliminationId), database.GetEliminationIsExist(data.EliminationId), "elimintion when creating stage") {
+	} else if response.ErrorIdTest(context, data.EliminationId, database.GetEliminationIsExist(data.EliminationId), "elimintion when creating stage") {
 		return
 	}
 	data, err = database.CreateStage(data)
 	if response.ErrorInternalErrorTest(context, 0, "Create Stage", err) {
 		return
 	}
-	id := int(data.ID) // require review after player branch merge
+	id := data.ID
 	response.AcceptPrint(id, fmt.Sprint(data), "Stage")
 	context.IndentedJSON(200, data)
 }
@@ -186,17 +183,17 @@ func PostStage(context *gin.Context) {
 //	@Router			/api/elimination/match [post]
 func PostMatch(context *gin.Context) {
 	var data database.Match
-	err := context.BindJSON(&data) // require review after player branch merge
+	err := context.BindJSON(&data)
 	if response.ErrorReceiveDataTest(context, 0, "Match", err) {
 		return
-	} else if response.ErrorIdTest(context, int(data.StageId), database.GetStageIsExist(data.StageId), "stage when creating match") {
+	} else if response.ErrorIdTest(context, data.StageId, database.GetStageIsExist(data.StageId), "stage when creating match") {
 		return
 	}
 	data, err = database.CreateMatch(data)
 	if response.ErrorInternalErrorTest(context, 0, "Create Match", err) {
 		return
 	}
-	id := int(data.ID) // require review after player branch merge
+	id := data.ID
 	response.AcceptPrint(id, fmt.Sprint(data), "Match")
 	context.IndentedJSON(200, data)
 }
@@ -211,13 +208,12 @@ func PostMatch(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/elimination/currentstage/plus/{id} [put]
 func PutEliminationCurrentStagePlusById(context *gin.Context) {
-	uid := convert2uint(context, "id") // require review after player branch merge
-	id := int(uid)
+	id := convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
 	if !isExist {
 		return
 	}
-	error := database.UpdateEliminationCurrentStagePlus(uid)
+	error := database.UpdateEliminationCurrentStagePlus(id)
 	if response.ErrorInternalErrorTest(context, id, "Update Elimination CurrentStage", error) {
 		return
 	}
@@ -234,13 +230,12 @@ func PutEliminationCurrentStagePlusById(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/elimination/currentstage/minus/{id} [put]
 func PutEliminationCurrentStageMinusById(context *gin.Context) {
-	uid := convert2uint(context, "id") // require review after player branch merge
-	id := int(uid)
+	id := convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
 	if !isExist {
 		return
 	}
-	error := database.UpdateEliminationCurrentStageMinus(uid)
+	error := database.UpdateEliminationCurrentStageMinus(id)
 	if response.ErrorInternalErrorTest(context, id, "Update Elimination CurrentStage", error) {
 		return
 	}
@@ -257,13 +252,12 @@ func PutEliminationCurrentStageMinusById(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/elimination/currentend/plus/{id} [put]
 func PutEliminationCurrentEndPlusById(context *gin.Context) {
-	uid := convert2uint(context, "id") // require review after player branch merge
-	id := int(uid)
+	id := convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
 	if !isExist {
 		return
 	}
-	error := database.UpdateEliminationCurrentEndPlus(uid)
+	error := database.UpdateEliminationCurrentEndPlus(id)
 	if response.ErrorInternalErrorTest(context, id, "Update Elimination CurrentStage", error) {
 		return
 	}
@@ -280,13 +274,12 @@ func PutEliminationCurrentEndPlusById(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/elimination/currentend/minus/{id} [put]
 func PutEliminationCurrentEndMinusById(context *gin.Context) {
-	uid := convert2uint(context, "id") // require review after player branch merge
-	id := int(uid)
+	id := convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
 	if !isExist {
 		return
 	}
-	error := database.UpdateEliminationCurrentEndMinus(uid)
+	error := database.UpdateEliminationCurrentEndMinus(id)
 	if response.ErrorInternalErrorTest(context, id, "Update Elimination CurrentStage", error) {
 		return
 	}
@@ -306,9 +299,8 @@ func PutEliminationCurrentEndMinusById(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/elimination/{id} [delete]
 func DeleteElimination(context *gin.Context) {
-	uid := convert2uint(context, "id") // require review after player branch merge
-	id := int(uid)
-	isChanged, err := database.DeleteElimination(uid)
+	id := convert2uint(context, "id")
+	isChanged, err := database.DeleteElimination(id)
 	if response.ErrorInternalErrorTest(context, id, "Delete Elimination", err) {
 		return
 	}

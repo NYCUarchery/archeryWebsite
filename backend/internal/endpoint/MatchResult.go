@@ -8,12 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func IsGetMatchResult(context *gin.Context, uid uint) (bool, database.MatchResult) {
-	id := int(uid) // require review after player branch merge
-	if response.ErrorIdTest(context, id, database.GetMatchResultIsExist(uid), "MatchResult") {
+func IsGetMatchResult(context *gin.Context, id uint) (bool, database.MatchResult) {
+	if response.ErrorIdTest(context, id, database.GetMatchResultIsExist(id), "MatchResult") {
 		return false, database.MatchResult{}
 	}
-	data, err := database.GetMatchResultById(uid)
+	data, err := database.GetMatchResultById(id)
 	if response.ErrorInternalErrorTest(context, id, "Get MatchResult", err) {
 		return false, data
 	}
@@ -21,12 +20,11 @@ func IsGetMatchResult(context *gin.Context, uid uint) (bool, database.MatchResul
 	return true, data
 }
 
-func IsGetMatchResultWScoresById(context *gin.Context, uid uint) (bool, database.MatchResult) {
-	id := int(uid) // require review after player branch merge
-	if response.ErrorIdTest(context, id, database.GetMatchResultIsExist(uid), "MatchResult") {
+func IsGetMatchResultWScoresById(context *gin.Context, id uint) (bool, database.MatchResult) {
+	if response.ErrorIdTest(context, id, database.GetMatchResultIsExist(id), "MatchResult") {
 		return false, database.MatchResult{}
 	}
-	data, err := database.GetMatchResultWScoresById(uid)
+	data, err := database.GetMatchResultWScoresById(id)
 	if response.ErrorInternalErrorTest(context, id, "Get MatchResult with scores", err) {
 		return false, data
 	}
@@ -86,8 +84,8 @@ func GetMatchResultWScoresById(context *gin.Context) {
 func PostMatchResult(context *gin.Context) {
 	var data database.MatchResult
 	context.BindJSON(&data)
-	id := int(data.ID) // require review after player branch merge
-	if response.ErrorIdTest(context, int(data.MatchId), database.GetMatchIsExist(data.MatchId), "Match when creating MatchResult") {
+	id := data.ID
+	if response.ErrorIdTest(context, data.MatchId, database.GetMatchIsExist(data.MatchId), "Match when creating MatchResult") {
 		return
 	}
 	data.TotalPoints = 0
@@ -110,14 +108,14 @@ func PostMatchResult(context *gin.Context) {
 }
 func PostMatchEndByMatchResultId(context *gin.Context, matchResultId uint, teamsize int) bool {
 	var data database.MatchEnd
-	if response.ErrorIdTest(context, int(matchResultId), database.GetMatchResultIsExist(matchResultId), "MatchResult when creating matchEnd") {
+	if response.ErrorIdTest(context, matchResultId, database.GetMatchResultIsExist(matchResultId), "MatchResult when creating matchEnd") {
 		return false
 	}
 	data.MatchResultId = matchResultId
 	data.TotalScore = 0
 	data.IsConfirmed = false
 	newData, err := database.CreateMatchEnd(data)
-	if response.ErrorInternalErrorTest(context, int(matchResultId), "Post MatchEnd", err) {
+	if response.ErrorInternalErrorTest(context, matchResultId, "Post MatchEnd", err) {
 		return false
 	}
 	/*create arrows*/
@@ -136,7 +134,7 @@ func PostMatchEndByMatchResultId(context *gin.Context, matchResultId uint, teams
 	for i := 0; i < arrowNum; i++ {
 		PostMatchScore(context, newData.ID)
 	}
-	response.AcceptPrint(int(matchResultId), fmt.Sprint(data), "MatchEnd")
+	response.AcceptPrint(matchResultId, fmt.Sprint(data), "MatchEnd")
 	return true
 }
 
@@ -158,9 +156,9 @@ func PostMatchEnd(context *gin.Context) {
 	}
 	var data matchEndData
 	err := context.BindJSON(&data)
-	if response.ErrorReceiveDataTest(context, int(data.MatchResultId), "MatchEndData when creating matchEnd", err) {
+	if response.ErrorReceiveDataTest(context, data.MatchResultId, "MatchEndData when creating matchEnd", err) {
 		return
-	} else if response.ErrorIdTest(context, int(data.MatchResultId), database.GetMatchResultIsExist(data.MatchResultId), "MatchResult when creating matchEnd") {
+	} else if response.ErrorIdTest(context, data.MatchResultId, database.GetMatchResultIsExist(data.MatchResultId), "MatchResult when creating matchEnd") {
 		return
 	}
 	/*create matchend*/
@@ -172,16 +170,16 @@ func PostMatchEnd(context *gin.Context) {
 }
 func PostMatchScore(context *gin.Context, matchEndId uint) bool {
 	var data database.MatchScore
-	if response.ErrorIdTest(context, int(matchEndId), database.GetMatchEndIsExist(matchEndId), "MatchEnd when creating matchScore") {
+	if response.ErrorIdTest(context, matchEndId, database.GetMatchEndIsExist(matchEndId), "MatchEnd when creating matchScore") {
 		return false
 	}
 	data.MatchEndId = matchEndId
 	data.Score = -1
 	newData, err := database.CreateMatchScore(data)
-	if response.ErrorInternalErrorTest(context, int(newData.ID), "Post MatchScore", err) {
+	if response.ErrorInternalErrorTest(context, newData.ID, "Post MatchScore", err) {
 		return false
 	}
-	response.AcceptPrint(int(newData.ID), fmt.Sprint(newData), "MatchScore")
+	response.AcceptPrint(newData.ID, fmt.Sprint(newData), "MatchScore")
 	return true
 }
 
@@ -200,16 +198,16 @@ func PutMatchResultTotalPointsById(context *gin.Context) {
 	id := convert2uint(context, "id")
 	var data database.MatchResult
 	err := context.BindJSON(&data)
-	if response.ErrorIdTest(context, int(id), database.GetMatchResultIsExist(id), "MatchResult when updating totalPoints") {
+	if response.ErrorIdTest(context, id, database.GetMatchResultIsExist(id), "MatchResult when updating totalPoints") {
 		return
-	} else if response.ErrorReceiveDataTest(context, int(id), "MatchResult when updating totalPoints", err) {
+	} else if response.ErrorReceiveDataTest(context, id, "MatchResult when updating totalPoints", err) {
 		return
 	}
 	err = database.UpdateMatchResultTotalPointsById(id, data.TotalPoints)
-	if response.ErrorInternalErrorTest(context, int(id), "Update MatchResult totalPoints", err) {
+	if response.ErrorInternalErrorTest(context, id, "Update MatchResult totalPoints", err) {
 		return
 	}
-	response.AcceptPrint(int(id), fmt.Sprint(data), "MatchResult totalPoints")
+	response.AcceptPrint(id, fmt.Sprint(data), "MatchResult totalPoints")
 	context.IndentedJSON(200, nil)
 }
 
@@ -228,16 +226,16 @@ func PutMatchResultShootOffScoreById(context *gin.Context) {
 	id := convert2uint(context, "id")
 	var data database.MatchResult
 	err := context.BindJSON(&data)
-	if response.ErrorIdTest(context, int(id), database.GetMatchResultIsExist(id), "MatchResult when updating shootOffScore") {
+	if response.ErrorIdTest(context, id, database.GetMatchResultIsExist(id), "MatchResult when updating shootOffScore") {
 		return
-	} else if response.ErrorReceiveDataTest(context, int(id), "MatchResult when updating shootOffScore", err) {
+	} else if response.ErrorReceiveDataTest(context, id, "MatchResult when updating shootOffScore", err) {
 		return
 	}
 	err = database.UpdateMatchShootOffScoreById(id, data.ShootOffScore)
-	if response.ErrorInternalErrorTest(context, int(id), "Update MatchResult shootOffScore", err) {
+	if response.ErrorInternalErrorTest(context, id, "Update MatchResult shootOffScore", err) {
 		return
 	}
-	response.AcceptPrint(int(id), fmt.Sprint(data), "MatchResult shootOffScore")
+	response.AcceptPrint(id, fmt.Sprint(data), "MatchResult shootOffScore")
 	context.IndentedJSON(200, nil)
 }
 
@@ -256,16 +254,16 @@ func PutMatchResultIsWinnerById(context *gin.Context) {
 	id := convert2uint(context, "id")
 	var data database.MatchResult
 	err := context.BindJSON(&data)
-	if response.ErrorIdTest(context, int(id), database.GetMatchResultIsExist(id), "MatchResult when updating isWinner") {
+	if response.ErrorIdTest(context, id, database.GetMatchResultIsExist(id), "MatchResult when updating isWinner") {
 		return
-	} else if response.ErrorReceiveDataTest(context, int(id), "MatchResult when updating isWinner", err) {
+	} else if response.ErrorReceiveDataTest(context, id, "MatchResult when updating isWinner", err) {
 		return
 	}
 	err = database.UpdateMatchResultIsWinnerById(id, data.IsWinner)
-	if response.ErrorInternalErrorTest(context, int(id), "Update MatchResult isWinner", err) {
+	if response.ErrorInternalErrorTest(context, id, "Update MatchResult isWinner", err) {
 		return
 	}
-	response.AcceptPrint(int(id), fmt.Sprint(data), "MatchResult isWinner")
+	response.AcceptPrint(id, fmt.Sprint(data), "MatchResult isWinner")
 	context.IndentedJSON(200, nil)
 }
 
@@ -284,16 +282,16 @@ func PutMatchResultLaneNumberById(context *gin.Context) {
 	id := convert2uint(context, "id")
 	var data database.MatchResult
 	err := context.BindJSON(&data)
-	if response.ErrorIdTest(context, int(id), database.GetMatchResultIsExist(id), "MatchResult when updating laneNumber") {
+	if response.ErrorIdTest(context, id, database.GetMatchResultIsExist(id), "MatchResult when updating laneNumber") {
 		return
-	} else if response.ErrorReceiveDataTest(context, int(id), "MatchResult when updating laneNumber", err) {
+	} else if response.ErrorReceiveDataTest(context, id, "MatchResult when updating laneNumber", err) {
 		return
 	}
 	err = database.UpdateMatchResultLaneNumberById(id, data.LaneNumber)
-	if response.ErrorInternalErrorTest(context, int(id), "Update MatchResult laneNumber", err) {
+	if response.ErrorInternalErrorTest(context, id, "Update MatchResult laneNumber", err) {
 		return
 	}
-	response.AcceptPrint(int(id), fmt.Sprint(data), "MatchResult laneNumber")
+	response.AcceptPrint(id, fmt.Sprint(data), "MatchResult laneNumber")
 	context.IndentedJSON(200, nil)
 }
 
@@ -312,16 +310,16 @@ func PutMatchEndsTotalScoresById(context *gin.Context) {
 	id := convert2uint(context, "id")
 	var data database.MatchEnd
 	err := context.BindJSON(&data)
-	if response.ErrorIdTest(context, int(id), database.GetMatchEndIsExist(id), "MatchEnd when updating totalScores") {
+	if response.ErrorIdTest(context, id, database.GetMatchEndIsExist(id), "MatchEnd when updating totalScores") {
 		return
-	} else if response.ErrorReceiveDataTest(context, int(id), "MatchEnd when updating totalScores", err) {
+	} else if response.ErrorReceiveDataTest(context, id, "MatchEnd when updating totalScores", err) {
 		return
 	}
 	err = database.UpdateMatchEndsTotalScoresById(id, data.TotalScore)
-	if response.ErrorInternalErrorTest(context, int(id), "Update MatchEnd totalScores", err) {
+	if response.ErrorInternalErrorTest(context, id, "Update MatchEnd totalScores", err) {
 		return
 	}
-	response.AcceptPrint(int(id), fmt.Sprint(data), "MatchEnd totalScores")
+	response.AcceptPrint(id, fmt.Sprint(data), "MatchEnd totalScores")
 	context.IndentedJSON(200, nil)
 }
 
@@ -347,27 +345,27 @@ func PutMatchEndsScoresById(context *gin.Context) {
 	var data matchEndScoresData
 	err := context.BindJSON(&data)
 	/*check data*/
-	if response.ErrorIdTest(context, int(matchEndId), database.GetMatchEndIsExist(matchEndId), "MatchEnd when updating scores") {
+	if response.ErrorIdTest(context, matchEndId, database.GetMatchEndIsExist(matchEndId), "MatchEnd when updating scores") {
 		return
-	} else if response.ErrorReceiveDataTest(context, int(matchEndId), "MatchEnd when updating scores", err) {
+	} else if response.ErrorReceiveDataTest(context, matchEndId, "MatchEnd when updating scores", err) {
 		return
 	} else if len(data.MatchScoreIds) != len(data.Scores) {
 		response.ErrorReceiveDataFormat(context, "matchScoreIds and scores length not match when updating scores")
 		return
 	}
 	for i := 0; i < len(data.MatchScoreIds); i++ {
-		if response.ErrorIdTest(context, int(data.MatchScoreIds[i]), database.GetMatchScoreWMEndIdIsExist(data.MatchScoreIds[i], matchEndId), "MatchScore when updating scores") {
+		if response.ErrorIdTest(context, data.MatchScoreIds[i], database.GetMatchScoreWMEndIdIsExist(data.MatchScoreIds[i], matchEndId), "MatchScore when updating scores") {
 			return
 		}
 	}
 	/*update data*/
 	err = database.UpdateMatchEndsTotalScoresById(matchEndId, data.TotalScore)
-	if response.ErrorInternalErrorTest(context, int(matchEndId), "Update MatchEnd totalScores when updating scores", err) {
+	if response.ErrorInternalErrorTest(context, matchEndId, "Update MatchEnd totalScores when updating scores", err) {
 		return
 	}
 	for i := 0; i < len(data.MatchScoreIds); i++ {
 		err = database.UpdateMatchScoreScoresByMatchEndId(data.MatchScoreIds[i], matchEndId, data.Scores[i])
-		if response.ErrorInternalErrorTest(context, int(data.MatchScoreIds[i]), "Update MatchScore score when updating scores", err) {
+		if response.ErrorInternalErrorTest(context, data.MatchScoreIds[i], "Update MatchScore score when updating scores", err) {
 			return
 		}
 	}
@@ -389,16 +387,16 @@ func PutMatchEndsIsConfirmedById(context *gin.Context) {
 	id := convert2uint(context, "id")
 	var data database.MatchEnd
 	err := context.BindJSON(&data)
-	if response.ErrorIdTest(context, int(id), database.GetMatchEndIsExist(id), "MatchEnd when updating isConfirmed") {
+	if response.ErrorIdTest(context, id, database.GetMatchEndIsExist(id), "MatchEnd when updating isConfirmed") {
 		return
-	} else if response.ErrorReceiveDataTest(context, int(id), "MatchEnd when updating isConfirmed", err) {
+	} else if response.ErrorReceiveDataTest(context, id, "MatchEnd when updating isConfirmed", err) {
 		return
 	}
 	err = database.UpdateMatchEndsIsConfirmedById(id, data.IsConfirmed)
-	if response.ErrorInternalErrorTest(context, int(id), "Update MatchEnd isConfirmed", err) {
+	if response.ErrorInternalErrorTest(context, id, "Update MatchEnd isConfirmed", err) {
 		return
 	}
-	response.AcceptPrint(int(id), fmt.Sprint(data), "MatchEnd isConfirmed")
+	response.AcceptPrint(id, fmt.Sprint(data), "MatchEnd isConfirmed")
 	context.IndentedJSON(200, nil)
 }
 
@@ -417,16 +415,16 @@ func PutMatchScoreScoreById(context *gin.Context) {
 	id := convert2uint(context, "id")
 	var data database.MatchScore
 	err := context.BindJSON(&data)
-	if response.ErrorIdTest(context, int(id), database.GetMatchScoreIsExist(id), "MatchScore when updating score") {
+	if response.ErrorIdTest(context, id, database.GetMatchScoreIsExist(id), "MatchScore when updating score") {
 		return
-	} else if response.ErrorReceiveDataTest(context, int(id), "MatchScore when updating score", err) {
+	} else if response.ErrorReceiveDataTest(context, id, "MatchScore when updating score", err) {
 		return
 	}
 	err = database.UpdateMatchScoreScoreById(id, data.Score)
-	if response.ErrorInternalErrorTest(context, int(id), "Update MatchScore score", err) {
+	if response.ErrorInternalErrorTest(context, id, "Update MatchScore score", err) {
 		return
 	}
-	response.AcceptPrint(int(id), fmt.Sprint(data), "MatchScore score")
+	response.AcceptPrint(id, fmt.Sprint(data), "MatchScore score")
 	context.IndentedJSON(200, nil)
 }
 
@@ -441,13 +439,13 @@ func PutMatchScoreScoreById(context *gin.Context) {
 //	@Router			/api/matchresult/{id} [delete]
 func DeleteMatchResultById(context *gin.Context) {
 	id := convert2uint(context, "id")
-	if response.ErrorIdTest(context, int(id), database.GetMatchResultIsExist(id), "MatchResult") {
+	if response.ErrorIdTest(context, id, database.GetMatchResultIsExist(id), "MatchResult") {
 		return
 	}
 	err := database.DeleteMatchResultById(id)
-	if response.ErrorInternalErrorTest(context, int(id), "Delete MatchResult", err) {
+	if response.ErrorInternalErrorTest(context, id, "Delete MatchResult", err) {
 		return
 	}
-	response.AcceptPrint(int(id), fmt.Sprint(id), "MatchResult")
+	response.AcceptPrint(id, fmt.Sprint(id), "MatchResult")
 	context.IndentedJSON(200, nil)
 }

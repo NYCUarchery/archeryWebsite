@@ -11,22 +11,22 @@ import (
 func loadOldLaneInfo(data *database.LaneData) {
 	/* save UserIds indexing */
 	for index, user := range data.UserIds {
-		user.UserIndex = uint(index)
+		user.UserIndex = index
 	}
 	/* save LaneStage indexing*/
 	for index, laneStage := range data.Stages {
-		laneStage.StageIndex = uint(index)
+		laneStage.StageIndex = index
 		/*save LaneStage.EndScores*/
 		for end_index, end := range laneStage.EndScores {
-			end.UserIndex = uint(end_index)
+			end.UserIndex = end_index
 			/*save EndScores.AllScres */
 			for all_index, all := range end.AllScores {
-				all.ArrowIndex = uint(all_index)
+				all.ArrowIndex = all_index
 			}
 		}
 		/*save LaneStage.Comfirmations*/
 		for confirm_index, confirm := range laneStage.Confirmations {
-			confirm.UserIndex = uint(confirm_index)
+			confirm.UserIndex = confirm_index
 		}
 	}
 }
@@ -40,9 +40,9 @@ func loadOldLaneInfo(data *database.LaneData) {
 //	@Param			id	path	int	true	"OldLaneInfo ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/data/oldlaneinfo/{id} [get]
+//	@Router			/api/oldlaneinfo/{id} [get]
 func GetOldLaneInfoByID(context *gin.Context) {
-	data := database.GetOldLaneInfoByID(convert2int(context, "id"))
+	data := database.GetOldLaneInfoByID(convert2uint(context, "id"))
 	if data.ID == 0 {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID"})
 		return
@@ -62,7 +62,7 @@ func GetOldLaneInfoByID(context *gin.Context) {
 //	@Param			LaneData	body	string	true	"LaneData"
 //	@Success		200			string	string
 //	@Failure		400			string	string
-//	@Router			/data/oldlaneinfo [post]
+//	@Router			/api/oldlaneinfo [post]
 func PostOldLaneInfo(context *gin.Context) {
 	data := database.LaneData{}
 	err := context.BindJSON(&data)
@@ -88,7 +88,7 @@ func PostOldLaneInfo(context *gin.Context) {
 //	@Failure		400			string	string
 //	@Failure		404			string	string
 //	@Failure		500			string	string
-//	@Router			/data/oldlaneinfo/whole/{id} [put]
+//	@Router			/api/oldlaneinfo/whole/{id} [put]
 func UpdateOldLaneInfo(context *gin.Context) {
 	data := database.LaneData{}
 	err := context.BindJSON(&data)
@@ -97,7 +97,7 @@ func UpdateOldLaneInfo(context *gin.Context) {
 		return
 	}
 	loadOldLaneInfo(&data)
-	newdata := database.UpdateOldLaneInfo(convert2int(context, "id"), data)
+	newdata := database.UpdateOldLaneInfo(convert2uint(context, "id"), data)
 	if newdata.UserIds == nil {
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": "更新失敗"})
 		return
@@ -121,9 +121,9 @@ func UpdateOldLaneInfo(context *gin.Context) {
 //	@Failure		400			string	string
 //	@Failure		404			string	string
 //	@Failure		500			string	string
-//	@Router			/data/oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score} [put]
+//	@Router			/api/oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score} [put]
 func UpdataOldLaneScore(context *gin.Context) {
-	id := convert2int(context, "id")
+	id := convert2uint(context, "id")
 	stageindex := convert2int(context, "stageindex")
 	userindex := convert2int(context, "userindex")
 	arrowindex := convert2int(context, "arrowindex")
@@ -158,9 +158,9 @@ func UpdataOldLaneScore(context *gin.Context) {
 //	@Failure		400			string	string
 //	@Failure		404			string	string
 //	@Failure		500			string	string
-//	@Router			/data/oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm} [put]
+//	@Router			/api/oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm} [put]
 func UpdataOldLaneConfirm(context *gin.Context) {
-	id := convert2int(context, "id")
+	id := convert2uint(context, "id")
 	stageindex := convert2int(context, "stageindex")
 	userindex := convert2int(context, "userindex")
 	confirm := convert2bool(context, "confirm")
@@ -189,9 +189,9 @@ func UpdataOldLaneConfirm(context *gin.Context) {
 //	@Success		200	string	string
 //	@Failure		400	string	string
 //	@Failure		404	string	string
-//	@Router			/data/oldlaneinfo/{id} [delete]
+//	@Router			/api/oldlaneinfo/{id} [delete]
 func DeleteOldLaneInfoByID(context *gin.Context) {
-	if !database.DeleteOldLaneInfoByID(convert2int(context, "id")) {
+	if !database.DeleteOldLaneInfoByID(convert2uint(context, "id")) {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID 或 格式錯誤 "})
 		return
 	}

@@ -7,7 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func ErrorReceiveDataTest(context *gin.Context, id int, message string, err error) bool {
+func ErrorReceiveDataTest(context *gin.Context, id uint, message string, err error) bool {
 	if err != nil {
 		errorMessage := fmt.Sprintf("bad request data ID(%d): %s %s", id, message, err.Error())
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": errorMessage})
@@ -21,7 +21,7 @@ func ErrorReceiveDataFormat(context *gin.Context, message string) {
 	context.IndentedJSON(http.StatusBadRequest, gin.H{"error": errorMessage})
 }
 
-func ErrorReceiveDataNilTest(context *gin.Context, id int, data interface{}, message string) bool {
+func ErrorReceiveDataNilTest(context *gin.Context, id uint, data interface{}, message string) bool {
 	if data == nil {
 		errorMessage := fmt.Sprintf("bad request data is nil ID(%d): %s ", id, message)
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": errorMessage})
@@ -30,7 +30,7 @@ func ErrorReceiveDataNilTest(context *gin.Context, id int, data interface{}, mes
 	return false
 }
 
-func ErrorIdTest(context *gin.Context, id int, isExist bool, message string) bool {
+func ErrorIdTest(context *gin.Context, id uint, isExist bool, message string) bool {
 	if !isExist {
 		errorMessage := fmt.Sprintf("invalid %s ID(%d)", message, id)
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": errorMessage})
@@ -39,7 +39,7 @@ func ErrorIdTest(context *gin.Context, id int, isExist bool, message string) boo
 	return false
 }
 
-func ErrorInternalErrorTest(context *gin.Context, id int, message string, err error) bool {
+func ErrorInternalErrorTest(context *gin.Context, id uint, message string, err error) bool {
 	if err != nil {
 		errorMessage := fmt.Sprintf("%s need fix ID(%d) %s", message, id, err.Error())
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": errorMessage})

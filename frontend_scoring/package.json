@@ -4,10 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "vite --port 3000 --host",
+    "build": "tsc && vite build --base=/scoring/",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview --port 3000 --host"
   },
   "dependencies": {
     "@emotion/react": "^11.11.1",
@@ -23,7 +23,7 @@
     "react-dom": "^18.2.0",
     "react-query": "^3.39.3",
     "react-redux": "^8.1.2",
-    "react-router-dom": "^6.14.1",
+    "react-router-dom": "^6.18.0",
     "redux-logger": "^3.0.6",
     "sass": "^1.67.0",
     "scss": "^0.2.4",

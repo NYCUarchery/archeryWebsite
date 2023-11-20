@@ -8,8 +8,6 @@ definitions:
         type: string
       elimination_is_active:
         type: boolean
-      first_lane_id:
-        type: integer
       groups:
         items:
           $ref: '#/definitions/database.Group'
@@ -24,12 +22,16 @@ definitions:
         type: integer
       mixed_elimination_is_active:
         type: boolean
-      no_type_group_id:
-        type: integer
+      participants:
+        items:
+          $ref: '#/definitions/database.Participant'
+        type: array
       qualification_current_end:
         type: integer
       qualification_is_active:
         type: boolean
+      rounds_num:
+        type: integer
       script:
         type: string
       sub_title:
@@ -38,6 +40,10 @@ definitions:
         type: boolean
       title:
         type: string
+      unassigned_group_id:
+        type: integer
+      unassigned_lane_id:
+        type: integer
     type: object
   database.Group:
     properties:
@@ -53,8 +59,10 @@ definitions:
         type: string
       id:
         type: integer
-      player_num:
-        type: integer
+      players:
+        items:
+          $ref: '#/definitions/database.Player'
+        type: array
     type: object
   database.Institution:
     properties:
@@ -62,6 +70,79 @@ definitions:
         type: integer
       name:
         type: string
+    type: object
+  database.Participant:
+    properties:
+      competitionID:
+        type: integer
+      id:
+        type: integer
+      role:
+        type: string
+      status:
+        type: string
+      userID:
+        type: integer
+    type: object
+  database.Player:
+    properties:
+      group_id:
+        type: integer
+      id:
+        type: integer
+      lane_id:
+        type: integer
+      name:
+        type: string
+      order:
+        type: integer
+      participant_id:
+        type: integer
+      rank:
+        type: integer
+      rounds:
+        items:
+          $ref: '#/definitions/database.Round'
+        type: array
+      shoot_off_score:
+        type: integer
+      total_score:
+        type: integer
+    type: object
+  database.Round:
+    properties:
+      id:
+        type: integer
+      player_id:
+        type: integer
+      round_ends:
+        items:
+          $ref: '#/definitions/database.RoundEnd'
+        type: array
+      total_score:
+        type: integer
+    type: object
+  database.RoundEnd:
+    properties:
+      id:
+        type: integer
+      is_confirmed:
+        type: boolean
+      round_id:
+        type: integer
+      round_scores:
+        items:
+          $ref: '#/definitions/database.RoundScore'
+        type: array
+    type: object
+  database.RoundScore:
+    properties:
+      id:
+        type: integer
+      round_end_id:
+        type: integer
+      score:
+        type: integer
     type: object
   database.User:
     properties:
@@ -82,7 +163,7 @@ definitions:
         example: result description
         type: string
     type: object
-host: localhost:8080
+host: localhost:6969
 info:
   contact:
     name: NYCUArchery
@@ -97,8 +178,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Post one new Competition data with new id, create noTypeGroup,
-        create Lanes which link to noTypeGroup, and return the new Competition data
+      description: Post one new Competition data with new id, create UnassignedGroup,
+        create Lanes and UnassignedLane which link to UnassignedGroup, and return
+        the new Competition data
       parameters:
       - description: Competition
         in: body
@@ -124,7 +206,8 @@ paths:
     delete:
       consumes:
       - application/json
-      description: delete one Competition by id, delete all related lanes and groups
+      description: delete one Competition by id, delete all related groups, lanes,
+        players
       parameters:
       - description: Competition ID
         in: path
@@ -251,6 +334,44 @@ paths:
       summary: Show one Competition with GroupInfos
       tags:
       - Competition
+  /api/competition/groups/players/{id}:
+    get:
+      description: Get one Competition by id with GroupInfos and Players
+      responses: {}
+      summary: Show one Competition with GroupInfos and Players
+  /api/competition/groups/players/rank/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Update update all  player ranking of different groups in one Competition
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: update one Competition Ranking
+      tags:
+      - Competition
   /api/competition/groups/qualieli/{id}:
     get:
       description: Get one Competition by id with related Groups which have related
@@ -294,6 +415,29 @@ paths:
             type: string
       summary: update one Competition Mixed Elimination Active to be true and create
         all mixed elimination for groups
+      tags:
+      - Competition
+  /api/competition/participants/{id}:
+    get:
+      description: Get one Competition by id with Participants
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Competition with Participants
       tags:
       - Competition
   /api/competition/qualificationcurrentendminus/{id}:
@@ -379,7 +523,7 @@ paths:
       consumes:
       - application/json
       description: Put whole new Competition and overwrite with the id but without
-        GroupInfo, cannot replace GroupNum, LaneNum, FirstLaneId, noTyoeGroupId
+        GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId
       parameters:
       - description: Competition ID
         in: path
@@ -705,8 +849,8 @@ paths:
     delete:
       consumes:
       - application/json
-      description: delete one GroupInfo by id, and delete qualification with same
-        id
+      description: delete one GroupInfo by id, delete qualification, and change player
+        to UnassignedGroup and UnassignedLane
       parameters:
       - description: GroupInfo ID
         in: path
@@ -751,6 +895,29 @@ paths:
           schema:
             type: string
       summary: Show one GroupInfo
+      tags:
+      - GroupInfo
+  /api/groupinfo/players/{id}:
+    get:
+      description: Get one GroupInfo with players by id, usually ordered by rank
+      parameters:
+      - description: GroupInfo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one GroupInfo with players
       tags:
       - GroupInfo
   /api/groupinfo/reorder:
@@ -872,6 +1039,29 @@ paths:
           schema:
             type: string
       summary: Show all Lane of a competition
+      tags:
+      - Lane
+  /api/lane/scores/{id}:
+    get:
+      description: Get one Lane with players, rounds, roundends, roundscores by id
+      parameters:
+      - description: Lane ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Lane with players, rounds, roundends, roundscores
       tags:
       - Lane
   /api/matchend/isconfirmed/{id}:
@@ -1274,6 +1464,704 @@ paths:
       summary: Show medals of elimination by elimination id
       tags:
       - Medal
+  /api/oldlaneinfo:
+    post:
+      consumes:
+      - application/json
+      description: Post one new OldLaneInfo data with new id, and return the new OldLaneInfo
+        data
+      parameters:
+      - description: LaneData
+        in: body
+        name: LaneData
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Create one OldLaneInfo
+      tags:
+      - OldLaneInfo
+  /api/oldlaneinfo/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete one OldLaneInfo by id
+      parameters:
+      - description: OldLaneInfo ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+      summary: delete one OldLaneInfo
+      tags:
+      - OldLaneInfo
+    get:
+      description: Get one OldLaneInfo by id
+      parameters:
+      - description: OldLaneInfo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one OldLaneInfo
+      tags:
+      - OldLaneInfo
+  /api/oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm}:
+    put:
+      consumes:
+      - application/json
+      description: Put one OldLaneInfo confirm by index and id
+      parameters:
+      - description: OldLaneInfo ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: OldLaneInfo stage index
+        in: path
+        name: stageindex
+        required: true
+        type: string
+      - description: OldLaneInfo user index of the stage
+        in: path
+        name: userindex
+        required: true
+        type: string
+      - description: confirmation of the user
+        in: path
+        name: confirm
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: update one OldLaneInfo confirmation
+      tags:
+      - OldLaneInfo
+  /api/oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score}:
+    put:
+      consumes:
+      - application/json
+      description: Put one OldLaneInfo score by index and id
+      parameters:
+      - description: OldLaneInfo ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: OldLaneInfo stage index
+        in: path
+        name: stageindex
+        required: true
+        type: string
+      - description: OldLaneInfo user index of the stage
+        in: path
+        name: userindex
+        required: true
+        type: string
+      - description: OldLaneInfo arrow index of the user
+        in: path
+        name: arrowindex
+        required: true
+        type: string
+      - description: score of the arrow
+        in: path
+        name: score
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: update one OldLaneInfo Score
+      tags:
+      - OldLaneInfo
+  /api/oldlaneinfo/whole/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Put whole new OldLaneInfo and overwrite with the id
+      parameters:
+      - description: OldLaneInfo ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: LaneData
+        in: body
+        name: LaneData
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: update one OldLaneInfo
+      tags:
+      - OldLaneInfo
+  /api/participant/:
+    post:
+      consumes:
+      - application/json
+      description: add a particpant to the competition
+      parameters:
+      - description: competition id
+        in: formData
+        name: competitionID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: no user/competition found
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: internal db error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: join in a competition
+      tags:
+      - Participant
+  /api/participant/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete one Participant by id
+      parameters:
+      - description: Participant ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+      summary: delete one Participant
+      tags:
+      - Participant
+    get:
+      description: Get One Participant By ID
+      parameters:
+      - description: Participant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show One Participant By ID
+      tags:
+      - Participant
+  /api/participant/competition:
+    get:
+      description: Get Participants By competition ID
+      parameters:
+      - description: competition ID
+        in: body
+        name: competition_id
+        required: true
+        schema:
+          type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show Participants By competition ID
+      tags:
+      - Participant
+  /api/participant/competition/user:
+    get:
+      description: Get Participants By competition ID and user ID
+      parameters:
+      - description: competition ID
+        in: body
+        name: competition_id
+        required: true
+        schema:
+          type: integer
+      - description: user ID
+        in: body
+        name: user_id
+        required: true
+        schema:
+          type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show Participants By competition ID and user ID
+      tags:
+      - Participant
+  /api/participant/user:
+    get:
+      description: Get Participants By user ID
+      parameters:
+      - description: user ID
+        in: body
+        name: user_id
+        required: true
+        schema:
+          type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show Participants By user ID
+      tags:
+      - Participant
+  /api/participant/whole/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Put whole new Participant and overwrite with the id
+      parameters:
+      - description: Participant ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Participant
+        in: body
+        name: Participant
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: update one Participant
+      tags:
+      - Participant
+  /api/player/{id}:
+    delete:
+      description: Delete one Player by id, delete related round, roundend, roundscore
+        data, and playerNum minus one in lane
+      parameters:
+      - description: Player ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Delete one Player by id
+      tags:
+      - Player
+    get:
+      description: Get one Player without other data by id
+      parameters:
+      - description: Player ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Player without other data
+      tags:
+      - Player
+  /api/player/{participantid}:
+    post:
+      description: Create one Player by participant id, create realeted rounds by
+        laneNum of competition, create 6 roundscores for each 6 roundends, UnassignedLane
+        playerNum ++
+      parameters:
+      - description: Participant ID
+        in: path
+        name: participantid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Create one Player by Participant ID
+      tags:
+      - Player
+  /api/player/groupid/{playerid}/{groupid}:
+    put:
+      consumes:
+      - application/json
+      description: Update one Player groupId by id, and change player laneid to Unassigned
+        lane
+      parameters:
+      - description: Player ID
+        in: path
+        name: playerid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Update one Player groupId by id
+      tags:
+      - Player
+  /api/player/isconfirmed/{roundendid}:
+    put:
+      consumes:
+      - application/json
+      description: Update one Player isConfirmed by id
+      parameters:
+      - description: RoundEnd ID
+        in: path
+        name: roundendid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Update one Player isConfirmed by id
+      tags:
+      - Player
+  /api/player/laneid/{playerid}:
+    put:
+      consumes:
+      - application/json
+      description: Update one Player laneId by id, update lane playernum
+      parameters:
+      - description: Player ID
+        in: path
+        name: playerid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Update one Player laneId by id
+      tags:
+      - Player
+  /api/player/order/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Update one Player order by id
+      parameters:
+      - description: Player ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Update one Player order by id
+      tags:
+      - Player
+  /api/player/roundend:
+    post:
+      consumes:
+      - application/json
+      description: Create one RoundEnd by round id, IsComfirmed is false
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Create one RoundEnd by Round ID
+      tags:
+      - Player
+  /api/player/roundscore:
+    post:
+      consumes:
+      - application/json
+      description: Create one RoundScore by roundend id
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Create one RoundScore by RoundEnd ID
+      tags:
+      - Player
+  /api/player/score/{roundscoreid}:
+    put:
+      consumes:
+      - application/json
+      description: Update one Player score by id
+      parameters:
+      - description: RoundScore ID
+        in: path
+        name: roundscoreid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Update one Player score by id
+      tags:
+      - Player
+  /api/player/scores/{id}:
+    get:
+      description: Get one Player with rounds, roundends, roundscores by id
+      parameters:
+      - description: Player ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Player with scores
+      tags:
+      - Player
+  /api/player/shootoffscore/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Update one Player shootoffScore by id
+      parameters:
+      - description: Player ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Update one Player shootoffScore by id
+      tags:
+      - Player
   /api/qualification/{id}:
     get:
       description: Get one Qualification by id
@@ -1324,8 +2212,8 @@ paths:
     put:
       consumes:
       - application/json
-      description: Put whole new Qualification and overwrite with the id, but cannot
-        replace groupid
+      description: Put whole new Qualification and overwrite with the id, and update
+        lanes below it ,but cannot replace groupid
       parameters:
       - description: Qualification ID
         in: path
@@ -1379,66 +2267,11 @@ paths:
       summary: get information of all the competitions
       tags:
       - Competition
-  /data/oldlaneinfo:
-    post:
-      consumes:
-      - application/json
-      description: Post one new OldLaneInfo data with new id, and return the new OldLaneInfo
-        data
-      parameters:
-      - description: LaneData
-        in: body
-        name: LaneData
-        required: true
-        schema:
-          type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Create one OldLaneInfo
-      tags:
-      - OldLaneInfo
-  /data/oldlaneinfo/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: delete one OldLaneInfo by id
-      parameters:
-      - description: OldLaneInfo ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-      summary: delete one OldLaneInfo
-      tags:
-      - OldLaneInfo
+  /data/qualification/lanes/Unassigned/{id}:
     get:
-      description: Get one OldLaneInfo by id
+      description: Get one Qualification with Unassigned Lanes by id
       parameters:
-      - description: OldLaneInfo ID
+      - description: Qualification ID
         in: path
         name: id
         required: true
@@ -1454,35 +2287,18 @@ paths:
           description: Bad Request
           schema:
             type: string
-      summary: Show one OldLaneInfo
+      summary: Show one Qualification
       tags:
-      - OldLaneInfo
-  /data/oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm}:
-    put:
-      consumes:
-      - application/json
-      description: Put one OldLaneInfo confirm by index and id
+      - Qualification
+  /data/qualification/lanes/players/{id}:
+    get:
+      description: Get one Qualification with Lanes and Players by id
       parameters:
-      - description: OldLaneInfo ID
+      - description: Qualification ID
         in: path
         name: id
         required: true
-        type: string
-      - description: OldLaneInfo stage index
-        in: path
-        name: stageindex
-        required: true
-        type: string
-      - description: OldLaneInfo user index of the stage
-        in: path
-        name: userindex
-        required: true
-        type: string
-      - description: confirmation of the user
-        in: path
-        name: confirm
-        required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
@@ -1494,109 +2310,9 @@ paths:
           description: Bad Request
           schema:
             type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      summary: update one OldLaneInfo confirmation
+      summary: Show one Qualification
       tags:
-      - OldLaneInfo
-  /data/oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score}:
-    put:
-      consumes:
-      - application/json
-      description: Put one OldLaneInfo score by index and id
-      parameters:
-      - description: OldLaneInfo ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: OldLaneInfo stage index
-        in: path
-        name: stageindex
-        required: true
-        type: string
-      - description: OldLaneInfo user index of the stage
-        in: path
-        name: userindex
-        required: true
-        type: string
-      - description: OldLaneInfo arrow index of the user
-        in: path
-        name: arrowindex
-        required: true
-        type: string
-      - description: score of the arrow
-        in: path
-        name: score
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      summary: update one OldLaneInfo Score
-      tags:
-      - OldLaneInfo
-  /data/oldlaneinfo/whole/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Put whole new OldLaneInfo and overwrite with the id
-      parameters:
-      - description: OldLaneInfo ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: LaneData
-        in: body
-        name: LaneData
-        required: true
-        schema:
-          type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      summary: update one OldLaneInfo
-      tags:
-      - OldLaneInfo
+      - Qualification
   /institution:
     get:
       consumes:
@@ -1685,35 +2401,6 @@ paths:
       summary: get institution info by id
       tags:
       - Institution
-  /participant/:
-    post:
-      consumes:
-      - application/json
-      description: add a particpant to the competition
-      parameters:
-      - description: competition id
-        in: formData
-        name: competitionID
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: success
-          schema:
-            $ref: '#/definitions/response.Response'
-        "400":
-          description: no user/competition found
-          schema:
-            $ref: '#/definitions/response.Response'
-        "500":
-          description: internal db error
-          schema:
-            $ref: '#/definitions/response.Response'
-      summary: join in a competition
-      tags:
-      - Participant
   /session:
     delete:
       description: delete the session

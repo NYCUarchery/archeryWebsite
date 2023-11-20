@@ -6,10 +6,16 @@ import ScoreBoard from "./features/ScoreBoard/ScoreBoard";
 import RecordingBoard from "./features/RecordingBoard/RecordingBoard";
 import AdministrationBoard from "./features/AdministrationBoard/AdministrationBoard";
 import { useSelector } from "react-redux/es/hooks/useSelector";
+import { useParams } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { initialize } from "./features/States/gameSlice";
 
 function App() {
+  const { competitionID } = useParams();
+  const dispatch = useDispatch();
   const boardShown = useSelector((state: any) => state.boardSwitch.boardShown);
   let board: any;
+  dispatch(initialize({ competitionID }));
 
   switch (boardShown) {
     case "score":

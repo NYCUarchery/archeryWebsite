@@ -2,7 +2,7 @@ package main
 
 import (
 	"backend/internal/database"
-	routers "backend/internal/routers"
+	"backend/internal/routers"
 	"fmt"
 
 	"github.com/gin-gonic/gin"
@@ -17,8 +17,8 @@ import (
 
 //	@license.name	no license yet
 
-//	@host		localhost:8080
-//	@BasePath	/api/
+//	@host	localhost:6969
+//	@BasePath  /api/
 //
 // schemes http
 func main() {
@@ -37,12 +37,10 @@ func getIpByMode() string {
 	case "release":
 		return "0.0.0.0" // attach the router to an http.Server and start the server
 	case "debug":
-		return "0.0.0.0"   // for localhost test
-		return "localhost" // for localhost test
+		return "0.0.0.0" // for localhost test
 	case "test":
 		return "0.0.0.0"
 	default:
 		return "0.0.0.0"
-		return "127.0.0.1"
 	}
 }

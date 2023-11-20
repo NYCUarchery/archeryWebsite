@@ -1,20 +1,29 @@
 import { ListItem, ListItemText, ListItemButton } from "@mui/material";
-import { useDispatch, useSelector } from "react-redux";
-import { deleteAdmin } from "../../ParticipantsSlice";
+import { useSelector } from "react-redux";
+import { useMutation } from "react-query";
+import axios from "axios";
+import { Participant } from "../../participantInteface";
+import { useQueryClient } from "react-query";
 
 interface Props {
-  id: number;
-  name: string;
-  index: number;
+  participant: Participant;
 }
 
-export default function AdminItem({ id, name, index }: Props) {
-  const dispatch = useDispatch();
+const deleteAdmin = (participant: Participant) => {
+  return axios.delete(`/api/participant/${participant.id}`);
+};
+
+export default function AdminItem({ participant }: Props) {
+  const queryClient = useQueryClient();
   const userId = useSelector((state: any) => state.user.userId);
   const hostId = useSelector((state: any) => state.game.hostId);
+  const { mutate: removeAdmin } = useMutation(deleteAdmin, {
+    onSuccess: () => queryClient.invalidateQueries("participants"),
+  });
+
   let deleteButtonTag;
 
-  switch (id) {
+  switch (participant.userID) {
     case userId:
       deleteButtonTag = <ListItemText>It's Your Self!!</ListItemText>;
       break;
@@ -25,7 +34,7 @@ export default function AdminItem({ id, name, index }: Props) {
       deleteButtonTag = (
         <ListItemButton
           className="admin_item_delete_button"
-          onClick={() => dispatch(deleteAdmin(index))}
+          onClick={() => removeAdmin(participant)}
         >
           ✕
         </ListItemButton>
@@ -33,11 +42,11 @@ export default function AdminItem({ id, name, index }: Props) {
   }
 
   return (
-    <ListItem key={id} className="admin_item">
+    <ListItem key={participant.userID} className="admin_item">
       <ListItemText className="admin_item_text">
-        ID: {id}
+        ID: {participant.userID}
         <br />
-        Name: {name}
+        Name: {participant.userID}
       </ListItemText>
       {deleteButtonTag}
     </ListItem>
