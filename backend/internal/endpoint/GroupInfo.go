@@ -90,6 +90,7 @@ func PostGroupInfo(context *gin.Context) {
 	elimination.GroupId = newData.ID
 	elimination.CurrentEnd = 0
 	elimination.CurrentStage = 0
+	elimination.TeamSize = 1
 	success, _ := PostEliminationById(context, elimination)
 	if !success {
 		return
