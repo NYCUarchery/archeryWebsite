@@ -72,6 +72,70 @@ func GetCompetitionWGroupsByID(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, data)
 }
 
+// Get Competition with Groups Qualification Elimination By ID godoc
+//
+//	@Summary		Show one Competition with Groups Qualification Elimination
+//	@Description	Get one Competition by id with related Groups which have related one Qualification id and many Elimination ids
+//	@Tags			Competition
+//	@Produce		json
+//	@Param			id	path	int	true	"Competition ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/api/competition/groups/qualieli/{id} [get]
+func GetCompetitionWGroupsQuaEliByID(context *gin.Context) {
+	type EliminationData struct {
+		EliminationId uint `json:"elimination_id"`
+		TeamSize      int  `json:"team_size"`
+	}
+	type GroupData struct {
+		GroupId          uint              `json:"group_id"`
+		GroupName        string            `json:"group_name"`
+		GroupRange       string            `json:"group_range"`
+		BowType          string            `json:"bow_type"`
+		EliminationDatas []EliminationData `json:"elimination_datas"`
+	}
+	type CompetitionWGroupsQuaEliData struct {
+		CompetitionId uint        `json:"competition_id"`
+		GroupDatas    []GroupData `json:"group_datas"`
+	}
+	var data CompetitionWGroupsQuaEliData
+	id := convert2int(context, "id")
+	isExist, _ := IsGetOnlyCompetition(context, id)
+	if !isExist {
+		return
+	}
+	data.CompetitionId = uint(id)
+	/*get all group ids except Unassigned group*/
+	unassignedGroupId := database.GetCompetitionNoTypeGroupId(id)
+	groupIds, err := database.GetCompetitionGroupIds(uint(id), uint(unassignedGroupId))
+	if response.ErrorInternalErrorTest(context, id, "Get Competition Group Ids when get Competition with Groups Qualification Elimination", err) {
+		return
+	}
+	for index, groupId := range groupIds {
+		isExist, groupData := IsGetGroupInfo(context, int(groupId))
+		if !isExist {
+			return
+		}
+		var groupdata GroupData
+		groupdata.GroupId = groupData.ID
+		groupdata.GroupName = groupData.GroupName
+		groupdata.GroupRange = groupData.GroupRange
+		groupdata.BowType = groupData.BowType
+		data.GroupDatas = append(data.GroupDatas, groupdata)
+		eliminationDatas, err := database.GetEliminationByGroupId(groupId)
+		if response.ErrorInternalErrorTest(context, id, "Get Elimination By Group Id when get Competition with Groups Qualification Elimination", err) {
+			return
+		}
+		for _, eliminationData := range eliminationDatas {
+			var eliminationdata EliminationData
+			eliminationdata.EliminationId = eliminationData.ID
+			eliminationdata.TeamSize = eliminationData.TeamSize
+			data.GroupDatas[index].EliminationDatas = append(data.GroupDatas[index].EliminationDatas, eliminationdata)
+		}
+	}
+	context.IndentedJSON(http.StatusOK, data)
+}
+
 // Post Competition godoc
 //
 //	@Summary		Create one Competition and related data
@@ -317,9 +381,6 @@ func PutCompetitionTeamEliminationActive(context *gin.Context) {
 	if response.ErrorInternalErrorTest(context, id, "Get Competition Group Ids when update Competition Team Elimination is Active", err) {
 		return
 	}
-	for _, groupId := range groupIds {
-		fmt.Println(groupId, "\n")
-	}
 	/*create all team elimination for groups*/
 	for _, groupId := range groupIds {
 		var newData database.Elimination
@@ -363,9 +424,6 @@ func PutCompetitionMixedEliminationActive(context *gin.Context) {
 	groupIds, err := database.GetCompetitionGroupIds(uint(id), uint(unassignedGroupId))
 	if response.ErrorInternalErrorTest(context, id, "Get Competition Group Ids when update Competition Mixed Elimination is Active", err) {
 		return
-	}
-	for _, groupId := range groupIds {
-		fmt.Println(groupId, "\n")
 	}
 	/*create all mixed elimination for groups*/
 	for _, groupId := range groupIds {

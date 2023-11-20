@@ -7,7 +7,7 @@ type Elimination struct {
 	GroupId      uint     `json:"group_id" gorm:"constraint:oneToMany;"`
 	CurrentStage uint     `json:"current_stage"`
 	CurrentEnd   uint     `json:"current_end"`
-	TeamSize     uint     `json:"team_size"`
+	TeamSize     int      `json:"team_size"`
 	Stages       []*Stage `json:"stages" gorm:"constraint:OnDelete:CASCADE;"`
 	Medals       []*Medal `json:"medals" gorm:"constraint:OnDelete:CASCADE;"`
 }
@@ -51,6 +51,15 @@ func GetEliminationById(id uint) (Elimination, error) {
 	var data Elimination
 	result := DB.Table("eliminations").Where("id = ?", id).First(&data)
 	return data, result.Error
+}
+
+func GetEliminationByGroupId(groupId uint) ([]Elimination, error) {
+	var eliminations []Elimination
+	result := DB.Where("group_id = ?", groupId).
+		Select("id, team_size").
+		Order("team_size ASC").
+		Find(&eliminations)
+	return eliminations, result.Error
 }
 
 func GetEliminationWStagesById(id uint) (Elimination, error) {

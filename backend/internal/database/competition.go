@@ -119,6 +119,7 @@ func GetCompetitionGroupIds(competitionId uint, unassignedGroupId uint) ([]uint,
 	result := DB.
 		Table("groups").
 		Where("competition_id = ? AND id != ?", competitionId, unassignedGroupId).
+		Order("group_index asc").
 		Pluck("id", &groupIds)
 	return groupIds, result.Error
 }
