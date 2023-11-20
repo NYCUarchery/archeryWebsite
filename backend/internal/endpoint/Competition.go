@@ -148,10 +148,10 @@ func GetCompetitionWGroupsQuaEliByID(context *gin.Context) {
 	if !isExist {
 		return
 	}
-	data.CompetitionId = uint(id)
+	data.CompetitionId = id
 	/*get all group ids except Unassigned group*/
 	unassignedGroupId := database.GetCompetitionUnassignedGroupId(id)
-	groupIds, err := database.GetCompetitionGroupIds(uint(id), uint(unassignedGroupId))
+	groupIds, err := database.GetCompetitionGroupIds(id, unassignedGroupId)
 	if response.ErrorInternalErrorTest(context, id, "Get Competition Group Ids when get Competition with Groups Qualification Elimination", err) {
 		return
 	}
@@ -455,7 +455,7 @@ func PutCompetitionCurrentPhasePlus(context *gin.Context) {
 		return
 	}
 	/*update and check change*/
-	err := database.UpdateCompetitionCurrentPhasePlus(uint(id))
+	err := database.UpdateCompetitionCurrentPhasePlus(id)
 	if response.ErrorInternalErrorTest(context, id, "Update Competition CurrentPhase Plus", err) {
 		return
 	}
@@ -479,7 +479,7 @@ func PutCompetitionCurrentPhaseMinus(context *gin.Context) {
 		return
 	}
 	/*update and check change*/
-	err := database.UpdateCompetitionCurrentPhaseMinus(uint(id))
+	err := database.UpdateCompetitionCurrentPhaseMinus(id)
 	if response.ErrorInternalErrorTest(context, id, "Update Competition CurrentPhase Minus", err) {
 		return
 	}
@@ -504,7 +504,7 @@ func PutCompetitionQualificationCurrentEndPlus(context *gin.Context) {
 	}
 	fmt.Println("id", id)
 	/*update and check change*/
-	err := database.UpdateCompetitionQualificationCurrentEndPlus(uint(id))
+	err := database.UpdateCompetitionQualificationCurrentEndPlus(id)
 	if response.ErrorInternalErrorTest(context, id, "Update Competition Qualification CurrentEnd Plus", err) {
 		return
 	}
@@ -528,7 +528,7 @@ func PutCompetitionQualificationCurrentEndMinus(context *gin.Context) {
 		return
 	}
 	/*update and check change*/
-	err := database.UpdateCompetitionQualificationCurrentEndMinus(uint(id))
+	err := database.UpdateCompetitionQualificationCurrentEndMinus(id)
 	if response.ErrorInternalErrorTest(context, id, "Update Competition Qualification CurrentEnd Minus", err) {
 		return
 	}
@@ -544,14 +544,14 @@ func PutCompetitionQualificationCurrentEndMinus(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/competition/qualificationisactive/{id} [put]
 func PutCompetitionQualificationActive(context *gin.Context) {
-	id := convert2uint(context, "id") // need review after player merged
+	id := convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
 		return
 	}
 	/*update and check change*/
-	isChanged, err := database.UpdateCompetitionQualificationActive(uint(id))
+	isChanged, err := database.UpdateCompetitionQualificationActive(id)
 	if response.ErrorInternalErrorTest(context, id, "Update Competition Qualification Active", err) {
 		return
 	} else if response.AcceptNotChange(context, id, isChanged, "Update Competition Qualification Active") {
@@ -570,14 +570,14 @@ func PutCompetitionQualificationActive(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/competition/eliminationisactive/{id} [put]
 func PutCompetitionEliminationActive(context *gin.Context) {
-	id := convert2uint(context, "id") // need review after player merged
+	id := convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
 		return
 	}
 	/*update and check change*/
-	isChanged, err := database.UpdateCompetitionEliminationActive(uint(id))
+	isChanged, err := database.UpdateCompetitionEliminationActive(id)
 	if response.ErrorInternalErrorTest(context, id, "Update Competition Elimination Active", err) {
 		return
 	} else if response.AcceptNotChange(context, id, isChanged, "Update Elimination Active") {
@@ -597,14 +597,14 @@ func PutCompetitionEliminationActive(context *gin.Context) {
 //	@Failure		500	string	string
 //	@Router			/api/competition/teameliminationisactive/{id} [put]
 func PutCompetitionTeamEliminationActive(context *gin.Context) {
-	id := convert2uint(context, "id") // need review after player merged
+	id := convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
 		return
 	}
 	/*update and check change*/
-	isChanged, err := database.UpdateCompetitionTeamEliminationActive(uint(id))
+	isChanged, err := database.UpdateCompetitionTeamEliminationActive(id)
 	if response.ErrorInternalErrorTest(context, id, "Update Competition Team Elimination Active", err) {
 		return
 	} else if response.AcceptNotChange(context, id, isChanged, "Update Competition Team Elimination Active") {
@@ -612,7 +612,7 @@ func PutCompetitionTeamEliminationActive(context *gin.Context) {
 	}
 	/*get all group ids except Unassigned group*/
 	unassignedGroupId := database.GetCompetitionUnassignedGroupId(id)
-	groupIds, err := database.GetCompetitionGroupIds(uint(id), uint(unassignedGroupId))
+	groupIds, err := database.GetCompetitionGroupIds(id, unassignedGroupId)
 	if response.ErrorInternalErrorTest(context, id, "Get Competition Group Ids when update Competition Team Elimination is Active", err) {
 		return
 	}
@@ -641,14 +641,14 @@ func PutCompetitionTeamEliminationActive(context *gin.Context) {
 //	@Failure		500	string	string
 //	@Router			/api/competition/mixedeliminationisactive/{id} [put]
 func PutCompetitionMixedEliminationActive(context *gin.Context) {
-	id := convert2uint(context, "id") // need review after player merged
+	id := convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
 		return
 	}
 	/*update and check change*/
-	isChanged, err := database.UpdateCompetitionMixedEliminationActive(uint(id))
+	isChanged, err := database.UpdateCompetitionMixedEliminationActive(id)
 	if response.ErrorInternalErrorTest(context, id, "Update Competition Mixed Elimination Active", err) {
 		return
 	} else if response.AcceptNotChange(context, id, isChanged, "Update Competition Mixed Elimination Active") {
@@ -656,7 +656,7 @@ func PutCompetitionMixedEliminationActive(context *gin.Context) {
 	}
 	/*get all group ids except Unassigned group*/
 	unassignedGroupId := database.GetCompetitionUnassignedGroupId(id)
-	groupIds, err := database.GetCompetitionGroupIds(uint(id), uint(unassignedGroupId))
+	groupIds, err := database.GetCompetitionGroupIds(id, unassignedGroupId)
 	if response.ErrorInternalErrorTest(context, id, "Get Competition Group Ids when update Competition Mixed Elimination is Active", err) {
 		return
 	}

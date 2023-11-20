@@ -50,7 +50,7 @@ func GetMedalInfoByEliminationId(context *gin.Context) {
 	}
 	var data MedalsData
 	var err error
-	data.Medals, err = database.GetMedalInfoByEliminationId(uint(eliminationId))
+	data.Medals, err = database.GetMedalInfoByEliminationId(eliminationId)
 	if response.ErrorInternalErrorTest(context, eliminationId, "get medals by elimination id", err) {
 		return
 	}
