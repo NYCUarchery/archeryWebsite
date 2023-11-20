@@ -17,8 +17,6 @@ type Competition struct { // DB : game_info
 	LanesNum                 int       `json:"lanes_num"`
 	FirstLaneId              uint      `json:"first_lane_id"`
 	CurrentPhase             int       `json:"current_phase"`
-	CurrentPhaseKind         string    `json:"current_phase_kind"`
-	CurrentStage             uint      `json:"current_stage"`
 	QualificationIsActive    bool      `json:"qualification_is_active"`
 	EliminationIsActive      bool      `json:"elimination_is_active"`
 	TeamEliminationIsActive  bool      `json:"team_elimination_is_active"`
@@ -112,6 +110,15 @@ func UpdateCompetitionNoTypeGroupId(ID int, newNoTypeGroupId int) bool {
 	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("no_type_group_id", newNoTypeGroupId)
 	isChanged := result.RowsAffected != 0
 	return isChanged
+}
+
+func UpdateCompetitionCurrentPhasePlus(ID uint) error {
+	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("current_phase", gorm.Expr("current_phase + ?", 1))
+	return result.Error
+}
+func UpdateCompetitionCurrentPhaseMinus(ID uint) error {
+	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("current_phase", gorm.Expr("current_phase - ?", 1))
+	return result.Error
 }
 
 func GetCompetitionGroupIds(competitionId uint, unassignedGroupId uint) ([]uint, error) {

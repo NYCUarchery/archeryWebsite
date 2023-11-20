@@ -61,6 +61,70 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/competition/currentphaseminus/{id}": {
+            "put": {
+                "description": "update one Competition currentPhase --",
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "update one Competition currentPhase --",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/competition/currentphaseplus/{id}": {
+            "put": {
+                "description": "update one Competition currentPhase ++",
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "update one Competition currentPhase ++",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/competition/eliminationisactive/{id}": {
             "put": {
                 "description": "update one Competition Elimination Active to be true",
@@ -2662,12 +2726,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "current_phase": {
-                    "type": "integer"
-                },
-                "current_phase_kind": {
-                    "type": "string"
-                },
-                "current_stage": {
                     "type": "integer"
                 },
                 "date": {

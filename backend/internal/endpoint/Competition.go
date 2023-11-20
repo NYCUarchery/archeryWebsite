@@ -300,6 +300,54 @@ func GetAllCompetition(c *gin.Context) {
 	c.JSON(http.StatusOK, comps)
 }
 
+// Update Competition currentPhase ++ godoc
+//
+//	@Summary		update one Competition currentPhase ++
+//	@Description	update one Competition currentPhase ++
+//	@Tags			Competition
+//	@Param 			id	path	string	true	"Competition ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/api/competition/currentphaseplus/{id} [put]
+func PutCompetitionCurrentPhasePlus(context *gin.Context) {
+	id := convert2int(context, "id")
+	/*check data exist*/
+	isExist, _ := IsGetOnlyCompetition(context, id)
+	if !isExist {
+		return
+	}
+	/*update and check change*/
+	err := database.UpdateCompetitionCurrentPhasePlus(uint(id))
+	if response.ErrorInternalErrorTest(context, id, "Update Competition CurrentPhase Plus", err) {
+		return
+	}
+	context.IndentedJSON(http.StatusOK, nil)
+}
+
+// Update Competition currentPhase -- godoc
+//
+//	@Summary		update one Competition currentPhase --
+//	@Description	update one Competition currentPhase --
+//	@Tags			Competition
+//	@Param 			id	path	string	true	"Competition ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/api/competition/currentphaseminus/{id} [put]
+func PutCompetitionCurrentPhaseMinus(context *gin.Context) {
+	id := convert2int(context, "id")
+	/*check data exist*/
+	isExist, _ := IsGetOnlyCompetition(context, id)
+	if !isExist {
+		return
+	}
+	/*update and check change*/
+	err := database.UpdateCompetitionCurrentPhaseMinus(uint(id))
+	if response.ErrorInternalErrorTest(context, id, "Update Competition CurrentPhase Minus", err) {
+		return
+	}
+	context.IndentedJSON(http.StatusOK, nil)
+}
+
 // Put Competition Qualification Active godoc
 //
 //	@Summary		update one Competition Qualification Active to be true

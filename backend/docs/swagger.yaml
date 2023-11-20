@@ -4,10 +4,6 @@ definitions:
     properties:
       current_phase:
         type: integer
-      current_phase_kind:
-        type: string
-      current_stage:
-        type: integer
       date:
         type: string
       elimination_is_active:
@@ -171,6 +167,48 @@ paths:
           schema:
             type: string
       summary: Show one Competition without GroupInfo
+      tags:
+      - Competition
+  /api/competition/currentphaseminus/{id}:
+    put:
+      description: update one Competition currentPhase --
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: update one Competition currentPhase --
+      tags:
+      - Competition
+  /api/competition/currentphaseplus/{id}:
+    put:
+      description: update one Competition currentPhase ++
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: update one Competition currentPhase ++
       tags:
       - Competition
   /api/competition/eliminationisactive/{id}:
