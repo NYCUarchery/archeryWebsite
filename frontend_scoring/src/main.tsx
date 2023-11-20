@@ -9,7 +9,7 @@ import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 const queryClient = new QueryClient();
 const router = createBrowserRouter([
-  { path: "/:competitionID", element: <App /> },
+  { path: "/scoring/:competitionID", element: <App /> },
 ]);
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(

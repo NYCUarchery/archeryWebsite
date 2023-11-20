@@ -1,21 +1,25 @@
 import { List, ListSubheader } from "@mui/material";
 import PlayerItem from "./PlayerItem";
+import useGetParcipants from "../../../../../QueryHooks/useGetParticipants";
 import { useSelector } from "react-redux";
 
 export default function PlayerList() {
-  const players = useSelector((state: any) => state.participants.players);
-
+  const competitionID = useSelector((state: any) => state.game.competitionID);
+  const { data: participants, isFetching } = useGetParcipants(competitionID);
+  if (isFetching) {
+    return <></>;
+  }
   let playerItems = [];
 
-  for (let i = 0; i < players.length; i++) {
-    const player = players[i];
+  for (let i = 0; i < participants.length; i++) {
+    if (
+      participants[i].role !== "player" ||
+      participants[i].status !== "approved"
+    )
+      continue;
+
     playerItems.push(
-      <PlayerItem
-        key={i}
-        id={player.id}
-        name={player.name}
-        index={i}
-      ></PlayerItem>
+      <PlayerItem key={i} participant={participants[i]}></PlayerItem>
     );
   }
 

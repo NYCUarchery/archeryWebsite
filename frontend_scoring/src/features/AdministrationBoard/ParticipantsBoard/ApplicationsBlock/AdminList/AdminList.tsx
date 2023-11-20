@@ -1,23 +1,25 @@
 import { List, ListSubheader } from "@mui/material";
 import { useSelector } from "react-redux";
 import AdminItem from "./AdminItem";
+import useGetParcipants from "../../../../../QueryHooks/useGetParticipants";
 
 export default function AdminList() {
-  const adminApplications = useSelector(
-    (state: any) => state.participants.adminApplications
-  );
-  let applicationItems: any[] = [];
+  const competitionID = useSelector((state: any) => state.game.competitionID);
+  const { data: participants, isFetching } = useGetParcipants(competitionID);
+  if (isFetching) {
+    return <></>;
+  }
 
-  for (let i = 0; i < adminApplications.length; i++) {
-    const application = adminApplications[i];
-    applicationItems.push(
-      <AdminItem
-        key={i}
-        id={application.id}
-        name={application.name}
-        index={i}
-      ></AdminItem>
-    );
+  let items = [];
+
+  for (let i = 0; i < participants.length; i++) {
+    if (
+      participants[i].role !== "admin" ||
+      participants[i].status !== "pending"
+    )
+      continue;
+
+    items.push(<AdminItem key={i} participant={participants[i]}></AdminItem>);
   }
 
   return (
@@ -25,7 +27,7 @@ export default function AdminList() {
       className="admin_list"
       subheader={<ListSubheader>管理員申請</ListSubheader>}
     >
-      {applicationItems}
+      {items}
     </List>
   );
 }
