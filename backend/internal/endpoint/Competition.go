@@ -5,6 +5,7 @@ import (
 	response "backend/internal/response"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -94,7 +95,7 @@ func PostCompetition(context *gin.Context) {
 	}
 	/*auto write Groups_num, minus one for 無組別*/
 	data.GroupsNum = -1
-
+	data.Date = time.Now()
 	newData, err := database.PostCompetition(data)
 	newId := int(newData.ID)
 	if response.ErrorInternalErrorTest(context, newId, "Post Competition", err) {
@@ -233,4 +234,150 @@ func GetAllCompetition(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, comps)
+}
+
+// Put Competition Qualification Active godoc
+//
+//	@Summary		update one Competition Qualification Active to be true
+//	@Description	update one Competition Qualification Active to be true
+//	@Tags			Competition
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/api/competition/qualificationisactive/{id} [put]
+func PutCompetitionQualificationActive(context *gin.Context) {
+	id := convert2int(context, "id") // need review after player merged
+	/*check data exist*/
+	isExist, _ := IsGetOnlyCompetition(context, id)
+	if !isExist {
+		return
+	}
+	/*update and check change*/
+	isChanged, err := database.UpdateCompetitionQualificationActive(uint(id))
+	if response.ErrorInternalErrorTest(context, id, "Update Competition Qualification Active", err) {
+		return
+	} else if response.AcceptNotChange(context, id, isChanged, "Update Competition Qualification Active") {
+		return
+	}
+
+	context.IndentedJSON(http.StatusOK, nil)
+}
+
+// Put Competition Elimination Active godoc
+//
+//	@Summary		update one Competition Elimination Active to be true
+//	@Description	update one Competition Elimination Active to be true
+//	@Tags			Competition
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/api/competition/eliminationisactive/{id} [put]
+func PutCompetitionEliminationActive(context *gin.Context) {
+	id := convert2int(context, "id") // need review after player merged
+	/*check data exist*/
+	isExist, _ := IsGetOnlyCompetition(context, id)
+	if !isExist {
+		return
+	}
+	/*update and check change*/
+	isChanged, err := database.UpdateCompetitionEliminationActive(uint(id))
+	if response.ErrorInternalErrorTest(context, id, "Update Competition Elimination Active", err) {
+		return
+	} else if response.AcceptNotChange(context, id, isChanged, "Update Elimination Active") {
+		return
+	}
+
+	context.IndentedJSON(http.StatusOK, nil)
+}
+
+// Put Competition Team Elimination Active godoc
+//
+//	@Summary		update one Competition Team Elimination Active to be true and create all team elimination for groups
+//	@Description	update one Competition Team Elimination Active to be true and create all team elimination for groups
+//	@Tags			Competition
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Failure		500	string	string
+//	@Router			/api/competition/teameliminationisactive/{id} [put]
+func PutCompetitionTeamEliminationActive(context *gin.Context) {
+	id := convert2int(context, "id") // need review after player merged
+	/*check data exist*/
+	isExist, _ := IsGetOnlyCompetition(context, id)
+	if !isExist {
+		return
+	}
+	/*update and check change*/
+	isChanged, err := database.UpdateCompetitionTeamEliminationActive(uint(id))
+	if response.ErrorInternalErrorTest(context, id, "Update Competition Team Elimination Active", err) {
+		return
+	} else if response.AcceptNotChange(context, id, isChanged, "Update Competition Team Elimination Active") {
+		return
+	}
+	/*get all group ids except Unassigned group*/
+	unassignedGroupId := database.GetCompetitionNoTypeGroupId(id)
+	groupIds, err := database.GetCompetitionGroupIds(uint(id), uint(unassignedGroupId))
+	if response.ErrorInternalErrorTest(context, id, "Get Competition Group Ids when update Competition Team Elimination is Active", err) {
+		return
+	}
+	for _, groupId := range groupIds {
+		fmt.Println(groupId, "\n")
+	}
+	/*create all team elimination for groups*/
+	for _, groupId := range groupIds {
+		var newData database.Elimination
+		newData.GroupId = groupId
+		newData.CurrentEnd = 0
+		newData.CurrentStage = 0
+		newData.TeamSize = 3
+		success, _ := PostEliminationById(context, newData)
+		if !success {
+			return
+		}
+	}
+	context.IndentedJSON(http.StatusOK, nil)
+}
+
+// Put Competition Mixed Elimination Active godoc
+//
+//	@Summary		update one Competition Mixed Elimination Active to be true and create all mixed elimination for groups
+//	@Description	update one Competition Mixed Elimination Active to be true and create all mixed elimination for groups
+//	@Tags			Competition
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Failure		500	string	string
+//	@Router			/api/competition/mixedeliminationisactive/{id} [put]
+func PutCompetitionMixedEliminationActive(context *gin.Context) {
+	id := convert2int(context, "id") // need review after player merged
+	/*check data exist*/
+	isExist, _ := IsGetOnlyCompetition(context, id)
+	if !isExist {
+		return
+	}
+	/*update and check change*/
+	isChanged, err := database.UpdateCompetitionMixedEliminationActive(uint(id))
+	if response.ErrorInternalErrorTest(context, id, "Update Competition Mixed Elimination Active", err) {
+		return
+	} else if response.AcceptNotChange(context, id, isChanged, "Update Competition Mixed Elimination Active") {
+		return
+	}
+	/*get all group ids except Unassigned group*/
+	unassignedGroupId := database.GetCompetitionNoTypeGroupId(id)
+	groupIds, err := database.GetCompetitionGroupIds(uint(id), uint(unassignedGroupId))
+	if response.ErrorInternalErrorTest(context, id, "Get Competition Group Ids when update Competition Mixed Elimination is Active", err) {
+		return
+	}
+	for _, groupId := range groupIds {
+		fmt.Println(groupId, "\n")
+	}
+	/*create all mixed elimination for groups*/
+	for _, groupId := range groupIds {
+		var newData database.Elimination
+		newData.GroupId = groupId
+		newData.CurrentEnd = 0
+		newData.CurrentStage = 0
+		newData.TeamSize = 2
+		success, _ := PostEliminationById(context, newData)
+		if !success {
+			return
+		}
+	}
+	context.IndentedJSON(http.StatusOK, nil)
 }

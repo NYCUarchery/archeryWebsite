@@ -97,6 +97,26 @@ func GetEliminationWScoresById(context *gin.Context) {
 	context.IndentedJSON(200, data)
 }
 
+func PostEliminationById(context *gin.Context, data database.Elimination) (bool, database.Elimination) {
+	newdata, err := database.CreateElimination(data)
+	if response.ErrorInternalErrorTest(context, 0, "Create Elimination", err) {
+		return false, database.Elimination{}
+	}
+	id := int(newdata.ID) // require review after player branch merge
+	/*create medals*/
+	for i := 0; i < 3; i++ {
+		var medal database.Medal
+		medal.EliminationId = newdata.ID
+		medal.Type = i
+		medal, err = database.CreateMedal(medal)
+		if response.ErrorInternalErrorTest(context, id, "Create Medal when creating elimination", err) {
+			return false, database.Elimination{}
+		}
+	}
+	response.AcceptPrint(id, fmt.Sprint(newdata), "Elimination")
+	return true, newdata
+}
+
 // Post one Elimination godoc
 //
 //	@Summary		Create one Elimination
@@ -118,23 +138,11 @@ func PostElimination(context *gin.Context) {
 	}
 	data.CurrentEnd = 0
 	data.CurrentStage = 0
-	data, err = database.CreateElimination(data)
-	if response.ErrorInternalErrorTest(context, 0, "Create Elimination", err) {
+	success, newData := PostEliminationById(context, data)
+	if !success {
 		return
 	}
-	id := int(data.ID) // require review after player branch merge
-	/*create medals*/
-	for i := 0; i < 3; i++ {
-		var medal database.Medal
-		medal.EliminationId = data.ID
-		medal.Type = i
-		medal, err = database.CreateMedal(medal)
-		if response.ErrorInternalErrorTest(context, id, "Create Medal when creating elimination", err) {
-			return
-		}
-	}
-	response.AcceptPrint(id, fmt.Sprint(data), "Elimination")
-	context.IndentedJSON(200, data)
+	context.IndentedJSON(200, newData)
 }
 
 // Post one Stage godoc

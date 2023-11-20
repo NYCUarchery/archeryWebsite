@@ -45,6 +45,11 @@ func competitionRouter(api *gin.RouterGroup) {
 	api.POST("/", endpoint.PostCompetition)
 	api.PUT("/whole/:id", endpoint.UpdateCompetition)
 	api.DELETE("/:id", endpoint.DeleteCompetition)
+
+	api.PUT("/qualificationisactive/:id", endpoint.PutCompetitionQualificationActive)
+	api.PUT("/eliminationisactive/:id", endpoint.PutCompetitionEliminationActive)
+	api.PUT("/teameliminationisactive/:id", endpoint.PutCompetitionTeamEliminationActive)
+	api.PUT("/mixedeliminationisactive/:id", endpoint.PutCompetitionMixedEliminationActive)
 }
 
 func groupInfoRouter(api *gin.RouterGroup) {

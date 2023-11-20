@@ -15,7 +15,7 @@ import (
 //	@Description	get one medal by id
 //	@Tags			Medal
 //	@Produce		json
-//	@Param			id	path		int	true	"Medal ID"
+//	@Param			id	path	int	true	"Medal ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
 //	@Router			/api/medal/{id} [get]
@@ -37,7 +37,7 @@ func GetMedalById(context *gin.Context) {
 //	@Description	get medals of elimination by elimination id
 //	@Tags			Medal
 //	@Produce		json
-//	@Param			id	path		int	true	"elimination ID"
+//	@Param			id	path	int	true	"elimination ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
 //	@Router			/api/medal/elimination/{id} [get]

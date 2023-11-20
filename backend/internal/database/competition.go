@@ -2,6 +2,7 @@ package database
 
 import (
 	"time"
+
 	"gorm.io/gorm"
 )
 
@@ -9,7 +10,7 @@ type Competition struct { // DB : game_info
 	ID                       uint      `json:"id"        gorm:"primary_key"`
 	Title                    string    `json:"title"`
 	SubTitle                 string    `json:"sub_title"`
-	Date					 time.Time `json:"date"`
+	Date                     time.Time `json:"date"`
 	HostID                   uint      `json:"host_id"`
 	GroupsNum                int       `json:"groups_num"`
 	NoTypeGroupId            int       `json:"no_type_group_id"`
@@ -111,4 +112,46 @@ func UpdateCompetitionNoTypeGroupId(ID int, newNoTypeGroupId int) bool {
 	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("no_type_group_id", newNoTypeGroupId)
 	isChanged := result.RowsAffected != 0
 	return isChanged
+}
+
+func GetCompetitionGroupIds(competitionId uint, unassignedGroupId uint) ([]uint, error) {
+	var groupIds []uint
+	result := DB.
+		Table("groups").
+		Where("competition_id = ? AND id != ?", competitionId, unassignedGroupId).
+		Pluck("id", &groupIds)
+	return groupIds, result.Error
+}
+
+func UpdateCompetitionQualificationActive(ID uint) (bool, error) {
+	result := DB.
+		Model(&Competition{}).
+		Where("id = ?", ID).
+		UpdateColumn("qualification_is_active", true)
+	isChanged := result.RowsAffected != 0
+	return isChanged, result.Error
+}
+func UpdateCompetitionEliminationActive(ID uint) (bool, error) {
+	result := DB.
+		Model(&Competition{}).
+		Where("id = ?", ID).
+		UpdateColumn("elimination_is_active", true)
+	isChanged := result.RowsAffected != 0
+	return isChanged, result.Error
+}
+func UpdateCompetitionTeamEliminationActive(ID uint) (bool, error) {
+	result := DB.
+		Model(&Competition{}).
+		Where("id = ?", ID).
+		UpdateColumn("team_elimination_is_active", true)
+	isChanged := result.RowsAffected != 0
+	return isChanged, result.Error
+}
+func UpdateCompetitionMixedEliminationActive(ID uint) (bool, error) {
+	result := DB.
+		Model(&Competition{}).
+		Where("id = ?", ID).
+		UpdateColumn("mixed_elimination_is_active", true)
+	isChanged := result.RowsAffected != 0
+	return isChanged, result.Error
 }

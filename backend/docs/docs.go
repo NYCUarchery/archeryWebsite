@@ -61,6 +61,29 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/competition/eliminationisactive/{id}": {
+            "put": {
+                "description": "update one Competition Elimination Active to be true",
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "update one Competition Elimination Active to be true",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/competition/groups/{id}": {
             "get": {
                 "description": "Get one Competition by id with GroupInfos",
@@ -89,6 +112,87 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/competition/mixedeliminationisactive/{id}": {
+            "put": {
+                "description": "update one Competition Mixed Elimination Active to be true and create all mixed elimination for groups",
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "update one Competition Mixed Elimination Active to be true and create all mixed elimination for groups",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/competition/qualificationisactive/{id}": {
+            "put": {
+                "description": "update one Competition Qualification Active to be true",
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "update one Competition Qualification Active to be true",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/competition/teameliminationisactive/{id}": {
+            "put": {
+                "description": "update one Competition Team Elimination Active to be true and create all team elimination for groups",
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "update one Competition Team Elimination Active to be true and create all team elimination for groups",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "type": "string"
                         }
