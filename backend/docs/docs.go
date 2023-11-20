@@ -733,7 +733,7 @@ const docTemplate = `{
         },
         "/api/groupinfo": {
             "post": {
-                "description": "Post one new GroupInfo data with new id, create qualification with same id, and auto write GroupIndex",
+                "description": "Post one new GroupInfo data with new id, create qualification with same id, auto write GroupIndex, and auto create elimination",
                 "consumes": [
                     "application/json"
                 ],

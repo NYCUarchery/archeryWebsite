@@ -53,7 +53,7 @@ func GetGroupInfoByID(context *gin.Context) {
 // Post GroupInfo godoc
 //
 //	@Summary		Create one GroupInfo
-//	@Description	Post one new GroupInfo data with new id, create qualification with same id, and auto write GroupIndex
+//	@Description	Post one new GroupInfo data with new id, create qualification with same id, auto write GroupIndex, and auto create elimination
 //	@Tags			GroupInfo
 //	@Accept			json
 //	@Produce		json
@@ -83,6 +83,15 @@ func PostGroupInfo(context *gin.Context) {
 	}
 	/*auto create qualification*/
 	if !PostQualificationThroughGroup(context, int(newData.ID)) {
+		return
+	}
+	/*auto create elimination*/
+	var elimination database.Elimination
+	elimination.GroupId = newData.ID
+	elimination.CurrentEnd = 0
+	elimination.CurrentStage = 0
+	success, _ := PostEliminationById(context, elimination)
+	if !success {
 		return
 	}
 	/*update competition.groupnum*/

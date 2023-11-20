@@ -99,7 +99,7 @@ func GetEliminationWScoresById(context *gin.Context) {
 
 func PostEliminationById(context *gin.Context, data database.Elimination) (bool, database.Elimination) {
 	newdata, err := database.CreateElimination(data)
-	if response.ErrorInternalErrorTest(context, 0, "Create Elimination", err) {
+	if response.ErrorInternalErrorTest(context, int(newdata.ID), "Create Elimination", err) {
 		return false, database.Elimination{}
 	}
 	id := int(newdata.ID) // require review after player branch merge
