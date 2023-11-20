@@ -241,6 +241,70 @@
                 }
             }
         },
+        "/api/competition/qualificationcurrentendminus/{id}": {
+            "put": {
+                "description": "update one Competition Qualification currentEnd --",
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "update one Competition Qualification currentEnd --",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/competition/qualificationcurrentendplus/{id}": {
+            "put": {
+                "description": "update one Competition Qualification currentEnd ++",
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "update one Competition Qualification currentEnd ++",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/competition/qualificationisactive/{id}": {
             "put": {
                 "description": "update one Competition Qualification Active to be true",
@@ -2753,6 +2817,9 @@
                     "type": "boolean"
                 },
                 "no_type_group_id": {
+                    "type": "integer"
+                },
+                "qualification_current_end": {
                     "type": "integer"
                 },
                 "qualification_is_active": {

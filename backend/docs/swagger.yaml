@@ -26,6 +26,8 @@ definitions:
         type: boolean
       no_type_group_id:
         type: integer
+      qualification_current_end:
+        type: integer
       qualification_is_active:
         type: boolean
       script:
@@ -292,6 +294,48 @@ paths:
             type: string
       summary: update one Competition Mixed Elimination Active to be true and create
         all mixed elimination for groups
+      tags:
+      - Competition
+  /api/competition/qualificationcurrentendminus/{id}:
+    put:
+      description: update one Competition Qualification currentEnd --
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: update one Competition Qualification currentEnd --
+      tags:
+      - Competition
+  /api/competition/qualificationcurrentendplus/{id}:
+    put:
+      description: update one Competition Qualification currentEnd ++
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: update one Competition Qualification currentEnd ++
       tags:
       - Competition
   /api/competition/qualificationisactive/{id}:

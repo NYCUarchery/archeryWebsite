@@ -17,6 +17,7 @@ type Competition struct { // DB : game_info
 	LanesNum                 int       `json:"lanes_num"`
 	FirstLaneId              uint      `json:"first_lane_id"`
 	CurrentPhase             int       `json:"current_phase"`
+	QualificationCurrentEnd  int       `json:"qualification_current_end"`
 	QualificationIsActive    bool      `json:"qualification_is_active"`
 	EliminationIsActive      bool      `json:"elimination_is_active"`
 	TeamEliminationIsActive  bool      `json:"team_elimination_is_active"`
@@ -118,6 +119,14 @@ func UpdateCompetitionCurrentPhasePlus(ID uint) error {
 }
 func UpdateCompetitionCurrentPhaseMinus(ID uint) error {
 	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("current_phase", gorm.Expr("current_phase - ?", 1))
+	return result.Error
+}
+func UpdateCompetitionQualificationCurrentEndPlus(ID uint) error {
+	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("qualification_current_end", gorm.Expr("qualification_current_end + ?", 1))
+	return result.Error
+}
+func UpdateCompetitionQualificationCurrentEndMinus(ID uint) error {
+	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("qualification_current_end", gorm.Expr("qualification_current_end - ?", 1))
 	return result.Error
 }
 

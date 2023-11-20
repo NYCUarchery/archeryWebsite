@@ -160,6 +160,8 @@ func PostCompetition(context *gin.Context) {
 	/*auto write Groups_num, minus one for 無組別*/
 	data.GroupsNum = -1
 	data.Date = time.Now()
+	data.CurrentPhase = 0
+	data.QualificationCurrentEnd = 0
 	newData, err := database.PostCompetition(data)
 	newId := int(newData.ID)
 	if response.ErrorInternalErrorTest(context, newId, "Post Competition", err) {
@@ -305,7 +307,7 @@ func GetAllCompetition(c *gin.Context) {
 //	@Summary		update one Competition currentPhase ++
 //	@Description	update one Competition currentPhase ++
 //	@Tags			Competition
-//	@Param 			id	path	string	true	"Competition ID"
+//	@Param			id	path	string	true	"Competition ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
 //	@Router			/api/competition/currentphaseplus/{id} [put]
@@ -329,7 +331,7 @@ func PutCompetitionCurrentPhasePlus(context *gin.Context) {
 //	@Summary		update one Competition currentPhase --
 //	@Description	update one Competition currentPhase --
 //	@Tags			Competition
-//	@Param 			id	path	string	true	"Competition ID"
+//	@Param			id	path	string	true	"Competition ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
 //	@Router			/api/competition/currentphaseminus/{id} [put]
@@ -343,6 +345,55 @@ func PutCompetitionCurrentPhaseMinus(context *gin.Context) {
 	/*update and check change*/
 	err := database.UpdateCompetitionCurrentPhaseMinus(uint(id))
 	if response.ErrorInternalErrorTest(context, id, "Update Competition CurrentPhase Minus", err) {
+		return
+	}
+	context.IndentedJSON(http.StatusOK, nil)
+}
+
+// Update Competition Qualification currentEnd ++ godoc
+//
+//	@Summary		update one Competition Qualification currentEnd ++
+//	@Description	update one Competition Qualification currentEnd ++
+//	@Tags			Competition
+//	@Param			id	path	string	true	"Competition ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/api/competition/qualificationcurrentendplus/{id} [put]
+func PutCompetitionQualificationCurrentEndPlus(context *gin.Context) {
+	id := convert2int(context, "id")
+	/*check data exist*/
+	isExist, _ := IsGetOnlyCompetition(context, id)
+	if !isExist {
+		return
+	}
+	fmt.Println("id", id)
+	/*update and check change*/
+	err := database.UpdateCompetitionQualificationCurrentEndPlus(uint(id))
+	if response.ErrorInternalErrorTest(context, id, "Update Competition Qualification CurrentEnd Plus", err) {
+		return
+	}
+	context.IndentedJSON(http.StatusOK, nil)
+}
+
+// Update Competition Qualification currentEnd -- godoc
+//
+//	@Summary		update one Competition Qualification currentEnd --
+//	@Description	update one Competition Qualification currentEnd --
+//	@Tags			Competition
+//	@Param			id	path	string	true	"Competition ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/api/competition/qualificationcurrentendminus/{id} [put]
+func PutCompetitionQualificationCurrentEndMinus(context *gin.Context) {
+	id := convert2int(context, "id")
+	/*check data exist*/
+	isExist, _ := IsGetOnlyCompetition(context, id)
+	if !isExist {
+		return
+	}
+	/*update and check change*/
+	err := database.UpdateCompetitionQualificationCurrentEndMinus(uint(id))
+	if response.ErrorInternalErrorTest(context, id, "Update Competition Qualification CurrentEnd Minus", err) {
 		return
 	}
 	context.IndentedJSON(http.StatusOK, nil)
