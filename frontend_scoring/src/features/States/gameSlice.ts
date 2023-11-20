@@ -4,6 +4,7 @@ import GameInfo from "../../jsons/GameInfo.json";
 import PhaseInfo from "../../jsons/PhaseInfo.json";
 
 const initialState = {
+  competitionID: null,
   hostId: GameInfo.host_id,
   currentPhase: GameInfo.current_phase,
   currentPhaseKind: GameInfo.current_phase_kind,
@@ -20,10 +21,15 @@ const initialState = {
   mixedEliminationIsActive: GameInfo.mixed_elimination_is_active,
 };
 
-const gameSlice = createSlice({
+const competitionSlice = createSlice({
   name: "game",
   initialState: initialState,
   reducers: {
+    initialize: (state, action) => {
+      const competition = action.payload;
+      state.competitionID = competition.competitionID;
+    },
+
     progressPhase: (state) => {
       state.currentPhase++;
     },
@@ -74,18 +80,20 @@ const gameSlice = createSlice({
   },
 });
 
-export const gameReducer = gameSlice.reducer;
-export const progressPhase = gameSlice.actions.progressPhase;
-export const regressPhase = gameSlice.actions.regressPhase;
-export const progressStage = gameSlice.actions.progressStage;
-export const regressStage = gameSlice.actions.regressStage;
-export const activatePhase = gameSlice.actions.activatePhase;
+export const gameReducer = competitionSlice.reducer;
+export const progressPhase = competitionSlice.actions.progressPhase;
+export const regressPhase = competitionSlice.actions.regressPhase;
+export const progressStage = competitionSlice.actions.progressStage;
+export const regressStage = competitionSlice.actions.regressStage;
+export const activatePhase = competitionSlice.actions.activatePhase;
 export const setQualificationEndsNum =
-  gameSlice.actions.setQualificationEndsNum;
+  competitionSlice.actions.setQualificationEndsNum;
 export const setQualificationRoundsNum =
-  gameSlice.actions.setQualificationRoundsNum;
+  competitionSlice.actions.setQualificationRoundsNum;
 export const setQualificationArrowsNumPerEnd =
-  gameSlice.actions.setQualificationArrowsNumPerEnd;
-export const setQualificationLanes = gameSlice.actions.setQualificationLanes;
+  competitionSlice.actions.setQualificationArrowsNumPerEnd;
+export const setQualificationLanes =
+  competitionSlice.actions.setQualificationLanes;
 export const setQualificationPlayersNumPerLane =
-  gameSlice.actions.setQualificationPlayersNumPerLane;
+  competitionSlice.actions.setQualificationPlayersNumPerLane;
+export const initialize = competitionSlice.actions.initialize;

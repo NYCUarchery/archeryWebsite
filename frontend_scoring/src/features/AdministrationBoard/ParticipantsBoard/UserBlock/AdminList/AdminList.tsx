@@ -1,15 +1,25 @@
 import { List, ListSubheader } from "@mui/material";
 import { useSelector } from "react-redux/es/hooks/useSelector";
 import AdminItem from "./AdminItem";
+import useGetParcipants from "../../../../../QueryHooks/useGetParticipants";
 
 export default function AdminList() {
-  const admins = useSelector((state: any) => state.participants.admins);
-  let adminItems: any[] = [];
+  const competitionID = useSelector((state: any) => state.game.competitionID);
+  const { data: participants, isFetching } = useGetParcipants(competitionID);
+  if (isFetching) {
+    return <></>;
+  }
+  let adminItems = [];
 
-  for (let i = 0; i < admins.length; i++) {
-    const admin = admins[i];
+  for (let i = 0; i < participants.length; i++) {
+    if (
+      participants[i].role !== "admin" ||
+      participants[i].status !== "approved"
+    )
+      continue;
+
     adminItems.push(
-      <AdminItem key={i} id={admin.id} name={admin.name} index={i}></AdminItem>
+      <AdminItem key={i} participant={participants[i]}></AdminItem>
     );
   }
 

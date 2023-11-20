@@ -1,25 +1,39 @@
 import { ListItem, ListItemText, ListItemButton } from "@mui/material";
-import { useDispatch } from "react-redux";
-import { deletePlayer } from "../../ParticipantsSlice";
+import { useMutation } from "react-query";
+import axios from "axios";
+import { useQueryClient } from "react-query";
 
 interface Props {
-  id: number;
-  name: string;
-  index: number;
+  participant: Participant;
 }
 
-export default function PlayerItem({ id, name, index }: Props) {
-  const dispatch = useDispatch();
+interface Participant {
+  id: number;
+  userID: number;
+  competitionID: number;
+  role: string;
+  status: string;
+}
+
+const deleteParticipant = (participant: Participant) => {
+  return axios.delete(`/api/participant/${participant.id}`);
+};
+
+export default function PlayerItem({ participant }: Props) {
+  const queryClient = useQueryClient();
+  const { mutate: removePlayer } = useMutation(deleteParticipant, {
+    onSuccess: () => queryClient.invalidateQueries("participants"),
+  });
   return (
-    <ListItem key={id} className="player_item">
+    <ListItem key={participant.userID} className="player_item">
       <ListItemText className="player_item_text">
-        ID: {id}
+        ID: {participant.userID}
         <br />
-        Name: {name}
+        Name: {participant.userID}
       </ListItemText>
       <ListItemButton
         className="player_item_delete_button"
-        onClick={() => dispatch(deletePlayer(index))}
+        onClick={() => removePlayer(participant)}
       >
         ✕
       </ListItemButton>
