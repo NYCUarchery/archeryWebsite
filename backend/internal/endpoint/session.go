@@ -29,7 +29,7 @@ func Login(c *gin.Context) {
 	}
 
 	var user database.User
-	user = database.FindByUserName(username)
+	user = database.FindByUsername(username)
 
 	// No user found
 	if user.ID == 0 {
@@ -43,7 +43,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	pkg.SaveAuthSession(c, user.ID, user.Name)
+	pkg.SaveAuthSession(c, user.ID, user.Username)
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
 

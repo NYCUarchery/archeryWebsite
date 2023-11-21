@@ -56,8 +56,8 @@ func InstitutionInfo(c *gin.Context) {
 		return
 	}
 
-	institution, err := database.InstitutionInfoByID(uint(id))
-	if err != nil {
+	institution := database.InstitutionInfoByID(uint(id))
+	if institution.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"result": "no institution found"})
 		return
 	}

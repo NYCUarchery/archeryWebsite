@@ -27,23 +27,27 @@ import (
 //	@Router			/user [post]
 func Register(c *gin.Context) {
 	var user database.User
-	user.Name = c.PostForm("username")
+	user.Username = c.PostForm("username")
 
-	if user.Name == "" {
+	if user.Username == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "empty username"})
 		return
 	}
 
-	if findUser := database.FindByUserName(user.Name); findUser.ID != 0 {
+	if findUser := database.FindByUsername(user.Username); findUser.ID != 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "username exists"})
 		return
 	}
 
-	user.Password = pkg.EncryptPassword(c.PostForm("password"))
-	if user.Password == "" {
+	plainPassword := c.PostForm("password")
+	if plainPassword == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "empty password"})
 		return
 	}
+	user.Password = pkg.EncryptPassword(plainPassword)
+
+	user.RealName = c.PostForm("realName")
+
 	user.Email = c.PostForm("email")
 	if user.Email == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "empty email"})
@@ -53,7 +57,9 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "email exists"})
 		return
 	}
+
 	user.Overview = c.PostForm("overview")
+
 	insIDStr := c.PostForm("institutionID")
 	if insIDStr == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "empty institution ID"})
@@ -66,6 +72,7 @@ func Register(c *gin.Context) {
 		return
 	}
 	ins := database.InstitutionInfoByID(uint(insID))
+
 	if ins.ID == 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "no institution found"})
 		return
