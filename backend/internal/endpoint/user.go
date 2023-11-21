@@ -11,6 +11,7 @@ import (
 )
 
 // Register godoc
+//
 //	@Summary		register a user
 //	@Description	add a user to db
 //	@Tags			User
@@ -77,6 +78,7 @@ func Register(c *gin.Context) {
 }
 
 // Login godoc
+//
 //	@Summary		login
 //	@Description	get a session
 //	@Tags			Session
@@ -96,8 +98,7 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	var user database.User
-	user = database.FindByUserName(username)
+	user := database.FindByUserName(username)
 
 	// No user found
 	if user.ID == 0 {
@@ -116,6 +117,7 @@ func Login(c *gin.Context) {
 }
 
 // Logout godoc
+//
 //	@Summary		logout
 //	@Description	delete the session
 //	@Tags			Session
@@ -128,6 +130,7 @@ func Logout(c *gin.Context) {
 }
 
 // ModifyInfo godoc
+//
 //	@Summary		modify user's information
 //	@Description	modify username, password, overview, and institution_id
 //	@Tags			User
@@ -227,6 +230,7 @@ func ModifyInfo(c *gin.Context) {
 }
 
 // GetUserID godoc
+//
 //	@Summary		get my uid
 //	@Description	get my uid in the session
 //	@Tags			User
@@ -239,6 +243,7 @@ func GetUserID(c *gin.Context) {
 }
 
 // UserInfo godoc
+//
 //	@Summary		get a user's information
 //	@Description	get a user's username, overview, and institution id
 //	@Tags			User
@@ -262,7 +267,7 @@ func UserInfo(c *gin.Context) {
 		return
 	}
 
-	user, err := database.FindByUserID(uint(uid))
+	user, _ := database.FindByUserID(uint(uid))
 	if user.ID == 0 {
 		c.JSON(http.StatusNotFound, gin.H{"result": "no user found"})
 		return

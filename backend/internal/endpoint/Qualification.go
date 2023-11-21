@@ -66,7 +66,7 @@ func IsGetQualificationWUnassignedLanes(context *gin.Context, id uint) (bool, da
 //	@Param			id	path	int	true	"Qualification ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/data/qualification/{id} [get]
+//	@Router			/api/qualification/{id} [get]
 func GetOnlyQualificationByID(context *gin.Context) {
 	id := convert2uint(context, "id")
 	isExist, data := IsGetQualification(context, id)
@@ -85,7 +85,7 @@ func GetOnlyQualificationByID(context *gin.Context) {
 //	@Param			id	path	int	true	"Qualification ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/data/qualification/lanes/{id} [get]
+//	@Router			/api/qualification/lanes/{id} [get]
 func GetQualificationWLanesByID(context *gin.Context) {
 	id := convert2uint(context, "id")
 	isExist, data := IsGetQualificationWLanes(context, id)
@@ -170,7 +170,7 @@ func PostQualificationThroughGroup(context *gin.Context, id uint) bool {
 //	@Failure		400				string	string
 //	@Failure		404				string	string
 //	@Failure		500				string	string
-//	@Router			/data/qualification/whole/{id} [put]
+//	@Router			/api/qualification/whole/{id} [put]
 func UpdateQualificationByID(context *gin.Context) {
 	var data database.Qualification
 	err := context.BindJSON(&data)
