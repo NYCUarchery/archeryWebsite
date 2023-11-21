@@ -1,34 +1,20 @@
-import { ButtonGroup } from "@mui/material";
+import { List } from "@mui/material";
 import PlayerItem from "./PlayerItem";
 
 interface Props {
-  groupId: number;
-  players: Player[];
+  players: any[];
 }
 
-interface Player {
-  name: string;
-  id: number;
-}
-
-export default function PlayerList({ players, groupId }: Props) {
+export default function PlayerList({ players }: Props) {
   let items = [];
 
   for (let i = 0; i < players.length; i++) {
-    items.push(
-      <PlayerItem
-        key={i}
-        name={players[i].name}
-        id={players[i].id}
-        index={i}
-        groupId={groupId}
-      />
-    );
+    items.push(<PlayerItem key={i} player={players[i]} />);
   }
 
   return (
-    <ButtonGroup className="player_list" variant="text" orientation="vertical">
+    <List className="player_list" sx={{ maxHeight: "100%", overflow: "auto" }}>
       {items}
-    </ButtonGroup>
+    </List>
   );
 }

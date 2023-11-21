@@ -1,23 +1,21 @@
 import PlayerList from "./PlayerList/PlayerList";
-import { useSelector, useDispatch } from "react-redux";
-import { useEffect } from "react";
-import { setGroups } from "../groupsBoardSlice";
 
-export default function PlayerLists() {
-  const dispatch = useDispatch();
-  const players = useSelector((state: any) => state.participants.players);
-  const groups = useSelector((state: any) => state.groupsBoard.groups);
-  const groupsNum = useSelector((state: any) => state.groupsBoard.groupsNum);
+import { Box } from "@mui/material";
 
-  useEffect(() => {
-    dispatch(setGroups(players));
-  }, []);
+interface Props {
+  groups: any[];
+}
 
+export default function PlayerLists({ groups }: Props) {
   let playerLists = [];
 
-  for (let i = 0; i < groupsNum; i++) {
-    playerLists.push(<PlayerList key={i} players={groups[i]} groupId={i} />);
+  for (let i = 0; i < groups.length; i++) {
+    playerLists.push(<PlayerList key={i} players={groups[i].players} />);
   }
 
-  return <div className="player_lists">{playerLists}</div>;
+  return (
+    <Box className="player_lists" sx={{ height: "450px" }}>
+      {playerLists}
+    </Box>
+  );
 }

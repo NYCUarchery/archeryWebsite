@@ -1,27 +1,33 @@
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { useSelector, useDispatch } from "react-redux";
-import { selectGroupId } from "./groupSelectorSlice";
+import { selectGroup } from "./groupSelectorSlice";
 
-export default function GroupSelector() {
+interface Props {
+  groups: any[];
+}
+
+export default function GroupSelector({ groups }: Props) {
   const dispatch = useDispatch();
-  const groupNames = useSelector((state: any) => state.groupsBoard.groupNames);
-  const groupsNum = useSelector((state: any) => state.groupsBoard.groupsNum);
-  const selectedGroupId = useSelector(
-    (state: any) => state.groupSelector.selectedGroupId
+  const selectedGroupID = useSelector(
+    (state: any) => state.groupSelector.selectedGroupID
   );
 
   const handleSelection = (
     _event: React.MouseEvent<HTMLElement>,
-    newGroupId: number | null
+    newGroupID: number | null
   ) => {
-    dispatch(selectGroupId(newGroupId));
+    dispatch(selectGroup({ groupID: newGroupID }));
   };
 
   let buttons = [];
-  for (let i = 0; i < groupsNum; i++) {
+  for (let i = 0; i < groups.length; i++) {
     buttons.push(
-      <ToggleButton className="group_selector_button" key={i} value={i}>
-        {groupNames[i]}
+      <ToggleButton
+        className="group_selector_button"
+        key={i}
+        value={groups[i].id}
+      >
+        {groups[i].group_name == "unassigned" ? "無組別" : groups[i].group_name}
       </ToggleButton>
     );
   }
@@ -29,7 +35,7 @@ export default function GroupSelector() {
   return (
     <ToggleButtonGroup
       className="group_selector"
-      value={selectedGroupId}
+      value={selectedGroupID}
       exclusive
       onChange={handleSelection}
       fullWidth

@@ -8,5 +8,5 @@ RUN npm i -g serve
 
 COPY . .
 RUN npm run build
-ENTRYPOINT npm run preview
+ENTRYPOINT npm run dev -- --host
 EXPOSE 3000
