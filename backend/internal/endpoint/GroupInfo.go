@@ -318,18 +318,19 @@ func DeleteGroupInfoById(context *gin.Context, id uint) (bool, bool) {
 	UnassignedLaneId := database.GetCompetitionUnassignedLaneId(competitionId)
 	fmt.Printf("UnassignedLaneId = %d\n", UnassignedLaneId)
 	fmt.Printf("qualification.Lanes = %v\n", qualification.Lanes)
-	for _, lane := range qualification.Lanes {
-		fmt.Printf("lane.ID = %d\n", lane.ID)
-		for _, player := range lane.Players {
-			fmt.Printf("player.ID = %d\n", player.ID)
-			err := database.UpdatePlayerLaneId(player.ID, UnassignedLaneId)
-			if response.ErrorInternalErrorTest(context, player.ID, "Update Player LaneId in Delete GroupInfo", err) {
-				return false, false
-			}
-			err = database.UpdatePlayerGroupId(player.ID, UnassignedGroupId)
-			if response.ErrorInternalErrorTest(context, player.ID, "Update Player GroupId in Delete GroupInfo", err) {
-				return false, false
-			}
+	/*all players under lanes of this group*/
+	playerIds, err := database.GetPlayerIdsByCompetitionIdGroupId(competitionId, id)
+	if response.ErrorInternalErrorTest(context, id, "Get PlayerIds in Delete GroupInfo", err) {
+		return false, false
+	}
+	for _, playerId := range playerIds {
+		err := database.UpdatePlayerGroupId(playerId, UnassignedGroupId)
+		if response.ErrorInternalErrorTest(context, playerId, "Update Player in Delete GroupInfo", err) {
+			return false, false
+		}
+		err = database.UpdatePlayerLaneId(playerId, UnassignedLaneId)
+		if response.ErrorInternalErrorTest(context, playerId, "Update Player in Delete GroupInfo", err) {
+			return false, false
 		}
 	}
 

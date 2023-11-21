@@ -99,6 +99,18 @@ func GetPlayerRoundTotalScoreByRoundId(roundId uint) (int, error) {
 	return data.TotalScore, result.Error
 }
 
+func GetPlayerIdsByCompetitionIdGroupId(competitionId uint, groupId uint) ([]uint, error) {
+	var playerIds []uint
+	result := DB.Table("players").
+		Select("players.id").
+		Joins("JOIN participants ON participants.id = players.participant_id").
+		Where("participants.competition_id = ?", competitionId).
+		Where("players.group_id = ?", groupId).
+		Order("players.order_number ASC").
+		Find(&playerIds)
+	return playerIds, result.Error
+}
+
 func CreatePlayer(data Player) (Player, error) {
 	result := DB.Table("players").Create(&data)
 	return data, result.Error
