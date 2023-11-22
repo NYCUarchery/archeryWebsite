@@ -2,6 +2,7 @@ import { Box } from "@mui/material";
 import EndSwitch from "./EndSwitch/EndSwitch";
 import OverviewBlock from "./OverviewBlock/OverviewBlock";
 import PlayerStatusBlock from "./PlayerStatusBlock/PlayerStatusBlock";
+import RankingButton from "./RankingButton";
 
 export default function Qualification() {
   return (
@@ -17,6 +18,7 @@ export default function Qualification() {
           <OverviewBlock></OverviewBlock>
         </Box>
         <PlayerStatusBlock></PlayerStatusBlock>
+        <RankingButton></RankingButton>
       </Box>
     </>
   );
