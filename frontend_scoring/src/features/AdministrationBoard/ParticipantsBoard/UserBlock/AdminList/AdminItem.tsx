@@ -46,7 +46,7 @@ export default function AdminItem({ participant }: Props) {
       <ListItemText className="admin_item_text">
         ID: {participant.userID}
         <br />
-        Name: {participant.userID}
+        Name: {participant.name}
       </ListItemText>
       {deleteButtonTag}
     </ListItem>

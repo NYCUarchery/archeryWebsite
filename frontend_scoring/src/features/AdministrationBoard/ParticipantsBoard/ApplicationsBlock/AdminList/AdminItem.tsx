@@ -2,18 +2,12 @@ import { ListItem, ListItemText, ListItemButton } from "@mui/material";
 import { useMutation } from "react-query";
 import axios from "axios";
 import { useQueryClient } from "react-query";
+import { Participant } from "../../participantInteface";
 
 interface Props {
   participant: Participant;
 }
 
-interface Participant {
-  id: number;
-  userID: number;
-  competitionID: number;
-  role: string;
-  status: string;
-}
 const putApprovedAdmin = (participant: Participant) => {
   const admin = {
     user_id: participant.userID,
@@ -42,7 +36,7 @@ export default function AdminItem({ participant }: Props) {
       <ListItemText className="admin_item_text">
         ID: {participant.userID}
         <br />
-        Name: {participant.userID}
+        Name: {participant.name}
       </ListItemText>
       <ListItemButton
         className="admin_item_confirm_button"
