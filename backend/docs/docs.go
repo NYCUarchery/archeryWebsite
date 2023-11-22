@@ -981,14 +981,14 @@ const docTemplate = `{
         },
         "/api/elimination/stages/{id}": {
             "get": {
-                "description": "Get one Elimination with stages by id",
+                "description": "Get one Elimination with stages, matches by id",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Elimination"
                 ],
-                "summary": "Show one Elimination with stages",
+                "summary": "Show one Elimination with stages, matches",
                 "parameters": [
                     {
                         "type": "integer",

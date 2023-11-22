@@ -21,16 +21,16 @@ func IsGetEliminationById(context *gin.Context) (bool, database.Elimination) {
 	return true, data
 }
 
-func IsGetEliminationWStagesById(context *gin.Context) (bool, database.Elimination) {
+func IsGetEliminationWStagesMatchesById(context *gin.Context) (bool, database.Elimination) {
 	id := convert2uint(context, "id")
-	data, err := database.GetEliminationWStagesById(id)
+	data, err := database.GetEliminationWStagesMatchesById(id)
 	isExist := (data.ID == id)
 	if response.ErrorIdTest(context, id, isExist, "Elimination") {
 		return false, database.Elimination{}
-	} else if response.ErrorInternalErrorTest(context, id, "Get Elimination with stages", err) {
+	} else if response.ErrorInternalErrorTest(context, id, "Get Elimination with stages, matches", err) {
 		return false, data
 	}
-	response.AcceptPrint(id, fmt.Sprint(data), "Elimination with stages")
+	response.AcceptPrint(id, fmt.Sprint(data), "Elimination with stages, matches")
 	return true, data
 }
 
@@ -76,18 +76,18 @@ func GetEliminationWPlayerSetsById(context *gin.Context) {
 	context.IndentedJSON(200, data)
 }
 
-// Get one Elimination By ID with stages godoc
+// Get one Elimination By ID with stages, matches godoc
 //
-//	@Summary		Show one Elimination with stages
-//	@Description	Get one Elimination with stages by id
+//	@Summary		Show one Elimination with stages, matches
+//	@Description	Get one Elimination with stages, matches by id
 //	@Tags			Elimination
 //	@Produce		json
 //	@Param			id	path	int	true	"Elimination ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
 //	@Router			/api/elimination/stages/{id} [get]
-func GetEliminationWStagesById(context *gin.Context) {
-	isExist, data := IsGetEliminationWStagesById(context)
+func GetEliminationWStagesMatchesById(context *gin.Context) {
+	isExist, data := IsGetEliminationWStagesMatchesById(context)
 	if !isExist {
 		return
 	}

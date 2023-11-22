@@ -102,7 +102,7 @@ func eliminationRouter(api *gin.RouterGroup) {
 	api.GET("/:id", endpoint.GetOnlyEliminationById)
 	api.GET("/stages/scores/medals/:id", endpoint.GetEliminationById)
 	api.GET("/playersets/:id", endpoint.GetEliminationWPlayerSetsById)
-	api.GET("/stages/:id", endpoint.GetEliminationWStagesById)
+	api.GET("/stages/matches/:id", endpoint.GetEliminationWStagesMatchesById)
 	api.GET("/scores/:id", endpoint.GetEliminationWScoresById)
 	api.GET("/match/scores/:matchid", endpoint.GetMatchWScoresById)
 

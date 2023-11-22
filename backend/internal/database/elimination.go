@@ -75,10 +75,10 @@ func GetEliminationWPlayerSetsById(id uint) (Elimination, error) {
 	return data, result.Error
 }
 
-func GetEliminationWStagesById(id uint) (Elimination, error) {
+func GetEliminationWStagesMatchesById(id uint) (Elimination, error) {
 	var data Elimination
 	result := DB.
-		Preload("Stages", func(*gorm.DB) *gorm.DB {
+		Preload("Stages.Matchs", func(*gorm.DB) *gorm.DB {
 			return DB.Order("id asc")
 		}).
 		Model(&Elimination{}).
