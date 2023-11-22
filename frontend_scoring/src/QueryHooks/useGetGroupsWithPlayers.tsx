@@ -6,6 +6,7 @@ export default function useGetGroupsWithPlayers(competitionID: number) {
     "groupsWithPlayers",
     () => axios.get(`/api/competition/groups/players/${competitionID}`),
     {
+      staleTime: 2000,
       select: (data: any) => {
         const groups = data?.data.groups;
         return groups as any;
