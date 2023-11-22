@@ -87,6 +87,33 @@ func GetPlayerWScoresByID(context *gin.Context) {
 	context.IndentedJSON(200, data)
 }
 
+// Get One Player with PlayerSets By ID and elimination id godoc
+//
+//	@Summary		Show one Player with player sets
+//	@Description	Get one Player with player sets by id and elimination id
+//	@Tags			Player
+//	@Produce		json
+//	@Param			id				path	int	true	"Player ID"
+//	@Param			eliminationid	path	int	true	"Elimination ID"
+//	@Success		200				string	string
+//	@Failure		400				string	string
+//	@Router			/api/player/playersets/{id}/{eliminationid} [get]
+func GetPlayerWPlayerSetsByIDEliminationID(context *gin.Context) {
+	id := convert2uint(context, "id")
+	eliminationId := convert2uint(context, "eliminationid")
+	if response.ErrorIdTest(context, eliminationId, database.GetEliminationIsExist(eliminationId), "Elimination when getting player sets") {
+		return
+	} else if response.ErrorIdTest(context, id, database.GetPlayerIsExist(id), "Player when getting player sets") {
+		return
+	}
+	data, err := database.GetPlayerWPlayerSetsByIDCompeitionID(id, eliminationId)
+	if response.ErrorInternalErrorTest(context, id, "Get Player with player sets", err) {
+		return
+	}
+	response.AcceptPrint(id, fmt.Sprint(data), "Player with player sets")
+	context.IndentedJSON(200, data)
+}
+
 // Post one Player By Participant ID godoc
 //
 //	@Summary		Create one Player by Participant ID

@@ -30,6 +30,7 @@ func AddApiRouter(api *gin.RouterGroup) {
 func playerRouter(api *gin.RouterGroup) {
 	api.GET("/:id", endpoint.GetOnlyPlayerByID)
 	api.GET("/scores/:id", endpoint.GetPlayerWScoresByID)
+	api.GET("/playersets/:id/:eliminationid", endpoint.GetPlayerWPlayerSetsByIDEliminationID)
 	api.POST("/:participantid", endpoint.PostPlayer)
 	api.POST("/roundend", endpoint.PostRoundEnd)
 	api.POST("/roundscore", endpoint.PostRoundScore)

@@ -124,7 +124,10 @@ func GetEliminationTeamSizeByMatchResultId(matchResultId uint) (int, error) {
 func GetEliminationById(id uint) (Elimination, error) {
 	var data Elimination
 	result := DB.
-		Preload("PlayerSets").
+		Preload("PlayerSets", func(*gorm.DB) *gorm.DB {
+			return DB.Order("`rank` asc").
+				Preload("Players")
+		}).
 		Preload("Medals").
 		Preload("Stages.Matchs.MatchResults", func(*gorm.DB) *gorm.DB {
 			return DB.Order("id asc").

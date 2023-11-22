@@ -2,16 +2,17 @@ package database
 
 // terms reference : https://hackmd.io/@cT-ZX_mHQ4utYON6GCLQEA/BJPfmNPza
 type Player struct {
-	ID            uint     `json:"id"           gorm:"primary_key"`
-	GroupId       uint     `json:"group_id"`
-	LaneId        uint     `json:"lane_id"`
-	ParticipantId uint     `json:"participant_id"`
-	Name          string   `json:"name"`
-	TotalScore    int      `json:"total_score"`
-	ShootOffScore int      `json:"shoot_off_score"`
-	Rank          int      `json:"rank"`
-	Order         int      `json:"order" gorm:"column:order_number"`
-	Rounds        []*Round `json:"rounds" gorm:"constraint:OnDelete:CASCADE;"`
+	ID            uint         `json:"id"           gorm:"primary_key"`
+	GroupId       uint         `json:"group_id"`
+	LaneId        uint         `json:"lane_id"`
+	ParticipantId uint         `json:"participant_id"`
+	Name          string       `json:"name"`
+	TotalScore    int          `json:"total_score"`
+	ShootOffScore int          `json:"shoot_off_score"`
+	Rank          int          `json:"rank"`
+	Order         int          `json:"order" gorm:"column:order_number"`
+	Rounds        []*Round     `json:"rounds" gorm:"constraint:OnDelete:CASCADE;"`
+	PlayerSets    []*PlayerSet `json:"player_sets" gorm:"many2many:player_set_match_tables;"`
 }
 
 type Round struct {

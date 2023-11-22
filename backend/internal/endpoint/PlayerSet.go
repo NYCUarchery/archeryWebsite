@@ -35,27 +35,11 @@ func IsGetPlayerSetById(context *gin.Context, id uint) (bool, database.PlayerSet
 //	@Failure		500	string	string
 //	@Router			/playerset/{id} [get]
 func GetPlayerSetWPlayerById(context *gin.Context) {
-	type playerSetData struct {
-		PlayerSet database.PlayerSet `json:"player_set"`
-		Players   []database.Player  `json:"players"`
-	}
 	id := convert2uint(context, "id")
-	var data playerSetData
 	var isExist bool
-	isExist, data.PlayerSet = IsGetPlayerSetById(context, id)
+	isExist, data := IsGetPlayerSetById(context, id)
 	if !isExist {
 		return
-	}
-	playerIds, err := database.GetPlayerIdsByPlayerSetId(id)
-	if response.ErrorInternalErrorTest(context, id, "get player ids by player set id", err) {
-		return
-	}
-	for _, playerId := range playerIds {
-		IsExist, player := IsGetOnlyPlayer(context, playerId)
-		if !IsExist {
-			return
-		}
-		data.Players = append(data.Players, player)
 	}
 	context.IndentedJSON(200, data)
 }

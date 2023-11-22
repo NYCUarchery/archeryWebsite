@@ -1,11 +1,14 @@
 package database
 
+import "gorm.io/gorm"
+
 type PlayerSet struct {
-	ID            uint   `json:"id"        gorm:"primary_key"`
-	EliminationId uint   `json:"elimination_id"`
-	TotalScore    int    `json:"total_score"`
-	Rank          int    `json:"rank"`
-	SetName       string `json:"set_name"`
+	ID            uint      `json:"id"        gorm:"primary_key"`
+	EliminationId uint      `json:"elimination_id"`
+	TotalScore    int       `json:"total_score"`
+	Rank          int       `json:"rank"`
+	SetName       string    `json:"set_name"`
+	Players       []*Player `json:"players" gorm:"many2many:player_set_match_tables;"`
 }
 
 type PlayerSetMatchTable struct {
@@ -27,7 +30,13 @@ func GetPlayerSetIsExist(id uint) bool {
 
 func GetPlayerSetById(id uint) (PlayerSet, error) {
 	var data PlayerSet
-	result := DB.Table("player_sets").Where("id = ?", id).First(&data)
+	result := DB.
+		Preload("Players", func(*gorm.DB) *gorm.DB {
+			return DB.Order("`rank` asc")
+		}).
+		Table("player_sets").
+		Where("id = ?", id).
+		First(&data)
 	return data, result.Error
 }
 
@@ -36,6 +45,18 @@ func GetPlayerIdsByPlayerSetId(id uint) ([]uint, error) {
 	result := DB.Table("player_set_match_tables").
 		Where("player_set_id = ?", id).
 		Pluck("player_id", &data)
+	return data, result.Error
+}
+func GetPlayerWPlayerSetsByIDCompeitionID(id uint, eliminationId uint) (Player, error) {
+	var data Player
+	result := DB.
+		Preload("PlayerSets", func(*gorm.DB) *gorm.DB {
+			return DB.Order("`rank` asc").
+				Where("elimination_id = ?", eliminationId)
+		}).
+		Model(&Player{}).
+		Where("id = ?", id).
+		First(&data)
 	return data, result.Error
 }
 

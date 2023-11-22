@@ -121,7 +121,7 @@ func GetEliminationWScoresById(context *gin.Context) {
 // Get one Elimination By ID with all related data godoc
 //
 //	@Summary		Show one Elimination with all related data
-//	@Description	Get one Elimination with stages, matches, matchResults, matchEnds, scores, playerSets, medals by id
+//	@Description	Get one Elimination with stages, matches, matchResults, matchEnds, scores, playerSets, players, medals by id
 //	@Tags			Elimination
 //	@Produce		json
 //	@Param			id	path	int	true	"Elimination ID"

@@ -911,7 +911,7 @@ const docTemplate = `{
         },
         "/api/elimination/stages/scores/medals/{id}": {
             "get": {
-                "description": "Get one Elimination with stages, matches, matchResults, matchEnds, scores, playerSets, medals by id",
+                "description": "Get one Elimination with stages, matches, matchResults, matchEnds, scores, playerSets, players, medals by id",
                 "produces": [
                     "application/json"
                 ],
@@ -2847,6 +2847,48 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/player/playersets/{id}/{eliminationid}": {
+            "get": {
+                "description": "Get one Player with player sets by id and elimination id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Show one Player with player sets",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Elimination ID",
+                        "name": "eliminationid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/player/roundend": {
             "post": {
                 "description": "Create one RoundEnd by round id, IsComfirmed is false",
@@ -4219,6 +4261,12 @@ const docTemplate = `{
                 "participant_id": {
                     "type": "integer"
                 },
+                "player_sets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.PlayerSet"
+                    }
+                },
                 "rank": {
                     "type": "integer"
                 },
@@ -4230,6 +4278,32 @@ const docTemplate = `{
                 },
                 "shoot_off_score": {
                     "type": "integer"
+                },
+                "total_score": {
+                    "type": "integer"
+                }
+            }
+        },
+        "database.PlayerSet": {
+            "type": "object",
+            "properties": {
+                "elimination_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "players": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.Player"
+                    }
+                },
+                "rank": {
+                    "type": "integer"
+                },
+                "set_name": {
+                    "type": "string"
                 },
                 "total_score": {
                     "type": "integer"
