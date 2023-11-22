@@ -105,7 +105,6 @@ func PostLaneThroughCompetition(context *gin.Context, competitionId uint, unassi
 	/*set LaneNumber*/
 	data.CompetitionId = competitionId
 	data.QualificationId = unassignedGroupId
-	data.PlayerNum = 0
 	data.LaneNumber = laneNumber
 	/*insert data*/
 	data, err := database.PostLane(data)

@@ -2,10 +2,11 @@ package database
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v2"
 	"log"
 	"os"
 	"time"
+
+	"gopkg.in/yaml.v2"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -41,6 +42,7 @@ func DatabaseInitial() {
 	InitInstitution()
 	InitParticipant()
 	InitPlayer()
+	InitPlayerSet()
 
 	InitCompetition()
 	InitGroupInfo()

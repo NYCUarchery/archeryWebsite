@@ -4,7 +4,7 @@ type Medal struct {
 	ID            uint `gorm:"primaryKey;autoIncrement" json:"id"`
 	EliminationId uint `gorm:"not null" json:"elimination_id"`
 	Type          int  `gorm:"not null" json:"type"`
-	// PlayerSetId uint `gorm:"not null" json:"player_set_id"`
+	PlayerSetId   uint `gorm:"not null" json:"player_set_id"`
 }
 
 func InitMedal() {

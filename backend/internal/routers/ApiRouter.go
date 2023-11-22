@@ -13,6 +13,7 @@ func AddApiRouter(api *gin.RouterGroup) {
 
 	profileRouter(api)
 	playerRouter(api.Group("player"))
+	playerSetRouter(api.Group("playerset"))
 
 	competitionRouter(api.Group("competition"))
 	groupInfoRouter(api.Group("groupinfo"))
@@ -39,6 +40,13 @@ func playerRouter(api *gin.RouterGroup) {
 	api.PUT("/roundscore/:id", endpoint.UpdatePlayerScore)
 	api.PUT("/shootoffscore/:id", endpoint.UpdatePlayerShootoffScore)
 	api.DELETE("/:id", endpoint.DeletePlayer)
+}
+func playerSetRouter(api *gin.RouterGroup) {
+	api.GET("/:id", endpoint.GetPlayerSetWPlayerById)
+	api.GET("/elimination/:eliminationid", endpoint.GetAllPlayerSetsByEliminationId)
+	api.POST("/", endpoint.PostPlayerSet)
+	api.PUT("/name/:id", endpoint.PutPlayerSetName)
+	api.DELETE("/:id", endpoint.DeletePlayerSet)
 }
 
 func competitionRouter(api *gin.RouterGroup) {

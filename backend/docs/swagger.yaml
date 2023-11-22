@@ -2401,6 +2401,151 @@ paths:
       summary: get institution info by id
       tags:
       - Institution
+  /playerset:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Post player set, and build player set match table
+        If team size is 1, set name will be player name
+      parameters:
+      - description: Player Set Data
+        in: body
+        name: data
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Post player set
+      tags:
+      - PlayerSet
+  /playerset/{id}:
+    delete:
+      description: Delete player set, and delete player set match table
+      parameters:
+      - description: Player Set ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Delete player set
+      tags:
+      - PlayerSet
+    get:
+      description: Get player set with players by id
+      parameters:
+      - description: Player Set ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get player set with players by id
+      tags:
+      - PlayerSet
+  /playerset/elimination/{eliminationid}:
+    get:
+      description: Get all player sets by elimination id
+      parameters:
+      - description: Elimination ID
+        in: path
+        name: eliminationid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get all player sets by elimination id
+      tags:
+      - PlayerSet
+  /playerset/name/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Put player set name
+      parameters:
+      - description: Player Set ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Player Set Data
+        in: body
+        name: data
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Put player set name
+      tags:
+      - PlayerSet
   /session:
     delete:
       description: delete the session

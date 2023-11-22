@@ -3,9 +3,9 @@ package database
 import "gorm.io/gorm"
 
 type MatchResult struct {
-	//PlayerSetId uint `json:"player_set_id"`
 	ID            uint        `json:"id"        gorm:"primary_key"`
 	MatchId       uint        `json:"match_id"`
+	PlayerSetId   uint        `json:"player_set_id"`
 	TotalPoints   int         `json:"total_points"`
 	ShootOffScore int         `json:"shoot_off_score"`
 	IsWinner      bool        `json:"is_winner"`
