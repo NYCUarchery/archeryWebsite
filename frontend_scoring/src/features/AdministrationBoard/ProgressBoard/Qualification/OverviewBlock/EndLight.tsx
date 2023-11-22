@@ -34,7 +34,7 @@ export default function EndLight({ index, status }: Props) {
           color: "white",
         }}
       >
-        {index + 1}
+        {index}
       </Avatar>
     </Grid>
   );

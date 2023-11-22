@@ -1,6 +1,5 @@
 import { Box } from "@mui/material";
 import PhaseSelector from "../PhaseSelector/PhaseSelector";
-import EndSwitch from "./Qualification/EndSwitch/EndSwitch";
 import { useSelector } from "react-redux";
 import Qualification from "./Qualification/Qualification";
 

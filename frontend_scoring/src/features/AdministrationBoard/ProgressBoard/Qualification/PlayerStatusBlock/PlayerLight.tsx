@@ -9,7 +9,7 @@ interface Props {
 export default function PlayerLight({ laneIndex, order, isConfirmed }: Props) {
   let playerCode = laneIndex.toString();
 
-  playerCode += String.fromCharCode("A".charCodeAt(0) + order);
+  playerCode += String.fromCharCode("A".charCodeAt(0) + order - 1);
 
   return (
     <Avatar

@@ -1,23 +1,41 @@
 import { Box, Divider, Grid } from "@mui/material";
 import PlayerLight from "./PlayerLight";
+import { useSelector } from "react-redux";
+import useGetLaneWithPlayersScores from "../../../../../QueryHooks/useGetLaneWithPlayersScores";
+import useGetCompetition from "../../../../../QueryHooks/useGetCompetition";
 interface Props {
-  index: number;
-  playerNum: number;
+  laneShell: any;
 }
 
-export default function LaneBlock({ index, playerNum }: Props) {
+export default function LaneBlock({ laneShell }: Props) {
+  const competitionID = useSelector((state: any) => state.game.competitionID);
+  const { data: lane, isLoading: isLoadingLane } = useGetLaneWithPlayersScores(
+    laneShell.id
+  );
+  const { data: competition, isLoading: isLoadingCompetition } =
+    useGetCompetition(competitionID);
+  if (isLoadingLane || isLoadingCompetition) {
+    return <></>;
+  }
+  const currentEnd: number = competition.qualification_current_end;
+  const currentRound = Math.ceil(currentEnd / 6);
+
   let playerLights = [];
+  if (currentRound !== 0 && currentRound <= competition.rounds_num) {
+    for (let i = 0; i < lane.players.length; i++) {
+      const player = lane.players[i];
+      const round = player.rounds[currentRound - 1];
+      const endIndex = (currentEnd - 1) % 6;
+      console.log(round);
 
-  for (let i = 0; i < playerNum; i++) {
-    let isConfirmed = Math.random() > 0.5;
-
-    playerLights.push(
-      <PlayerLight
-        laneIndex={index}
-        order={i}
-        isConfirmed={isConfirmed}
-      ></PlayerLight>
-    );
+      playerLights.push(
+        <PlayerLight
+          laneIndex={lane?.lane_number}
+          order={player.order}
+          isConfirmed={round.round_ends[endIndex].is_confirmed}
+        ></PlayerLight>
+      );
+    }
   }
 
   return (
@@ -39,7 +57,7 @@ export default function LaneBlock({ index, playerNum }: Props) {
           alignItems: "center",
         }}
       >
-        Lane {index}
+        Lane {lane.lane_number}
       </Box>
       <Divider />
       <Box
