@@ -155,25 +155,19 @@ func GetParticipantByUserId(context *gin.Context) {
 //	@Failure		400				string	string
 //	@Router			/api/participant/competition [get]
 func GetParticipantByCompetitionId(context *gin.Context) {
-	type CompetitionData struct {
-		CompetitionId uint `json:"competition_id"`
-	}
 	var newData []ParticipantWName
-	var data CompetitionData
-	err := context.BindJSON(&data)
-	if response.ErrorReceiveDataTest(context, data.CompetitionId, "Get participants by competition id ", err) {
-		return
-	} else if response.ErrorIdTest(context, data.CompetitionId, database.GetCompetitionIsExist(data.CompetitionId), "Competition ID when getting participants") {
+	competitionId := convert2uint(context, "competitionid")
+	if response.ErrorIdTest(context, competitionId, database.GetCompetitionIsExist(competitionId), "Competition ID when getting participants") {
 		return
 	}
-	participants, err := database.GetParticipantByCompetitionId(data.CompetitionId)
-	if response.ErrorInternalErrorTest(context, data.CompetitionId, "Get Participants by competition id", err) {
+	participants, err := database.GetParticipantByCompetitionId(competitionId)
+	if response.ErrorInternalErrorTest(context, competitionId, "Get Participants by competition id", err) {
 		return
 	}
 	for _, participant := range participants {
 		var tempData ParticipantWName
 		user, err := database.FindByUserID(participant.UserID)
-		if response.ErrorInternalErrorTest(context, data.CompetitionId, "Get Participants by competition id", err) {
+		if response.ErrorInternalErrorTest(context, competitionId, "Get Participants by competition id", err) {
 			return
 		}
 		tempData.ID = participant.ID
