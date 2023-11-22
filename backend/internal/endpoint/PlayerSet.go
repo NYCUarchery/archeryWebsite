@@ -164,7 +164,7 @@ func PostPlayerSet(context *gin.Context) {
 //	@Tags			PlayerSet
 //	@Accept			json
 //	@Produce		json
-//	@Param			id		path	uint			true	"Player Set ID"
+//	@Param			id		path	uint	true	"Player Set ID"
 //	@Param			data	body	string	true	"Player Set Data"
 //	@Success		200		string	string
 //	@Failure		400		string	string

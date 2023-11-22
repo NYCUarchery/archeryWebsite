@@ -136,7 +136,7 @@ func matchResultRouter(api *gin.RouterGroup) {
 func medalRouter(api *gin.RouterGroup) {
 	api.GET("/:id", endpoint.GetMedalById)
 	api.GET("/elimination/:id", endpoint.GetMedalInfoByEliminationId)
-	// api.PUT("/playersetid/:id", translate.PutMedalPlayerSetIdById)
+	api.PUT("/playersetid/:id", endpoint.PutMedalPlayerSetIdById)
 }
 
 func oldLaneInfoRouter(api *gin.RouterGroup) {

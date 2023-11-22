@@ -1991,6 +1991,50 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/medal/playersetid/{id}": {
+            "put": {
+                "description": "update medal's player set id by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Medal"
+                ],
+                "summary": "Update medal's player set id by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Medal ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "PlayerSetId",
+                        "name": "PlayerSetId",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/medal/{id}": {
             "get": {
                 "description": "get one medal by id",

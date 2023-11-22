@@ -39,7 +39,7 @@ func CreateMedal(data Medal) (Medal, error) {
 	return data, result.Error
 }
 
-// func UpdateMedalPlayerSetId(id uint, playerSetId uint) error {
-// 	result := DB.Table("medals").Where("id = ?", id).Update("player_set_id", playerSetId)
-// 	return result.Error
-// }
+func UpdateMedalPlayerSetId(id uint, playerSetId uint) error {
+	result := DB.Table("medals").Where("id = ?", id).Update("player_set_id", playerSetId)
+	return result.Error
+}

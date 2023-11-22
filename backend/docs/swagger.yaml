@@ -1511,6 +1511,35 @@ paths:
       summary: Show medals of elimination by elimination id
       tags:
       - Medal
+  /api/medal/playersetid/{id}:
+    put:
+      description: update medal's player set id by id
+      parameters:
+      - description: Medal ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: PlayerSetId
+        in: body
+        name: PlayerSetId
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Update medal's player set id by id
+      tags:
+      - Medal
   /api/oldlaneinfo:
     post:
       consumes:
