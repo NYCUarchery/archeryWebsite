@@ -2587,6 +2587,33 @@ paths:
       summary: Get all player sets by elimination id
       tags:
       - PlayerSet
+  /playerset/elimination/medal/{eliminationid}:
+    get:
+      description: Get player sets which have medals by elimination id
+      parameters:
+      - description: Elimination ID
+        in: path
+        name: eliminationid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get player sets which have medals by elimination id
+      tags:
+      - PlayerSet
   /playerset/name/{id}:
     put:
       consumes:

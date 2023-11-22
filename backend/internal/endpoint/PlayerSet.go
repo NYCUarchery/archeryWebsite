@@ -82,6 +82,43 @@ func GetAllPlayerSetsByEliminationId(context *gin.Context) {
 	context.IndentedJSON(200, data)
 }
 
+// Get player sets which have medals by elimination id
+//
+//	@Summary		Get player sets which have medals by elimination id
+//	@Description	Get player sets which have medals by elimination id
+//	@Tags			PlayerSet
+//	@Produce		json
+//	@Param			eliminationid	path	uint	true	"Elimination ID"
+//	@Success		200				string	string
+//	@Failure		400				string	string
+//	@Failure		500				string	string
+//	@Router			/playerset/elimination/medal/{eliminationid} [get]
+func GetPlayerSetsByMedalByEliminationId(context *gin.Context) {
+	type playerSetData struct {
+		ID      uint   `json:"id"`
+		SetName string `json:"set_name"`
+		Type    int    `json:"type"`
+	}
+	eliminationId := convert2uint(context, "eliminationid")
+	var data []playerSetData
+	isExist, medals := IsGetMedalsByEliminationId(context, eliminationId)
+	if !isExist {
+		return
+	}
+	for _, medal := range medals {
+		var tempData playerSetData
+		isExist = database.GetPlayerSetIsExist(medal.PlayerSetId)
+		if isExist {
+			playerSet, _ := database.GetPlayerSetById(medal.PlayerSetId)
+			tempData.ID = playerSet.ID
+			tempData.SetName = playerSet.SetName
+		}
+		tempData.Type = medal.Type
+		data = append(data, tempData)
+	}
+	context.IndentedJSON(200, data)
+}
+
 // Post player set
 //
 //	@Summary		Post player set

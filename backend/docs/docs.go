@@ -3535,6 +3535,47 @@ const docTemplate = `{
                 }
             }
         },
+        "/playerset/elimination/medal/{eliminationid}": {
+            "get": {
+                "description": "Get player sets which have medals by elimination id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PlayerSet"
+                ],
+                "summary": "Get player sets which have medals by elimination id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Elimination ID",
+                        "name": "eliminationid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/playerset/elimination/{eliminationid}": {
             "get": {
                 "description": "Get all player sets by elimination id",

@@ -24,6 +24,21 @@ func IsGetMedalById(context *gin.Context, id uint) (bool, database.Medal) {
 	return true, medal
 }
 
+func IsGetMedalsByEliminationId(context *gin.Context, id uint) (bool, []database.Medal) {
+	var medals []database.Medal
+	isExist := database.GetEliminationIsExist(id)
+	if !isExist {
+		response.ErrorIdTest(context, id, isExist, "Elimination")
+		return false, []database.Medal{}
+	}
+	medals, err := database.GetMedalInfoByEliminationId(id)
+	if err != nil {
+		response.ErrorInternalErrorTest(context, id, "get medals by elimination id", err)
+		return false, []database.Medal{}
+	}
+	return true, medals
+}
+
 // Get one Medals by id
 //
 //	@Summary		Show one medal by id
@@ -54,17 +69,9 @@ func GetMedalById(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/medal/elimination/{id} [get]
 func GetMedalInfoByEliminationId(context *gin.Context) {
-	type MedalsData struct {
-		Medals []database.Medal `json:"medals"`
-	}
 	eliminationId := convert2uint(context, "id")
-	if response.ErrorIdTest(context, eliminationId, database.GetEliminationIsExist(eliminationId), "Elimination") {
-		return
-	}
-	var data MedalsData
-	var err error
-	data.Medals, err = database.GetMedalInfoByEliminationId(eliminationId)
-	if response.ErrorInternalErrorTest(context, eliminationId, "get medals by elimination id", err) {
+	isExist, data := IsGetMedalsByEliminationId(context, eliminationId)
+	if !isExist {
 		return
 	}
 	context.IndentedJSON(http.StatusOK, data)
