@@ -745,6 +745,29 @@ paths:
       summary: Create one Match
       tags:
       - Elimination
+  /api/elimination/playersets/{id}:
+    get:
+      description: Get one Elimination with player sets by id
+      parameters:
+      - description: Elimination ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Elimination with player sets
+      tags:
+      - Elimination
   /api/elimination/scores/{id}:
     get:
       description: Get one Elimination with stages, matches, matchResults, matchEnds,
@@ -816,6 +839,30 @@ paths:
           schema:
             type: string
       summary: Show one Elimination with stages
+      tags:
+      - Elimination
+  /api/elimination/stages/scores/medals/{id}:
+    get:
+      description: Get one Elimination with stages, matches, matchResults, matchEnds,
+        scores, playerSets, medals by id
+      parameters:
+      - description: Elimination ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Elimination with all related data
       tags:
       - Elimination
   /api/groupinfo:

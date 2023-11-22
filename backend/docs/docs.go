@@ -799,6 +799,41 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/elimination/playersets/{id}": {
+            "get": {
+                "description": "Get one Elimination with player sets by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Elimination"
+                ],
+                "summary": "Show one Elimination with player sets",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Elimination ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/elimination/scores/{id}": {
             "get": {
                 "description": "Get one Elimination with stages, matches, matchResults, matchEnds, scores by id",
@@ -856,6 +891,41 @@ const docTemplate = `{
                         "schema": {
                             "type": "string"
                         }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/elimination/stages/scores/medals/{id}": {
+            "get": {
+                "description": "Get one Elimination with stages, matches, matchResults, matchEnds, scores, playerSets, medals by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Elimination"
+                ],
+                "summary": "Show one Elimination with all related data",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Elimination ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {

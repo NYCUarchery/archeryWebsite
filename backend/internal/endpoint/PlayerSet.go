@@ -111,7 +111,7 @@ func PostPlayerSet(context *gin.Context) {
 	} else if response.ErrorIdTest(context, data.EliminationId, database.GetEliminationIsExist(data.EliminationId), "elimination when post player set") {
 		return
 	}
-	elimination, _ := database.GetEliminationById(data.EliminationId)
+	elimination, _ := database.GetOnlyEliminationById(data.EliminationId)
 	if len(data.PlayerIds) != elimination.TeamSize {
 		errorMessage := fmt.Sprintf("player ids length should be equal to team size, team size: %d, player ids length: %d", elimination.TeamSize, len(data.PlayerIds))
 		response.ErrorReceiveDataFormat(context, errorMessage)
@@ -186,7 +186,7 @@ func PutPlayerSetName(context *gin.Context) {
 		response.ErrorReceiveDataFormat(context, "player set data")
 		return
 	}
-	elimination, _ := database.GetEliminationById(playerSet.EliminationId)
+	elimination, _ := database.GetOnlyEliminationById(playerSet.EliminationId)
 	if elimination.TeamSize == 1 {
 		response.ErrorReceiveDataFormat(context, "team size is 1, cannot update player set name")
 		return

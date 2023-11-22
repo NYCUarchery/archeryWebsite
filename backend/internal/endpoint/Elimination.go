@@ -10,7 +10,7 @@ import (
 
 func IsGetEliminationById(context *gin.Context) (bool, database.Elimination) {
 	id := convert2uint(context, "id")
-	data, err := database.GetEliminationById(id)
+	data, err := database.GetOnlyEliminationById(id)
 	isExist := (data.ID == id)
 	if response.ErrorIdTest(context, id, isExist, "Elimination") {
 		return false, database.Elimination{}
@@ -49,6 +49,30 @@ func GetOnlyEliminationById(context *gin.Context) {
 	if !isExist {
 		return
 	}
+	context.IndentedJSON(200, data)
+}
+
+// Get one Elimination By ID with player sets godoc
+//
+//	@Summary		Show one Elimination with player sets
+//	@Description	Get one Elimination with player sets by id
+//	@Tags			Elimination
+//	@Produce		json
+//	@Param			id	path	int	true	"Elimination ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/api/elimination/playersets/{id} [get]
+func GetEliminationWPlayerSetsById(context *gin.Context) {
+	id := convert2uint(context, "id")
+	isExist, _ := IsGetEliminationById(context)
+	if !isExist {
+		return
+	}
+	data, err := database.GetEliminationWPlayerSetsById(id)
+	if response.ErrorInternalErrorTest(context, id, "Get Elimination with player sets", err) {
+		return
+	}
+	response.AcceptPrint(id, fmt.Sprint(data), "Elimination with player sets")
 	context.IndentedJSON(200, data)
 }
 
@@ -91,6 +115,30 @@ func GetEliminationWScoresById(context *gin.Context) {
 		return
 	}
 	response.AcceptPrint(id, fmt.Sprint(data), "Elimination with scores")
+	context.IndentedJSON(200, data)
+}
+
+// Get one Elimination By ID with all related data godoc
+//
+//	@Summary		Show one Elimination with all related data
+//	@Description	Get one Elimination with stages, matches, matchResults, matchEnds, scores, playerSets, medals by id
+//	@Tags			Elimination
+//	@Produce		json
+//	@Param			id	path	int	true	"Elimination ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/api/elimination/stages/scores/medals/{id} [get]
+func GetEliminationById(context *gin.Context) {
+	id := convert2uint(context, "id")
+	isExist, _ := IsGetEliminationById(context)
+	if !isExist {
+		return
+	}
+	data, err := database.GetEliminationById(id)
+	if response.ErrorInternalErrorTest(context, id, "Get Elimination", err) {
+		return
+	}
+	response.AcceptPrint(id, fmt.Sprint(data), "Elimination")
 	context.IndentedJSON(200, data)
 }
 

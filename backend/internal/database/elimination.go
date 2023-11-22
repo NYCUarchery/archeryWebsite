@@ -48,7 +48,7 @@ func GetMatchIsExist(id uint) bool {
 	return data.ID != 0
 }
 
-func GetEliminationById(id uint) (Elimination, error) {
+func GetOnlyEliminationById(id uint) (Elimination, error) {
 	var data Elimination
 	result := DB.Table("eliminations").Where("id = ?", id).First(&data)
 	return data, result.Error
@@ -61,6 +61,18 @@ func GetEliminationByGroupId(groupId uint) ([]Elimination, error) {
 		Order("team_size ASC").
 		Find(&eliminations)
 	return eliminations, result.Error
+}
+
+func GetEliminationWPlayerSetsById(id uint) (Elimination, error) {
+	var data Elimination
+	result := DB.
+		Preload("PlayerSets", func(*gorm.DB) *gorm.DB {
+			return DB.Order("`rank` asc")
+		}).
+		Model(&Elimination{}).
+		Where("id = ?", id).
+		First(&data)
+	return data, result.Error
 }
 
 func GetEliminationWStagesById(id uint) (Elimination, error) {
@@ -107,6 +119,23 @@ func GetEliminationTeamSizeByMatchResultId(matchResultId uint) (int, error) {
 		Scan(&teamSize)
 
 	return teamSize, result.Error
+}
+
+func GetEliminationById(id uint) (Elimination, error) {
+	var data Elimination
+	result := DB.
+		Preload("PlayerSets").
+		Preload("Medals").
+		Preload("Stages.Matchs.MatchResults", func(*gorm.DB) *gorm.DB {
+			return DB.Order("id asc").
+				Preload("MatchEnds.MatchScores", func(*gorm.DB) *gorm.DB {
+					return DB.Order("score DESC")
+				})
+		}).
+		Model(&Elimination{}).
+		Where("id = ?", id).
+		First(&data)
+	return data, result.Error
 }
 
 func CreateElimination(data Elimination) (Elimination, error) {
