@@ -1,10 +1,20 @@
 import { Box } from "@mui/material";
 import PhaseSelector from "../PhaseSelector/PhaseSelector";
-import EndSwitch from "./EndSwitch/EndSwitch";
-import OverviewBlock from "./OverviewBlock/OverviewBlock";
-import PlayerStatusBlock from "./PlayerStatusBlock/PlayerStatusBlock";
+import EndSwitch from "./Qualification/EndSwitch/EndSwitch";
+import { useSelector } from "react-redux";
+import Qualification from "./Qualification/Qualification";
 
 export default function ProgressBoard() {
+  const phaseShown = useSelector(
+    (state: any) => state.adminPhaseSelector.phaseShown
+  );
+
+  let board = <Qualification></Qualification>;
+  switch (phaseShown) {
+    case 0:
+      board = <Qualification></Qualification>;
+  }
+
   return (
     <>
       <PhaseSelector></PhaseSelector>
@@ -14,11 +24,7 @@ export default function ProgressBoard() {
           display: "flex",
         }}
       >
-        <Box sx={{ width: "300px", height: "100%" }}>
-          <EndSwitch></EndSwitch>
-          <OverviewBlock></OverviewBlock>
-        </Box>
-        <PlayerStatusBlock></PlayerStatusBlock>
+        {board}
       </Box>
     </>
   );
