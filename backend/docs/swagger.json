@@ -755,7 +755,7 @@
         },
         "/api/elimination/match": {
             "post": {
-                "description": "Post one new Match data with 2 matchResults",
+                "description": "Post one new Match data with 2 matchResults\nEach matchResults with 4 or 5 matchEnds\nEach matchEnds with 3, 4, 6 matchScores",
                 "consumes": [
                     "application/json"
                 ],

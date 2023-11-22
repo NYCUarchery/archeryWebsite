@@ -246,6 +246,8 @@ func PostStage(context *gin.Context) {
 //
 //	@Summary		Create one Match
 //	@Description	Post one new Match data with 2 matchResults
+//	@Description	Each matchResults with 4 or 5 matchEnds
+//	@Description	Each matchEnds with 3, 4, 6 matchScores
 //	@Tags			Elimination
 //	@Accept			json
 //	@Produce		json
@@ -286,6 +288,12 @@ func PostMatch(context *gin.Context) {
 			return
 		}
 	}
+	/*get elimination teamsize*/
+	elimination, err := database.GetOnlyEliminationById(eliminationId)
+	if response.ErrorInternalErrorTest(context, eliminationId, "Get Elimination when creating match", err) {
+		return
+	}
+	teamSize := elimination.TeamSize
 	/*create match*/
 	var match database.Match
 	match.StageId = data.StageId
@@ -305,6 +313,19 @@ func PostMatch(context *gin.Context) {
 			return
 		}
 		response.AcceptPrint(newMatchResult.ID, fmt.Sprint(newMatchResult), "MatchResult")
+		/*create matchEnd*/
+		var loopTime int
+		if teamSize == 1 {
+			loopTime = 5
+		} else {
+			loopTime = 4
+		}
+		for j := 0; j < loopTime; j++ {
+			success := PostMatchEndByMatchResultId(context, newMatchResult.ID, teamSize)
+			if !success {
+				return
+			}
+		}
 	}
 	/*get new data*/
 	newData, err := database.GetMatchWScoresById(match.ID)

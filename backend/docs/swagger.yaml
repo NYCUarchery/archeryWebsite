@@ -744,7 +744,10 @@ paths:
     post:
       consumes:
       - application/json
-      description: Post one new Match data with 2 matchResults
+      description: |-
+        Post one new Match data with 2 matchResults
+        Each matchResults with 4 or 5 matchEnds
+        Each matchEnds with 3, 4, 6 matchScores
       parameters:
       - description: Match
         in: body
