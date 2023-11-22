@@ -10,6 +10,7 @@ type MatchResult struct {
 	ShootOffScore int         `json:"shoot_off_score"`
 	IsWinner      bool        `json:"is_winner"`
 	LaneNumber    int         `json:"lane_number"`
+	PlayerSet     *PlayerSet  `json:"player_set" gorm:"foreignKey:PlayerSetId;"`
 	MatchEnds     []*MatchEnd `json:"match_ends" gorm:"constraint:OnDelete:CASCADE;"`
 }
 
@@ -56,12 +57,17 @@ func GetMatchScoreWMEndIdIsExist(id uint, match_end_id uint) bool {
 
 func GetMatchResultById(id uint) (MatchResult, error) {
 	var data MatchResult
-	result := DB.Table("match_results").Where("id = ?", id).First(&data)
+	result := DB.
+		Preload("PlayerSet").
+		Table("match_results").
+		Where("id = ?", id).
+		First(&data)
 	return data, result.Error
 }
 func GetMatchResultWScoresById(id uint) (MatchResult, error) {
 	var data MatchResult
 	result := DB.
+		Preload("PlayerSet").
 		Preload("MatchEnds.MatchScores", func(*gorm.DB) *gorm.DB {
 			return DB.Order("score DESC")
 		}).

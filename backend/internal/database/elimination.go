@@ -141,6 +141,31 @@ func GetEliminationById(id uint) (Elimination, error) {
 	return data, result.Error
 }
 
+func GetStageById(id uint) (Stage, error) {
+	var data Stage
+	result := DB.
+		Model(&Stage{}).
+		Where("id = ?", id).
+		First(&data)
+	return data, result.Error
+}
+
+func GetMatchWScoresById(id uint) (Match, error) {
+	var data Match
+	result := DB.
+		Preload("MatchResults", func(*gorm.DB) *gorm.DB {
+			return DB.Order("id asc").
+				Preload("PlayerSet").
+				Preload("MatchEnds.MatchScores", func(*gorm.DB) *gorm.DB {
+					return DB.Order("score DESC")
+				})
+		}).
+		Model(&Match{}).
+		Where("id = ?", id).
+		First(&data)
+	return data, result.Error
+}
+
 func CreateElimination(data Elimination) (Elimination, error) {
 	result := DB.Model(&Elimination{}).Create(&data)
 	return data, result.Error

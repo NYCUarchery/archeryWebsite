@@ -142,6 +142,30 @@ func GetEliminationById(context *gin.Context) {
 	context.IndentedJSON(200, data)
 }
 
+// Get one Match By ID with all related data godoc
+//
+//	@Summary		Show one Match with all related data
+//	@Description	Get one Match with matchResults, matchEnds, scores, playerSets, players by id
+//	@Tags			Elimination
+//	@Produce		json
+//	@Param			matchid	path	int	true	"Match ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/api/elimination/match/scores/{matchid} [get]
+func GetMatchWScoresById(context *gin.Context) {
+	id := convert2uint(context, "matchid")
+	isExist := database.GetMatchIsExist(id)
+	if !isExist {
+		return
+	}
+	data, err := database.GetMatchWScoresById(id)
+	if response.ErrorInternalErrorTest(context, id, "Get Match with scores", err) {
+		return
+	}
+	response.AcceptPrint(id, fmt.Sprint(data), "Match with scores")
+	context.IndentedJSON(200, data)
+}
+
 func PostEliminationById(context *gin.Context, data database.Elimination) (bool, database.Elimination) {
 	newdata, err := database.CreateElimination(data)
 	if response.ErrorInternalErrorTest(context, newdata.ID, "Create Elimination", err) {
@@ -221,7 +245,7 @@ func PostStage(context *gin.Context) {
 // Post one Match godoc
 //
 //	@Summary		Create one Match
-//	@Description	Post one new Match data with new id
+//	@Description	Post one new Match data with 2 matchResults
 //	@Tags			Elimination
 //	@Accept			json
 //	@Produce		json
@@ -230,20 +254,65 @@ func PostStage(context *gin.Context) {
 //	@Failure		400		string	string
 //	@Router			/api/elimination/match [post]
 func PostMatch(context *gin.Context) {
-	var data database.Match
+	type MatchData struct {
+		StageId      uint   `json:"stage_id"`
+		PlayerSetIds []uint `json:"player_set_ids"`
+		LaneNumbers  []int  `json:"lane_numbers"`
+	}
+	var data MatchData
+	/*check request data*/
 	err := context.BindJSON(&data)
 	if response.ErrorReceiveDataTest(context, 0, "Match", err) {
 		return
 	} else if response.ErrorIdTest(context, data.StageId, database.GetStageIsExist(data.StageId), "stage when creating match") {
 		return
+	} else if len(data.PlayerSetIds) != 2 {
+		response.ErrorReceiveDataFormat(context, " player set ids should be 2")
+	} else if len(data.LaneNumbers) != 2 {
+		response.ErrorReceiveDataFormat(context, "lane numbers should be 2")
 	}
-	data, err = database.CreateMatch(data)
+	/*id existence*/
+	stage, err := database.GetStageById(data.StageId)
+	if response.ErrorInternalErrorTest(context, 0, "Get Stage when creating match", err) {
+		return
+	}
+	eliminationId := stage.EliminationId
+	for i := 0; i < 2; i++ {
+		isExist, PlayerSet := IsGetPlayerSetById(context, data.PlayerSetIds[i])
+		if !isExist {
+			return
+		} else if PlayerSet.EliminationId != eliminationId {
+			response.ErrorReceiveDataFormat(context, "player set id should be in the same elimination")
+			return
+		}
+	}
+	/*create match*/
+	var match database.Match
+	match.StageId = data.StageId
+	match, err = database.CreateMatch(match)
 	if response.ErrorInternalErrorTest(context, 0, "Create Match", err) {
 		return
 	}
-	id := data.ID
-	response.AcceptPrint(id, fmt.Sprint(data), "Match")
-	context.IndentedJSON(200, data)
+	/*create two matchResults */
+	for i := 0; i < 2; i++ {
+		var matchResult database.MatchResult
+		matchResult.MatchId = match.ID
+		matchResult.PlayerSetId = data.PlayerSetIds[i]
+		matchResult.LaneNumber = data.LaneNumbers[i]
+		matchResult.ShootOffScore = -1
+		newMatchResult, err := database.CreateMatchResult(matchResult)
+		if response.ErrorInternalErrorTest(context, newMatchResult.ID, "Create MatchResult when creating match", err) {
+			return
+		}
+		response.AcceptPrint(newMatchResult.ID, fmt.Sprint(newMatchResult), "MatchResult")
+	}
+	/*get new data*/
+	newData, err := database.GetMatchWScoresById(match.ID)
+	if response.ErrorInternalErrorTest(context, 0, "Get Match with scores when creating match", err) {
+		return
+	}
+	response.AcceptPrint(newData.ID, fmt.Sprint(newData), "Match")
+	context.IndentedJSON(200, newData)
 }
 
 // Put elimination current stage plus one by id

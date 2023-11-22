@@ -755,7 +755,7 @@
         },
         "/api/elimination/match": {
             "post": {
-                "description": "Post one new Match data with new id",
+                "description": "Post one new Match data with 2 matchResults",
                 "consumes": [
                     "application/json"
                 ],
@@ -775,6 +775,41 @@
                         "schema": {
                             "type": "string"
                         }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/elimination/match/scores/{matchid}": {
+            "get": {
+                "description": "Get one Match with matchResults, matchEnds, scores, playerSets, players by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Elimination"
+                ],
+                "summary": "Show one Match with all related data",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Match ID",
+                        "name": "matchid",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -1550,46 +1585,6 @@
                 }
             }
         },
-        "/api/matchresult": {
-            "post": {
-                "description": "Post one new MatchResult data with new id, and auto write totalPoints ShootOffScore IsWinner",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "MatchResult"
-                ],
-                "summary": "Create one MatchResult",
-                "parameters": [
-                    {
-                        "description": "MatchResult",
-                        "name": "MatchResult",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/api/matchresult/iswinner/{id}": {
             "put": {
                 "description": "Update one MatchResult isWinner by id",
@@ -1720,14 +1715,14 @@
         },
         "/api/matchresult/scores/{id}": {
             "get": {
-                "description": "Get one MatchResult with match_ends and match_scores by id",
+                "description": "Get one MatchResult with match_ends, match_scores, player set by id",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "MatchResult"
                 ],
-                "summary": "Show one MatchResult with match_ends and match_scores",
+                "summary": "Show one MatchResult with match_ends, match_scores, player set",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1843,14 +1838,14 @@
         },
         "/api/matchresult/{id}": {
             "get": {
-                "description": "Get one MatchResult without other data by id",
+                "description": "Get one MatchResult with player set by id",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "MatchResult"
                 ],
-                "summary": "Show one MatchResult",
+                "summary": "Show one MatchResult with player set",
                 "parameters": [
                     {
                         "type": "integer",

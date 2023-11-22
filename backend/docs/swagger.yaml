@@ -744,7 +744,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Post one new Match data with new id
+      description: Post one new Match data with 2 matchResults
       parameters:
       - description: Match
         in: body
@@ -764,6 +764,30 @@ paths:
           schema:
             type: string
       summary: Create one Match
+      tags:
+      - Elimination
+  /api/elimination/match/scores/{matchid}:
+    get:
+      description: Get one Match with matchResults, matchEnds, scores, playerSets,
+        players by id
+      parameters:
+      - description: Match ID
+        in: path
+        name: matchid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Match with all related data
       tags:
       - Elimination
   /api/elimination/playersets/{id}:
@@ -1221,33 +1245,6 @@ paths:
       summary: Update one MatchEnd totalScores
       tags:
       - MatchEnd
-  /api/matchresult:
-    post:
-      consumes:
-      - application/json
-      description: Post one new MatchResult data with new id, and auto write totalPoints
-        ShootOffScore IsWinner
-      parameters:
-      - description: MatchResult
-        in: body
-        name: MatchResult
-        required: true
-        schema:
-          type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Create one MatchResult
-      tags:
-      - MatchResult
   /api/matchresult/{id}:
     delete:
       description: Delete one MatchResult with matchEnds and matchScores by id
@@ -1270,7 +1267,7 @@ paths:
       tags:
       - MatchResult
     get:
-      description: Get one MatchResult without other data by id
+      description: Get one MatchResult with player set by id
       parameters:
       - description: MatchResult ID
         in: path
@@ -1288,7 +1285,7 @@ paths:
           description: Bad Request
           schema:
             type: string
-      summary: Show one MatchResult
+      summary: Show one MatchResult with player set
       tags:
       - MatchResult
   /api/matchresult/iswinner/{id}:
@@ -1378,7 +1375,8 @@ paths:
       - MatchEnd
   /api/matchresult/scores/{id}:
     get:
-      description: Get one MatchResult with match_ends and match_scores by id
+      description: Get one MatchResult with match_ends, match_scores, player set by
+        id
       parameters:
       - description: MatchResult ID
         in: path
@@ -1396,7 +1394,7 @@ paths:
           description: Bad Request
           schema:
             type: string
-      summary: Show one MatchResult with match_ends and match_scores
+      summary: Show one MatchResult with match_ends, match_scores, player set
       tags:
       - MatchResult
   /api/matchresult/shootoffscore/{id}:

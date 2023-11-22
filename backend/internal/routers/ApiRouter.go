@@ -104,6 +104,7 @@ func eliminationRouter(api *gin.RouterGroup) {
 	api.GET("/playersets/:id", endpoint.GetEliminationWPlayerSetsById)
 	api.GET("/stages/:id", endpoint.GetEliminationWStagesById)
 	api.GET("/scores/:id", endpoint.GetEliminationWScoresById)
+	api.GET("/match/scores/:matchid", endpoint.GetMatchWScoresById)
 
 	api.POST("/", endpoint.PostElimination)
 	api.POST("/stage", endpoint.PostStage)
@@ -119,7 +120,6 @@ func eliminationRouter(api *gin.RouterGroup) {
 func matchResultRouter(api *gin.RouterGroup) {
 	api.GET("/:id", endpoint.GetMatchResultById)
 	api.GET("/scores/:id", endpoint.GetMatchResultWScoresById)
-	api.POST("/", endpoint.PostMatchResult)
 	api.POST("/matchend/", endpoint.PostMatchEnd)
 
 	api.PUT("/totalpoints/:id", endpoint.PutMatchResultTotalPointsById)
