@@ -55,7 +55,7 @@ export default function LaneBoard() {
   return (
     <div className="lane_board">
       <LaneNumber laneNum={lane.lane_number} />
-      <TargetSigns targetNum={4} />
+      <TargetSigns orders={lane.players.map((p: any) => p.order)} />
       <ToggleButtonGroup
         className="player_button_group"
         color="info"
