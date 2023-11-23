@@ -69,7 +69,7 @@ func GetMedalById(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/medal/elimination/{id} [get]
 func GetMedalInfoByEliminationId(context *gin.Context) {
-	eliminationId := convert2uint(context, "id")
+	eliminationId := convert2uint(context, "eliminationid")
 	isExist, data := IsGetMedalsByEliminationId(context, eliminationId)
 	if !isExist {
 		return

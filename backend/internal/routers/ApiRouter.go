@@ -99,7 +99,7 @@ func qualificationRouter(api *gin.RouterGroup) {
 
 func laneRouter(api *gin.RouterGroup) {
 	api.GET("/:id", endpoint.GetLaneByID)
-	api.GET("/all/:id", endpoint.GetAllLaneByCompetitionId)
+	api.GET("/all/:competitionid", endpoint.GetAllLaneByCompetitionId)
 	api.GET("/scores/:id", endpoint.GetLaneWScoresByID)
 }
 
@@ -142,7 +142,7 @@ func matchResultRouter(api *gin.RouterGroup) {
 
 func medalRouter(api *gin.RouterGroup) {
 	api.GET("/:id", endpoint.GetMedalById)
-	api.GET("/elimination/:id", endpoint.GetMedalInfoByEliminationId)
+	api.GET("/elimination/:eliminationid", endpoint.GetMedalInfoByEliminationId)
 	api.PUT("/playersetid/:id", endpoint.PutMedalPlayerSetIdById)
 }
 
@@ -176,9 +176,9 @@ func profileRouter(api *gin.RouterGroup) {
 		// hope be edited by JSON
 		//
 		parssr.GET("/:id", endpoint.GetParticipantById)
-		parssr.GET("/user", endpoint.GetParticipantByUserId)
-		parssr.GET("/competition", endpoint.GetParticipantByCompetitionId)
-		parssr.GET("/competition/user", endpoint.GetParticipantByCompetitionIdUserId)
+		parssr.GET("/user/:userid", endpoint.GetParticipantByUserId)
+		parssr.GET("/competition/:competitionid", endpoint.GetParticipantByCompetitionId)
+		parssr.GET("/competition/user/:competitionid/:userid", endpoint.GetParticipantByCompetitionIdUserId)
 		parssr.PUT("/:id", endpoint.UpdateParticipant)
 		parssr.DELETE("/:id", endpoint.DeleteParticipantById)
 

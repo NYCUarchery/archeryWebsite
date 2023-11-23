@@ -117,19 +117,13 @@ func GetParticipantById(context *gin.Context) {
 //	@Failure		400		string	string
 //	@Router			/api/participant/user [get]
 func GetParticipantByUserId(context *gin.Context) {
-	type userData struct {
-		UserID uint `json:"user_id"`
-	}
-	var newData Participants
-	var data userData
-	err := context.BindJSON(&data)
-	if response.ErrorReceiveDataTest(context, data.UserID, "Get participants by user id", err) {
-		return
-	} else if response.ErrorIdTest(context, data.UserID, database.GetUserIsExist(data.UserID), "User ID when getting participants") {
+	userId := convert2uint(context, "userid")
+	var newData []database.Participant
+	if response.ErrorIdTest(context, userId, database.GetUserIsExist(userId), "User ID when getting participants") {
 		return
 	}
-	newData.Participants, err = database.GetParticipantByUserId(data.UserID)
-	if response.ErrorInternalErrorTest(context, data.UserID, "Get Participants by user id", err) {
+	newData, err := database.GetParticipantByUserId(userId)
+	if response.ErrorInternalErrorTest(context, userId, "Get Participants by user id", err) {
 		return
 	}
 	context.IndentedJSON(http.StatusOK, newData)
@@ -146,19 +140,13 @@ func GetParticipantByUserId(context *gin.Context) {
 //	@Failure		400				string	string
 //	@Router			/api/participant/competition [get]
 func GetParticipantByCompetitionId(context *gin.Context) {
-	type CompetitionData struct {
-		CompetitionId uint `json:"competition_id"`
-	}
-	var newData Participants
-	var data CompetitionData
-	err := context.BindJSON(&data)
-	if response.ErrorReceiveDataTest(context, data.CompetitionId, "Get participants by competition id ", err) {
-		return
-	} else if response.ErrorIdTest(context, data.CompetitionId, database.GetCompetitionIsExist(data.CompetitionId), "Competition ID when getting participants") {
+	competitionId := convert2uint(context, "competitionid")
+	var newData []database.Participant
+	if response.ErrorIdTest(context, competitionId, database.GetCompetitionIsExist(competitionId), "Competition ID when getting participants") {
 		return
 	}
-	newData.Participants, err = database.GetParticipantByCompetitionId(data.CompetitionId)
-	if response.ErrorInternalErrorTest(context, data.CompetitionId, "Get Participants by competition id", err) {
+	newData, err := database.GetParticipantByCompetitionId(competitionId)
+	if response.ErrorInternalErrorTest(context, competitionId, "Get Participants by competition id", err) {
 		return
 	}
 	context.IndentedJSON(http.StatusOK, newData)
@@ -176,22 +164,16 @@ func GetParticipantByCompetitionId(context *gin.Context) {
 //	@Failure		400				string	string
 //	@Router			/api/participant/competition/user [get]
 func GetParticipantByCompetitionIdUserId(context *gin.Context) {
-	type bodyData struct {
-		CompetitionId uint `json:"competition_id"`
-		UserId        uint `json:"user_id"`
-	}
-	var newData Participants
-	var data bodyData
-	err := context.BindJSON(&data)
-	if response.ErrorReceiveDataTest(context, 0, "Get participants by competition id and user id", err) {
+	competitionId := convert2uint(context, "competitionid")
+	userId := convert2uint(context, "userid")
+	var newData []database.Participant
+	if response.ErrorIdTest(context, userId, database.GetUserIsExist(userId), "User ID when getting participants") {
 		return
-	} else if response.ErrorIdTest(context, data.UserId, database.GetUserIsExist(data.UserId), "User ID when getting participants") {
-		return
-	} else if response.ErrorIdTest(context, data.CompetitionId, database.GetCompetitionIsExist(data.CompetitionId), "Competition ID when getting participants") {
+	} else if response.ErrorIdTest(context, competitionId, database.GetCompetitionIsExist(competitionId), "Competition ID when getting participants") {
 		return
 	}
-	newData.Participants, err = database.GetParticipantByCompetitionIdUserId(data.CompetitionId, data.UserId)
-	if response.ErrorInternalErrorTest(context, data.CompetitionId, "Get Participants by competition id and user id", err) {
+	newData, err := database.GetParticipantByCompetitionIdUserId(competitionId, userId)
+	if response.ErrorInternalErrorTest(context, competitionId, "Get Participants by competition id and user id", err) {
 		return
 	}
 	context.IndentedJSON(http.StatusOK, newData)
