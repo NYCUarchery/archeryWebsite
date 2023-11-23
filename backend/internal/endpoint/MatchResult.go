@@ -379,13 +379,28 @@ func PutMatchScoreScoreById(context *gin.Context) {
 	id := convert2uint(context, "id")
 	var data database.MatchScore
 	err := context.BindJSON(&data)
+	newScore := data.Score
 	if response.ErrorIdTest(context, id, database.GetMatchScoreIsExist(id), "MatchScore when updating score") {
 		return
 	} else if response.ErrorReceiveDataTest(context, id, "MatchScore when updating score", err) {
 		return
 	}
-	err = database.UpdateMatchScoreScoreById(id, data.Score)
+	oldData, err := database.GetMatchScoreById(id)
+	if response.ErrorInternalErrorTest(context, id, "Get MatchScore by id", err) {
+		return
+	}
+	err = database.UpdateMatchScoreScoreById(id, newScore)
 	if response.ErrorInternalErrorTest(context, id, "Update MatchScore score", err) {
+		return
+	}
+	matchEnd, err := database.GetMatchEndById(oldData.MatchEndId)
+	if response.ErrorInternalErrorTest(context, id, "Get MatchEnd by MatchScore id", err) {
+		return
+	}
+	newScore = scorefmt(newScore)
+	oldScore := scorefmt(oldData.Score)
+	err = database.UpdateMatchEndsTotalScoresById(matchEnd.ID, matchEnd.TotalScore-oldScore+newScore)
+	if response.ErrorInternalErrorTest(context, id, "Update MatchEnd totalScores", err) {
 		return
 	}
 	response.AcceptPrint(id, fmt.Sprint(data), "MatchScore score")

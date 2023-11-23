@@ -76,6 +76,17 @@ func GetMatchResultWScoresById(id uint) (MatchResult, error) {
 		First(&data)
 	return data, result.Error
 }
+func GetMatchScoreById(id uint) (MatchScore, error) {
+	var data MatchScore
+	result := DB.Table("match_scores").Where("id = ?", id).First(&data)
+	return data, result.Error
+}
+func GetMatchEndById(id uint) (MatchEnd, error) {
+	var data MatchEnd
+	result := DB.Table("match_ends").Where("id = ?", id).
+		First(&data)
+	return data, result.Error
+}
 
 func CreateMatchResult(data MatchResult) (MatchResult, error) {
 	result := DB.Table("match_results").Create(&data)

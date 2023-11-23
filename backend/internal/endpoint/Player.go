@@ -16,15 +16,6 @@ type UpdateTotalScoreData struct {
 	Score      int  `json:"score"`
 }
 
-func scorefmt(score int) int {
-	if score < 0 {
-		return 0
-	} else if score > 10 {
-		return 10
-	}
-	return score
-}
-
 func IsGetOnlyPlayer(context *gin.Context, id uint) (bool, database.Player) {
 	if response.ErrorIdTest(context, id, database.GetPlayerIsExist(id), "Player") {
 		return false, database.Player{}
@@ -476,19 +467,13 @@ func UpdatePlayerTotalScore(context *gin.Context, playerId uint, roundId uint, s
 //	@Failure		400				string	string
 //	@Router			/api/player/score/{roundscoreid} [put]
 func UpdatePlayerScore(context *gin.Context) {
-	var scoreData UpdateTotalScoreData
+	var data UpdateTotalScoreData
 	roundScoreId := convert2uint(context, "id")
-	err := context.BindJSON(&scoreData)
-	playerId := scoreData.PlayerId
-	roundId := scoreData.RoundId
-	score := scoreData.Score
+	err := context.BindJSON(&data)
+	newScore := data.Score
 	if response.ErrorReceiveDataTest(context, roundScoreId, "Update Player score", err) {
 		return
 	} else if response.ErrorIdTest(context, roundScoreId, database.GetRoundScoreIsExist(roundScoreId), "RoundScore when updating score") {
-		return
-	} else if response.ErrorIdTest(context, playerId, database.GetPlayerIsExist(playerId), "Player when updating score") {
-		return
-	} else if response.ErrorIdTest(context, roundId, database.GetRoundIsExist(roundId), "Round when updating score") {
 		return
 	}
 	oldScore, err := database.GetPlayerScoreByRoundScoreId(roundScoreId)
@@ -496,16 +481,24 @@ func UpdatePlayerScore(context *gin.Context) {
 		return
 	}
 
-	err = database.UpdatePlayerScore(roundScoreId, score)
+	err = database.UpdatePlayerScore(roundScoreId, newScore)
 	if response.ErrorInternalErrorTest(context, roundScoreId, "Update Player score", err) {
 		return
 	}
 
 	/*auto update total score in rounds when update score*/
-	score = scorefmt(score)
+	newScore = scorefmt(newScore)
 	fmt.Printf("oldScore: %d\n", oldScore)
 	oldScore = scorefmt(oldScore)
-	if !UpdatePlayerTotalScore(context, playerId, roundId, score-oldScore) {
+	roundId, err := database.GetRoundIdByRoundScoreId(roundScoreId)
+	if response.ErrorInternalErrorTest(context, roundId, "Get Round id by roundScoreId", err) {
+		return
+	}
+	playerId, err := database.GetPlayerIdByRoundScoreId(roundScoreId)
+	if response.ErrorInternalErrorTest(context, playerId, "Get Player id by roundScoreId", err) {
+		return
+	}
+	if !UpdatePlayerTotalScore(context, playerId, roundId, newScore-oldScore) {
 		return
 	}
 
