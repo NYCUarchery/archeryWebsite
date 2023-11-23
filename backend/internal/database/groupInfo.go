@@ -49,14 +49,14 @@ func GetGroupPlayerIdRankOrderById(groupId uint) ([]uint, error) {
 		Joins("JOIN rounds ON players.id = rounds.player_id").
 		Joins("JOIN round_ends ON rounds.id = round_ends.round_id").
 		Joins("JOIN round_scores ON round_ends.id = round_scores.round_end_id").
-		Where("players.group_id = ?", groupId).
+		Where("players.group_id = ? AND players.`rank` != -1", groupId).
 		Group("players.id")
 
 	result := DB.Table("players").
 		Select("players.id").
 		Joins("JOIN `groups` ON `groups`.id = players.group_id").
 		Joins("JOIN (?) AS subquery ON subquery.id = players.id", subquery).
-		Where("`groups`.id = ?", groupId).
+		Where("`groups`.id = ? AND players.`rank` != -1", groupId).
 		Order("players.total_score DESC, subquery.cnt DESC, players.shoot_off_score DESC").
 		Find(&playerIds)
 

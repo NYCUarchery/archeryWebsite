@@ -2048,6 +2048,52 @@ paths:
       summary: Create one Player by Participant ID
       tags:
       - Player
+  /api/player/dummy/{participantid}:
+    get:
+      description: Get dummy players by participant id
+      parameters:
+      - description: Participant ID
+        in: path
+        name: participantid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show dummy players
+      tags:
+      - Player
+  /api/player/dummy/{playerid}:
+    post:
+      description: Create dummy player by player id
+      parameters:
+      - description: Player ID
+        in: path
+        name: playerid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Create dummy player
+      tags:
+      - Player
   /api/player/groupid/{playerid}/{groupid}:
     put:
       consumes:

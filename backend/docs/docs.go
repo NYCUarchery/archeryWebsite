@@ -2690,6 +2690,76 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/player/dummy/{participantid}": {
+            "get": {
+                "description": "Get dummy players by participant id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Show dummy players",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Participant ID",
+                        "name": "participantid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/player/dummy/{playerid}": {
+            "post": {
+                "description": "Create dummy player by player id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Create dummy player",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "playerid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/player/groupid/{playerid}/{groupid}": {
             "put": {
                 "description": "Update one Player groupId by id, and change player laneid to Unassigned lane",

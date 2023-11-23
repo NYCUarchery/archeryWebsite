@@ -31,6 +31,7 @@ func playerRouter(api *gin.RouterGroup) {
 	api.GET("/:id", endpoint.GetOnlyPlayerByID)
 	api.GET("/scores/:id", endpoint.GetPlayerWScoresByID)
 	api.GET("/playersets/:id/:eliminationid", endpoint.GetPlayerWPlayerSetsByIDEliminationID)
+
 	api.POST("/:participantid", endpoint.PostPlayer)
 	api.POST("/roundend", endpoint.PostRoundEnd)
 	api.POST("/roundscore", endpoint.PostRoundScore)
@@ -41,6 +42,10 @@ func playerRouter(api *gin.RouterGroup) {
 	api.PUT("/roundscore/:id", endpoint.UpdatePlayerScore)
 	api.PUT("/shootoffscore/:id", endpoint.UpdatePlayerShootoffScore)
 	api.DELETE("/:id", endpoint.DeletePlayer)
+
+	api.GET("/dummy/:participantid", endpoint.GetDummyPlayerByParticipantId)
+	api.POST("/dummy/:playerid", endpoint.PostDummyPlayerByPlayerId)
+
 }
 func playerSetRouter(api *gin.RouterGroup) {
 	api.GET("/:id", endpoint.GetPlayerSetWPlayerById)

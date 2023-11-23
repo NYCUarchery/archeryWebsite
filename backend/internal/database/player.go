@@ -71,6 +71,14 @@ func GetOnlyPlayer(id uint) (Player, error) {
 	result := DB.Table("players").Where("id = ?", id).First(&data)
 	return data, result.Error
 }
+func GetDummyPlayersByParticipantId(participantId uint) ([]Player, error) {
+	var data []Player
+	result := DB.
+		Table("players").
+		Where("participant_id = ? AND total_score = -1", participantId).
+		Find(&data)
+	return data, result.Error
+}
 
 func GetPlayerWScores(id uint) (Player, error) {
 	var data Player
