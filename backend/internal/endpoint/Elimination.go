@@ -154,8 +154,7 @@ func GetEliminationById(context *gin.Context) {
 //	@Router			/api/elimination/match/scores/{matchid} [get]
 func GetMatchWScoresById(context *gin.Context) {
 	id := convert2uint(context, "matchid")
-	isExist := database.GetMatchIsExist(id)
-	if !isExist {
+	if response.ErrorIdTest(context, id, database.GetMatchIsExist(id), "Match") {
 		return
 	}
 	data, err := database.GetMatchWScoresById(id)
