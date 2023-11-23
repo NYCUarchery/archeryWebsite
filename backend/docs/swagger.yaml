@@ -2745,6 +2745,33 @@ paths:
       summary: Put player set name
       tags:
       - PlayerSet
+  /playerset/preranking/{eliminationid}:
+    put:
+      description: Put player set rank by elimination id
+      parameters:
+      - description: Elimination ID
+        in: path
+        name: eliminationid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Put player set rank
+      tags:
+      - PlayerSet
   /session:
     delete:
       description: delete the session

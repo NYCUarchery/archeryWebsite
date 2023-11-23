@@ -3771,6 +3771,47 @@
                 }
             }
         },
+        "/playerset/preranking/{eliminationid}": {
+            "put": {
+                "description": "Put player set rank by elimination id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PlayerSet"
+                ],
+                "summary": "Put player set rank",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Elimination ID",
+                        "name": "eliminationid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/playerset/{id}": {
             "get": {
                 "description": "Get player set with players by id",

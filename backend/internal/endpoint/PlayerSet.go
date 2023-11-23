@@ -221,6 +221,34 @@ func PutPlayerSetName(context *gin.Context) {
 	context.IndentedJSON(200, nil)
 }
 
+// Put player set rank
+//
+//	@Summary		Put player set rank
+//	@Description	Put player set rank by elimination id
+//	@Tags			PlayerSet
+//	@Produce		json
+//	@Param			eliminationid	path	uint	true	"Elimination ID"
+//	@Success		200				string	string
+//	@Failure		400				string	string
+//	@Failure		500				string	string
+//	@Router			/playerset/preranking/{eliminationid} [put]
+func PutPlayerSetPreRankingByEliminationId(context *gin.Context) {
+	var yourResultStruct []database.ResultStruct
+	eliminationId := convert2uint(context, "eliminationid")
+	yourResultStruct, err := database.GetEliminationPlayerSetIdRankOrderById(eliminationId)
+	if response.ErrorInternalErrorTest(context, eliminationId, "get elimination player set id rank order by id", err) {
+		return
+	}
+	for index, resultStruct := range yourResultStruct {
+		err := database.UpdatePlayerSetRank(resultStruct.PlayerSetId, index+1)
+		fmt.Printf("rank: %d, player set id: %d, TotalScore %d, allTenUpCnt: %d, XCnt %d \n", index+1, resultStruct.PlayerSetId, resultStruct.AllTotalScore, resultStruct.AllTenUpCnt, resultStruct.AllXCnt)
+		if response.ErrorInternalErrorTest(context, resultStruct.PlayerSetId, "update player set rank", err) {
+			return
+		}
+	}
+	context.IndentedJSON(200, nil)
+}
+
 // Delete player set
 //
 //	@Summary		Delete player set

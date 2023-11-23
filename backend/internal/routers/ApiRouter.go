@@ -53,6 +53,7 @@ func playerSetRouter(api *gin.RouterGroup) {
 	api.GET("/elimination/medal/:eliminationid", endpoint.GetPlayerSetsByMedalByEliminationId)
 	api.POST("/", endpoint.PostPlayerSet)
 	api.PUT("/name/:id", endpoint.PutPlayerSetName)
+	api.PUT("/preranking/:eliminationid", endpoint.PutPlayerSetPreRankingByEliminationId)
 	api.DELETE("/:id", endpoint.DeletePlayerSet)
 }
 

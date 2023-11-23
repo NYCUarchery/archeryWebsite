@@ -345,13 +345,13 @@ func UpdateCompetitionRank(context *gin.Context) {
 		return
 	}
 	for _, groupId := range groudIds {
-		playerIds, error := database.GetGroupPlayerIdRankOrderById(groupId)
+		GroupPlayer, error := database.GetGroupPlayerIdRankOrderById(groupId)
 		if response.ErrorInternalErrorTest(context, id, "Get player ids when update ranking", error) {
 			return
 		}
-		for i, playerId := range playerIds {
-			fmt.Printf("playerId: %d, rank: %d\n", playerId, i+1)
-			error := database.UpdatePlayerRank(playerId, i+1)
+		for i, temp := range GroupPlayer {
+			fmt.Printf("playerId: %d, rank: %d, TenUpcnt: %d, Xcnt: %d\n", temp.ID, i+1, temp.TenUpCnt, temp.XCnt)
+			error := database.UpdatePlayerRank(temp.ID, i+1)
 			if response.ErrorInternalErrorTest(context, id, "Update player rank when update ranking by competition id", error) {
 				return
 			}

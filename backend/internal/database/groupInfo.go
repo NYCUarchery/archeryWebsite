@@ -42,10 +42,16 @@ func GetGroupInfoWPlayersById(id uint) (Group, error) {
 	return group, result.Error
 }
 
-func GetGroupPlayerIdRankOrderById(groupId uint) ([]uint, error) {
-	var playerIds []uint
+type GroupPlayer struct {
+	ID       uint
+	XCnt     int
+	TenUpCnt int
+}
+
+func GetGroupPlayerIdRankOrderById(groupId uint) ([]GroupPlayer, error) {
+	var data []GroupPlayer
 	subquery := DB.Table("players").
-		Select("players.id, SUM(IF(round_scores.score = 11, 1, 0))AS cnt").
+		Select("players.id, SUM(IF(round_scores.score = 11, 1, 0))AS x_cnt, SUM(IF(round_scores.score >= 10, 1, 0))AS ten_up_cnt").
 		Joins("JOIN rounds ON players.id = rounds.player_id").
 		Joins("JOIN round_ends ON rounds.id = round_ends.round_id").
 		Joins("JOIN round_scores ON round_ends.id = round_scores.round_end_id").
@@ -53,14 +59,14 @@ func GetGroupPlayerIdRankOrderById(groupId uint) ([]uint, error) {
 		Group("players.id")
 
 	result := DB.Table("players").
-		Select("players.id").
+		Select("players.id, subquery.x_cnt, subquery.ten_up_cnt").
 		Joins("JOIN `groups` ON `groups`.id = players.group_id").
 		Joins("JOIN (?) AS subquery ON subquery.id = players.id", subquery).
 		Where("`groups`.id = ? AND players.`rank` != -1", groupId).
-		Order("players.total_score DESC, subquery.cnt DESC, players.shoot_off_score DESC").
-		Find(&playerIds)
+		Order("players.total_score DESC, subquery.ten_up_cnt DESC, subquery.x_cnt DESC, players.shoot_off_score DESC").
+		Find(&data)
 
-	return playerIds, result.Error
+	return data, result.Error
 }
 
 func CreateGroupInfo(group Group) (Group, error) {
