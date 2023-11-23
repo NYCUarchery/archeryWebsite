@@ -173,7 +173,7 @@ func profileRouter(api *gin.RouterGroup) {
 
 	parssr := api.Group("/participant")
 	{
-		parssr.POST("/", pkg.AuthSessionMiddleware(), endpoint.JoinInCompetition)
+		parssr.POST("/", pkg.AuthSessionMiddleware(), endpoint.PostParticipant)
 		// hope be edited by JSON
 		//
 		parssr.GET("/:id", endpoint.GetParticipantById)

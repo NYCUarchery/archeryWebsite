@@ -177,6 +177,8 @@ definitions:
         type: string
       overview:
         type: string
+      realName:
+        type: string
     type: object
   response.Response:
     properties:
@@ -1784,20 +1786,30 @@ paths:
     post:
       consumes:
       - application/json
-      description: add a particpant to the competition
+      description: post a particpant to the competition
       parameters:
+      - description: user id
+        in: formData
+        name: userID
+        required: true
+        type: integer
       - description: competition id
         in: formData
         name: competitionID
         required: true
         type: integer
+      - description: role
+        in: formData
+        name: role
+        required: true
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/response.Response'
+            $ref: '#/definitions/database.Participant'
         "400":
           description: no user/competition found
           schema:
@@ -1806,7 +1818,7 @@ paths:
           description: internal db error
           schema:
             $ref: '#/definitions/response.Response'
-      summary: join in a competition
+      summary: post a particpant to the competition
       tags:
       - Participant
   /api/participant/{id}:

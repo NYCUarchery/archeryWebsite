@@ -14,8 +14,8 @@ func AddInstitution(ins *Institution) (err error) {
 	return
 }
 
-func InstitutionInfoByID(id uint) (ins Institution, err error) {
-	err = DB.Where("id = ?", id).First(&ins).Error
+func InstitutionInfoByID(id uint) (ins Institution) {
+	DB.Where("id = ?", id).First(&ins)
 	return
 }
 

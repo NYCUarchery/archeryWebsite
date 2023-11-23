@@ -2392,7 +2392,7 @@ const docTemplate = `{
         },
         "/api/participant/": {
             "post": {
-                "description": "add a particpant to the competition",
+                "description": "post a particpant to the competition",
                 "consumes": [
                     "application/json"
                 ],
@@ -2402,12 +2402,26 @@ const docTemplate = `{
                 "tags": [
                     "Participant"
                 ],
-                "summary": "join in a competition",
+                "summary": "post a particpant to the competition",
                 "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "user id",
+                        "name": "userID",
+                        "in": "formData",
+                        "required": true
+                    },
                     {
                         "type": "integer",
                         "description": "competition id",
                         "name": "competitionID",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "role",
+                        "name": "role",
                         "in": "formData",
                         "required": true
                     }
@@ -2416,7 +2430,7 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/response.Response"
+                            "$ref": "#/definitions/database.Participant"
                         }
                     },
                     "400": {
@@ -4486,6 +4500,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "overview": {
+                    "type": "string"
+                },
+                "realName": {
                     "type": "string"
                 }
             }
