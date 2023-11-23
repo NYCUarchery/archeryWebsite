@@ -9,6 +9,7 @@ import { useSelector } from "react-redux/es/hooks/useSelector";
 import { useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { initialize } from "./features/States/gameSlice";
+import UserIdentifier from "./features/UserIdentifier";
 
 function App() {
   const { competitionID } = useParams();
@@ -33,6 +34,7 @@ function App() {
     <div>
       <TopBar />
       <SubGamesBar />
+      <UserIdentifier />
       <div className="board">{board}</div>
       <BottomBar />
     </div>

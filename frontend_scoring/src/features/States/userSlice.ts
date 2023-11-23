@@ -13,7 +13,14 @@ const initialState = {
 const userSlice = createSlice({
   name: "user",
   initialState: initialState,
-  reducers: {},
+  reducers: {
+    initializeUser: (state, action) => {
+      state.userName = action.payload.name;
+      state.userId = action.payload.id;
+      state.userRole = action.payload.role;
+    },
+  },
 });
 
 export const userReducer = userSlice.reducer;
+export const initializeUser = userSlice.actions.initializeUser;
