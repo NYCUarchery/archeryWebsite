@@ -6,6 +6,8 @@ export default function ScoreBlock(props: Props) {
   let content: string = "";
 
   switch (props.score) {
+    case -1:
+      return <></>;
     case 0:
       content = "M";
       break;

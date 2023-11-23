@@ -1,33 +1,78 @@
 import { ButtonGroup, Button } from "@mui/material";
-import { useDispatch, useSelector } from "react-redux";
-import { deleteScore } from "./scoreControllerSlice";
-import { toggleConfirmation } from "./scoreControllerSlice";
+import { useMutation, useQueryClient } from "react-query";
 
-export default function ControllButtonGroup() {
-  const dispatch = useDispatch();
-  const confirmations = useSelector(
-    (state: any) => state.scoreController.confirmations
-  );
-  const userTarget = useSelector((state: any) => state.user.userTarget);
-  const handleConfirmation = () => {
-    console.log(userTarget);
-    dispatch(toggleConfirmation(userTarget));
+import axios from "axios";
+import { findUnfilledScoreInEnd } from "../util";
+
+interface Props {
+  participantEnd: any;
+  selectedPlayer: any;
+  end: any;
+  round: any;
+  isConfirmed: boolean;
+}
+const putIsConfirmed = ({ roundEndID, isConfirmed }: any) => {
+  return axios.put(`/api/player/isconfirmed/${roundEndID}`, {
+    is_confirmed: !isConfirmed,
+  });
+};
+const putScoreDeleted = ({ selectedPlayerID, round, end, lastScore }: any) => {
+  return axios.put(`/api/player/roundscore/${lastScore.id}`, {
+    player_id: selectedPlayerID,
+    round_id: round.id,
+    round_end_id: end.id,
+    score: -1,
+  });
+};
+
+export default function ControllButtonGroup({
+  end,
+  isConfirmed,
+  participantEnd,
+  round,
+  selectedPlayer,
+}: Props) {
+  const queryClient = useQueryClient();
+  const { mutate: toggleConfirmation } = useMutation(putIsConfirmed, {
+    onSuccess: () => {
+      queryClient.invalidateQueries([
+        "laneWithPlayersScores",
+        selectedPlayer.lane_id,
+      ]);
+    },
+  });
+  const { mutate: deleteScore } = useMutation(putScoreDeleted, {
+    onSuccess: () => {
+      queryClient.invalidateQueries([
+        "laneWithPlayersScores",
+        selectedPlayer.lane_id,
+      ]);
+    },
+  });
+  const lastScore = findUnfilledScoreInEnd(end);
+  const handleConfirmation = (_event: any) => {
+    toggleConfirmation({ roundEndID: participantEnd.id, isConfirmed });
   };
-  const handledelete = () => {
-    dispatch(deleteScore());
+  const handledelete = (_event: any) => {
+    deleteScore({ selectedPlayerID: selectedPlayer.id, round, end, lastScore });
   };
 
   return (
     <ButtonGroup className="controll_button_group" fullWidth variant="text">
       <Button
         className="confirm_button"
-        id={confirmations[userTarget] ? "confirmed" : "unconfirmed"}
+        id={isConfirmed ? "confirmed" : "unconfirmed"}
         onClick={handleConfirmation}
       >
-        {confirmations[userTarget] ? "取消確認" : "確認"}
+        {isConfirmed ? "取消確認" : "確認"}
       </Button>
-      <Button className="send_button">送出</Button>
-      <Button className="cancel_button" onClick={handledelete}>
+      <Button
+        disabled={
+          end === undefined || end?.is_confirmed || lastScore === undefined
+        }
+        className="cancel_button"
+        onClick={handledelete}
+      >
         &lt;=
       </Button>
     </ButtonGroup>
