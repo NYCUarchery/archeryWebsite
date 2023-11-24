@@ -26,7 +26,7 @@ export default function TeamBlock({ playerSetID }: Props) {
       <>
         <Divider></Divider>
         <ListItem
-          key={player.id}
+          key={i}
           sx={{
             height: "60px",
           }}
@@ -43,7 +43,6 @@ export default function TeamBlock({ playerSetID }: Props) {
       subheader={
         <ListSubheader>
           {playerSet.set_name}
-          <Chip label={playerSet.rank} />
           <DeleteButton
             setID={playerSet.id}
             eliminationID={playerSet.elimination_id}
@@ -52,6 +51,11 @@ export default function TeamBlock({ playerSetID }: Props) {
       }
     >
       {playerBlocks}
+      <ListItem key={4}>
+        <ListItemText>
+          總分：{playerSet.total_score} 排名：{playerSet.rank}
+        </ListItemText>
+      </ListItem>
     </List>
   );
 }
