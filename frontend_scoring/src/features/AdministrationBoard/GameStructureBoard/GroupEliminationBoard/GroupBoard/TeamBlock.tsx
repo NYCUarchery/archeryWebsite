@@ -1,3 +1,4 @@
+import useGetPlayerSetWithPlayers from "../../../../../QueryHooks/useGetPlayerSetWithPlayers";
 import {
   ListItem,
   ListItemText,
@@ -8,35 +9,18 @@ import {
 } from "@mui/material";
 
 interface Props {
-  teamIndex: number;
-  playersNum: number;
-  players: Player[];
+  playerSetID: any;
 }
 
-interface Player {
-  id: number;
-  name: string;
-}
+export default function TeamBlock({ playerSetID }: Props) {
+  const { data: playerSet } = useGetPlayerSetWithPlayers(playerSetID);
 
-export default function TeamBlock({ teamIndex, playersNum, players }: Props) {
+  if (!playerSet) return <></>;
+
   let playerBlocks = [];
 
-  for (let i = 0; i < playersNum; i++) {
-    playerBlocks.push(
-      <>
-        <Divider></Divider>
-        <ListItem
-          sx={{
-            height: "60px",
-          }}
-        >
-          <ListItemText></ListItemText>
-        </ListItem>
-      </>
-    );
-  }
-
-  for (let i = 0; i < players.length; i++) {
+  for (let i = 0; i < playerSet.players.length; i++) {
+    const player = playerSet.players[i];
     playerBlocks[i] = (
       <>
         <Divider></Divider>
@@ -45,15 +29,22 @@ export default function TeamBlock({ teamIndex, playersNum, players }: Props) {
             height: "60px",
           }}
         >
-          <ListItemText>{players[i].name}</ListItemText>
-          <Chip label={players[i].id} />
+          <ListItemText>{player.name}</ListItemText>
+          <Chip label={player.total_score} />
         </ListItem>
       </>
     );
   }
 
   return (
-    <List subheader={<ListSubheader>{teamIndex}</ListSubheader>}>
+    <List
+      subheader={
+        <ListSubheader>
+          {playerSet.set_name}
+          <Chip label={playerSet.rank} />
+        </ListSubheader>
+      }
+    >
       {playerBlocks}
     </List>
   );

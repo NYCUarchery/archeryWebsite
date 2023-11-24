@@ -1,39 +1,28 @@
 import { Box, Grid } from "@mui/material";
-import { useSelector } from "react-redux";
-import EliminatiomInfo from "../../../../../jsons/EliminationInfo.json";
 import TeamBlock from "./TeamBlock";
+import useGetPlayerSets from "../../../../../QueryHooks/useGetPlayerSets";
 
-export default function GroupBoard() {
+interface Props {
+  eliminationID: number;
+}
+
+export default function GroupBoard({ eliminationID }: Props) {
+  const { data: playerSets } = useGetPlayerSets(eliminationID);
+
+  if (!playerSets) return <></>;
+
   let teamBlocks = [];
-  let advancingNum = 16;
-  let groupShown = useSelector(
-    (state: any) => state.gameStructureGroupMenu.groupShown
-  );
-  groupShown--;
 
-  for (let i = 0; i < advancingNum; i++) {
+  for (let i = 0; i < playerSets.length; i++) {
     teamBlocks.push(
       <Grid item xs={3}>
-        <TeamBlock teamIndex={i + 1} playersNum={3} players={[]}></TeamBlock>
-      </Grid>
-    );
-  }
-
-  for (let i = 0; i < EliminatiomInfo.groups[groupShown].players.length; i++) {
-    let player = EliminatiomInfo.groups[groupShown].players[i];
-    teamBlocks[i] = (
-      <Grid item xs={3}>
-        <TeamBlock
-          teamIndex={i + 1}
-          playersNum={3}
-          players={[{ id: player.rank, name: player.name }]}
-        ></TeamBlock>
+        <TeamBlock playerSetID={playerSets[i].id}></TeamBlock>
       </Grid>
     );
   }
 
   return (
-    <Box>
+    <Box sx={{ minWidth: "800px" }}>
       <Grid container spacing={1}>
         {teamBlocks}
       </Grid>

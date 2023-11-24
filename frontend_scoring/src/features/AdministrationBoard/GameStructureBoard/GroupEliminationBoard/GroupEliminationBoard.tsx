@@ -12,6 +12,7 @@ export default function GroupEliminationBoard({
   teamSize,
   eliminationID,
 }: Props) {
+  if (!eliminationID) return <></>;
   return (
     <Box
       className="group_elimination_board"
@@ -27,7 +28,7 @@ export default function GroupEliminationBoard({
           eliminationID={eliminationID}
         ></SetCreator>
       </Box>
-      <GroupBoard></GroupBoard>
+      <GroupBoard eliminationID={eliminationID}></GroupBoard>
     </Box>
   );
 }

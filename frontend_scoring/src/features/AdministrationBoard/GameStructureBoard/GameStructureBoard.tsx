@@ -20,14 +20,22 @@ export default function GameStructureBoard() {
   const { data: competition, isLoading } =
     useGetSimpleCompetition(competitionID);
 
-  if (isLoading) return <></>;
+  if (isLoading || !competition) return <></>;
+
+  const teamSize = teamSizes[subboardShown];
+  console.log("teamSize:", teamSize);
   const eliminationID = extractEliminationID(
     competition.group_datas,
-    subboardShown,
-    groupShown
+    groupShown,
+    teamSize
   );
 
-  let board = getSubboard(subboardShown, subboardNames, eliminationID);
+  let board = getSubboard(
+    subboardShown,
+    teamSize,
+    subboardNames,
+    eliminationID
+  );
 
   return (
     <div className="game_structure_board">
@@ -39,6 +47,7 @@ export default function GameStructureBoard() {
 
 function getSubboard(
   subboardShown: number,
+  teamSize: number,
   subboardNames: string[],
   eliminationID: number
 ) {
@@ -53,7 +62,7 @@ function getSubboard(
     default:
       board = (
         <GroupEliminationBoard
-          teamSize={teamSizes[subboardShown]}
+          teamSize={teamSize}
           eliminationID={eliminationID}
         ></GroupEliminationBoard>
       );
@@ -64,12 +73,11 @@ function getSubboard(
 const extractEliminationID = (
   groups: any,
   groupShown: number,
-  subboardShown: number
+  teamSize: number
 ) => {
   const group = groups.find((g: any) => g.group_id === groupShown);
 
   if (!group) return undefined;
-  const teamSize = teamSizes[subboardShown];
   const eliminationID = group.elimination_datas.find(
     (e: any) => e.team_size === teamSize
   )?.elimination_id;
