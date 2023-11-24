@@ -1874,7 +1874,7 @@ paths:
       - Participant
   /api/participant/competition:
     get:
-      description: Get Participants By competition ID, including name
+      description: Get Participants By competition ID, including realname
       parameters:
       - description: competition ID
         in: body
