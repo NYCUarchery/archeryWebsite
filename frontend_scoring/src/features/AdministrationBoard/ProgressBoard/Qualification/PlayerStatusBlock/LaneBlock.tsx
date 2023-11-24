@@ -32,7 +32,7 @@ export default function LaneBlock({ laneShell }: Props) {
         <PlayerLight
           laneIndex={lane?.lane_number}
           order={player.order}
-          isConfirmed={round.round_ends[endIndex].is_confirmed}
+          isConfirmed={round?.round_ends[endIndex].is_confirmed}
         ></PlayerLight>
       );
     }

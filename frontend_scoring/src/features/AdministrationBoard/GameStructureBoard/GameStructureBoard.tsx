@@ -87,7 +87,7 @@ const extractEliminationID = (
   const group = groups.find((g: any) => g.group_id === groupShown);
 
   if (!group) return undefined;
-  const eliminationID = group.elimination_datas.find(
+  const eliminationID = group.elimination_datas?.find(
     (e: any) => e.team_size === teamSize
   )?.elimination_id;
   return eliminationID;

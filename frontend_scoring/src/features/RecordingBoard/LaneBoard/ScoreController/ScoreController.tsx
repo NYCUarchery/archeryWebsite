@@ -19,6 +19,7 @@ export default function ScoreController({
   const competitionID = useSelector((state: any) => state.game.competitionID);
   const { data: competition, isLoading } = useGetCompetition(competitionID);
   if (isLoading) return <></>;
+  console.log(player);
   const currentEnd = competition.qualification_current_end;
   const round = extractround(selectedPlayer, currentEnd);
   const end = extractEnd(selectedPlayer, currentEnd);

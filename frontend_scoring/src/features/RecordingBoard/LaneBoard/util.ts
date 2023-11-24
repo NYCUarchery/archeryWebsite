@@ -4,7 +4,7 @@ export const extractEnd = (player: any, currentEnd: number) => {
   const currentRound = Math.ceil(currentEnd / 6);
   const round = player.rounds[currentRound - 1];
 
-  const end = round.round_ends[currentEnd - (currentRound - 1) * 6 - 1];
+  const end = round?.round_ends[currentEnd - (currentRound - 1) * 6 - 1];
 
   return end;
 };
