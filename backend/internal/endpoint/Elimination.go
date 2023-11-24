@@ -10,7 +10,7 @@ import (
 
 func IsGetEliminationById(context *gin.Context) (bool, database.Elimination) {
 	id := convert2uint(context, "id")
-	data, err := database.GetEliminationById(id)
+	data, err := database.GetOnlyEliminationById(id)
 	isExist := (data.ID == id)
 	if response.ErrorIdTest(context, id, isExist, "Elimination") {
 		return false, database.Elimination{}
@@ -21,16 +21,16 @@ func IsGetEliminationById(context *gin.Context) (bool, database.Elimination) {
 	return true, data
 }
 
-func IsGetEliminationWStagesById(context *gin.Context) (bool, database.Elimination) {
+func IsGetEliminationWStagesMatchesById(context *gin.Context) (bool, database.Elimination) {
 	id := convert2uint(context, "id")
-	data, err := database.GetEliminationWStagesById(id)
+	data, err := database.GetEliminationWStagesMatchesById(id)
 	isExist := (data.ID == id)
 	if response.ErrorIdTest(context, id, isExist, "Elimination") {
 		return false, database.Elimination{}
-	} else if response.ErrorInternalErrorTest(context, id, "Get Elimination with stages", err) {
+	} else if response.ErrorInternalErrorTest(context, id, "Get Elimination with stages, matches", err) {
 		return false, data
 	}
-	response.AcceptPrint(id, fmt.Sprint(data), "Elimination with stages")
+	response.AcceptPrint(id, fmt.Sprint(data), "Elimination with stages, matches")
 	return true, data
 }
 
@@ -52,18 +52,42 @@ func GetOnlyEliminationById(context *gin.Context) {
 	context.IndentedJSON(200, data)
 }
 
-// Get one Elimination By ID with stages godoc
+// Get one Elimination By ID with player sets godoc
 //
-//	@Summary		Show one Elimination with stages
-//	@Description	Get one Elimination with stages by id
+//	@Summary		Show one Elimination with player sets
+//	@Description	Get one Elimination with player sets by id
+//	@Tags			Elimination
+//	@Produce		json
+//	@Param			id	path	int	true	"Elimination ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/api/elimination/playersets/{id} [get]
+func GetEliminationWPlayerSetsById(context *gin.Context) {
+	id := convert2uint(context, "id")
+	isExist, _ := IsGetEliminationById(context)
+	if !isExist {
+		return
+	}
+	data, err := database.GetEliminationWPlayerSetsById(id)
+	if response.ErrorInternalErrorTest(context, id, "Get Elimination with player sets", err) {
+		return
+	}
+	response.AcceptPrint(id, fmt.Sprint(data), "Elimination with player sets")
+	context.IndentedJSON(200, data)
+}
+
+// Get one Elimination By ID with stages, matches godoc
+//
+//	@Summary		Show one Elimination with stages, matches
+//	@Description	Get one Elimination with stages, matches by id
 //	@Tags			Elimination
 //	@Produce		json
 //	@Param			id	path	int	true	"Elimination ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
 //	@Router			/api/elimination/stages/{id} [get]
-func GetEliminationWStagesById(context *gin.Context) {
-	isExist, data := IsGetEliminationWStagesById(context)
+func GetEliminationWStagesMatchesById(context *gin.Context) {
+	isExist, data := IsGetEliminationWStagesMatchesById(context)
 	if !isExist {
 		return
 	}
@@ -91,6 +115,53 @@ func GetEliminationWScoresById(context *gin.Context) {
 		return
 	}
 	response.AcceptPrint(id, fmt.Sprint(data), "Elimination with scores")
+	context.IndentedJSON(200, data)
+}
+
+// Get one Elimination By ID with all related data godoc
+//
+//	@Summary		Show one Elimination with all related data
+//	@Description	Get one Elimination with stages, matches, matchResults, matchEnds, scores, playerSets, players, medals by id
+//	@Tags			Elimination
+//	@Produce		json
+//	@Param			id	path	int	true	"Elimination ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/api/elimination/stages/scores/medals/{id} [get]
+func GetEliminationById(context *gin.Context) {
+	id := convert2uint(context, "id")
+	isExist, _ := IsGetEliminationById(context)
+	if !isExist {
+		return
+	}
+	data, err := database.GetEliminationById(id)
+	if response.ErrorInternalErrorTest(context, id, "Get Elimination", err) {
+		return
+	}
+	response.AcceptPrint(id, fmt.Sprint(data), "Elimination")
+	context.IndentedJSON(200, data)
+}
+
+// Get one Match By ID with all related data godoc
+//
+//	@Summary		Show one Match with all related data
+//	@Description	Get one Match with matchResults, matchEnds, scores, playerSets, players by id
+//	@Tags			Elimination
+//	@Produce		json
+//	@Param			matchid	path	int	true	"Match ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/api/elimination/match/scores/{matchid} [get]
+func GetMatchWScoresById(context *gin.Context) {
+	id := convert2uint(context, "matchid")
+	if response.ErrorIdTest(context, id, database.GetMatchIsExist(id), "Match") {
+		return
+	}
+	data, err := database.GetMatchWScoresById(id)
+	if response.ErrorInternalErrorTest(context, id, "Get Match with scores", err) {
+		return
+	}
+	response.AcceptPrint(id, fmt.Sprint(data), "Match with scores")
 	context.IndentedJSON(200, data)
 }
 
@@ -173,7 +244,9 @@ func PostStage(context *gin.Context) {
 // Post one Match godoc
 //
 //	@Summary		Create one Match
-//	@Description	Post one new Match data with new id
+//	@Description	Post one new Match data with 2 matchResults
+//	@Description	Each matchResults with 4 or 5 matchEnds
+//	@Description	Each matchEnds with 3, 4, 6 matchScores
 //	@Tags			Elimination
 //	@Accept			json
 //	@Produce		json
@@ -182,20 +255,84 @@ func PostStage(context *gin.Context) {
 //	@Failure		400		string	string
 //	@Router			/api/elimination/match [post]
 func PostMatch(context *gin.Context) {
-	var data database.Match
+	type MatchData struct {
+		StageId      uint   `json:"stage_id"`
+		PlayerSetIds []uint `json:"player_set_ids"`
+		LaneNumbers  []int  `json:"lane_numbers"`
+	}
+	var data MatchData
+	/*check request data*/
 	err := context.BindJSON(&data)
 	if response.ErrorReceiveDataTest(context, 0, "Match", err) {
 		return
 	} else if response.ErrorIdTest(context, data.StageId, database.GetStageIsExist(data.StageId), "stage when creating match") {
 		return
+	} else if len(data.PlayerSetIds) != 2 {
+		response.ErrorReceiveDataFormat(context, " player set ids should be 2")
+	} else if len(data.LaneNumbers) != 2 {
+		response.ErrorReceiveDataFormat(context, "lane numbers should be 2")
 	}
-	data, err = database.CreateMatch(data)
+	/*id existence*/
+	stage, err := database.GetStageById(data.StageId)
+	if response.ErrorInternalErrorTest(context, 0, "Get Stage when creating match", err) {
+		return
+	}
+	eliminationId := stage.EliminationId
+	for i := 0; i < 2; i++ {
+		isExist, PlayerSet := IsGetPlayerSetById(context, data.PlayerSetIds[i])
+		if !isExist {
+			return
+		} else if PlayerSet.EliminationId != eliminationId {
+			response.ErrorReceiveDataFormat(context, "player set id should be in the same elimination")
+			return
+		}
+	}
+	/*get elimination teamsize*/
+	elimination, err := database.GetOnlyEliminationById(eliminationId)
+	if response.ErrorInternalErrorTest(context, eliminationId, "Get Elimination when creating match", err) {
+		return
+	}
+	teamSize := elimination.TeamSize
+	/*create match*/
+	var match database.Match
+	match.StageId = data.StageId
+	match, err = database.CreateMatch(match)
 	if response.ErrorInternalErrorTest(context, 0, "Create Match", err) {
 		return
 	}
-	id := data.ID
-	response.AcceptPrint(id, fmt.Sprint(data), "Match")
-	context.IndentedJSON(200, data)
+	/*create two matchResults */
+	for i := 0; i < 2; i++ {
+		var matchResult database.MatchResult
+		matchResult.MatchId = match.ID
+		matchResult.PlayerSetId = data.PlayerSetIds[i]
+		matchResult.LaneNumber = data.LaneNumbers[i]
+		matchResult.ShootOffScore = -1
+		newMatchResult, err := database.CreateMatchResult(matchResult)
+		if response.ErrorInternalErrorTest(context, newMatchResult.ID, "Create MatchResult when creating match", err) {
+			return
+		}
+		response.AcceptPrint(newMatchResult.ID, fmt.Sprint(newMatchResult), "MatchResult")
+		/*create matchEnd*/
+		var loopTime int
+		if teamSize == 1 {
+			loopTime = 5
+		} else {
+			loopTime = 4
+		}
+		for j := 0; j < loopTime; j++ {
+			success := PostMatchEndByMatchResultId(context, newMatchResult.ID, teamSize)
+			if !success {
+				return
+			}
+		}
+	}
+	/*get new data*/
+	newData, err := database.GetMatchWScoresById(match.ID)
+	if response.ErrorInternalErrorTest(context, 0, "Get Match with scores when creating match", err) {
+		return
+	}
+	response.AcceptPrint(newData.ID, fmt.Sprint(newData), "Match")
+	context.IndentedJSON(200, newData)
 }
 
 // Put elimination current stage plus one by id

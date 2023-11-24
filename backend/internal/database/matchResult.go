@@ -3,13 +3,14 @@ package database
 import "gorm.io/gorm"
 
 type MatchResult struct {
-	//PlayerSetId uint `json:"player_set_id"`
 	ID            uint        `json:"id"        gorm:"primary_key"`
 	MatchId       uint        `json:"match_id"`
+	PlayerSetId   uint        `json:"player_set_id"`
 	TotalPoints   int         `json:"total_points"`
 	ShootOffScore int         `json:"shoot_off_score"`
 	IsWinner      bool        `json:"is_winner"`
 	LaneNumber    int         `json:"lane_number"`
+	PlayerSet     *PlayerSet  `json:"player_set" gorm:"foreignKey:PlayerSetId;"`
 	MatchEnds     []*MatchEnd `json:"match_ends" gorm:"constraint:OnDelete:CASCADE;"`
 }
 
@@ -56,17 +57,33 @@ func GetMatchScoreWMEndIdIsExist(id uint, match_end_id uint) bool {
 
 func GetMatchResultById(id uint) (MatchResult, error) {
 	var data MatchResult
-	result := DB.Table("match_results").Where("id = ?", id).First(&data)
+	result := DB.
+		Preload("PlayerSet").
+		Table("match_results").
+		Where("id = ?", id).
+		First(&data)
 	return data, result.Error
 }
 func GetMatchResultWScoresById(id uint) (MatchResult, error) {
 	var data MatchResult
 	result := DB.
+		Preload("PlayerSet").
 		Preload("MatchEnds.MatchScores", func(*gorm.DB) *gorm.DB {
 			return DB.Order("score DESC")
 		}).
 		Model(&MatchResult{}).
 		Where("id = ?", id).
+		First(&data)
+	return data, result.Error
+}
+func GetMatchScoreById(id uint) (MatchScore, error) {
+	var data MatchScore
+	result := DB.Table("match_scores").Where("id = ?", id).First(&data)
+	return data, result.Error
+}
+func GetMatchEndById(id uint) (MatchEnd, error) {
+	var data MatchEnd
+	result := DB.Table("match_ends").Where("id = ?", id).
 		First(&data)
 	return data, result.Error
 }

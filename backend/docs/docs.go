@@ -761,7 +761,7 @@ const docTemplate = `{
         },
         "/api/elimination/match": {
             "post": {
-                "description": "Post one new Match data with new id",
+                "description": "Post one new Match data with 2 matchResults\nEach matchResults with 4 or 5 matchEnds\nEach matchEnds with 3, 4, 6 matchScores",
                 "consumes": [
                     "application/json"
                 ],
@@ -781,6 +781,76 @@ const docTemplate = `{
                         "schema": {
                             "type": "string"
                         }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/elimination/match/scores/{matchid}": {
+            "get": {
+                "description": "Get one Match with matchResults, matchEnds, scores, playerSets, players by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Elimination"
+                ],
+                "summary": "Show one Match with all related data",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Match ID",
+                        "name": "matchid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/elimination/playersets/{id}": {
+            "get": {
+                "description": "Get one Elimination with player sets by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Elimination"
+                ],
+                "summary": "Show one Elimination with player sets",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Elimination ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -874,16 +944,51 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/elimination/stages/{id}": {
+        "/api/elimination/stages/scores/medals/{id}": {
             "get": {
-                "description": "Get one Elimination with stages by id",
+                "description": "Get one Elimination with stages, matches, matchResults, matchEnds, scores, playerSets, players, medals by id",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Elimination"
                 ],
-                "summary": "Show one Elimination with stages",
+                "summary": "Show one Elimination with all related data",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Elimination ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/elimination/stages/{id}": {
+            "get": {
+                "description": "Get one Elimination with stages, matches by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Elimination"
+                ],
+                "summary": "Show one Elimination with stages, matches",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1486,46 +1591,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/matchresult": {
-            "post": {
-                "description": "Post one new MatchResult data with new id, and auto write totalPoints ShootOffScore IsWinner",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "MatchResult"
-                ],
-                "summary": "Create one MatchResult",
-                "parameters": [
-                    {
-                        "description": "MatchResult",
-                        "name": "MatchResult",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/api/matchresult/iswinner/{id}": {
             "put": {
                 "description": "Update one MatchResult isWinner by id",
@@ -1656,14 +1721,14 @@ const docTemplate = `{
         },
         "/api/matchresult/scores/{id}": {
             "get": {
-                "description": "Get one MatchResult with match_ends and match_scores by id",
+                "description": "Get one MatchResult with match_ends, match_scores, player set by id",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "MatchResult"
                 ],
-                "summary": "Show one MatchResult with match_ends and match_scores",
+                "summary": "Show one MatchResult with match_ends, match_scores, player set",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1779,14 +1844,14 @@ const docTemplate = `{
         },
         "/api/matchresult/{id}": {
             "get": {
-                "description": "Get one MatchResult without other data by id",
+                "description": "Get one MatchResult with player set by id",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "MatchResult"
                 ],
-                "summary": "Show one MatchResult",
+                "summary": "Show one MatchResult with player set",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1903,6 +1968,50 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/medal/playersetid/{id}": {
+            "put": {
+                "description": "update medal's player set id by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Medal"
+                ],
+                "summary": "Update medal's player set id by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Medal ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "PlayerSetId",
+                        "name": "PlayerSetId",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {
@@ -2283,7 +2392,7 @@ const docTemplate = `{
         },
         "/api/participant/": {
             "post": {
-                "description": "add a particpant to the competition",
+                "description": "post a particpant to the competition",
                 "consumes": [
                     "application/json"
                 ],
@@ -2293,12 +2402,26 @@ const docTemplate = `{
                 "tags": [
                     "Participant"
                 ],
-                "summary": "join in a competition",
+                "summary": "post a particpant to the competition",
                 "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "user id",
+                        "name": "userID",
+                        "in": "formData",
+                        "required": true
+                    },
                     {
                         "type": "integer",
                         "description": "competition id",
                         "name": "competitionID",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "role",
+                        "name": "role",
                         "in": "formData",
                         "required": true
                     }
@@ -2307,7 +2430,7 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/response.Response"
+                            "$ref": "#/definitions/database.Participant"
                         }
                     },
                     "400": {
@@ -2581,6 +2704,76 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/player/dummy/{participantid}": {
+            "get": {
+                "description": "Get dummy players by participant id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Show dummy players",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Participant ID",
+                        "name": "participantid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/player/dummy/{playerid}": {
+            "post": {
+                "description": "Create dummy player by player id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Create dummy player",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "playerid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/player/groupid/{playerid}/{groupid}": {
             "put": {
                 "description": "Update one Player groupId by id, and change player laneid to Unassigned lane",
@@ -2713,6 +2906,48 @@ const docTemplate = `{
                         "type": "integer",
                         "description": "Player ID",
                         "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/player/playersets/{id}/{eliminationid}": {
+            "get": {
+                "description": "Get one Player with player sets by id and elimination id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Show one Player with player sets",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Elimination ID",
+                        "name": "eliminationid",
                         "in": "path",
                         "required": true
                     }
@@ -3375,6 +3610,305 @@ const docTemplate = `{
                 }
             }
         },
+        "/playerset": {
+            "post": {
+                "description": "Post player set, and build player set match table\nIf team size is 1, set name will be player name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PlayerSet"
+                ],
+                "summary": "Post player set",
+                "parameters": [
+                    {
+                        "description": "Player Set Data",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/playerset/elimination/medal/{eliminationid}": {
+            "get": {
+                "description": "Get player sets which have medals by elimination id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PlayerSet"
+                ],
+                "summary": "Get player sets which have medals by elimination id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Elimination ID",
+                        "name": "eliminationid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/playerset/elimination/{eliminationid}": {
+            "get": {
+                "description": "Get all player sets by elimination id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PlayerSet"
+                ],
+                "summary": "Get all player sets by elimination id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Elimination ID",
+                        "name": "eliminationid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/playerset/name/{id}": {
+            "put": {
+                "description": "Put player set name",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PlayerSet"
+                ],
+                "summary": "Put player set name",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player Set ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Player Set Data",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/playerset/preranking/{eliminationid}": {
+            "put": {
+                "description": "Put player set rank by elimination id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PlayerSet"
+                ],
+                "summary": "Put player set rank",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Elimination ID",
+                        "name": "eliminationid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/playerset/{id}": {
+            "get": {
+                "description": "Get player set with players by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PlayerSet"
+                ],
+                "summary": "Get player set with players by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player Set ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete player set, and delete player set match table",
+                "tags": [
+                    "PlayerSet"
+                ],
+                "summary": "Delete player set",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player Set ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/session": {
             "post": {
                 "description": "get a session",
@@ -3847,6 +4381,12 @@ const docTemplate = `{
                 "participant_id": {
                     "type": "integer"
                 },
+                "player_sets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.PlayerSet"
+                    }
+                },
                 "rank": {
                     "type": "integer"
                 },
@@ -3858,6 +4398,32 @@ const docTemplate = `{
                 },
                 "shoot_off_score": {
                     "type": "integer"
+                },
+                "total_score": {
+                    "type": "integer"
+                }
+            }
+        },
+        "database.PlayerSet": {
+            "type": "object",
+            "properties": {
+                "elimination_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "players": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.Player"
+                    }
+                },
+                "rank": {
+                    "type": "integer"
+                },
+                "set_name": {
+                    "type": "string"
                 },
                 "total_score": {
                     "type": "integer"
@@ -3934,6 +4500,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "overview": {
+                    "type": "string"
+                },
+                "realName": {
                     "type": "string"
                 }
             }

@@ -32,10 +32,10 @@ func IsGetMatchResultWScoresById(context *gin.Context, id uint) (bool, database.
 	return true, data
 }
 
-// Get only MatchResult By ID godoc
+// Get MatchResult By ID godoc
 //
-//	@Summary		Show one MatchResult
-//	@Description	Get one MatchResult without other data by id
+//	@Summary		Show one MatchResult with player set
+//	@Description	Get one MatchResult with player set by id
 //	@Tags			MatchResult
 //	@Produce		json
 //	@Param			id	path	int	true	"MatchResult ID"
@@ -53,8 +53,8 @@ func GetMatchResultById(context *gin.Context) {
 
 // Get MatchResult with scores By ID godoc
 //
-//	@Summary		Show one MatchResult with match_ends and match_scores
-//	@Description	Get one MatchResult with match_ends and match_scores by id
+//	@Summary		Show one MatchResult with match_ends, match_scores, player set
+//	@Description	Get one MatchResult with match_ends, match_scores, player set by id
 //	@Tags			MatchResult
 //	@Produce		json
 //	@Param			id	path	int	true	"MatchResult ID"
@@ -70,42 +70,6 @@ func GetMatchResultWScoresById(context *gin.Context) {
 	context.IndentedJSON(200, data)
 }
 
-// Post MatchResult godoc
-//
-//	@Summary		Create one MatchResult
-//	@Description	Post one new MatchResult data with new id, and auto write totalPoints ShootOffScore IsWinner
-//	@Tags			MatchResult
-//	@Accept			json
-//	@Produce		json
-//	@Param			MatchResult	body	string	true	"MatchResult"
-//	@Success		200			string	string
-//	@Failure		400			string	string
-//	@Router			/api/matchresult [post]
-func PostMatchResult(context *gin.Context) {
-	var data database.MatchResult
-	context.BindJSON(&data)
-	id := data.ID
-	if response.ErrorIdTest(context, data.MatchId, database.GetMatchIsExist(data.MatchId), "Match when creating MatchResult") {
-		return
-	}
-	data.TotalPoints = 0
-	data.ShootOffScore = -1
-	data.IsWinner = false
-	newData, err := database.CreateMatchResult(data)
-	if response.ErrorInternalErrorTest(context, id, "Post MatchResult", err) {
-		return
-	}
-	{ // need to be deleted after test
-		// teamsize, err := database.GetEliminationTeamSizeByMatchResultId(matchResultId)
-		// if response.ErrorInternalErrorTest(context, int(matchResultId), "Get Elimination TeamSize by matchResultId", err) {
-		// 	return
-		// }
-		// PostMatchEndByMatchResultId(context, newData.ID, teamsize)
-	}
-	_, newData = IsGetMatchResultWScoresById(context, newData.ID)
-	response.AcceptPrint(id, fmt.Sprint(newData), "MatchResult")
-	context.IndentedJSON(200, newData)
-}
 func PostMatchEndByMatchResultId(context *gin.Context, matchResultId uint, teamsize int) bool {
 	var data database.MatchEnd
 	if response.ErrorIdTest(context, matchResultId, database.GetMatchResultIsExist(matchResultId), "MatchResult when creating matchEnd") {
@@ -415,13 +379,28 @@ func PutMatchScoreScoreById(context *gin.Context) {
 	id := convert2uint(context, "id")
 	var data database.MatchScore
 	err := context.BindJSON(&data)
+	newScore := data.Score
 	if response.ErrorIdTest(context, id, database.GetMatchScoreIsExist(id), "MatchScore when updating score") {
 		return
 	} else if response.ErrorReceiveDataTest(context, id, "MatchScore when updating score", err) {
 		return
 	}
-	err = database.UpdateMatchScoreScoreById(id, data.Score)
+	oldData, err := database.GetMatchScoreById(id)
+	if response.ErrorInternalErrorTest(context, id, "Get MatchScore by id", err) {
+		return
+	}
+	err = database.UpdateMatchScoreScoreById(id, newScore)
 	if response.ErrorInternalErrorTest(context, id, "Update MatchScore score", err) {
+		return
+	}
+	matchEnd, err := database.GetMatchEndById(oldData.MatchEndId)
+	if response.ErrorInternalErrorTest(context, id, "Get MatchEnd by MatchScore id", err) {
+		return
+	}
+	newScore = scorefmt(newScore)
+	oldScore := scorefmt(oldData.Score)
+	err = database.UpdateMatchEndsTotalScoresById(matchEnd.ID, matchEnd.TotalScore-oldScore+newScore)
+	if response.ErrorInternalErrorTest(context, id, "Update MatchEnd totalScores", err) {
 		return
 	}
 	response.AcceptPrint(id, fmt.Sprint(data), "MatchScore score")

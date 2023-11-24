@@ -13,6 +13,7 @@ func AddApiRouter(api *gin.RouterGroup) {
 
 	profileRouter(api)
 	playerRouter(api.Group("player"))
+	playerSetRouter(api.Group("playerset"))
 
 	competitionRouter(api.Group("competition"))
 	groupInfoRouter(api.Group("groupinfo"))
@@ -29,6 +30,8 @@ func AddApiRouter(api *gin.RouterGroup) {
 func playerRouter(api *gin.RouterGroup) {
 	api.GET("/:id", endpoint.GetOnlyPlayerByID)
 	api.GET("/scores/:id", endpoint.GetPlayerWScoresByID)
+	api.GET("/playersets/:id/:eliminationid", endpoint.GetPlayerWPlayerSetsByIDEliminationID)
+
 	api.POST("/:participantid", endpoint.PostPlayer)
 	api.POST("/roundend", endpoint.PostRoundEnd)
 	api.POST("/roundscore", endpoint.PostRoundScore)
@@ -39,6 +42,19 @@ func playerRouter(api *gin.RouterGroup) {
 	api.PUT("/roundscore/:id", endpoint.UpdatePlayerScore)
 	api.PUT("/shootoffscore/:id", endpoint.UpdatePlayerShootoffScore)
 	api.DELETE("/:id", endpoint.DeletePlayer)
+
+	api.GET("/dummy/:participantid", endpoint.GetDummyPlayerByParticipantId)
+	api.POST("/dummy/:playerid", endpoint.PostDummyPlayerByPlayerId)
+
+}
+func playerSetRouter(api *gin.RouterGroup) {
+	api.GET("/:id", endpoint.GetPlayerSetWPlayerById)
+	api.GET("/elimination/:eliminationid", endpoint.GetAllPlayerSetsByEliminationId)
+	api.GET("/elimination/medal/:eliminationid", endpoint.GetPlayerSetsByMedalByEliminationId)
+	api.POST("/", endpoint.PostPlayerSet)
+	api.PUT("/name/:id", endpoint.PutPlayerSetName)
+	api.PUT("/preranking/:eliminationid", endpoint.PutPlayerSetPreRankingByEliminationId)
+	api.DELETE("/:id", endpoint.DeletePlayerSet)
 }
 
 func competitionRouter(api *gin.RouterGroup) {
@@ -84,14 +100,17 @@ func qualificationRouter(api *gin.RouterGroup) {
 
 func laneRouter(api *gin.RouterGroup) {
 	api.GET("/:id", endpoint.GetLaneByID)
-	api.GET("/all/:id", endpoint.GetAllLaneByCompetitionId)
+	api.GET("/all/:competitionid", endpoint.GetAllLaneByCompetitionId)
 	api.GET("/scores/:id", endpoint.GetLaneWScoresByID)
 }
 
 func eliminationRouter(api *gin.RouterGroup) {
 	api.GET("/:id", endpoint.GetOnlyEliminationById)
-	api.GET("/stages/:id", endpoint.GetEliminationWStagesById)
+	api.GET("/stages/scores/medals/:id", endpoint.GetEliminationById)
+	api.GET("/playersets/:id", endpoint.GetEliminationWPlayerSetsById)
+	api.GET("/stages/matches/:id", endpoint.GetEliminationWStagesMatchesById)
 	api.GET("/scores/:id", endpoint.GetEliminationWScoresById)
+	api.GET("/match/scores/:matchid", endpoint.GetMatchWScoresById)
 
 	api.POST("/", endpoint.PostElimination)
 	api.POST("/stage", endpoint.PostStage)
@@ -107,7 +126,6 @@ func eliminationRouter(api *gin.RouterGroup) {
 func matchResultRouter(api *gin.RouterGroup) {
 	api.GET("/:id", endpoint.GetMatchResultById)
 	api.GET("/scores/:id", endpoint.GetMatchResultWScoresById)
-	api.POST("/", endpoint.PostMatchResult)
 	api.POST("/matchend/", endpoint.PostMatchEnd)
 
 	api.PUT("/totalpoints/:id", endpoint.PutMatchResultTotalPointsById)
@@ -125,8 +143,8 @@ func matchResultRouter(api *gin.RouterGroup) {
 
 func medalRouter(api *gin.RouterGroup) {
 	api.GET("/:id", endpoint.GetMedalById)
-	api.GET("/elimination/:id", endpoint.GetMedalInfoByEliminationId)
-	// api.PUT("/playersetid/:id", translate.PutMedalPlayerSetIdById)
+	api.GET("/elimination/:eliminationid", endpoint.GetMedalInfoByEliminationId)
+	api.PUT("/playersetid/:id", endpoint.PutMedalPlayerSetIdById)
 }
 
 func oldLaneInfoRouter(api *gin.RouterGroup) {
@@ -155,13 +173,13 @@ func profileRouter(api *gin.RouterGroup) {
 
 	parssr := api.Group("/participant")
 	{
-		parssr.POST("/", pkg.AuthSessionMiddleware(), endpoint.JoinInCompetition)
+		parssr.POST("/", pkg.AuthSessionMiddleware(), endpoint.PostParticipant)
 		// hope be edited by JSON
 		//
 		parssr.GET("/:id", endpoint.GetParticipantById)
-		parssr.GET("/user", endpoint.GetParticipantByUserId)
+		parssr.GET("/user/:userid", endpoint.GetParticipantByUserId)
 		parssr.GET("/competition/:competitionid", endpoint.GetParticipantByCompetitionId)
-		parssr.GET("/competition/user", endpoint.GetParticipantByCompetitionIdUserId)
+		parssr.GET("/competition/user/:competitionid/:userid", endpoint.GetParticipantByCompetitionIdUserId)
 		parssr.PUT("/:id", endpoint.UpdateParticipant)
 		parssr.DELETE("/:id", endpoint.DeleteParticipantById)
 

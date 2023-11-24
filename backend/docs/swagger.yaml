@@ -98,6 +98,10 @@ definitions:
         type: integer
       participant_id:
         type: integer
+      player_sets:
+        items:
+          $ref: '#/definitions/database.PlayerSet'
+        type: array
       rank:
         type: integer
       rounds:
@@ -106,6 +110,23 @@ definitions:
         type: array
       shoot_off_score:
         type: integer
+      total_score:
+        type: integer
+    type: object
+  database.PlayerSet:
+    properties:
+      elimination_id:
+        type: integer
+      id:
+        type: integer
+      players:
+        items:
+          $ref: '#/definitions/database.Player'
+        type: array
+      rank:
+        type: integer
+      set_name:
+        type: string
       total_score:
         type: integer
     type: object
@@ -155,6 +176,8 @@ definitions:
       name:
         type: string
       overview:
+        type: string
+      realName:
         type: string
     type: object
   response.Response:
@@ -723,7 +746,10 @@ paths:
     post:
       consumes:
       - application/json
-      description: Post one new Match data with new id
+      description: |-
+        Post one new Match data with 2 matchResults
+        Each matchResults with 4 or 5 matchEnds
+        Each matchEnds with 3, 4, 6 matchScores
       parameters:
       - description: Match
         in: body
@@ -743,6 +769,53 @@ paths:
           schema:
             type: string
       summary: Create one Match
+      tags:
+      - Elimination
+  /api/elimination/match/scores/{matchid}:
+    get:
+      description: Get one Match with matchResults, matchEnds, scores, playerSets,
+        players by id
+      parameters:
+      - description: Match ID
+        in: path
+        name: matchid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Match with all related data
+      tags:
+      - Elimination
+  /api/elimination/playersets/{id}:
+    get:
+      description: Get one Elimination with player sets by id
+      parameters:
+      - description: Elimination ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Elimination with player sets
       tags:
       - Elimination
   /api/elimination/scores/{id}:
@@ -797,7 +870,7 @@ paths:
       - Elimination
   /api/elimination/stages/{id}:
     get:
-      description: Get one Elimination with stages by id
+      description: Get one Elimination with stages, matches by id
       parameters:
       - description: Elimination ID
         in: path
@@ -815,7 +888,31 @@ paths:
           description: Bad Request
           schema:
             type: string
-      summary: Show one Elimination with stages
+      summary: Show one Elimination with stages, matches
+      tags:
+      - Elimination
+  /api/elimination/stages/scores/medals/{id}:
+    get:
+      description: Get one Elimination with stages, matches, matchResults, matchEnds,
+        scores, playerSets, players, medals by id
+      parameters:
+      - description: Elimination ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Elimination with all related data
       tags:
       - Elimination
   /api/groupinfo:
@@ -1153,33 +1250,6 @@ paths:
       summary: Update one MatchEnd totalScores
       tags:
       - MatchEnd
-  /api/matchresult:
-    post:
-      consumes:
-      - application/json
-      description: Post one new MatchResult data with new id, and auto write totalPoints
-        ShootOffScore IsWinner
-      parameters:
-      - description: MatchResult
-        in: body
-        name: MatchResult
-        required: true
-        schema:
-          type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Create one MatchResult
-      tags:
-      - MatchResult
   /api/matchresult/{id}:
     delete:
       description: Delete one MatchResult with matchEnds and matchScores by id
@@ -1202,7 +1272,7 @@ paths:
       tags:
       - MatchResult
     get:
-      description: Get one MatchResult without other data by id
+      description: Get one MatchResult with player set by id
       parameters:
       - description: MatchResult ID
         in: path
@@ -1220,7 +1290,7 @@ paths:
           description: Bad Request
           schema:
             type: string
-      summary: Show one MatchResult
+      summary: Show one MatchResult with player set
       tags:
       - MatchResult
   /api/matchresult/iswinner/{id}:
@@ -1310,7 +1380,8 @@ paths:
       - MatchEnd
   /api/matchresult/scores/{id}:
     get:
-      description: Get one MatchResult with match_ends and match_scores by id
+      description: Get one MatchResult with match_ends, match_scores, player set by
+        id
       parameters:
       - description: MatchResult ID
         in: path
@@ -1328,7 +1399,7 @@ paths:
           description: Bad Request
           schema:
             type: string
-      summary: Show one MatchResult with match_ends and match_scores
+      summary: Show one MatchResult with match_ends, match_scores, player set
       tags:
       - MatchResult
   /api/matchresult/shootoffscore/{id}:
@@ -1462,6 +1533,35 @@ paths:
           schema:
             type: string
       summary: Show medals of elimination by elimination id
+      tags:
+      - Medal
+  /api/medal/playersetid/{id}:
+    put:
+      description: update medal's player set id by id
+      parameters:
+      - description: Medal ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: PlayerSetId
+        in: body
+        name: PlayerSetId
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Update medal's player set id by id
       tags:
       - Medal
   /api/oldlaneinfo:
@@ -1686,20 +1786,30 @@ paths:
     post:
       consumes:
       - application/json
-      description: add a particpant to the competition
+      description: post a particpant to the competition
       parameters:
+      - description: user id
+        in: formData
+        name: userID
+        required: true
+        type: integer
       - description: competition id
         in: formData
         name: competitionID
         required: true
         type: integer
+      - description: role
+        in: formData
+        name: role
+        required: true
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/response.Response'
+            $ref: '#/definitions/database.Participant'
         "400":
           description: no user/competition found
           schema:
@@ -1708,7 +1818,7 @@ paths:
           description: internal db error
           schema:
             $ref: '#/definitions/response.Response'
-      summary: join in a competition
+      summary: post a particpant to the competition
       tags:
       - Participant
   /api/participant/{id}:
@@ -1950,6 +2060,52 @@ paths:
       summary: Create one Player by Participant ID
       tags:
       - Player
+  /api/player/dummy/{participantid}:
+    get:
+      description: Get dummy players by participant id
+      parameters:
+      - description: Participant ID
+        in: path
+        name: participantid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show dummy players
+      tags:
+      - Player
+  /api/player/dummy/{playerid}:
+    post:
+      description: Create dummy player by player id
+      parameters:
+      - description: Player ID
+        in: path
+        name: playerid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Create dummy player
+      tags:
+      - Player
   /api/player/groupid/{playerid}/{groupid}:
     put:
       consumes:
@@ -2049,6 +2205,34 @@ paths:
           schema:
             type: string
       summary: Update one Player order by id
+      tags:
+      - Player
+  /api/player/playersets/{id}/{eliminationid}:
+    get:
+      description: Get one Player with player sets by id and elimination id
+      parameters:
+      - description: Player ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Elimination ID
+        in: path
+        name: eliminationid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show one Player with player sets
       tags:
       - Player
   /api/player/roundend:
@@ -2401,6 +2585,205 @@ paths:
       summary: get institution info by id
       tags:
       - Institution
+  /playerset:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Post player set, and build player set match table
+        If team size is 1, set name will be player name
+      parameters:
+      - description: Player Set Data
+        in: body
+        name: data
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Post player set
+      tags:
+      - PlayerSet
+  /playerset/{id}:
+    delete:
+      description: Delete player set, and delete player set match table
+      parameters:
+      - description: Player Set ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Delete player set
+      tags:
+      - PlayerSet
+    get:
+      description: Get player set with players by id
+      parameters:
+      - description: Player Set ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get player set with players by id
+      tags:
+      - PlayerSet
+  /playerset/elimination/{eliminationid}:
+    get:
+      description: Get all player sets by elimination id
+      parameters:
+      - description: Elimination ID
+        in: path
+        name: eliminationid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get all player sets by elimination id
+      tags:
+      - PlayerSet
+  /playerset/elimination/medal/{eliminationid}:
+    get:
+      description: Get player sets which have medals by elimination id
+      parameters:
+      - description: Elimination ID
+        in: path
+        name: eliminationid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Get player sets which have medals by elimination id
+      tags:
+      - PlayerSet
+  /playerset/name/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Put player set name
+      parameters:
+      - description: Player Set ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Player Set Data
+        in: body
+        name: data
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Put player set name
+      tags:
+      - PlayerSet
+  /playerset/preranking/{eliminationid}:
+    put:
+      description: Put player set rank by elimination id
+      parameters:
+      - description: Elimination ID
+        in: path
+        name: eliminationid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Put player set rank
+      tags:
+      - PlayerSet
   /session:
     delete:
       description: delete the session

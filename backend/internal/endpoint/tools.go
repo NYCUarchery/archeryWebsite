@@ -25,3 +25,12 @@ func convert2uint(c *gin.Context, name string) uint {
 	data, _ := strconv.ParseUint(dataStr, 10, 32)
 	return uint(data)
 }
+
+func scorefmt(score int) int {
+	if score < 0 {
+		return 0
+	} else if score > 10 {
+		return 10
+	}
+	return score
+}

@@ -6,7 +6,8 @@ import (
 
 type User struct {
 	ID            uint   `gorm:"primaryKey;autoIncrement" json:"id"`
-	Name          string `gorm:"unique;not null" json:"name"`
+	Username      string `gorm:"unique;not null" json:"name"`
+	RealName	  string `json:"realName"`
 	Password      string `gorm:"not null" json:"-"`
 	Email         string `gorm:"unique;not null" json:"email"`
 	InstitutionID uint   `json:"institutionID"`
@@ -32,9 +33,9 @@ func FindByUserID(userID uint) (User, error) {
 	return user, err
 }
 
-func FindByUserName(name string) User {
+func FindByUsername(username string) User {
 	var user User
-	DB.Where("name = ?", name).First(&user)
+	DB.Where("username = ?", username).First(&user)
 	return user
 }
 

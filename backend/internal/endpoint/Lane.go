@@ -81,7 +81,7 @@ func GetLaneWScoresByID(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/lane/all/{id} [get]
 func GetAllLaneByCompetitionId(context *gin.Context) {
-	competitionId := convert2uint(context, "id")
+	competitionId := convert2uint(context, "competitionid")
 	var data []database.Lane
 	/*get data*/
 	data, err := database.GetAllLaneByCompetitionId(competitionId)
@@ -105,7 +105,6 @@ func PostLaneThroughCompetition(context *gin.Context, competitionId uint, unassi
 	/*set LaneNumber*/
 	data.CompetitionId = competitionId
 	data.QualificationId = unassignedGroupId
-	data.PlayerNum = 0
 	data.LaneNumber = laneNumber
 	/*insert data*/
 	data, err := database.PostLane(data)
