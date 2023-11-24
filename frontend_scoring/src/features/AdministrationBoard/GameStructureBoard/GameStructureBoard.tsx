@@ -2,9 +2,9 @@ import SubboardController from "./SubboardController/SubboardController";
 import { useSelector } from "react-redux";
 import ActivationBoard from "./ActivationBoard/ActivationBoard";
 import QualifcationBoard from "./QualificationBoard/QualificationBoard";
-import EliminationBoard from "./EliminationBoard/EliminationBoard";
 import GroupEliminationBoard from "./GroupEliminationBoard/GroupEliminationBoard";
-import MixedEliminationBoard from "./MixedEliminationBoard/MixedEliminationBoard";
+import useGetSimpleCompetition from "../../../QueryHooks/useGetSimpleCompetition";
+const teamSizes = [0, 0, 1, 3, 2];
 
 export default function GameStructureBoard() {
   const subboardShown = useSelector(
@@ -13,8 +13,21 @@ export default function GameStructureBoard() {
   const subboardNames = useSelector(
     (state: any) => state.gameStructureBoard.subboardNames
   );
+  const competitionID = useSelector((state: any) => state.game.competitionID);
+  const groupShown = useSelector(
+    (state: any) => state.gameStructureGroupMenu.groupShown
+  );
+  const { data: competition, isLoading } =
+    useGetSimpleCompetition(competitionID);
 
-  let board = getSubboard(subboardShown, subboardNames);
+  if (isLoading) return <></>;
+  const eliminationID = extractEliminationID(
+    competition.group_datas,
+    subboardShown,
+    groupShown
+  );
+
+  let board = getSubboard(subboardShown, subboardNames, eliminationID);
 
   return (
     <div className="game_structure_board">
@@ -24,7 +37,11 @@ export default function GameStructureBoard() {
   );
 }
 
-function getSubboard(subboardShown: number, subboardNames: string[]) {
+function getSubboard(
+  subboardShown: number,
+  subboardNames: string[],
+  eliminationID: number
+) {
   let board;
   switch (subboardNames[subboardShown]) {
     case subboardNames[0]:
@@ -33,15 +50,31 @@ function getSubboard(subboardShown: number, subboardNames: string[]) {
     case subboardNames[1]:
       board = <QualifcationBoard></QualifcationBoard>;
       break;
-    case subboardNames[2]:
-      board = <EliminationBoard></EliminationBoard>;
-      break;
-    case subboardNames[3]:
-      board = <GroupEliminationBoard></GroupEliminationBoard>;
-      break;
-    case subboardNames[4]:
-      board = <MixedEliminationBoard></MixedEliminationBoard>;
-      break;
+    default:
+      board = (
+        <GroupEliminationBoard
+          teamSize={teamSizes[subboardShown]}
+          eliminationID={eliminationID}
+        ></GroupEliminationBoard>
+      );
   }
   return board;
 }
+
+const extractEliminationID = (
+  groups: any,
+  groupShown: number,
+  subboardShown: number
+) => {
+  const group = groups.find((g: any) => g.group_id === groupShown);
+
+  if (!group) return undefined;
+  console.log(teamSizes);
+  const teamSize = teamSizes[subboardShown];
+  console.log(group.elimination_datas);
+  console.log(teamSize);
+  const eliminationID = group.elimination_datas.find(
+    (e: any) => e.team_size === teamSize
+  )?.elimination_id;
+  return eliminationID;
+};
