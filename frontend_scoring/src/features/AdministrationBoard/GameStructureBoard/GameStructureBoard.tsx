@@ -24,7 +24,6 @@ export default function GameStructureBoard() {
   if (isLoading || !competition) return <GroupsMenu />;
 
   const teamSize = teamSizes[subboardShown];
-  console.log("teamSize:", teamSize);
   const eliminationID = extractEliminationID(
     competition.group_datas,
     groupShown,
