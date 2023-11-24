@@ -69,10 +69,7 @@ const extractEliminationID = (
   const group = groups.find((g: any) => g.group_id === groupShown);
 
   if (!group) return undefined;
-  console.log(teamSizes);
   const teamSize = teamSizes[subboardShown];
-  console.log(group.elimination_datas);
-  console.log(teamSize);
   const eliminationID = group.elimination_datas.find(
     (e: any) => e.team_size === teamSize
   )?.elimination_id;
