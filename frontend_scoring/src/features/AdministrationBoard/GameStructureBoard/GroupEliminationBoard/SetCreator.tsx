@@ -9,7 +9,7 @@ import {
 import useGetGroupsWithPlayers from "../../../../QueryHooks/useGetGroupsWithPlayers";
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import { useMutation } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 import axios from "axios";
 
 const postPlayerSet = ({ eliminationID, name, playerIDs }: any) => {
@@ -29,12 +29,17 @@ interface Props {
 export default function SetCreator({ eliminationID, teamSize }: Props) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
+  const queryClient = useQueryClient();
   const competitionID = useSelector((state: any) => state.game.competitionID);
   const groupID = useSelector(
     (state: any) => state.gameStructureGroupMenu.groupShown
   );
   const { data: groups } = useGetGroupsWithPlayers(competitionID);
-  const { mutate: createPlayerSet } = useMutation(postPlayerSet);
+  const { mutate: createPlayerSet } = useMutation(postPlayerSet, {
+    onSuccess: () => {
+      queryClient.invalidateQueries(["playerSets", eliminationID]);
+    },
+  });
 
   const [fieldValues, setFieldValues] = useState([] as number[]);
 

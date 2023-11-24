@@ -7,6 +7,7 @@ import {
   Chip,
   Divider,
 } from "@mui/material";
+import DeleteButton from "./DeleteButton";
 
 interface Props {
   playerSetID: any;
@@ -42,6 +43,10 @@ export default function TeamBlock({ playerSetID }: Props) {
         <ListSubheader>
           {playerSet.set_name}
           <Chip label={playerSet.rank} />
+          <DeleteButton
+            setID={playerSet.id}
+            eliminationID={playerSet.elimination_id}
+          ></DeleteButton>
         </ListSubheader>
       }
     >
