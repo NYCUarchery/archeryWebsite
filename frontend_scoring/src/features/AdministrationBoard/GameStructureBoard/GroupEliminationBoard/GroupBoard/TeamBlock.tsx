@@ -26,6 +26,7 @@ export default function TeamBlock({ playerSetID }: Props) {
       <>
         <Divider></Divider>
         <ListItem
+          key={player.id}
           sx={{
             height: "60px",
           }}

@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
-import StageSetter from "./StageSetter";
 import GroupBoard from "./GroupBoard/GroupBoard";
 import SetCreator from "./SetCreator";
+import RankingButton from "./RankingButton";
 interface Props {
   teamSize: number;
   eliminationID: number;
@@ -20,11 +20,11 @@ export default function GroupEliminationBoard({
       }}
     >
       <Box>
-        <StageSetter></StageSetter>
         <SetCreator
           teamSize={teamSize}
           eliminationID={eliminationID}
         ></SetCreator>
+        <RankingButton eliminationID={eliminationID}></RankingButton>
       </Box>
       <GroupBoard eliminationID={eliminationID}></GroupBoard>
     </Box>
