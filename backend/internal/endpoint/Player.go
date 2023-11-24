@@ -143,10 +143,6 @@ func PostPlayer(context *gin.Context) {
 		return
 	}
 	response.AcceptPrint(data.ID, fmt.Sprint(data), "Create Player")
-	/*playerNum plus one in lane*/
-	if !UpdateLanePlayerNumAddOne(context, data.LaneId) {
-		return
-	}
 	/*create rounds*/
 	for i := 0; i < roundsNum; i++ {
 		var round database.Round
@@ -271,23 +267,8 @@ func IsUpdatePlayerLaneId(context *gin.Context, playerId uint, laneId uint) bool
 		return false
 	}
 
-	oldData, err := database.GetOnlyPlayer(playerId)
-	if response.ErrorInternalErrorTest(context, playerId, "Get only Player", err) {
-		return false
-	}
-	err = database.UpdatePlayerLaneId(playerId, laneId)
-	if response.ErrorInternalErrorTest(context, playerId, "Update Player laneId", err) {
-		return false
-	}
-	/*playerNum minus one in old lane*/
-	if !UpdateLanePlayerNumMinusOne(context, oldData.LaneId) {
-		return false
-	}
-	/*playerNum plus one in new lane*/
-	if !UpdateLanePlayerNumAddOne(context, laneId) {
-		return false
-	}
-	return true
+	err := database.UpdatePlayerLaneId(playerId, laneId)
+	return !response.ErrorInternalErrorTest(context, playerId, "Update Player laneId", err)
 }
 
 // Update one Player GroupId By ID godoc
@@ -552,12 +533,8 @@ func UpdatePlayerShootoffScore(context *gin.Context) {
 //	@Router			/api/player/{id} [delete]
 func DeletePlayer(context *gin.Context) {
 	id := convert2uint(context, "id")
-	isExist, data := IsGetOnlyPlayer(context, id)
+	isExist, _ := IsGetOnlyPlayer(context, id)
 	if !isExist {
-		return
-	}
-	/*playerNum minus one in lane*/
-	if !UpdateLanePlayerNumMinusOne(context, data.LaneId) {
 		return
 	}
 	isChanged, err := database.DeletePlayer(id)
