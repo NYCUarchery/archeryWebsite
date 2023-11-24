@@ -10,15 +10,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type ParticipantWName struct {
-	ID            uint   `gorm:"primaryKey;autoIncrement" json:"id"`
-	UserID        uint   `gorm:"not null" json:"userID"`
-	CompetitionID uint   `gorm:"not null" json:"competitionID"`
-	Name          string `gorm:"not null" json:"name"`
-	Role          string `gorm:"not null" json:"role"`
-	Status        string `gorm:"not null" json:"status"`
-}
-
 type Participants struct {
 	Participants []database.Participant `json:"participants"`
 }
@@ -156,7 +147,7 @@ func GetParticipantByUserId(context *gin.Context) {
 // Get Participants By competition ID godoc
 //
 //	@Summary		Show Participants By competition ID
-//	@Description	Get Participants By competition ID, including name
+//	@Description	Get Participants By competition ID
 //	@Tags			Participant
 //	@Produce		json
 //	@Param			competition_id	body	int	true	"competition ID"
@@ -172,20 +163,6 @@ func GetParticipantByCompetitionId(context *gin.Context) {
 	newData, err := database.GetParticipantByCompetitionId(competitionId)
 	if response.ErrorInternalErrorTest(context, competitionId, "Get Participants by competition id", err) {
 		return
-	}
-	for _, participant := range participants {
-		var tempData ParticipantWName
-		user, err := database.FindByUserID(participant.UserID)
-		if response.ErrorInternalErrorTest(context, competitionId, "Get Participants by competition id", err) {
-			return
-		}
-		tempData.ID = participant.ID
-		tempData.UserID = participant.UserID
-		tempData.CompetitionID = participant.CompetitionID
-		tempData.Name = user.Name
-		tempData.Role = participant.Role
-		tempData.Status = participant.Status
-		newData = append(newData, tempData)
 	}
 	context.IndentedJSON(http.StatusOK, newData)
 }
