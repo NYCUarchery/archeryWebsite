@@ -5,7 +5,7 @@ export default function ActivationBoard() {
   let buttons = [];
 
   for (let i = 0; i < 4; i++) {
-    buttons.push(<ActivationButton key={i} phaseId={i}></ActivationButton>);
+    buttons.push(<ActivationButton key={i} phaseIndex={i}></ActivationButton>);
   }
 
   return (
