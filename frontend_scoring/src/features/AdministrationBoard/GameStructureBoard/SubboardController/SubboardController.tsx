@@ -1,8 +1,11 @@
 import { ToggleButtonGroup, ToggleButton } from "@mui/material";
 import { useSelector, useDispatch } from "react-redux";
 import { setSubboardShown } from "../gameStructureBoardSlice";
+import useGetCompetition from "../../../../QueryHooks/useGetCompetition";
 
 export default function SubboardController() {
+  const competitionID = useSelector((state: any) => state.game.competitionID);
+  const { data: competition, isLoading } = useGetCompetition(competitionID);
   const dispatch = useDispatch();
   const subboardNames = useSelector(
     (state: any) => state.gameStructureBoard.subboardNames
@@ -10,18 +13,12 @@ export default function SubboardController() {
   const subboardShown = useSelector(
     (state: any) => state.gameStructureBoard.subboardShown
   );
-  const qualificationIsActive = useSelector(
-    (state: any) => state.game.qualificationIsActive
-  );
-  const eliminationIsActive = useSelector(
-    (state: any) => state.game.eliminationIsActive
-  );
-  const teamEliminationIsActive = useSelector(
-    (state: any) => state.game.teamEliminationIsActive
-  );
-  const mixedEliminationIsActive = useSelector(
-    (state: any) => state.game.mixedEliminationIsActive
-  );
+  if (isLoading) return <></>;
+  const qualificationIsActive = competition.qualification_is_active;
+  const eliminationIsActive = competition.elimination_is_active;
+  const teamEliminationIsActive = competition.team_elimination_is_active;
+  const mixedEliminationIsActive = competition.mixed_elimination_is_active;
+
   const handleChange = (
     _event: React.MouseEvent<HTMLElement>,
     newSubboardShown: number | null
