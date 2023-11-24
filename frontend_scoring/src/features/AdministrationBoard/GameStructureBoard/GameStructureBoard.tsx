@@ -4,6 +4,7 @@ import ActivationBoard from "./ActivationBoard/ActivationBoard";
 import QualifcationBoard from "./QualificationBoard/QualificationBoard";
 import GroupEliminationBoard from "./GroupEliminationBoard/GroupEliminationBoard";
 import useGetSimpleCompetition from "../../../QueryHooks/useGetSimpleCompetition";
+import GroupsMenu from "./GroupsMenu/GroupsMenu";
 const teamSizes = [0, 0, 1, 3, 2];
 
 export default function GameStructureBoard() {
@@ -20,7 +21,7 @@ export default function GameStructureBoard() {
   const { data: competition, isLoading } =
     useGetSimpleCompetition(competitionID);
 
-  if (isLoading || !competition) return <></>;
+  if (isLoading || !competition) return <GroupsMenu />;
 
   const teamSize = teamSizes[subboardShown];
   console.log("teamSize:", teamSize);
@@ -57,14 +58,23 @@ function getSubboard(
       board = <ActivationBoard></ActivationBoard>;
       break;
     case subboardNames[1]:
-      board = <QualifcationBoard></QualifcationBoard>;
+      board = (
+        <>
+          <GroupsMenu />
+          <QualifcationBoard></QualifcationBoard>;
+        </>
+      );
+
       break;
     default:
       board = (
-        <GroupEliminationBoard
-          teamSize={teamSize}
-          eliminationID={eliminationID}
-        ></GroupEliminationBoard>
+        <>
+          <GroupsMenu />
+          <GroupEliminationBoard
+            teamSize={teamSize}
+            eliminationID={eliminationID}
+          ></GroupEliminationBoard>
+        </>
       );
   }
   return board;

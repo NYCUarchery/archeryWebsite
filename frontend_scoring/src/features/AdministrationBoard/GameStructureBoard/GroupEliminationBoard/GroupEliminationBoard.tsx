@@ -1,5 +1,4 @@
 import { Box } from "@mui/material";
-import GroupsMenu from "../GroupsMenu/GroupsMenu";
 import StageSetter from "./StageSetter";
 import GroupBoard from "./GroupBoard/GroupBoard";
 import SetCreator from "./SetCreator";
@@ -21,7 +20,6 @@ export default function GroupEliminationBoard({
       }}
     >
       <Box>
-        <GroupsMenu></GroupsMenu>
         <StageSetter></StageSetter>
         <SetCreator
           teamSize={teamSize}
