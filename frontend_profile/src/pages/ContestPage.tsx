@@ -113,22 +113,22 @@ const ContestPage = () => {
 	const navigate = useNavigate();
 	var [rows, setRows] = useState<any[]>([]);
 
-	useEffect(() => {
-		const fetchData = async () => {
-			try {
-				const response = await getCompetitions();
-				// console.log(response.data.data)
-				setRows(response.data.data);
-			} catch (error) {}
-		};
-		fetchData();
-	}, [])
-	// rows = [
-	// 	{
-	// 		name: "2021年第一屆資訊安全競賽",
-	// 		overview: "這是一個很棒的比賽",
-	// 	}
-	// ]
+	// useEffect(() => {
+	// 	const fetchData = async () => {
+	// 		try {
+	// 			const response = await getCompetitions();
+	// 			// console.log(response.data.data)
+	// 			setRows(response.data.data);
+	// 		} catch (error) {}
+	// 	};
+	// 	fetchData();
+	// }, [])
+	rows = [
+		{
+			name: "2021年第一屆資訊安全競賽",
+			overview: "這是一個很棒的比賽",
+		}
+	]
 	return (
 		<Card sx={{p: 2, mb: 2}}>
 			<CardContent>
