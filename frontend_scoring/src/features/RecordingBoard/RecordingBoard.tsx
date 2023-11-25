@@ -1,8 +1,8 @@
 import LaneBoard from "./LaneBoard/LaneBoard";
-import { useSelector } from "react-redux";
-import useGetCompetition from "../../QueryHooks/useGetCompetition";
-
-const teamSize = [0, 1, 3, 2];
+import LaneInfo from "../../jsons/LaneInfo.json";
+import { selectStage } from "../Screen/BottomBar/StageController/stageControllerSlice";
+import { useDispatch } from "react-redux";
+import { useEffect } from "react";
 
 export default function RecordingBoard() {
   const competitionID = useSelector((state: any) => state.game.competitionID);
