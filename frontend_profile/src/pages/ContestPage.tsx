@@ -128,7 +128,7 @@ const ContestPage = () => {
 		{
 			name: "2023風城盃",
 			overview: "這是一個很棒的比賽",
-			scoreboardURL: `https://${window.location.hostname}:${window.location.port}/scoring/competition/1`,
+			scoreboardURL: `https://${window.location.hostname}:${window.location.port}/scoring/1`,
 		}
 	]
 	return (

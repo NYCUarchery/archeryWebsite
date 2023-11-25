@@ -23,12 +23,8 @@ import { useNavigate } from 'react-router-dom';
 
 const Homepage = () => {
 
-	const rows = [
-		{
-			"title": "Oh my God they kill Kenny",
-			"link": "/bulletin/1"
-		},
-
+	const rows: any = [
+		
 	];
 
   const navigate = useNavigate();
@@ -49,7 +45,7 @@ const Homepage = () => {
 					<TableContainer component={Paper}>
 						<Table aria-label="table">
 							<TableBody>
-								{rows.map((v, i) => (
+								{rows?.map((v: any, i: any) => (
 									<TableRow
 										onClick={() => {
 											navigate(v.link);
