@@ -11,13 +11,14 @@ type Competition struct { // DB : game_info
 	Title                    string         `json:"title"`
 	SubTitle                 string         `json:"sub_title"`
 	Date                     time.Time      `json:"date"`
-	HostId                   uint           `json:"host_id"`
+	HostID                   uint           `json:"host_id"`
 	RoundsNum                int            `json:"rounds_num"`
-	GroupsNum                int            `json:"groups_num"`
 	UnassignedGroupId        uint           `json:"unassigned_group_id"`
-	LanesNum                 int            `json:"lanes_num"`
+	GroupsNum                int            `json:"groups_num"`
 	UnassignedLaneId         uint           `json:"unassigned_lane_id"`
+	LanesNum                 int            `json:"lanes_num"`
 	CurrentPhase             int            `json:"current_phase"`
+	QualificationCurrentEnd  int            `json:"qualification_current_end"`
 	QualificationIsActive    bool           `json:"qualification_is_active"`
 	EliminationIsActive      bool           `json:"elimination_is_active"`
 	TeamEliminationIsActive  bool           `json:"team_elimination_is_active"`
@@ -53,10 +54,20 @@ func GetCompetitionWParticipants(ID uint) (Competition, error) {
 	return data, result.Error
 }
 
-func GetCompetitionGroupIds(ID uint) ([]uint, error) {
+func GetCompetitionAllGroupIds(ID uint) ([]uint, error) {
 	var data []uint
 	result := DB.Table("groups").Where("competition_id = ?", ID).Pluck("id", &data)
 	return data, result.Error
+}
+
+func GetCompetitionGroupIds(competitionId uint, unassignedGroupId uint) ([]uint, error) {
+	var groupIds []uint
+	result := DB.
+		Table("groups").
+		Where("competition_id = ? AND id != ?", competitionId, unassignedGroupId).
+		Order("group_index asc").
+		Pluck("id", &groupIds)
+	return groupIds, result.Error
 }
 
 func GetCompetitionWGroups(ID uint) (Competition, error) {
@@ -157,4 +168,54 @@ func GetCompetitionRoundsNum(ID uint) int {
 	var data Competition
 	DB.Table("competitions").Where("id = ?", ID).First(&data)
 	return data.RoundsNum
+}
+
+func UpdateCompetitionCurrentPhasePlus(ID uint) error {
+	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("current_phase", gorm.Expr("current_phase + ?", 1))
+	return result.Error
+}
+func UpdateCompetitionCurrentPhaseMinus(ID uint) error {
+	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("current_phase", gorm.Expr("current_phase - ?", 1))
+	return result.Error
+}
+func UpdateCompetitionQualificationCurrentEndPlus(ID uint) error {
+	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("qualification_current_end", gorm.Expr("qualification_current_end + ?", 1))
+	return result.Error
+}
+func UpdateCompetitionQualificationCurrentEndMinus(ID uint) error {
+	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("qualification_current_end", gorm.Expr("qualification_current_end - ?", 1))
+	return result.Error
+}
+
+func UpdateCompetitionQualificationActive(ID uint) (bool, error) {
+	result := DB.
+		Model(&Competition{}).
+		Where("id = ?", ID).
+		UpdateColumn("qualification_is_active", true)
+	isChanged := result.RowsAffected != 0
+	return isChanged, result.Error
+}
+func UpdateCompetitionEliminationActive(ID uint) (bool, error) {
+	result := DB.
+		Model(&Competition{}).
+		Where("id = ?", ID).
+		UpdateColumn("elimination_is_active", true)
+	isChanged := result.RowsAffected != 0
+	return isChanged, result.Error
+}
+func UpdateCompetitionTeamEliminationActive(ID uint) (bool, error) {
+	result := DB.
+		Model(&Competition{}).
+		Where("id = ?", ID).
+		UpdateColumn("team_elimination_is_active", true)
+	isChanged := result.RowsAffected != 0
+	return isChanged, result.Error
+}
+func UpdateCompetitionMixedEliminationActive(ID uint) (bool, error) {
+	result := DB.
+		Model(&Competition{}).
+		Where("id = ?", ID).
+		UpdateColumn("mixed_elimination_is_active", true)
+	isChanged := result.RowsAffected != 0
+	return isChanged, result.Error
 }

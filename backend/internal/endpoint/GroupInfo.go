@@ -81,7 +81,7 @@ func GetGroupInfoWPlayersByID(context *gin.Context) {
 // Post GroupInfo godoc
 //
 //	@Summary		Create one GroupInfo
-//	@Description	Post one new GroupInfo data with new id, create qualification with same id, and auto write GroupIndex
+//	@Description	Post one new GroupInfo data with new id, create qualification with same id, auto write GroupIndex, and auto create elimination
 //	@Tags			GroupInfo
 //	@Accept			json
 //	@Produce		json
@@ -111,6 +111,16 @@ func PostGroupInfo(context *gin.Context) {
 	}
 	/*auto create qualification*/
 	if !PostQualificationThroughGroup(context, newData.ID) {
+		return
+	}
+	/*auto create elimination*/
+	var elimination database.Elimination
+	elimination.GroupId = newData.ID
+	elimination.CurrentEnd = 0
+	elimination.CurrentStage = 0
+	elimination.TeamSize = 1
+	success, _ := PostEliminationById(context, elimination)
+	if !success {
 		return
 	}
 	/*update competition.groupnum*/
@@ -308,18 +318,19 @@ func DeleteGroupInfoById(context *gin.Context, id uint) (bool, bool) {
 	UnassignedLaneId := database.GetCompetitionUnassignedLaneId(competitionId)
 	fmt.Printf("UnassignedLaneId = %d\n", UnassignedLaneId)
 	fmt.Printf("qualification.Lanes = %v\n", qualification.Lanes)
-	for _, lane := range qualification.Lanes {
-		fmt.Printf("lane.ID = %d\n", lane.ID)
-		for _, player := range lane.Players {
-			fmt.Printf("player.ID = %d\n", player.ID)
-			err := database.UpdatePlayerLaneId(player.ID, UnassignedLaneId)
-			if response.ErrorInternalErrorTest(context, player.ID, "Update Player LaneId in Delete GroupInfo", err) {
-				return false, false
-			}
-			err = database.UpdatePlayerGroupId(player.ID, UnassignedGroupId)
-			if response.ErrorInternalErrorTest(context, player.ID, "Update Player GroupId in Delete GroupInfo", err) {
-				return false, false
-			}
+	/*all players under lanes of this group*/
+	playerIds, err := database.GetPlayerIdsByCompetitionIdGroupId(competitionId, id)
+	if response.ErrorInternalErrorTest(context, id, "Get PlayerIds in Delete GroupInfo", err) {
+		return false, false
+	}
+	for _, playerId := range playerIds {
+		err := database.UpdatePlayerGroupId(playerId, UnassignedGroupId)
+		if response.ErrorInternalErrorTest(context, playerId, "Update Player in Delete GroupInfo", err) {
+			return false, false
+		}
+		err = database.UpdatePlayerLaneId(playerId, UnassignedLaneId)
+		if response.ErrorInternalErrorTest(context, playerId, "Update Player in Delete GroupInfo", err) {
+			return false, false
 		}
 	}
 

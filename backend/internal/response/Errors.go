@@ -16,6 +16,11 @@ func ErrorReceiveDataTest(context *gin.Context, id uint, message string, err err
 	return false
 }
 
+func ErrorReceiveDataFormat(context *gin.Context, message string) {
+	errorMessage := fmt.Sprintf("bad request data: %s", message)
+	context.IndentedJSON(http.StatusBadRequest, gin.H{"error": errorMessage})
+}
+
 func ErrorReceiveDataNilTest(context *gin.Context, id uint, data interface{}, message string) bool {
 	if data == nil {
 		errorMessage := fmt.Sprintf("bad request data is nil ID(%d): %s ", id, message)

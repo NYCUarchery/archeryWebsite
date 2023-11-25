@@ -2,16 +2,17 @@ package database
 
 // terms reference : https://hackmd.io/@cT-ZX_mHQ4utYON6GCLQEA/BJPfmNPza
 type Player struct {
-	ID            uint     `json:"id"           gorm:"primary_key"`
-	GroupId       uint     `json:"group_id"`
-	LaneId        uint     `json:"lane_id"`
-	ParticipantId uint     `json:"participant_id"`
-	Name          string   `json:"name"`
-	TotalScore    int      `json:"total_score"`
-	ShootOffScore int      `json:"shoot_off_score"`
-	Rank          int      `json:"rank"`
-	Order         int      `json:"order" gorm:"column:order_number"`
-	Rounds        []*Round `json:"rounds" gorm:"constraint:OnDelete:CASCADE;"`
+	ID            uint         `json:"id"           gorm:"primary_key"`
+	GroupId       uint         `json:"group_id"`
+	LaneId        uint         `json:"lane_id"`
+	ParticipantId uint         `json:"participant_id"`
+	Name          string       `json:"name"`
+	TotalScore    int          `json:"total_score"`
+	ShootOffScore int          `json:"shoot_off_score"`
+	Rank          int          `json:"rank"`
+	Order         int          `json:"order" gorm:"column:order_number"`
+	Rounds        []*Round     `json:"rounds" gorm:"constraint:OnDelete:CASCADE;"`
+	PlayerSets    []*PlayerSet `json:"player_sets" gorm:"many2many:player_set_match_tables;"`
 }
 
 type Round struct {
@@ -70,6 +71,14 @@ func GetOnlyPlayer(id uint) (Player, error) {
 	result := DB.Table("players").Where("id = ?", id).First(&data)
 	return data, result.Error
 }
+func GetDummyPlayersByParticipantId(participantId uint) ([]Player, error) {
+	var data []Player
+	result := DB.
+		Table("players").
+		Where("participant_id = ? AND total_score = -1", participantId).
+		Find(&data)
+	return data, result.Error
+}
 
 func GetPlayerWScores(id uint) (Player, error) {
 	var data Player
@@ -97,6 +106,47 @@ func GetPlayerRoundTotalScoreByRoundId(roundId uint) (int, error) {
 	var data Round
 	result := DB.Table("rounds").Where("id = ?", roundId).First(&data)
 	return data.TotalScore, result.Error
+}
+
+func GetPlayerIdsByCompetitionIdGroupId(competitionId uint, groupId uint) ([]uint, error) {
+	var playerIds []uint
+	result := DB.Table("players").
+		Select("players.id").
+		Joins("JOIN participants ON participants.id = players.participant_id").
+		Where("participants.competition_id = ?", competitionId).
+		Where("players.group_id = ?", groupId).
+		Order("players.order_number ASC").
+		Find(&playerIds)
+	return playerIds, result.Error
+}
+
+func GetRoundIdByRoundScoreId(roundScoreId uint) (uint, error) {
+	type RoundId struct {
+		RoundId uint
+	}
+	var roundId RoundId
+	result := DB.Table("round_ends").
+		Select("round_ends.round_id").
+		Joins("JOIN round_scores ON round_scores.round_end_id = round_ends.id").
+		Where("round_scores.id = ?", roundScoreId).
+		Order("round_ends.id DESC").
+		First(&roundId)
+	return roundId.RoundId, result.Error
+}
+
+func GetPlayerIdByRoundScoreId(roundScoreId uint) (uint, error) {
+	type PlayerId struct {
+		PlayerId uint
+	}
+	var playerId PlayerId
+	result := DB.Table("rounds").
+		Select("rounds.player_id").
+		Joins("JOIN round_ends ON rounds.id = round_ends.round_id").
+		Joins("JOIN round_scores ON round_scores.round_end_id = round_ends.id").
+		Where("round_scores.id = ?", roundScoreId).
+		Order("round_ends.id DESC").
+		First(&playerId)
+	return playerId.PlayerId, result.Error
 }
 
 func CreatePlayer(data Player) (Player, error) {

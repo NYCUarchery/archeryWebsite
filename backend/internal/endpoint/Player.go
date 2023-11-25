@@ -16,15 +16,6 @@ type UpdateTotalScoreData struct {
 	Score      int  `json:"score"`
 }
 
-func scorefmt(score int) int {
-	if score < 0 {
-		return 0
-	} else if score > 10 {
-		return 10
-	}
-	return score
-}
-
 func IsGetOnlyPlayer(context *gin.Context, id uint) (bool, database.Player) {
 	if response.ErrorIdTest(context, id, database.GetPlayerIsExist(id), "Player") {
 		return false, database.Player{}
@@ -87,6 +78,33 @@ func GetPlayerWScoresByID(context *gin.Context) {
 	context.IndentedJSON(200, data)
 }
 
+// Get One Player with PlayerSets By ID and elimination id godoc
+//
+//	@Summary		Show one Player with player sets
+//	@Description	Get one Player with player sets by id and elimination id
+//	@Tags			Player
+//	@Produce		json
+//	@Param			id				path	int	true	"Player ID"
+//	@Param			eliminationid	path	int	true	"Elimination ID"
+//	@Success		200				string	string
+//	@Failure		400				string	string
+//	@Router			/api/player/playersets/{id}/{eliminationid} [get]
+func GetPlayerWPlayerSetsByIDEliminationID(context *gin.Context) {
+	id := convert2uint(context, "id")
+	eliminationId := convert2uint(context, "eliminationid")
+	if response.ErrorIdTest(context, eliminationId, database.GetEliminationIsExist(eliminationId), "Elimination when getting player sets") {
+		return
+	} else if response.ErrorIdTest(context, id, database.GetPlayerIsExist(id), "Player when getting player sets") {
+		return
+	}
+	data, err := database.GetPlayerWPlayerSetsByIDCompeitionID(id, eliminationId)
+	if response.ErrorInternalErrorTest(context, id, "Get Player with player sets", err) {
+		return
+	}
+	response.AcceptPrint(id, fmt.Sprint(data), "Player with player sets")
+	context.IndentedJSON(200, data)
+}
+
 // Post one Player By Participant ID godoc
 //
 //	@Summary		Create one Player by Participant ID
@@ -114,7 +132,7 @@ func PostPlayer(context *gin.Context) {
 	user, _ := database.FindByUserID(userID)
 	data.GroupId = database.GetCompetitionUnassignedGroupId(competitionId)
 	data.LaneId = database.GetCompetitionUnassignedLaneId(competitionId)
-	data.Name = user.Username
+	data.Name = user.RealName
 	data.TotalScore = 0
 	data.ShootOffScore = -1
 	data.Rank = 0
@@ -449,19 +467,13 @@ func UpdatePlayerTotalScore(context *gin.Context, playerId uint, roundId uint, s
 //	@Failure		400				string	string
 //	@Router			/api/player/score/{roundscoreid} [put]
 func UpdatePlayerScore(context *gin.Context) {
-	var scoreData UpdateTotalScoreData
+	var data UpdateTotalScoreData
 	roundScoreId := convert2uint(context, "id")
-	err := context.BindJSON(&scoreData)
-	playerId := scoreData.PlayerId
-	roundId := scoreData.RoundId
-	score := scoreData.Score
+	err := context.BindJSON(&data)
+	newScore := data.Score
 	if response.ErrorReceiveDataTest(context, roundScoreId, "Update Player score", err) {
 		return
 	} else if response.ErrorIdTest(context, roundScoreId, database.GetRoundScoreIsExist(roundScoreId), "RoundScore when updating score") {
-		return
-	} else if response.ErrorIdTest(context, playerId, database.GetPlayerIsExist(playerId), "Player when updating score") {
-		return
-	} else if response.ErrorIdTest(context, roundId, database.GetRoundIsExist(roundId), "Round when updating score") {
 		return
 	}
 	oldScore, err := database.GetPlayerScoreByRoundScoreId(roundScoreId)
@@ -469,16 +481,24 @@ func UpdatePlayerScore(context *gin.Context) {
 		return
 	}
 
-	err = database.UpdatePlayerScore(roundScoreId, score)
+	err = database.UpdatePlayerScore(roundScoreId, newScore)
 	if response.ErrorInternalErrorTest(context, roundScoreId, "Update Player score", err) {
 		return
 	}
 
 	/*auto update total score in rounds when update score*/
-	score = scorefmt(score)
+	newScore = scorefmt(newScore)
 	fmt.Printf("oldScore: %d\n", oldScore)
 	oldScore = scorefmt(oldScore)
-	if !UpdatePlayerTotalScore(context, playerId, roundId, score-oldScore) {
+	roundId, err := database.GetRoundIdByRoundScoreId(roundScoreId)
+	if response.ErrorInternalErrorTest(context, roundId, "Get Round id by roundScoreId", err) {
+		return
+	}
+	playerId, err := database.GetPlayerIdByRoundScoreId(roundScoreId)
+	if response.ErrorInternalErrorTest(context, playerId, "Get Player id by roundScoreId", err) {
+		return
+	}
+	if !UpdatePlayerTotalScore(context, playerId, roundId, newScore-oldScore) {
 		return
 	}
 
@@ -550,4 +570,67 @@ func DeletePlayer(context *gin.Context) {
 func DeletePlayerThroughCompetition(context *gin.Context, id uint) bool {
 	_, err := database.DeletePlayer(id)
 	return !response.ErrorInternalErrorTest(context, id, "Delete Player through competition", err)
+}
+
+// Get Dummy Players By Participant ID godoc
+//
+//	@Summary		Show dummy players
+//	@Description	Get dummy players by participant id
+//	@Tags			Player
+//	@Produce		json
+//	@Param			participantid	path	int	true	"Participant ID"
+//	@Success		200				string	string
+//	@Failure		400				string	string
+//	@Router			/api/player/dummy/{participantid} [get]
+func GetDummyPlayerByParticipantId(context *gin.Context) {
+	var data []database.Player
+	participantId := convert2uint(context, "participantid")
+	if response.ErrorIdTest(context, participantId, database.GetParticipantIsExist(participantId), "Participant when getting dummy players") {
+		return
+	}
+	data, err := database.GetDummyPlayersByParticipantId(participantId)
+	if response.ErrorInternalErrorTest(context, participantId, "Get dummy players", err) {
+		return
+	}
+	response.AcceptPrint(participantId, fmt.Sprint(data), "Get dummy players")
+	context.IndentedJSON(200, data)
+}
+
+// Post Dummy Player By Player ID godoc
+//
+//	@Summary		Create dummy player
+//	@Description	Create dummy player by player id
+//	@Tags			Player
+//	@Produce		json
+//	@Param			playerid	path	int	true	"Player ID"
+//	@Success		200				string	string
+//	@Failure		400				string	string
+//	@Router			/api/player/dummy/{playerid} [post]
+func PostDummyPlayerByPlayerId(context *gin.Context) {
+	id := convert2uint(context, "playerid")
+	if response.ErrorIdTest(context, id, database.GetPlayerIsExist(id), "Player when creating dummy player") {
+		return
+	}
+	player, _ := database.GetOnlyPlayer(id)
+	/*get competition data*/
+	participant, _ := database.GetParticipant(player.ParticipantId)
+	competitionId := participant.CompetitionID
+	unassignedLaneId := database.GetCompetitionUnassignedLaneId(competitionId)
+	unassigendGroupId := database.GetCompetitionUnassignedGroupId(competitionId)
+	/*copy data*/
+	var data database.Player
+	data.ParticipantId = player.ParticipantId
+	data.GroupId = unassigendGroupId
+	data.LaneId = unassignedLaneId
+	data.Name = player.Name
+	data.TotalScore = -1
+	data.ShootOffScore = -1
+	data.Rank = -1
+	data.Order = -1
+	newDummy, err := database.CreatePlayer(data)
+	if response.ErrorInternalErrorTest(context, newDummy.ID, "Create Dummy Player", err) {
+		return
+	}
+	response.AcceptPrint(newDummy.ID, fmt.Sprint(newDummy), "Create Dummy Player")
+	context.IndentedJSON(200, newDummy)
 }
