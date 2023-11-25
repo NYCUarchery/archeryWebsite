@@ -1,6 +1,7 @@
 import { Button } from "@mui/material";
 import { useMutation } from "react-query";
 import axios from "axios";
+import { useQueryClient } from "react-query";
 
 const postStage = (eliminationID: number) => {
   return axios.post(`/api/elimination/stage/`, {
@@ -13,9 +14,10 @@ interface Props {
 }
 
 export default function StageAddButton({ eliminationID }: Props) {
+  const queryClient = useQueryClient();
   const { mutate: addStage } = useMutation(postStage, {
     onSuccess: () => {
-      console.log("success");
+      queryClient.invalidateQueries("eliminationWithStagesMatches");
     },
   });
 

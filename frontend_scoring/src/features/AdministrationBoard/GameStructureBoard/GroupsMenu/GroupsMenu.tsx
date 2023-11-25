@@ -32,6 +32,8 @@ export default function GroupsMenu() {
   }
   let items = [];
 
+  console.log(groups);
+  console.log(groupShown);
   for (let i = 1; i < groups.length; i++) {
     items.push(
       <MenuItem onClick={() => dispatch(setGroupShown(groups[i].id))} key={i}>
@@ -43,7 +45,7 @@ export default function GroupsMenu() {
   return (
     <div>
       <Button onClick={handleClick}>
-        {groups.find((e: any) => e.id == groupShown).group_name}
+        {groups.find((e: any) => e.id == groupShown)?.group_name}
       </Button>
       <Menu
         open={isOpen}
