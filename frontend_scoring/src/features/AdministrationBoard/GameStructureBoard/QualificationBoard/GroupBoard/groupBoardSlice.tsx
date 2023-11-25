@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  selectedPlayerId: 0,
+  selectedPlayerId: null,
 };
 
 const groupBoardSlice = createSlice({

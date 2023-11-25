@@ -2,26 +2,28 @@ import { Box, List, Paper } from "@mui/material";
 import PlayerItem from "./PlayerItem";
 import { useDispatch, useSelector } from "react-redux";
 import { setPlayerLane } from "../../../../GroupsBoard/groupsBoardSlice";
+import useGetGroupsWithPlayers from "../../../../../../QueryHooks/useGetGroupsWithPlayers";
+import PlayerSlot from "./PlayerSlot";
 
 interface Props {
   laneNum: number;
-  players: Player[];
-}
-interface Player {
-  id: number;
-  name: string;
-  order: number;
+  laneID: number;
 }
 
-export default function LanePlayerList({ laneNum, players }: Props) {
+export default function LanePlayerList({ laneNum, laneID }: Props) {
   const dispatch = useDispatch();
 
+  const competitionID = useSelector((state: any) => state.game.competitionID);
   const selectedPlayerId = useSelector(
     (state: any) => state.qualificationStructureGroupBoard.selectedPlayerId
   );
   const groupShown = useSelector(
     (state: any) => state.gameStructureGroupMenu.groupShown
   );
+  const { data: groups, isLoading: isLoadingGroups } =
+    useGetGroupsWithPlayers(competitionID);
+  if (isLoadingGroups) return <></>;
+  const group = groups.find((e: any) => e.id == groupShown);
 
   const handleClick = (_event: React.MouseEvent) => {
     dispatch(
@@ -32,14 +34,20 @@ export default function LanePlayerList({ laneNum, players }: Props) {
       })
     );
   };
-  let items = [];
 
+  let items = [];
+  const players = group.players.filter((e: any) => e.lane_id === laneID);
+  for (let i = 1; i <= 4; i++) {
+    items.push(<PlayerSlot key={i} order={i} laneID={laneID}></PlayerSlot>);
+  }
   for (let i = 0; i < players.length; i++) {
-    items.push(
+    const player = players[i];
+
+    items[player.order - 1] = (
       <PlayerItem
-        key={players[i].id}
-        id={players[i].id}
-        name={players[i].name}
+        key={player.order}
+        player={player}
+        order={player.order}
       ></PlayerItem>
     );
   }

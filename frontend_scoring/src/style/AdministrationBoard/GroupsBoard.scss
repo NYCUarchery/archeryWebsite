@@ -1,17 +1,17 @@
 .groups_board {
   $lists-width: 80%;
   .group_selector {
-    width: $lists-width;
     .group_selector_button {
-      flex: 1;
+      width: 200px;
+      border-radius: 0;
     }
   }
   .player_lists {
-    width: $lists-width;
     display: flex;
     .player_list {
-      flex: 1;
+      width: 198.5px;
       border: 1px solid $gray-main-color;
+      border-left: 0px;
       .player_list_subheader {
         border-bottom: 1px solid $gray-main-color;
       }

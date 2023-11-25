@@ -59,5 +59,4 @@ func Login(c *gin.Context) {
 func Logout(c *gin.Context) {
 	pkg.ClearAuthSession(c)
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
-
 }

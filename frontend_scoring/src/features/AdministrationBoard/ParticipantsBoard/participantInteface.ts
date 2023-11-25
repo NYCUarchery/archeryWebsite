@@ -4,4 +4,5 @@ export interface Participant {
   competitionID: number;
   role: string;
   status: string;
+  name: string;
 }

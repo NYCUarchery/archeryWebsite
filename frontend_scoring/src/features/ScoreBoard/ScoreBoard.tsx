@@ -4,6 +4,7 @@ import EliminationInfo from "../../jsons/EliminationInfo.json";
 import TeamEliminationInfo from "../../jsons/TeamEliminationInfo.json";
 import QualificationBoard from "./QualifyingPhaseBoard/QualificationBoard";
 import EliminationBoard from "./EliminationBoard/EliminationBoard";
+import useGetGroupsWithPlayers from "../../QueryHooks/useGetGroupsWithPlayers";
 
 const gameInfos = [QualificationInfo, EliminationInfo, TeamEliminationInfo];
 
@@ -12,7 +13,10 @@ export default function ScoreBoard() {
   const phaseShown = useSelector(
     (state: any) => state.phaseListButton.phaseShown
   );
+  const competitionID = useSelector((state: any) => state.game.competitionID);
+  const { data: groups, isLoading } = useGetGroupsWithPlayers(competitionID);
 
+  if (isLoading) return <></>;
   if (boardShown !== "score") {
     return null;
   }
@@ -22,7 +26,7 @@ export default function ScoreBoard() {
 
   switch (gameInfo.phase) {
     case "qualification":
-      board = <QualificationBoard gameInfo={gameInfo}></QualificationBoard>;
+      board = <QualificationBoard groups={groups}></QualificationBoard>;
       break;
     case "elimination":
       board = <EliminationBoard gameInfo={gameInfo}></EliminationBoard>;

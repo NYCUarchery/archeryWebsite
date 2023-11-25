@@ -1,20 +1,37 @@
 import { useDispatch, useSelector } from "react-redux";
 import { toggleGroupList, selectGroup } from "./groupListButtonSlice";
-import GroupInfo from "../../../../jsons/GroupInfo.json";
+import { useEffect } from "react";
 
-let groupNames = GroupInfo.group_names;
+interface Props {
+  groups: any;
+}
 
-function GroupList() {
+function GroupList({ groups }: Props) {
   let items = [];
+  const groupShown = useSelector(
+    (state: any) => state.groupListButton.groupShown
+  );
+  const dispatch = useDispatch();
 
-  for (let i = 1; i < groupNames.length; i++) {
-    items.push(<GroupListItem key={i} groupId={i}></GroupListItem>);
+  useEffect(() => {
+    if (groups.length === 1) dispatch(selectGroup(groups[0].id));
+    dispatch(selectGroup(groups[1].id));
+  }, []);
+
+  for (let i = 1; i < groups.length; i++) {
+    items.push(
+      <GroupListItem
+        key={i}
+        groupId={groups[i].id}
+        name={groups[i].group_name}
+      ></GroupListItem>
+    );
   }
 
+  const name = groups.find((g: any) => g.id === groupShown)?.group_name;
   return (
     <ul className="group_list sub_game_bar_list">
-      <GroupListButton></GroupListButton>
-
+      <GroupListButton name={name}></GroupListButton>
       {items}
     </ul>
   );
@@ -22,6 +39,7 @@ function GroupList() {
 
 interface GroupListItem {
   groupId: number;
+  name: string;
 }
 
 function GroupListItem(props: GroupListItem) {
@@ -43,22 +61,22 @@ function GroupListItem(props: GroupListItem) {
       }}
       onClick={() => dispatch(selectGroup(props.groupId))}
     >
-      {groupNames[props.groupId]}
+      {props.name}
     </li>
   );
 }
+interface GroupListButtonProps {
+  name: string;
+}
 
-function GroupListButton() {
-  const groupShown = useSelector(
-    (state: any) => state.groupListButton.groupShown
-  );
+function GroupListButton({ name }: GroupListButtonProps) {
   const dispatch = useDispatch();
   return (
     <button
       className="group_list_button sub_game_bar_list_button"
       onClick={() => dispatch(toggleGroupList())}
     >
-      {groupNames[groupShown]}
+      {name}
     </button>
   );
 }

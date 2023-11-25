@@ -2450,7 +2450,7 @@ const docTemplate = `{
         },
         "/api/participant/competition": {
             "get": {
-                "description": "Get Participants By competition ID",
+                "description": "Get Participants By competition ID, including realname",
                 "produces": [
                     "application/json"
                 ],

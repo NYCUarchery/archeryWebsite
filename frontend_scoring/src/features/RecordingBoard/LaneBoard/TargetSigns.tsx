@@ -1,13 +1,13 @@
 interface Props {
-  targetNum: number;
+  orders: number[];
 }
 
-export default function TargetSigns(props: Props) {
+export default function TargetSigns({ orders }: Props) {
   let content = [];
-  for (let i = 0; i < props.targetNum; i++) {
+  for (let i = 0; i < orders.length; i++) {
     content.push(
-      <div className="target_sign" key={charAddInt("A", i)}>
-        {charAddInt("A", i)}
+      <div className="target_sign" key={charAddInt("A", orders[i] - 1)}>
+        {charAddInt("A", orders[i] - 1)}
       </div>
     );
   }

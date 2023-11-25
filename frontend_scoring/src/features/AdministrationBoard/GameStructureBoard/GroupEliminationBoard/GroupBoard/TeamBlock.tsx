@@ -1,3 +1,4 @@
+import useGetPlayerSetWithPlayers from "../../../../../QueryHooks/useGetPlayerSetWithPlayers";
 import {
   ListItem,
   ListItemText,
@@ -6,55 +7,55 @@ import {
   Chip,
   Divider,
 } from "@mui/material";
+import DeleteButton from "./DeleteButton";
 
 interface Props {
-  teamIndex: number;
-  playersNum: number;
-  players: Player[];
+  playerSetID: any;
 }
 
-interface Player {
-  id: number;
-  name: string;
-}
+export default function TeamBlock({ playerSetID }: Props) {
+  const { data: playerSet } = useGetPlayerSetWithPlayers(playerSetID);
 
-export default function TeamBlock({ teamIndex, playersNum, players }: Props) {
+  if (!playerSet) return <></>;
+
   let playerBlocks = [];
 
-  for (let i = 0; i < playersNum; i++) {
-    playerBlocks.push(
-      <>
-        <Divider></Divider>
-        <ListItem
-          sx={{
-            height: "60px",
-          }}
-        >
-          <ListItemText></ListItemText>
-        </ListItem>
-      </>
-    );
-  }
-
-  for (let i = 0; i < players.length; i++) {
+  for (let i = 0; i < playerSet.players.length; i++) {
+    const player = playerSet.players[i];
     playerBlocks[i] = (
       <>
         <Divider></Divider>
         <ListItem
+          key={i}
           sx={{
             height: "60px",
           }}
         >
-          <ListItemText>{players[i].name}</ListItemText>
-          <Chip label={players[i].id} />
+          <ListItemText>{player.name}</ListItemText>
+          <Chip label={player.total_score} />
         </ListItem>
       </>
     );
   }
 
   return (
-    <List subheader={<ListSubheader>{teamIndex}</ListSubheader>}>
+    <List
+      subheader={
+        <ListSubheader>
+          {playerSet.set_name}
+          <DeleteButton
+            setID={playerSet.id}
+            eliminationID={playerSet.elimination_id}
+          ></DeleteButton>
+        </ListSubheader>
+      }
+    >
       {playerBlocks}
+      <ListItem key={4}>
+        <ListItemText>
+          總分：{playerSet.total_score} 排名：{playerSet.rank}
+        </ListItemText>
+      </ListItem>
     </List>
   );
 }

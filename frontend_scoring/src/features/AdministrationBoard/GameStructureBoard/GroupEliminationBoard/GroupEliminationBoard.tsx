@@ -1,9 +1,17 @@
 import { Box } from "@mui/material";
-import GroupsMenu from "../GroupsMenu/GroupsMenu";
-import StageSetter from "./StageSetter";
 import GroupBoard from "./GroupBoard/GroupBoard";
+import SetCreator from "./SetCreator";
+import RankingButton from "./RankingButton";
+interface Props {
+  teamSize: number;
+  eliminationID: number;
+}
 
-export default function GroupEliminationBoard() {
+export default function GroupEliminationBoard({
+  teamSize,
+  eliminationID,
+}: Props) {
+  if (!eliminationID) return <></>;
   return (
     <Box
       className="group_elimination_board"
@@ -12,10 +20,13 @@ export default function GroupEliminationBoard() {
       }}
     >
       <Box>
-        <GroupsMenu></GroupsMenu>
-        <StageSetter></StageSetter>
+        <SetCreator
+          teamSize={teamSize}
+          eliminationID={eliminationID}
+        ></SetCreator>
+        <RankingButton eliminationID={eliminationID}></RankingButton>
       </Box>
-      <GroupBoard></GroupBoard>
+      <GroupBoard eliminationID={eliminationID}></GroupBoard>
     </Box>
   );
 }
