@@ -4,7 +4,7 @@ import NameColumnElement from "./ColumnElements/NameColumnElement";
 import ScoreColumnElement from "./ColumnElements/ScoreColumnElement";
 import { useSelector } from "react-redux";
 import useGetQualificationWithLanesPlayers from "../../../QueryHooks/useGetQualificationWithLanesPlayers";
-import useGetLanes from "../../../QueryHooks/useGetLanes";
+import useGetOnlyLane from "../../../QueryHooks/useGetOnlyLane";
 
 interface Props {
   groups: any;
@@ -15,7 +15,7 @@ export default function QualificationBoard({ groups }: Props) {
     (state: any) => state.groupListButton.groupShown
   );
 
-  const group = groups.find((g: any) => g.group_id === groupShown);
+  const group = groups.find((g: any) => g.id === groupShown);
   const { data: qualification, isLoading } =
     useGetQualificationWithLanesPlayers(group?.id);
   if (!group || isLoading) return <></>;
@@ -23,6 +23,7 @@ export default function QualificationBoard({ groups }: Props) {
   let RankingInfoBars = [];
 
   const advancingNum = qualification.advancing_num;
+  group.players.sort((a: any, b: any) => a.rank - b.rank);
   for (let i = 0; i < group.players.length; i++) {
     let isQudalified: boolean;
     i < advancingNum ? (isQudalified = true) : (isQudalified = false);
@@ -63,7 +64,7 @@ interface RankingProps {
 function RankingInfoBar(rankingProps: RankingProps) {
   let className: string = "scoreboard_row ranking_info_bar";
   const player = rankingProps.player;
-  const { data: lane, isLoading } = useGetLanes(player.land_id);
+  const { data: lane, isLoading } = useGetOnlyLane(player.lane_id);
   if (!lane || isLoading) return <></>;
   rankingProps.isQudalified
     ? (className += " qualified")

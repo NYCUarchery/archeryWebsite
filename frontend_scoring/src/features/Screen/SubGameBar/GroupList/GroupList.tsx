@@ -1,5 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import { toggleGroupList, selectGroup } from "./groupListButtonSlice";
+import { useEffect } from "react";
 
 interface Props {
   groups: any;
@@ -10,6 +11,12 @@ function GroupList({ groups }: Props) {
   const groupShown = useSelector(
     (state: any) => state.groupListButton.groupShown
   );
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    if (groups.length === 1) dispatch(selectGroup(groups[0].id));
+    dispatch(selectGroup(groups[1].id));
+  }, []);
 
   for (let i = 1; i < groups.length; i++) {
     items.push(
