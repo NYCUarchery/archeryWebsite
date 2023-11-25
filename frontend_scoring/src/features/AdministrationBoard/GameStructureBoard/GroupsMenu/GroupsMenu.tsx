@@ -32,8 +32,6 @@ export default function GroupsMenu() {
   }
   let items = [];
 
-  console.log(groups);
-  console.log(groupShown);
   for (let i = 1; i < groups.length; i++) {
     items.push(
       <MenuItem onClick={() => dispatch(setGroupShown(groups[i].id))} key={i}>

@@ -71,6 +71,5 @@ const extractEliminationID = (
   const eliminationID = group.elimination_datas?.find(
     (e: any) => e.team_size === teamSize
   )?.elimination_id;
-  console.log(eliminationID);
   return eliminationID;
 };

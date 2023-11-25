@@ -3,6 +3,8 @@ import GroupsMenu from "../../GameStructureBoard/GroupsMenu/GroupsMenu";
 import StageAddButton from "./StageAddButton";
 import StagesBlock from "./StagesBlock/StagesBlock";
 import useGetEliminationWithAllScores from "../../../../QueryHooks/useGetEliminationWithAllScores";
+import EndSwitch from "./EndSwitch";
+import OverviewBlock from "./OverviewBlock/OverviewBlock";
 
 interface Props {
   teamSize: number;
@@ -18,7 +20,9 @@ export default function Elimiantion({ eliminationID }: Props) {
     <>
       <Box>
         <GroupsMenu></GroupsMenu>
+        <EndSwitch elimination={elimination}></EndSwitch>
         <StageAddButton eliminationID={eliminationID}></StageAddButton>
+        <OverviewBlock elimination={elimination}></OverviewBlock>
       </Box>
 
       <StagesBlock stages={elimination.stages}></StagesBlock>

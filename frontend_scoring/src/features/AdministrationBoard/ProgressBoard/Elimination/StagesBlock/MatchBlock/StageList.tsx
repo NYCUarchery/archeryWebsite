@@ -1,4 +1,4 @@
-import { List, ListItem } from "@mui/material";
+import { List, ListItem, Box } from "@mui/material";
 import MatchBlock from "./MatchBlock";
 import MatchAddButton from "./MatchAddButton";
 
@@ -19,9 +19,9 @@ export default function StageList({ stage }: Props) {
   }
 
   return (
-    <>
+    <Box sx={{ border: "1px solid #f4f4f4" }}>
       <MatchAddButton stage={stage}></MatchAddButton>
-      <List>{matches}</List>;
-    </>
+      <List>{matches}</List>
+    </Box>
   );
 }

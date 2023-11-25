@@ -1,19 +1,23 @@
 import { Box, List, ListSubheader } from "@mui/material";
 import RoundBlock from "./RoundBlock";
-import useGetCompetition from "../../../../../QueryHooks/useGetCompetition";
-import { useSelector } from "react-redux";
 
-export default function OverviewBlock() {
-  const competitionID = useSelector((state: any) => state.game.competitionID);
-  const { data: competition, isLoading } = useGetCompetition(competitionID);
-  if (isLoading) return <></>;
+interface Props {
+  elimination: any;
+}
 
-  const currentEnd = competition.qualification_current_end;
+export default function OverviewBlock({ elimination }: Props) {
+  const stageNum = elimination.stages.length;
+  const teamSize = elimination.team_size;
+  const currentEnd = elimination.current_end;
 
   let roundBlocks = [];
-  for (let i = 0; i < competition.rounds_num; i++) {
+  for (let i = 0; i < stageNum; i++) {
     roundBlocks.push(
-      <RoundBlock index={i} currentEnd={currentEnd}></RoundBlock>
+      <RoundBlock
+        index={i}
+        currentEnd={currentEnd}
+        teamSize={teamSize}
+      ></RoundBlock>
     );
   }
 
