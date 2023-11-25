@@ -214,6 +214,8 @@ func PostCompetition(context *gin.Context) {
 		return
 	} else if response.ErrorReceiveDataNilTest(context, id, data, "Competition") {
 		return
+	} else if response.ErrorIdTest(context, data.HostID, database.GetUserIsExist(data.HostID), "Host") {
+		return
 	}
 	/*roundsNum must > 0*/
 	if data.RoundsNum <= 0 {
@@ -257,6 +259,14 @@ func PostCompetition(context *gin.Context) {
 	if response.AcceptNotChange(context, id, ischanged, "Update Competition UnassignedLaneId") {
 		return
 	}
+	/*create participant for host*/
+	var par database.Participant
+	par.UserID = data.HostID
+	par.CompetitionID = newId
+	par.Role = "admin"
+	par.Status = "aprroved"
+	database.AddParticipant(&par)
+	/*return new data*/
 	response.AcceptPrint(newId, fmt.Sprint(newData), "Competition")
 	context.IndentedJSON(http.StatusOK, newData)
 }

@@ -61,6 +61,12 @@ func GetParticipantByCompetitionIdUserId(compID uint, userID uint) (pars []Parti
 	return pars, result.Error
 }
 
+func GetParticipantRole(participantId uint) (role string, err error) {
+	var par Participant
+	result := DB.Where("id = ?", participantId).First(&par)
+	return par.Role, result.Error
+}
+
 func CreateParticipant(data Participant) (Participant, error) {
 	result := DB.Create(&data)
 	return data, result.Error

@@ -240,6 +240,14 @@ func UpdateParticipant(context *gin.Context) {
 	if response.ErrorIdTest(context, id, database.GetParticipantIsExist(id), "Participant") {
 		return
 	}
+	/*cannot update host participant*/
+	oldRule, err := database.GetParticipantRole(id)
+	if response.ErrorInternalErrorTest(context, id, "Get Participant Role", err) {
+		return
+	} else if oldRule == "admin" {
+		response.ErrorIdTest(context, id, false, "Participant cannot be host")
+		return
+	}
 	success, err := database.UpdateParticipant(id, data)
 	if response.ErrorInternalErrorTest(context, id, "Update Participant", err) {
 		return
@@ -270,6 +278,17 @@ func UpdateParticipant(context *gin.Context) {
 //	@Router			/api/participant/{id} [delete]
 func DeleteParticipantById(context *gin.Context) {
 	id := convert2uint(context, "id")
+	if response.ErrorIdTest(context, id, database.GetParticipantIsExist(id), "Participant") {
+		return
+	}
+	/*cannot delete host participant*/
+	role, err := database.GetParticipantRole(id)
+	if response.ErrorInternalErrorTest(context, id, "Get Participant Role", err) {
+		return
+	} else if role == "admin" {
+		response.ErrorIdTest(context, id, false, "Participant cannot be host")
+		return
+	}
 	DeleteParticipaint(context, id)
 }
 
