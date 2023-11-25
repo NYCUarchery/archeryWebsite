@@ -1,37 +1,35 @@
 import { createSlice } from "@reduxjs/toolkit";
-import UserInfo from "../../../../jsons/UserInfo.json";
 
 const initialState = {
   boardId: 0,
   boardShown: "score",
+  avaliableBoards: ["score"],
 };
-
-let avaliableBoards: string[] = ["score"];
-
-switch (UserInfo.role) {
-  case "admin":
-    avaliableBoards.push("administration");
-    break;
-  case "player":
-    avaliableBoards.push("recording");
-    break;
-}
 
 const boardSwitchSlice = createSlice({
   name: "boardSwitch",
   initialState: initialState,
   reducers: {
     switchBoard: (state) => {
-      if (state.boardId < avaliableBoards.length - 1) {
+      if (state.boardId < state.avaliableBoards.length - 1) {
         state.boardId++;
       } else {
         state.boardId = 0;
       }
 
-      state.boardShown = avaliableBoards[state.boardId];
+      state.boardShown = state.avaliableBoards[state.boardId];
+    },
+    initBoardSwitch: (state, action) => {
+      const user = action.payload;
+      if (user.role === "admin" && user.status === "approved") {
+        state.avaliableBoards = ["score", "administration"];
+      } else if (user.role === "player" && user.status === "approved") {
+        state.avaliableBoards = ["score", "recording"];
+      }
     },
   },
 });
 
 export const boardSwitchReducer = boardSwitchSlice.reducer;
 export const switchBoard = boardSwitchSlice.actions.switchBoard;
+export const initBoardSwitch = boardSwitchSlice.actions.initBoardSwitch;

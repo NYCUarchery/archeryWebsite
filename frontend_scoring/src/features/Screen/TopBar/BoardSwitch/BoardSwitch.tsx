@@ -1,10 +1,13 @@
 import { useDispatch } from "react-redux";
-import { switchBoard } from "./boardSwitchSlice";
+import { initBoardSwitch, switchBoard } from "./boardSwitchSlice";
 import { useSelector } from "react-redux";
 
 export default function BoardSwitch() {
   const boardShown = useSelector((state: any) => state.boardSwitch.boardShown);
+  const userStatus = useSelector((state: any) => state.user.userStatus);
+  const userRole = useSelector((state: any) => state.user.userRole);
   const dispatch = useDispatch();
+  dispatch(initBoardSwitch({ role: userRole, status: userStatus }));
   let content: string = "";
 
   switch (boardShown) {
