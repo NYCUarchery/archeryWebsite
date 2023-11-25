@@ -103,6 +103,20 @@ func GetPlayerSetsByMedalByEliminationId(context *gin.Context) {
 	context.IndentedJSON(200, data)
 }
 
+func GetPlayerSetByParticipantIdTeamSize(context *gin.Context) {
+	participantId := convert2uint(context, "participantid")
+	teamSize := convert2uint(context, "teamsize")
+	var data []database.PlayerSet
+	if response.ErrorIdTest(context, participantId, database.GetParticipantIsExist(participantId), "participant when get player set id by participant id team size") {
+		return
+	}
+	data, err := database.GetPlayerSetByParticipantIdTeamSize(participantId, teamSize)
+	if response.ErrorInternalErrorTest(context, participantId, "get player set id by participant id team size", err) {
+		return
+	}
+	context.IndentedJSON(200, data)
+}
+
 // Post player set
 //
 //	@Summary		Post player set

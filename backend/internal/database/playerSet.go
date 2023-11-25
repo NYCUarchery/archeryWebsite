@@ -76,6 +76,20 @@ type ResultStruct struct {
 	AllTenUpCnt   int
 }
 
+func GetPlayerSetByParticipantIdTeamSize(participantId uint, teamSize uint) ([]PlayerSet, error) {
+	var data []PlayerSet
+
+	result := DB.Table("players").
+		Select("*").
+		Joins("JOIN player_set_match_tables ON players.id = player_set_match_tables.player_id").
+		Joins("JOIN player_sets ON player_sets.id = player_set_match_tables.player_set_id").
+		Joins("JOIN eliminations ON eliminations.id = player_sets.elimination_id").
+		Where("players.participant_id = ? AND eliminations.team_size = ?", participantId, teamSize).
+		Find(&data)
+
+	return data, result.Error
+}
+
 func GetEliminationPlayerSetIdRankOrderById(eliminationId uint) ([]ResultStruct, error) {
 	var yourResultStruct []ResultStruct
 	result := DB.Table("(SELECT player_sets.id AS player_set_id, player_set_match_tables.player_id FROM player_sets JOIN player_set_match_tables ON player_sets.id = player_set_match_tables.player_set_id WHERE player_sets.elimination_id = ?) AS A", eliminationId).
