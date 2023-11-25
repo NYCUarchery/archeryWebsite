@@ -7,27 +7,24 @@ services:
   frontend-profile:
     build: ./frontend_profile
     restart: always
-  mysql:
-    image: mysql:8
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: db
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
-    restart: always
-    # volumes:
-    #   - ./data/db_data:/var/lib/mysql
   backend:
     build: ./backend
     restart: always
-    depends_on:
-      - mysql
   reverse-proxy:
     build: ./reverse-proxy
     restart: always
     ports:
-      - 6969:80
+      - 80:80
+      - 443:443
     depends_on:
       - frontend-scoring
       - frontend-profile
       - backend
+    volumes:
+      - /certbot/www:/var/www/certbot/:ro
+      - /certbot/conf/:/etc/nginx/ssl/:ro
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - /certbot/www/:/var/www/certbot/:rw
+      - /certbot/conf/:/etc/letsencrypt/:rw
