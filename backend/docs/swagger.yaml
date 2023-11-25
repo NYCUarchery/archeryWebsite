@@ -28,8 +28,6 @@ definitions:
         type: array
       qualification_current_end:
         type: integer
-      qualification_current_end:
-        type: integer
       qualification_is_active:
         type: boolean
       rounds_num:
@@ -282,32 +280,6 @@ paths:
   /api/competition/currentphaseminus/{id}:
     put:
       description: update one Competition currentPhase --
-  /api/competition/currentphaseminus/{id}:
-    put:
-      description: update one Competition currentPhase --
-      parameters:
-      - description: Competition ID
-        in: path
-        name: id
-        required: true
-        type: string
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: update one Competition currentPhase --
-      summary: update one Competition currentPhase --
-      tags:
-      - Competition
-  /api/competition/currentphaseplus/{id}:
-    put:
-      description: update one Competition currentPhase ++
       parameters:
       - description: Competition ID
         in: path
@@ -323,25 +295,9 @@ paths:
           description: Bad Request
           schema:
             type: string
-      summary: update one Competition currentPhase ++
+      summary: update one Competition currentPhase --
       tags:
       - Competition
-  /api/competition/eliminationisactive/{id}:
-    put:
-      description: update one Competition Elimination Active to be true
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: update one Competition Elimination Active to be true
-      tags:
-      - Competition
-  /api/competition/groups/{id}:
   /api/competition/currentphaseplus/{id}:
     put:
       description: update one Competition currentPhase ++
@@ -380,7 +336,6 @@ paths:
       - Competition
   /api/competition/groups/{id}:
     get:
-      description: Get one Competition by id with GroupInfos
       description: Get one Competition by id with GroupInfos
       parameters:
       - description: Competition ID
@@ -400,14 +355,8 @@ paths:
           schema:
             type: string
       summary: Show one Competition with GroupInfos
-      summary: Show one Competition with GroupInfos
       tags:
       - Competition
-  /api/competition/groups/players/{id}:
-    get:
-      description: Get one Competition by id with GroupInfos and Players
-      responses: {}
-      summary: Show one Competition with GroupInfos and Players
   /api/competition/groups/players/{id}:
     get:
       description: Get one Competition by id with GroupInfos and Players
@@ -444,51 +393,6 @@ paths:
           schema:
             type: string
       summary: update one Competition Ranking
-      tags:
-      - Competition
-  /api/competition/groups/qualieli/{id}:
-    get:
-      description: Get one Competition by id with related Groups which have related
-        one Qualification id and many Elimination ids
-      parameters:
-      - description: Competition ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Show one Competition with Groups Qualification Elimination
-      tags:
-      - Competition
-  /api/competition/mixedeliminationisactive/{id}:
-    put:
-      description: update one Competition Mixed Elimination Active to be true and
-        create all mixed elimination for groups
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      summary: update one Competition Mixed Elimination Active to be true and create
-        all mixed elimination for groups
       tags:
       - Competition
   /api/competition/groups/qualieli/{id}:
@@ -637,90 +541,11 @@ paths:
         all team elimination for groups
       tags:
       - Competition
-  /api/competition/qualificationcurrentendminus/{id}:
-    put:
-      description: update one Competition Qualification currentEnd --
-      parameters:
-      - description: Competition ID
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: update one Competition Qualification currentEnd --
-      tags:
-      - Competition
-  /api/competition/qualificationcurrentendplus/{id}:
-    put:
-      description: update one Competition Qualification currentEnd ++
-      parameters:
-      - description: Competition ID
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: update one Competition Qualification currentEnd ++
-      tags:
-      - Competition
-  /api/competition/qualificationisactive/{id}:
-    put:
-      description: update one Competition Qualification Active to be true
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: update one Competition Qualification Active to be true
-      tags:
-      - Competition
-  /api/competition/teameliminationisactive/{id}:
-    put:
-      description: update one Competition Team Elimination Active to be true and create
-        all team elimination for groups
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      summary: update one Competition Team Elimination Active to be true and create
-        all team elimination for groups
-      tags:
-      - Competition
   /api/competition/whole/{id}:
     put:
       consumes:
       - application/json
       description: Put whole new Competition and overwrite with the id but without
-        GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId
         GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId
       parameters:
       - description: Competition ID
@@ -1095,7 +920,6 @@ paths:
       consumes:
       - application/json
       description: Post one new GroupInfo data with new id, create qualification with
-        same id, auto write GroupIndex, and auto create elimination
         same id, auto write GroupIndex, and auto create elimination
       parameters:
       - description: LaneData
@@ -2523,7 +2347,6 @@ paths:
       tags:
       - Player
   /api/qualification/{id}:
-  /api/qualification/{id}:
     get:
       description: Get one Qualification by id
       parameters:
@@ -2546,7 +2369,6 @@ paths:
       summary: Show one Qualification
       tags:
       - Qualification
-  /api/qualification/lanes/{id}:
   /api/qualification/lanes/{id}:
     get:
       description: Get one Qualification with Lanes by id
@@ -2576,24 +2398,11 @@ paths:
       - application/json
       description: Put whole new Qualification and overwrite with the id, and update
         lanes below it ,but cannot replace groupid
-  /api/qualification/whole/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Put whole new Qualification and overwrite with the id, and update
-        lanes below it ,but cannot replace groupid
       parameters:
       - description: Qualification ID
         in: path
         name: id
         required: true
-        type: string
-      - description: Qualification
-        in: body
-        name: Qualification
-        required: true
-        schema:
-          type: string
         type: string
       - description: Qualification
         in: body
@@ -2612,15 +2421,6 @@ paths:
           description: Bad Request
           schema:
             type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      summary: update one Qualification
         "404":
           description: Not Found
           schema:
@@ -2652,28 +2452,7 @@ paths:
       tags:
       - Competition
   /data/qualification/lanes/Unassigned/{id}:
-  /competition:
     get:
-      description: get information of all the competitions
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: success
-          schema:
-            items:
-              $ref: '#/definitions/database.Competition'
-            type: array
-        "500":
-          description: internal db error
-          schema:
-            type: string
-      summary: get information of all the competitions
-      tags:
-      - Competition
-  /data/qualification/lanes/Unassigned/{id}:
-    get:
-      description: Get one Qualification with Unassigned Lanes by id
       description: Get one Qualification with Unassigned Lanes by id
       parameters:
       - description: Qualification ID
@@ -2698,15 +2477,11 @@ paths:
   /data/qualification/lanes/players/{id}:
     get:
       description: Get one Qualification with Lanes and Players by id
-  /data/qualification/lanes/players/{id}:
-    get:
-      description: Get one Qualification with Lanes and Players by id
       parameters:
       - description: Qualification ID
         in: path
         name: id
         required: true
-        type: integer
         type: integer
       produces:
       - application/json
@@ -2719,7 +2494,6 @@ paths:
           description: Bad Request
           schema:
             type: string
-      summary: Show one Qualification
       summary: Show one Qualification
       tags:
       - Qualification

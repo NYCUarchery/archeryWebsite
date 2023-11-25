@@ -148,93 +148,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/competition/currentphaseminus/{id}": {
-            "put": {
-                "description": "update one Competition currentPhase --",
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "update one Competition currentPhase --",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/competition/currentphaseplus/{id}": {
-            "put": {
-                "description": "update one Competition currentPhase ++",
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "update one Competition currentPhase ++",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/competition/eliminationisactive/{id}": {
-            "put": {
-                "description": "update one Competition Elimination Active to be true",
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "update one Competition Elimination Active to be true",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/api/competition/groups/players/rank/{id}": {
             "put": {
                 "description": "Update update all  player ranking of different groups in one Competition",
@@ -295,20 +208,12 @@ const docTemplate = `{
         "/api/competition/groups/qualieli/{id}": {
             "get": {
                 "description": "Get one Competition by id with related Groups which have related one Qualification id and many Elimination ids",
-                "summary": "Show one Competition with GroupInfos and Players",
-                "responses": {}
-            }
-        },
-        "/api/competition/groups/qualieli/{id}": {
-            "get": {
-                "description": "Get one Competition by id with related Groups which have related one Qualification id and many Elimination ids",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Competition"
                 ],
-                "summary": "Show one Competition with Groups Qualification Elimination",
                 "summary": "Show one Competition with Groups Qualification Elimination",
                 "parameters": [
                     {
@@ -363,35 +268,6 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/competition/mixedeliminationisactive/{id}": {
-            "put": {
-                "description": "update one Competition Mixed Elimination Active to be true and create all mixed elimination for groups",
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "update one Competition Mixed Elimination Active to be true and create all mixed elimination for groups",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
                         "schema": {
                             "type": "string"
                         }
@@ -579,125 +455,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/competition/qualificationcurrentendminus/{id}": {
-            "put": {
-                "description": "update one Competition Qualification currentEnd --",
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "update one Competition Qualification currentEnd --",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/competition/qualificationcurrentendplus/{id}": {
-            "put": {
-                "description": "update one Competition Qualification currentEnd ++",
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "update one Competition Qualification currentEnd ++",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/competition/qualificationisactive/{id}": {
-            "put": {
-                "description": "update one Competition Qualification Active to be true",
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "update one Competition Qualification Active to be true",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/competition/teameliminationisactive/{id}": {
-            "put": {
-                "description": "update one Competition Team Elimination Active to be true and create all team elimination for groups",
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "update one Competition Team Elimination Active to be true and create all team elimination for groups",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/api/competition/whole/{id}": {
             "put": {
-                "description": "Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId",
                 "description": "Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId",
                 "consumes": [
                     "application/json"
@@ -1334,7 +1093,6 @@ const docTemplate = `{
         },
         "/api/groupinfo": {
             "post": {
-                "description": "Post one new GroupInfo data with new id, create qualification with same id, auto write GroupIndex, and auto create elimination",
                 "description": "Post one new GroupInfo data with new id, create qualification with same id, auto write GroupIndex, and auto create elimination",
                 "consumes": [
                     "application/json"
@@ -3483,26 +3241,13 @@ const docTemplate = `{
             }
         },
         "/api/qualification/lanes/{id}": {
-        "/api/qualification/lanes/{id}": {
             "get": {
-                "description": "Get one Qualification with Lanes by id",
                 "description": "Get one Qualification with Lanes by id",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Qualification"
-                    "Qualification"
-                ],
-                "summary": "Show one Qualification",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Qualification ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
                 ],
                 "summary": "Show one Qualification",
                 "parameters": [
@@ -3517,14 +3262,10 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "OK",
-                        "description": "OK",
                         "schema": {
-                            "type": "string"
                             "type": "string"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
                     "400": {
                         "description": "Bad Request",
                         "schema": {
@@ -3540,12 +3281,6 @@ const docTemplate = `{
                 "consumes": [
                     "application/json"
                 ],
-        "/api/qualification/whole/{id}": {
-            "put": {
-                "description": "Put whole new Qualification and overwrite with the id, and update lanes below it ,but cannot replace groupid",
-                "consumes": [
-                    "application/json"
-                ],
                 "produces": [
                     "application/json"
                 ],
@@ -3553,24 +3288,13 @@ const docTemplate = `{
                     "Qualification"
                 ],
                 "summary": "update one Qualification",
-                "summary": "update one Qualification",
                 "parameters": [
                     {
-                        "type": "string",
                         "type": "string",
                         "description": "Qualification ID",
                         "name": "id",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "description": "Qualification",
-                        "name": "Qualification",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
                     },
                     {
                         "description": "Qualification",
@@ -3606,26 +3330,12 @@ const docTemplate = `{
                         "schema": {
                             "type": "string"
                         }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 }
             }
         },
         "/api/qualification/{id}": {
-        "/api/qualification/{id}": {
             "get": {
-                "description": "Get one Qualification by id",
                 "description": "Get one Qualification by id",
                 "produces": [
                     "application/json"
@@ -3660,36 +3370,25 @@ const docTemplate = `{
             }
         },
         "/competition": {
-        "/competition": {
             "get": {
-                "description": "get information of all the competitions",
                 "description": "get information of all the competitions",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Competition"
-                    "Competition"
                 ],
-                "summary": "get information of all the competitions",
                 "summary": "get information of all the competitions",
                 "responses": {
                     "200": {
-                        "description": "success",
                         "description": "success",
                         "schema": {
                             "type": "array",
                             "items": {
                                 "$ref": "#/definitions/database.Competition"
                             }
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/database.Competition"
-                            }
                         }
                     },
-                    "500": {
-                        "description": "internal db error",
                     "500": {
                         "description": "internal db error",
                         "schema": {
@@ -3702,9 +3401,6 @@ const docTemplate = `{
         "/data/qualification/lanes/Unassigned/{id}": {
             "get": {
                 "description": "Get one Qualification with Unassigned Lanes by id",
-        "/data/qualification/lanes/Unassigned/{id}": {
-            "get": {
-                "description": "Get one Qualification with Unassigned Lanes by id",
                 "produces": [
                     "application/json"
                 ],
@@ -3712,10 +3408,8 @@ const docTemplate = `{
                     "Qualification"
                 ],
                 "summary": "Show one Qualification",
-                "summary": "Show one Qualification",
                 "parameters": [
                     {
-                        "type": "integer",
                         "type": "integer",
                         "description": "Qualification ID",
                         "name": "id",
@@ -3740,9 +3434,7 @@ const docTemplate = `{
             }
         },
         "/data/qualification/lanes/players/{id}": {
-        "/data/qualification/lanes/players/{id}": {
             "get": {
-                "description": "Get one Qualification with Lanes and Players by id",
                 "description": "Get one Qualification with Lanes and Players by id",
                 "produces": [
                     "application/json"
@@ -4578,9 +4270,6 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/database.Participant"
                     }
-                },
-                "qualification_current_end": {
-                    "type": "integer"
                 },
                 "qualification_current_end": {
                     "type": "integer"
