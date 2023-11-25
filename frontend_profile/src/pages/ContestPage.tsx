@@ -34,8 +34,8 @@ const TimeView = (date: string) => {
 }
 
 const ContestView = (contest: any, navigate: any) => {
-	console.log("contest", contest)
 	var [open, setOpen] = useState(false);
+	contest = contest.contest;
 
 	return (
 		<Box sx={{mb: 2}}>
@@ -43,9 +43,9 @@ const ContestView = (contest: any, navigate: any) => {
 			<Typography variant="body2" component="div" sx={{fontSize: 30}}>
 				{contest.name}
 			</Typography>
-			<Typography variant="body2" component="div">
+			{/* <Typography variant="body2" component="div">
 				{TimeView(contest.date)}
-			</Typography>
+			</Typography> */}
 			<Typography variant="body2" component="div">
 				{contest.overview}
 			</Typography>
@@ -61,7 +61,7 @@ const ContestView = (contest: any, navigate: any) => {
 				}}
 			>
 				<Typography variant="body2">
-					查看記分板: {contest.scoreboardURL}
+					查看記分板
 				</Typography>
 			</Button>
 
@@ -75,6 +75,7 @@ const ContestView = (contest: any, navigate: any) => {
 						variant="text"
 						sx={{ color: "#2074d4", width: "100%" }}
 						onClick={() => setOpen(true)}
+						disabled
 						// onClick={() => {
 						// 	const handleJoinCompetition = async () => {
 						// 		try {
@@ -125,8 +126,9 @@ const ContestPage = () => {
 	// }, [])
 	rows = [
 		{
-			name: "2021年第一屆資訊安全競賽",
+			name: "2023風城盃",
 			overview: "這是一個很棒的比賽",
+			scoreboardURL: `https://${window.location.hostname}:${window.location.port}/scoring/competition/1`,
 		}
 	]
 	return (
