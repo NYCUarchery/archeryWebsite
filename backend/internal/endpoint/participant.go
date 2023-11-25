@@ -2,7 +2,6 @@ package endpoint
 
 import (
 	"backend/internal/database"
-	"backend/internal/pkg"
 	"backend/internal/response"
 	"fmt"
 	"net/http"
@@ -17,21 +16,29 @@ type Participants struct {
 
 //JSON
 
-// JoinInCompetition godoc
+// PostParticipant godoc
 //
-//	@Summary		join in a competition
-//	@Description	add a particpant to the competition
+//	@Summary		post a particpant to the competition
+//	@Description	post a particpant to the competition
 //	@Tags			Participant
 //	@Accept			json
 //	@Produce		json
+//	@Param			userID			formData	int					true	"user id"
 //	@Param			competitionID	formData	int					true	"competition id"
-//	@Success		200				{object}	response.Response	"success"
-//	@Failure		400				{object}	response.Response	"cannot parse competitionID | participant exists"
-//	@Failure		400				{object}	response.Response	"no user/competition found"
-//	@Failure		500				{object}	response.Response	"internal db error"
+//	@Param			role			formData	string				true	"role"
+//	@Success		200				{object}	database.Participant	"success"
+//	@Failure		400				{object}	response.Response		"cannot parse competitionID | participant exists"
+//	@Failure		400				{object}	response.Response		"no user/competition found"
+//	@Failure		500				{object}	response.Response		"internal db error"
 //	@Router			/api/participant/ [post]
-func JoinInCompetition(c *gin.Context) {
-	userID := pkg.QuerySession(c, "id").(uint)
+func PostParticipant(c *gin.Context) {
+	userIDu64, err := strconv.ParseUint(c.PostForm("userID"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "cannot parse userID"})
+		return
+	}
+	userID := uint(userIDu64)
+
 	compIDu64, err := strconv.ParseUint(c.PostForm("competitionID"), 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "cannot parse competitionID"})
@@ -65,13 +72,21 @@ func JoinInCompetition(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "participant exists"})
 		return
 	}
+
+	role := c.PostForm("role")
+	if role == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "role is empty"})
+		return
+	}
+
 	var par database.Participant
 	par.UserID = userID
 	par.CompetitionID = compID
+	par.Role = role
 	par.Status = "pending"
 
 	database.AddParticipant(&par)
-	c.JSON(http.StatusOK, gin.H{"result": "success"})
+	c.JSON(http.StatusOK, par)
 }
 
 // mushroom // hope be edited by JSON
