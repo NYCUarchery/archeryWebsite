@@ -4,7 +4,7 @@ import axios from "axios";
 export default function useGetEliminationWithAllScores(eliminationID: number) {
   return useQuery(
     ["eliminationWithAllScores", eliminationID],
-    () => axios.get(`/api/elimination/scores/${eliminationID}`),
+    () => axios.get(`/api/elimination/cores/${eliminationID}`),
     {
       staleTime: 2000,
       select: (data: any) => {
