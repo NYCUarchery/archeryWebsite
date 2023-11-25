@@ -41,7 +41,7 @@ export default function ProgressBoard() {
         ></Elimiantion>
       );
   }
-  if (!eliminationID) {
+  if (!eliminationID && phaseShown !== 0) {
     board = <h1>載入對抗賽中</h1>;
   }
 
