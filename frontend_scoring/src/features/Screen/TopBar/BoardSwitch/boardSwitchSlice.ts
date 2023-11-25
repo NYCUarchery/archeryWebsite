@@ -3,7 +3,7 @@ import UserInfo from "../../../../jsons/UserInfo.json";
 
 const initialState = {
   boardId: 0,
-  boardShown: "administration",
+  boardShown: "score",
 };
 
 let avaliableBoards: string[] = ["score"];

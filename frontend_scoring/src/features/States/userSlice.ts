@@ -13,7 +13,20 @@ const initialState = {
 const userSlice = createSlice({
   name: "user",
   initialState: initialState,
-  reducers: {},
+  reducers: {
+    initUserName: (state, action) => {
+      state.userName = action.payload;
+    },
+    initUserId: (state, action) => {
+      state.userId = action.payload;
+    },
+    initUserRole: (state, action) => {
+      state.userRole = action.payload;
+    },
+  },
 });
 
 export const userReducer = userSlice.reducer;
+export const initUserName = userSlice.actions.initUserName;
+export const initUserId = userSlice.actions.initUserId;
+export const initUserRole = userSlice.actions.initUserRole;

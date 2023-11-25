@@ -9,13 +9,25 @@ import { useSelector } from "react-redux/es/hooks/useSelector";
 import { useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { initialize } from "./features/States/gameSlice";
+import useGetUserParticipant from "./QueryHooks/useGetUserParticipant";
+import {
+  initUserId,
+  initUserName,
+  initUserRole,
+} from "./features/States/userSlice";
 
 function App() {
   const { competitionID } = useParams();
   const dispatch = useDispatch();
   const boardShown = useSelector((state: any) => state.boardSwitch.boardShown);
+  const { data: participant, isLoading } = useGetUserParticipant();
   let board: any;
+
+  if (isLoading) return <></>;
   dispatch(initialize({ competitionID }));
+  dispatch(initUserId(participant?.id ?? 0));
+  dispatch(initUserName(participant?.name ?? "訪客"));
+  dispatch(initUserRole(participant?.role ?? "viewer"));
 
   switch (boardShown) {
     case "score":
