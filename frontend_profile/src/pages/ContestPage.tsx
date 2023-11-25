@@ -101,19 +101,6 @@ const ContestView = (contest: any, navigate: any) => {
 							<Typography variant="h6" component="div">
 								報名表單
 							</Typography>
-							<Typography variant="body1" component="div">
-								比賽名稱: {contest.name}
-							</Typography>
-							<Typography variant="body1" component="div">
-								比賽時間: {TimeView(contest.date)}
-							</Typography>
-							<Typography variant="body1" component="div">
-								比賽簡介: {contest.overview}
-							</Typography>
-							<Typography variant="body1" component="div">
-								比賽狀況: {contest.state}
-							</Typography>
-							<p> Hello </p>
 						</Box>
 					</Modal>
 				</Grid>
@@ -136,12 +123,6 @@ const ContestPage = () => {
 		};
 		fetchData();
 	}, [])
-	// rows = [
-	// 	{
-	// 		name: "2021年第一屆資訊安全競賽",
-	// 		overview: "這是一個很棒的比賽",
-	// 	}
-	// ]
 	return (
 		<Card sx={{p: 2, mb: 2}}>
 			<CardContent>

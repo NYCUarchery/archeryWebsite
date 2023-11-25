@@ -278,6 +278,7 @@ const registerUser = async (values: any) => {
     body.append("password", values.password);
     body.append("institutionID", values.institutionID);
     body.append("email", values.email);
+    body.append("realName", values.realName);
 
     const response = await axios.post(api.user.register, body);
     if (response.status === 200)  return { result: "success" };
