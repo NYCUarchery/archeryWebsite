@@ -20,7 +20,9 @@ function App() {
   const { competitionID } = useParams();
   const dispatch = useDispatch();
   const boardShown = useSelector((state: any) => state.boardSwitch.boardShown);
-  const { data: participant, isLoading } = useGetUserParticipant();
+  const { data: participant, isLoading } = useGetUserParticipant(
+    Number(competitionID)
+  );
   let board: any;
 
   if (isLoading) return <></>;
