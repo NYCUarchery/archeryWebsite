@@ -2,7 +2,6 @@ package endpoint
 
 import (
 	"net/http"
-
 	"github.com/gin-gonic/gin"
 
 	"backend/internal/database"
@@ -10,7 +9,6 @@ import (
 )
 
 // Login godoc
-//
 //	@Summary		login
 //	@Description	get a session
 //	@Tags			Session
@@ -49,7 +47,6 @@ func Login(c *gin.Context) {
 }
 
 // Logout godoc
-//
 //	@Summary		logout
 //	@Description	delete the session
 //	@Tags			Session
@@ -59,4 +56,4 @@ func Login(c *gin.Context) {
 func Logout(c *gin.Context) {
 	pkg.ClearAuthSession(c)
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
-}
+
