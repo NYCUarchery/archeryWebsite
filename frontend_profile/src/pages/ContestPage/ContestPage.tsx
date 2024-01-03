@@ -6,11 +6,9 @@ import CardContent from "@mui/material/CardContent";
 // import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
 
 import { useNavigate } from "react-router-dom";
 
-import routing from "../../util/routing";
 import { joinCompetition, getCompetitions } from "../../util/api";
 import getDate from "date-fns/getDate";
 import getMonth from "date-fns/getMonth";
@@ -18,6 +16,7 @@ import getYear from "date-fns/getYear";
 import getISODay from "date-fns/getISODay";
 
 import { Competition } from "./ContestPageComponents/Competition";
+import CreateContestButton from "./ContestPageComponents/CreateContestButton";
 
 const Day2Mandarin = (day: number) => {
   return ["一", "二", "三", "四", "五", "六", "日"][day - 1];
@@ -76,21 +75,7 @@ const ContestPage = () => {
             onJoin={() => handleJoinCompetition(v.id)}
           />
         ))}
-        <Box sx={{ mt: 2 }}>
-          <Grid container justifyContent="center">
-            <Grid item>
-              <Button
-                variant="text"
-                onClick={() => navigate(routing.CreateContest)}
-                sx={{ color: "#2074d4" }}
-              >
-                <Typography variant="h6" component="div">
-                  創建新的比賽
-                </Typography>
-              </Button>
-            </Grid>
-          </Grid>
-        </Box>
+        <CreateContestButton />
       </CardContent>
     </Card>
   );
