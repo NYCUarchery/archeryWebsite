@@ -2,7 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import Homepage from "../pages/Homepage";
 import PersonalPage from "../pages/PersonalPage";
 import AboutPage from "../pages/AboutPage";
-import ContestPage from "../pages/ContestPage/CompetitionPage";
+import ContestPage from "../pages/CompetitionPage/CompetitionPage";
 import ChangeInfo from "../pages/ChangeInfo";
 import CreateContestPage from "../pages/CreateCompetitionPage/CreateCompetitionPage";
 import routing from "../util/routing";
