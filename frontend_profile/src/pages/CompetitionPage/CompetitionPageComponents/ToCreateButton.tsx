@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import routing from "../../../util/routing";
 import React from "react";
 
-const CreateContestButton = () => {
+export default function ToCreateButton() {
   const navigate = useNavigate();
 
   return (
@@ -26,5 +26,4 @@ const CreateContestButton = () => {
       </Grid>
     </Box>
   );
-};
-export default CreateContestButton;
+}

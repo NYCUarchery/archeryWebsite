@@ -16,7 +16,7 @@ import getYear from "date-fns/getYear";
 import getISODay from "date-fns/getISODay";
 
 import { Competition } from "./CompetitionPageComponents/Competition";
-import CreateContestButton from "./CompetitionPageComponents/CreateCompetitionButton";
+import ToCreateButton from "./CompetitionPageComponents/ToCreateButton";
 
 const Day2Mandarin = (day: number) => {
   return ["一", "二", "三", "四", "五", "六", "日"][day - 1];
@@ -75,7 +75,7 @@ const ContestPage = () => {
             onJoin={() => handleJoinCompetition(v.id)}
           />
         ))}
-        <CreateContestButton />
+        <ToCreateButton />
       </CardContent>
     </Card>
   );
