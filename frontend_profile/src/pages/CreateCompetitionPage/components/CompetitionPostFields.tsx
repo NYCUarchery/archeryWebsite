@@ -1,77 +1,77 @@
-import React, { useState } from "react";
-import { TextField, Button, Box } from "@mui/material";
-import { DatePicker } from "@mui/lab";
+import React from "react";
+import { TextField, Box } from "@mui/material";
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs, { Dayjs } from "dayjs";
 import { PostCompetitionBody } from "../types/PostCompetitionBody";
-import { Signal } from "@preact/signals-react";
+import { Signal, signal } from "@preact/signals-react";
+import { da } from "date-fns/locale";
+
+let date = signal<Dayjs>(dayjs());
 
 type Props = {
   postBody: Signal<PostCompetitionBody>;
 };
 
 export default function CompetitionPostFields({ postBody }: Props) {
+  postBody.value.date = dayjsToISO(date.value);
   const handleFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     console.log(postBody.value);
     postBody.value = { ...postBody.value, [name]: value };
   };
 
-  const handleSubmit = (event: React.FormEvent) => {
-    event.preventDefault();
-    // Use the postBody.value object to create the desired object of type PostCompetitionBody
-    console.log(postBody.value);
+  const handleDateChange = (newValue: Dayjs | null) => {
+    if (newValue == null) return;
+    date.value = newValue;
+    postBody.value.date = dayjsToISO(newValue);
   };
 
   return (
-    <Box>
+    <Box sx={{ display: "grid", gap: 3 }}>
       <TextField
         name="title"
-        label="Title"
+        label="比賽名稱"
         value={postBody.value.title}
         onChange={handleFieldChange}
       />
       <TextField
         name="sub_title"
-        label="Sub Title"
+        label="比賽副標題"
         value={postBody.value.sub_title}
         onChange={handleFieldChange}
       />
       <TextField
-        name="host_id"
-        label="Host ID"
-        type="number"
-        value={postBody.value.host_id}
-        onChange={handleFieldChange}
-      />
-      <TextField
         name="rounds_num"
-        label="Rounds Number"
+        label="局數"
         type="number"
         value={postBody.value.rounds_num}
         onChange={handleFieldChange}
       />
       <TextField
         name="lanes_num"
-        label="Lanes Number"
+        label="靶道數量"
         type="number"
         value={postBody.value.lanes_num}
         onChange={handleFieldChange}
       />
       <TextField
         name="script"
-        label="Script"
+        label="簡介"
         value={postBody.value.script}
         onChange={handleFieldChange}
       />
-
-      <DatePicker
-        name="date"
-        label="Date"
-        value={postBody.value.date}
-        onChange={handleFieldChange}
-      />
-      <Button type="submit" variant="contained">
-        Submit
-      </Button>
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <DatePicker
+          label="日期"
+          value={date.value}
+          onChange={handleDateChange}
+        />
+      </LocalizationProvider>
     </Box>
   );
 }
+
+const dayjsToISO = (dayjs: Dayjs) => {
+  return dayjs.format("YYYY-MM-DDTHH:mm:ss") + "." + dayjs.format("SSS") + "Z";
+};

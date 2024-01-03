@@ -8,6 +8,8 @@ import { signal } from "@preact/signals-react";
 
 import { PostCompetitionBody } from "./types/PostCompetitionBody";
 
+import dayjs from "dayjs";
+
 const postBody = signal<PostCompetitionBody>({} as PostCompetitionBody);
 const CreateContestPage = () => {
   const navigate = useNavigate();
