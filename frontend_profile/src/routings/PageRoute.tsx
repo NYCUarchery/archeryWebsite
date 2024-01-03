@@ -2,9 +2,9 @@ import { Routes, Route } from "react-router-dom";
 import Homepage from "../pages/Homepage";
 import PersonalPage from "../pages/PersonalPage";
 import AboutPage from "../pages/AboutPage";
-import ContestPage from "../pages/ContestPage/ContestPage";
+import ContestPage from "../pages/ContestPage/CompetitionPage";
 import ChangeInfo from "../pages/ChangeInfo";
-import CreateContestPage from "../pages/CreateContestPage/CreateContestPage";
+import CreateContestPage from "../pages/CreateCompetitionPage/CreateCompetitionPage";
 import routing from "../util/routing";
 
 const PageRoute = () => {
