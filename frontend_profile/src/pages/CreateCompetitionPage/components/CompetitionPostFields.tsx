@@ -15,6 +15,7 @@ type Props = {
 
 export default function CompetitionPostFields({ postBody }: Props) {
   postBody.value.date = dayjsToISO(date.value);
+
   const handleFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     console.log(postBody.value);
@@ -28,46 +29,61 @@ export default function CompetitionPostFields({ postBody }: Props) {
   };
 
   return (
-    <Box sx={{ display: "grid", gap: 3 }}>
-      <TextField
-        name="title"
-        label="比賽名稱"
-        value={postBody.value.title}
-        onChange={handleFieldChange}
-      />
-      <TextField
-        name="sub_title"
-        label="比賽副標題"
-        value={postBody.value.sub_title}
-        onChange={handleFieldChange}
-      />
-      <TextField
-        name="rounds_num"
-        label="局數"
-        type="number"
-        value={postBody.value.rounds_num}
-        onChange={handleFieldChange}
-      />
-      <TextField
-        name="lanes_num"
-        label="靶道數量"
-        type="number"
-        value={postBody.value.lanes_num}
-        onChange={handleFieldChange}
-      />
-      <TextField
-        name="script"
-        label="簡介"
-        value={postBody.value.script}
-        onChange={handleFieldChange}
-      />
-      <LocalizationProvider dateAdapter={AdapterDayjs}>
-        <DatePicker
-          label="日期"
-          value={date.value}
-          onChange={handleDateChange}
+    <Box sx={{ display: "grid", gap: 2 }}>
+      <Box>
+        <TextField
+          name="title"
+          label="比賽名稱"
+          value={postBody.value.title}
+          onChange={handleFieldChange}
         />
-      </LocalizationProvider>
+      </Box>
+      <Box>
+        <TextField
+          name="sub_title"
+          label="比賽副標題"
+          value={postBody.value.sub_title}
+          onChange={handleFieldChange}
+        />
+      </Box>
+      <Box>
+        <TextField
+          name="rounds_num"
+          label="局數"
+          type="number"
+          value={postBody.value.rounds_num}
+          onChange={handleFieldChange}
+        />
+      </Box>
+      <Box>
+        <TextField
+          name="lanes_num"
+          label="靶道數量"
+          type="number"
+          value={postBody.value.lanes_num}
+          onChange={handleFieldChange}
+        />
+      </Box>
+      <Box>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <DatePicker
+            label="日期"
+            value={date.value}
+            onChange={handleDateChange}
+          />
+        </LocalizationProvider>
+      </Box>
+      <Box>
+        <TextField
+          name="script"
+          label="簡介"
+          value={postBody.value.script}
+          onChange={handleFieldChange}
+          multiline // Enable multiline
+          rows={4} // Set the number of rows
+          sx={{ maxWidth: "600px", height: "120px" }} // Increase the height
+        />
+      </Box>
     </Box>
   );
 }
