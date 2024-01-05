@@ -81,7 +81,7 @@ export default function CompetitionPostFields({ postBody }: Props) {
           onChange={handleFieldChange}
           multiline // Enable multiline
           rows={4} // Set the number of rows
-          sx={{ maxWidth: "600px", height: "120px" }} // Increase the height
+          sx={{ width: "100%", height: "120px" }} // Increase the height
         />
       </Box>
     </Box>
