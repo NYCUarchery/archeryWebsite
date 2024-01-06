@@ -1,4 +1,4 @@
-import { Card, CardContent } from "@mui/material";
+import { Box, Card, CardContent } from "@mui/material";
 
 import { useNavigate } from "react-router-dom";
 
@@ -27,7 +27,9 @@ const CreateContestPage = () => {
     <Card sx={{ p: 2, mb: 2 }}>
       <CardContent>
         <CompetitionPostFields postBody={postBody} />
-        <CreateButton postBody={postBody.value}></CreateButton>
+        <Box sx={{ display: "flex", mt: 2, justifyContent: "center" }}>
+          <CreateButton postBody={postBody.value}></CreateButton>
+        </Box>
       </CardContent>
     </Card>
   );
