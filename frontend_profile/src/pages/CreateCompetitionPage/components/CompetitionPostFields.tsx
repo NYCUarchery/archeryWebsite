@@ -5,7 +5,6 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 import { PostCompetitionBody } from "../types/PostCompetitionBody";
 import { Signal, signal } from "@preact/signals-react";
-import { da } from "date-fns/locale";
 
 let date = signal<Dayjs>(dayjs());
 
@@ -30,6 +29,14 @@ export default function CompetitionPostFields({ postBody }: Props) {
 
   return (
     <Box sx={{ display: "grid", gap: 2 }}>
+      <Box>
+        <TextField
+          name="host_id"
+          label="主辦者UID"
+          value={postBody.value.host_id}
+          onChange={handleFieldChange}
+        />
+      </Box>
       <Box>
         <TextField
           name="title"
