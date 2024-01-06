@@ -5,6 +5,8 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs, { Dayjs } from "dayjs";
 import { PostCompetitionBody } from "../types/PostCompetitionBody";
 import { Signal, signal } from "@preact/signals-react";
+import useGetUid from "../../../util/QueryHooks/useGetUid";
+import { useNavigate } from "react-router-dom";
 
 let date = signal<Dayjs>(dayjs());
 
@@ -14,11 +16,18 @@ type Props = {
 
 export default function CompetitionPostFields({ postBody }: Props) {
   postBody.value.date = dayjsToISO(date.value);
+  const navigate = useNavigate();
+
+  const { data: uid, isLoading, isError } = useGetUid();
+  if (isLoading) return <div>loading...</div>;
+  if (isError) navigate("/Login");
 
   const handleFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    console.log(postBody.value);
-    postBody.value = { ...postBody.value, [name]: value };
+    postBody.value = {
+      ...postBody.value,
+      [name]: Number(value) ? parseInt(value) : value,
+    };
   };
 
   const handleDateChange = (newValue: Dayjs | null) => {
@@ -33,6 +42,8 @@ export default function CompetitionPostFields({ postBody }: Props) {
         <TextField
           name="host_id"
           label="主辦者UID"
+          type="number"
+          defaultValue={uid}
           value={postBody.value.host_id}
           onChange={handleFieldChange}
         />

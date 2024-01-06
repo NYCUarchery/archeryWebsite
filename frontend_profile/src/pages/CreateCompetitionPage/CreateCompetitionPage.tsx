@@ -10,18 +10,11 @@ import { PostCompetitionBody } from "./types/PostCompetitionBody";
 
 import CreateButton from "./components/CreateButton";
 import useGetUid from "../../util/QueryHooks/useGetUid";
-import { useEffect } from "react";
 
 let postBody = signal<PostCompetitionBody>({} as PostCompetitionBody);
 const CreateContestPage = () => {
-  const { data: uid, isSuccess, isError } = useGetUid();
+  const { data: uid, isLoading, isSuccess, isFetching, isError } = useGetUid();
   const navigate = useNavigate();
-  useEffect(() => {
-    if (isError) {
-      navigate("/Login");
-    }
-    postBody.value = { ...postBody.value, host_id: uid };
-  }, [isSuccess]);
 
   return (
     <Card sx={{ p: 2, mb: 2 }}>
