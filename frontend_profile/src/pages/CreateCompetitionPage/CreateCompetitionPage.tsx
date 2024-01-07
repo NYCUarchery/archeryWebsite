@@ -21,7 +21,7 @@ const CreateContestPage = () => {
       <CardContent>
         <CompetitionPostFields postBody={postBody} />
         <Box sx={{ display: "flex", mt: 2, justifyContent: "center" }}>
-          <CreateButton postBody={postBody.value}></CreateButton>
+          <CreateButton postBody={postBody}></CreateButton>
         </Box>
       </CardContent>
     </Card>
