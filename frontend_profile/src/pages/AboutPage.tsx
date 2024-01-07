@@ -16,6 +16,18 @@ const AboutPage = () => {
 						<Grid container justifyContent="center">
 							<Grid item>
 								<Typography variant="h6" component="div">
+								</Typography>
+							</Grid>
+						</Grid>
+					</Box>
+				</CardContent>
+			</Card>
+			{/* <Card sx={{p: 2, mb: 2}}>
+				<CardContent>
+					<Box sx={{mt: 2}}>
+						<Grid container justifyContent="center">
+							<Grid item>
+								<Typography variant="h6" component="div">
 									射箭是什麼
 								</Typography>
 							</Grid>
@@ -38,7 +50,7 @@ const AboutPage = () => {
 					</Box>
 					I used to be an adventurer like you. Then I took an arrow in the knee...
 				</CardContent>
-			</Card>
+			</Card> */}
 		</>
 	)
 }

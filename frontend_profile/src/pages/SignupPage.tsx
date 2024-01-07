@@ -58,6 +58,7 @@ const SignupPage = () => {
 								overview: "",
 								password: "",
 								passwordConfirm: "",
+								realName:"",
 								email: "",
 								institutionID: "",
 							}}
@@ -121,6 +122,17 @@ const SignupPage = () => {
 													mousedown: handleMouseDownPasswordConfirm,
 													show: showPasswordConfirm,
 												}}
+											/>
+										</Grid>
+										<Grid item xs={2}>
+											<OneLineField
+												touched={touched.username && touched.password && touched.passwordConfirm}
+												error={errors.realName}
+												handleChange={handleChange}
+												handleBlur={handleBlur}
+												name={"realName"}
+												label={"真實姓名"}
+												value={values.realName}
 											/>
 										</Grid>
 										<Grid item xs={2}>
