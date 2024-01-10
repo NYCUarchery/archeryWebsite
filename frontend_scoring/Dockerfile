@@ -1,12 +1,12 @@
-FROM node:14-alpine
+FROM node:16-alpine
 
 WORKDIR /app
-COPY package.json .
-# COPY package-lock.json .
-RUN npm i
-RUN npm i -g serve
 
+COPY package.json .
+COPY package-lock.json .
+RUN npm ci
 COPY . .
-RUN npm run build
-ENTRYPOINT npm run preview
+
 EXPOSE 3000
+
+ENTRYPOINT npm run dev
