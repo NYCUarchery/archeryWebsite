@@ -101,6 +101,36 @@ func GetAllCompetition() ([]Competition, error) {
 	return comps, err
 }
 
+func GetCurrentCompetitions(head int, tail int) ([]Competition, error) {
+	var competitions []Competition
+	result := DB.
+		Table("competitions").
+		Order("date desc").
+		Offset(head).
+		Limit(tail - head + 1).
+		Find(&competitions)
+	return competitions, result.Error
+}
+
+func GetCompetitionsOfUser(userID uint, head int, tail int) ([]Competition, error) {
+	var competitionIds []uint
+	var competitions []Competition
+
+	subQueryA := DB.
+		Table("participants").
+		Where("user_id = ?", userID).
+		Pluck("DISTINCT competition_id", &competitionIds)
+	result := DB.
+		Table("competitions").
+		Where("id IN (?)", subQueryA).
+		Order("date desc").
+		Offset(head).
+		Limit(tail - head + 1).
+		Find(&competitions)
+
+	return competitions, result.Error
+}
+
 func PostCompetition(data Competition) (Competition, error) {
 	result := DB.Model(&Competition{}).Create(&data)
 	return data, result.Error

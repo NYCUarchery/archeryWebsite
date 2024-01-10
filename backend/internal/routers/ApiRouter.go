@@ -64,6 +64,9 @@ func competitionRouter(api *gin.RouterGroup) {
 	api.GET("/groups/players/:id", endpoint.GetCompetitionWGroupsPlayersByID)
 	api.GET("groups/quaeli/:id", endpoint.GetCompetitionWGroupsQuaEliByID)
 
+	api.GET("/current/:head/:tail", endpoint.GetCurrentCompetitions)
+	api.GET("/user/:userid/:head/:tail", endpoint.GetCompetitionsOfUser)
+
 	api.POST("/", endpoint.PostCompetition)
 	api.PUT("/groups/players/rank/:id", endpoint.UpdateCompetitionRank)
 	api.PUT("/whole/:id", endpoint.UpdateCompetition)

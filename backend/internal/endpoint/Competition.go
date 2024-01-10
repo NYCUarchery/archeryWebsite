@@ -194,6 +194,65 @@ func GetCompetitionWGroupsPlayersByID(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, data)
 }
 
+// Get current Competitions godoc
+//
+//	@Summary		Show current Competitions
+//	@Description	Get current Competitions, head and tail are the range of most recent competitions
+//	@Description	For example, head = 0, tail = 10, then return the most recent 10 competitions
+//	@Description	head >= 0, tail >= 0, head <= tail
+//	@Tags			Competition
+//	@Produce		json
+//	@Param			head	query	int	true	"head"
+//	@Param			tail	query	int	true	"tail"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/api/competition/current/{head}/{tail} [get]
+func GetCurrentCompetitions(context *gin.Context) {
+	head := convert2int(context, "head")
+	tail := convert2int(context, "tail")
+	if head < 0 || tail < 0 {
+		response.ErrorReceiveDataFormat(context, "head and tail must >= 0")
+		return
+	}
+	if head > tail {
+		response.ErrorReceiveDataFormat(context, "head must <= tail")
+		return
+	}
+	competitions, err := database.GetCurrentCompetitions(head, tail)
+	if response.ErrorInternalErrorTest(context, 0, "Get Current Competitions", err) {
+		return
+	}
+	context.IndentedJSON(http.StatusOK, competitions)
+}
+
+// Get recent Competitions dealing with User godoc
+//
+//	@Summary		Show recent Competitions dealing with User
+//	@Description	Get recent Competitions by User id, head and tail are the range of most recent competitions
+//	@Description	For example, head = 0, tail = 10, then return the most recent 10 competitions
+//	@Description	head >= 0, tail >= 0, head <= tail
+//	@Tags			Competition
+//	@Produce		json
+//	@Param			userid	query	int	true	"User ID"
+//	@Param			head	query	int	true	"head"
+//	@Param			tail	query	int	true	"tail"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/api/competition/recent/{userid}/{head}/{tail} [get]
+func GetCompetitionsOfUser(context *gin.Context) {
+	head := convert2int(context, "head")
+	tail := convert2int(context, "tail")
+	userId := convert2uint(context, "userid")
+	if response.ErrorIdTest(context, userId, database.GetUserIsExist(userId), "User") {
+		return
+	}
+	competitions, err := database.GetCompetitionsOfUser(userId, head, tail)
+	if response.ErrorInternalErrorTest(context, userId, "Get Competitions Of User", err) {
+		return
+	}
+	context.IndentedJSON(http.StatusOK, competitions)
+}
+
 // Post Competition godoc
 //
 //	@Summary		Create one Competition and related data

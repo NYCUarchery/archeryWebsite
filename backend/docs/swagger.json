@@ -55,6 +55,48 @@
                 }
             }
         },
+        "/api/competition/current/{head}/{tail}": {
+            "get": {
+                "description": "Get current Competitions, head and tail are the range of most recent competitions\nFor example, head = 0, tail = 10, then return the most recent 10 competitions\nhead \u003e= 0, tail \u003e= 0, head \u003c= tail",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "Show current Competitions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "head",
+                        "name": "head",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "tail",
+                        "name": "tail",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/competition/currentphaseminus/{id}": {
             "put": {
                 "description": "update one Competition currentPhase --",
@@ -404,6 +446,55 @@
                     "Competition"
                 ],
                 "summary": "update one Competition Qualification Active to be true",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/competition/recent/{userid}/{head}/{tail}": {
+            "get": {
+                "description": "Get recent Competitions by User id, head and tail are the range of most recent competitions\nFor example, head = 0, tail = 10, then return the most recent 10 competitions\nhead \u003e= 0, tail \u003e= 0, head \u003c= tail",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "Show recent Competitions dealing with User",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "userid",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "head",
+                        "name": "head",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "tail",
+                        "name": "tail",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
