@@ -28,6 +28,7 @@ function GroupList({ groups }: Props) {
     );
   }
 
+
   const name = groups.find((g: any) => g.id === groupShown)?.group_name;
   return (
     <ul className="group_list sub_game_bar_list">
