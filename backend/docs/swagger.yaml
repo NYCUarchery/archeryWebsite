@@ -4,10 +4,10 @@ definitions:
     properties:
       current_phase:
         type: integer
-      date:
-        type: string
       elimination_is_active:
         type: boolean
+      end_time:
+        type: string
       groups:
         items:
           $ref: '#/definitions/database.Group'
@@ -33,6 +33,8 @@ definitions:
       rounds_num:
         type: integer
       script:
+        type: string
+      start_time:
         type: string
       sub_title:
         type: string
@@ -201,9 +203,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Post one new Competition data with new id, create UnassignedGroup,
-        create Lanes and UnassignedLane which link to UnassignedGroup, add host as
-        admin of competition, and return the new Competition data
+      description: |-
+        Post one new Competition data with new id, create UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup, add host as admin of competition, and return the new Competition data
+        zeroTime 0001-01-01T00:00:00+00:01
       parameters:
       - description: Competition
         in: body
@@ -256,7 +258,9 @@ paths:
       tags:
       - Competition
     get:
-      description: Get one Competition by id without GroupInfo
+      description: |-
+        Get one Competition by id without GroupInfo
+        zeroTime 0001-01-01T00:00:00+00:01
       parameters:
       - description: Competition ID
         in: path
@@ -612,8 +616,9 @@ paths:
     put:
       consumes:
       - application/json
-      description: Put whole new Competition and overwrite with the id but without
-        GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId
+      description: |-
+        Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId
+        zeroTime 0001-01-01T00:00:00+00:01
       parameters:
       - description: Competition ID
         in: path

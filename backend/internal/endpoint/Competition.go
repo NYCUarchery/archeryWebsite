@@ -10,6 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var zeroTime, _ = time.Parse(time.RFC3339, "0001-01-01T00:00:00+00:01")
+
 func IsGetOnlyCompetition(context *gin.Context, id uint) (bool, database.Competition) {
 	if response.ErrorIdTest(context, id, database.GetCompetitionIsExist(id), "Competition") {
 		return false, database.Competition{}
@@ -62,6 +64,7 @@ func IsGetCompetitionWParticipants(context *gin.Context, id uint) (bool, databas
 //
 //	@Summary		Show one Competition without GroupInfo
 //	@Description	Get one Competition by id without GroupInfo
+//	@Description	zeroTime 0001-01-01T00:00:00+00:01
 //	@Tags			Competition
 //	@Produce		json
 //	@Param			id	path	int	true	"Competition ID"
@@ -257,6 +260,7 @@ func GetCompetitionsOfUser(context *gin.Context) {
 //
 //	@Summary		Create one Competition and related data
 //	@Description	Post one new Competition data with new id, create UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup, add host as admin of competition, and return the new Competition data
+//	@Description	zeroTime 0001-01-01T00:00:00+00:01
 //	@Tags			Competition
 //	@Accept			json
 //	@Produce		json
@@ -279,9 +283,22 @@ func PostCompetition(context *gin.Context) {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "When creating Competition, roundsNum must > 0"})
 		return
 	}
+	/*time*/
+	fmt.Printf("StartTime: %v, EndTime: %v\n", data.StartTime, data.EndTime)
+	fmt.Printf("zeroTime: %v\n", zeroTime)
+	if data.StartTime.Equal(zeroTime) && data.EndTime.Equal(zeroTime) {
+		data.StartTime = time.Now()
+		data.EndTime = time.Now()
+	} else if data.StartTime.Equal(zeroTime) {
+		data.StartTime = data.EndTime
+	} else if data.EndTime.Equal(zeroTime) {
+		data.EndTime = data.StartTime
+	} else if data.StartTime.After(data.EndTime) {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "When creating Competition, startTime must <= endTime"})
+		return
+	}
 	/*auto write Groups_num, minus one for 無組別*/
 	data.GroupsNum = -1
-	data.Date = time.Now()
 	data.CurrentPhase = 0
 	data.QualificationCurrentEnd = 0
 	newData, err := database.PostCompetition(data)
@@ -332,6 +349,7 @@ func PostCompetition(context *gin.Context) {
 //
 //	@Summary		update one Competition without GroupInfo
 //	@Description	Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId
+//	@Description	zeroTime 0001-01-01T00:00:00+00:01
 //	@Tags			Competition
 //	@Accept			json
 //	@Produce		json
@@ -367,8 +385,26 @@ func UpdateCompetition(context *gin.Context) {
 	oldData.CurrentPhase = data.CurrentPhase
 	oldData.QualificationCurrentEnd = data.QualificationCurrentEnd
 	oldData.Script = data.Script
+	/*time*/
+	var currentStartTime time.Time
+	var currentEndTime time.Time
+	if data.StartTime.Equal(zeroTime) {
+		currentStartTime = oldData.StartTime
+	} else {
+		currentStartTime = data.StartTime
+	}
+	if data.EndTime.Equal(zeroTime) {
+		currentEndTime = oldData.EndTime
+	} else {
+		currentEndTime = data.EndTime
+	}
+	if currentStartTime.After(currentEndTime) {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "When creating Competition, startTime must <= endTime"})
+		return
+	}
+	oldData.StartTime = currentStartTime
+	oldData.EndTime = currentEndTime
 	data = oldData
-
 	/*update and check change*/
 	isChanged, err := database.UpdateCompetition(id, data)
 	if response.ErrorInternalErrorTest(context, id, "Update Competition", err) {

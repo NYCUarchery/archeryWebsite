@@ -10,7 +10,8 @@ type Competition struct { // DB : game_info
 	ID                       uint           `json:"id"        gorm:"primary_key"`
 	Title                    string         `json:"title"`
 	SubTitle                 string         `json:"sub_title"`
-	Date                     time.Time      `json:"date"`
+	StartTime                time.Time      `json:"start_time"`
+	EndTime                  time.Time      `json:"end_time"`
 	HostID                   uint           `json:"host_id"`
 	RoundsNum                int            `json:"rounds_num"`
 	UnassignedGroupId        uint           `json:"unassigned_group_id"`

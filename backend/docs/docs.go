@@ -23,7 +23,7 @@ const docTemplate = `{
     "paths": {
         "/api/competition": {
             "post": {
-                "description": "Post one new Competition data with new id, create UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup, add host as admin of competition, and return the new Competition data",
+                "description": "Post one new Competition data with new id, create UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup, add host as admin of competition, and return the new Competition data\nzeroTime 0001-01-01T00:00:00+00:01",
                 "consumes": [
                     "application/json"
                 ],
@@ -548,7 +548,7 @@ const docTemplate = `{
         },
         "/api/competition/whole/{id}": {
             "put": {
-                "description": "Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId",
+                "description": "Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId\nzeroTime 0001-01-01T00:00:00+00:01",
                 "consumes": [
                     "application/json"
                 ],
@@ -607,7 +607,7 @@ const docTemplate = `{
         },
         "/api/competition/{id}": {
             "get": {
-                "description": "Get one Competition by id without GroupInfo",
+                "description": "Get one Competition by id without GroupInfo\nzeroTime 0001-01-01T00:00:00+00:01",
                 "produces": [
                     "application/json"
                 ],
@@ -4329,11 +4329,11 @@ const docTemplate = `{
                 "current_phase": {
                     "type": "integer"
                 },
-                "date": {
-                    "type": "string"
-                },
                 "elimination_is_active": {
                     "type": "boolean"
+                },
+                "end_time": {
+                    "type": "string"
                 },
                 "groups": {
                     "type": "array",
@@ -4372,6 +4372,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "script": {
+                    "type": "string"
+                },
+                "start_time": {
                     "type": "string"
                 },
                 "sub_title": {
