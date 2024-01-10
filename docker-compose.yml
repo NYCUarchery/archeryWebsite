@@ -4,9 +4,15 @@ services:
   frontend-scoring:
     build: ./frontend_scoring
     restart: always
+    volumes: 
+      - ./frontend_scoring:/app
+      - /app/node_modules
   frontend-profile:
     build: ./frontend_profile
     restart: always
+    volumes: 
+      - ./frontend_profile:/app
+      - /app/node_modules
   mysql:
     image: mysql:8
     environment:
