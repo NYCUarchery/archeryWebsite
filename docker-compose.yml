@@ -7,6 +7,14 @@ services:
   frontend-profile:
     build: ./frontend_profile
     restart: always
+  mysql:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: db
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    restart: always
   backend:
     build: ./backend
     restart: always
