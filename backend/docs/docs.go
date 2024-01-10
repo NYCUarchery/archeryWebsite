@@ -23,7 +23,7 @@ const docTemplate = `{
     "paths": {
         "/api/competition": {
             "post": {
-                "description": "Post one new Competition data with new id, create UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup, and return the new Competition data",
+                "description": "Post one new Competition data with new id, create UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup, add host as admin of competition, and return the new Competition data",
                 "consumes": [
                     "application/json"
                 ],

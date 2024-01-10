@@ -197,7 +197,7 @@ func GetCompetitionWGroupsPlayersByID(context *gin.Context) {
 // Post Competition godoc
 //
 //	@Summary		Create one Competition and related data
-//	@Description	Post one new Competition data with new id, create UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup, and return the new Competition data
+//	@Description	Post one new Competition data with new id, create UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup, add host as admin of competition, and return the new Competition data
 //	@Tags			Competition
 //	@Accept			json
 //	@Produce		json
@@ -257,6 +257,14 @@ func PostCompetition(context *gin.Context) {
 	if response.AcceptNotChange(context, id, ischanged, "Update Competition UnassignedLaneId") {
 		return
 	}
+	/*add host as admin of participant*/
+	var newParticipant database.Participant
+	newParticipant.UserID = newData.HostID
+	newParticipant.CompetitionID = newId
+	newParticipant.Role = "admin"
+	newParticipant.Status = "approved"
+	database.AddParticipant(&newParticipant)
+	/*return new data*/
 	response.AcceptPrint(newId, fmt.Sprint(newData), "Competition")
 	context.IndentedJSON(http.StatusOK, newData)
 }
