@@ -20,11 +20,11 @@ services:
       - frontend-scoring
       - frontend-profile
       - backend
-    volumes:
-      - /certbot/www:/var/www/certbot/:ro
-      - /certbot/conf/:/etc/nginx/ssl/:ro
-  certbot:
-    image: certbot/certbot:latest
-    volumes:
-      - /certbot/www/:/var/www/certbot/:rw
-      - /certbot/conf/:/etc/letsencrypt/:rw
+#    volumes:
+#      - /certbot/www:/var/www/certbot/:ro
+#      - /certbot/conf/:/etc/nginx/ssl/:ro
+#  certbot:
+#    image: certbot/certbot:latest
+#    volumes:
+#      - /certbot/www/:/var/www/certbot/:rw
+#      - /certbot/conf/:/etc/letsencrypt/:rw
