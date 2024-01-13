@@ -30,7 +30,7 @@ const Homepage = () => {
           <Grid container justifyContent="center">
             <Grid item>
               <Typography variant="h6" component="div">
-                公告欄fewfwef
+                公告欄
               </Typography>
             </Grid>
           </Grid>
