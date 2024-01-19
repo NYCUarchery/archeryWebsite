@@ -15,7 +15,7 @@ function GroupList({ groups }: Props) {
 
   useEffect(() => {
     if (groups.length === 1) dispatch(selectGroup(groups[0].id));
-    dispatch(selectGroup(groups[1].id));
+    else dispatch(selectGroup(groups[1].id));
   }, []);
 
   for (let i = 1; i < groups.length; i++) {
@@ -27,7 +27,6 @@ function GroupList({ groups }: Props) {
       ></GroupListItem>
     );
   }
-
 
   const name = groups.find((g: any) => g.id === groupShown)?.group_name;
   return (
