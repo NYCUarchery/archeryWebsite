@@ -8,7 +8,7 @@ export default function StageController() {
   const phaseShown = useSelector(
     (state: any) => state.phaseListButton.phaseShown
   );
-  const boardShown = useSelector((state: any) => state.boardSwitch.boardShown);
+  const boardShown = useSelector((state: any) => state.boardMenu.boardShown);
 
   const currentPhaseKind = useSelector(
     (state: any) => state.game.currentPhaseKind

@@ -12,7 +12,7 @@ const boardMenuSlice = createSlice({
     selectBoard: (state, action) => {
       state.boardShown = action.payload;
     },
-    initBoardSwitch: (state, action) => {
+    initBoardMenu: (state, action) => {
       const user = action.payload;
       if (user.role === "admin" && user.status === "approved") {
         state.avaliableBoards = ["score", "administration"];
@@ -24,5 +24,5 @@ const boardMenuSlice = createSlice({
 });
 
 export const boardMenuReducer = boardMenuSlice.reducer;
-export const switchBoard = boardMenuSlice.actions.selectBoard;
-export const initBoardSwitch = boardMenuSlice.actions.initBoardSwitch;
+export const selectBoard = boardMenuSlice.actions.selectBoard;
+export const initBoardMenu = boardMenuSlice.actions.initBoardMenu;

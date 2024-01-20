@@ -4,7 +4,7 @@ import GameTitle from "./GameTitle";
 import UserNamePrompt from "./UserNamePrompt";
 
 function TopBar() {
-  const boardShown = useSelector((state: any) => state.boardSwitch.boardShown);
+  const boardShown = useSelector((state: any) => state.boardMenu.boardShown);
 
   return (
     <div

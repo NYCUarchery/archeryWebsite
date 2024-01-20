@@ -23,7 +23,7 @@ export default function StageList(props: Props) {
   const stageNum = useSelector((state: any) => state.stageController.stageNum);
 
   let stages: any;
-  const boardShown = useSelector((state: any) => state.boardSwitch.boardShown);
+  const boardShown = useSelector((state: any) => state.boardMenu.boardShown);
 
   useEffect(() => {
     return () => {

@@ -8,7 +8,7 @@ const fetchCompetition = (competitionId: number) => {
 
 function GameTitle() {
   let competitionId = 1;
-  const boardShown = useSelector((state: any) => state.boardSwitch.boardShown);
+  const boardShown = useSelector((state: any) => state.boardMenu.boardShown);
 
   const { isLoading, data, isError } = useQuery(
     ["competition", competitionId],

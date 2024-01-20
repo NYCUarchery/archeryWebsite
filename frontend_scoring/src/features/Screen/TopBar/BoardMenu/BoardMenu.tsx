@@ -1,17 +1,14 @@
 import { useDispatch } from "react-redux";
-import { initBoardSwitch, switchBoard } from "./boardMenuSlice";
+import { initBoardMenu, selectBoard } from "./boardMenuSlice";
+import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import Button from "@mui/material/Button";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
-import { signal } from "@preact/signals";
 
 type BoardNameSet = {
   id: string;
   name: string;
 };
-
-let anchorEl = signal<HTMLElement | null>(null);
 
 const boardAbbreviations = new Map<string, string>([
   ["score", "分"],
@@ -25,31 +22,36 @@ const boardNameSets: BoardNameSet[] = [
   { id: "administration", name: "監控" },
 ];
 
-export default function BoardSwitch() {
-  const boardShown = useSelector((state: any) => state.boardSwitch.boardShown);
-  const avalibleBoards = useSelector(
-    (state: any) => state.boardSwitch.avalibleBoards
+export default function boardMenu() {
+  const [AnchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const boardShown = useSelector((state: any) => state.boardMenu.boardShown);
+  const avaliableBoards = useSelector(
+    (state: any) => state.boardMenu.avaliableBoards
   );
   const userStatus = useSelector((state: any) => state.user.userStatus);
   const userRole = useSelector((state: any) => state.user.userRole);
   const dispatch = useDispatch();
-  dispatch(initBoardSwitch({ role: userRole, status: userStatus }));
+  useEffect(() => {
+    return () => {
+      dispatch(initBoardMenu({ role: userRole, status: userStatus }));
+    };
+  }, []);
   let indicatorCharacter: string = boardAbbreviations.get(boardShown) as string;
 
   const handleClose = () => {
-    anchorEl.value = null;
+    setAnchorEl(null);
   };
   const handleClick = (event: any) => {
-    anchorEl.value = event.currentTarget;
+    setAnchorEl(event.currentTarget);
   };
 
   const items = boardNameSets.map((e) => {
-    if (avalibleBoards.includes(e.id)) {
+    if (avaliableBoards.includes(e.id)) {
       return (
         <MenuItem
           key={e.id}
           onClick={() => {
-            dispatch(switchBoard(e.id));
+            dispatch(selectBoard(e.id));
             indicatorCharacter = boardAbbreviations.get(e.id) as string;
             handleClose();
           }}
@@ -62,13 +64,13 @@ export default function BoardSwitch() {
 
   return (
     <>
-      <Button className="board_switch" onClick={handleClick}>
+      <button className="board_switch" onClick={handleClick}>
         {indicatorCharacter}
-      </Button>
+      </button>
       <Menu
-        anchorEl={anchorEl.value}
+        anchorEl={AnchorEl}
         onClose={handleClose}
-        open={Boolean(anchorEl.value)}
+        open={Boolean(AnchorEl)}
         keepMounted
       >
         {items}
