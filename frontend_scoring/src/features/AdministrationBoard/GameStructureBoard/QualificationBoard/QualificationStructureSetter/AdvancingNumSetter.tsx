@@ -22,8 +22,8 @@ export default function AdvancingNumSetter() {
   const group = groups.find((e: any) => e.id == groupShown);
 
   const marks = [
-    { value: 1, label: "1名" },
-    { value: group.players.length, label: group.players.length + "名" },
+    { value: 1, label: "1人晉級" },
+    { value: group.players.length, label: group.players.length + "人晉級" },
   ];
 
   return (
