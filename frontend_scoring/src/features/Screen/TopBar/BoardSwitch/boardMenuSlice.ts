@@ -1,23 +1,16 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  boardId: 0,
   boardShown: "score",
   avaliableBoards: ["score"],
 };
 
-const boardSwitchSlice = createSlice({
-  name: "boardSwitch",
+const boardMenuSlice = createSlice({
+  name: "boardMenu",
   initialState: initialState,
   reducers: {
-    switchBoard: (state) => {
-      if (state.boardId < state.avaliableBoards.length - 1) {
-        state.boardId++;
-      } else {
-        state.boardId = 0;
-      }
-
-      state.boardShown = state.avaliableBoards[state.boardId];
+    selectBoard: (state, action) => {
+      state.boardShown = action.payload;
     },
     initBoardSwitch: (state, action) => {
       const user = action.payload;
@@ -30,6 +23,6 @@ const boardSwitchSlice = createSlice({
   },
 });
 
-export const boardSwitchReducer = boardSwitchSlice.reducer;
-export const switchBoard = boardSwitchSlice.actions.switchBoard;
-export const initBoardSwitch = boardSwitchSlice.actions.initBoardSwitch;
+export const boardMenuReducer = boardMenuSlice.reducer;
+export const switchBoard = boardMenuSlice.actions.selectBoard;
+export const initBoardSwitch = boardMenuSlice.actions.initBoardSwitch;
