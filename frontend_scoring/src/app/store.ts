@@ -3,7 +3,7 @@ import ReduxLogger from "redux-logger";
 import { groupListButtonReducer } from "../features/Screen/SubGameBar/GroupList/groupListButtonSlice";
 import { phaseListButtonReducer } from "../features/Screen/SubGameBar/PhaseList/phaseListButtonSlice";
 import { stageControllerReducer } from "../features/Screen/BottomBar/StageController/stageControllerSlice";
-import { boardMenuReducer } from "../features/Screen/TopBar/BoardSwitch/boardMenuSlice";
+import { boardMenuReducer } from "../features/Screen/TopBar/BoardMenu/boardMenuSlice";
 import { scoreControllerReducer } from "../features/RecordingBoard/LaneBoard/ScoreController/scoreControllerSlice";
 import { gameReducer } from "../features/States/gameSlice";
 import { userReducer } from "../features/States/userSlice";

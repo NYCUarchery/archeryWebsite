@@ -1,5 +1,5 @@
 import { useSelector } from "react-redux";
-import BoardSwitch from "./BoardSwitch/BoardSwitch";
+import BoardMenu from "./BoardMenu/BoardMenu";
 import GameTitle from "./GameTitle";
 import UserNamePrompt from "./UserNamePrompt";
 
@@ -14,7 +14,7 @@ function TopBar() {
       }}
     >
       <UserNamePrompt />
-      <BoardSwitch></BoardSwitch>
+      <BoardMenu></BoardMenu>
       <GameTitle></GameTitle>
     </div>
   );
