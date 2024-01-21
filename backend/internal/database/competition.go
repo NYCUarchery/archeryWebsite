@@ -10,7 +10,8 @@ type Competition struct { // DB : game_info
 	ID                       uint           `json:"id"        gorm:"primary_key"`
 	Title                    string         `json:"title"`
 	SubTitle                 string         `json:"sub_title"`
-	Date                     time.Time      `json:"date"`
+	StartTime                time.Time      `json:"start_time"`
+	EndTime                  time.Time      `json:"end_time"`
 	HostID                   uint           `json:"host_id"`
 	RoundsNum                int            `json:"rounds_num"`
 	UnassignedGroupId        uint           `json:"unassigned_group_id"`
@@ -99,6 +100,36 @@ func GetAllCompetition() ([]Competition, error) {
 	var comps []Competition
 	err := DB.Find(&comps).Error
 	return comps, err
+}
+
+func GetCurrentCompetitions(head int, tail int) ([]Competition, error) {
+	var competitions []Competition
+	result := DB.
+		Table("competitions").
+		Order("date desc").
+		Offset(head).
+		Limit(tail - head + 1).
+		Find(&competitions)
+	return competitions, result.Error
+}
+
+func GetCompetitionsOfUser(userID uint, head int, tail int) ([]Competition, error) {
+	var competitionIds []uint
+	var competitions []Competition
+
+	subQueryA := DB.
+		Table("participants").
+		Where("user_id = ?", userID).
+		Pluck("DISTINCT competition_id", &competitionIds)
+	result := DB.
+		Table("competitions").
+		Where("id IN (?)", subQueryA).
+		Order("date desc").
+		Offset(head).
+		Limit(tail - head + 1).
+		Find(&competitions)
+
+	return competitions, result.Error
 }
 
 func PostCompetition(data Competition) (Competition, error) {

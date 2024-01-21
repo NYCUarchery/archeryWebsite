@@ -10,6 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var zeroTime, _ = time.Parse(time.RFC3339, "0001-01-01T00:00:00+00:01")
+
 func IsGetOnlyCompetition(context *gin.Context, id uint) (bool, database.Competition) {
 	if response.ErrorIdTest(context, id, database.GetCompetitionIsExist(id), "Competition") {
 		return false, database.Competition{}
@@ -62,6 +64,7 @@ func IsGetCompetitionWParticipants(context *gin.Context, id uint) (bool, databas
 //
 //	@Summary		Show one Competition without GroupInfo
 //	@Description	Get one Competition by id without GroupInfo
+//	@Description	zeroTime 0001-01-01T00:00:00+00:01
 //	@Tags			Competition
 //	@Produce		json
 //	@Param			id	path	int	true	"Competition ID"
@@ -194,10 +197,70 @@ func GetCompetitionWGroupsPlayersByID(context *gin.Context) {
 	context.IndentedJSON(http.StatusOK, data)
 }
 
+// Get current Competitions godoc
+//
+//	@Summary		Show current Competitions
+//	@Description	Get current Competitions, head and tail are the range of most recent competitions
+//	@Description	For example, head = 0, tail = 10, then return the most recent 10 competitions
+//	@Description	head >= 0, tail >= 0, head <= tail
+//	@Tags			Competition
+//	@Produce		json
+//	@Param			head	query	int	true	"head"
+//	@Param			tail	query	int	true	"tail"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/api/competition/current/{head}/{tail} [get]
+func GetCurrentCompetitions(context *gin.Context) {
+	head := convert2int(context, "head")
+	tail := convert2int(context, "tail")
+	if head < 0 || tail < 0 {
+		response.ErrorReceiveDataFormat(context, "head and tail must >= 0")
+		return
+	}
+	if head > tail {
+		response.ErrorReceiveDataFormat(context, "head must <= tail")
+		return
+	}
+	competitions, err := database.GetCurrentCompetitions(head, tail)
+	if response.ErrorInternalErrorTest(context, 0, "Get Current Competitions", err) {
+		return
+	}
+	context.IndentedJSON(http.StatusOK, competitions)
+}
+
+// Get recent Competitions dealing with User godoc
+//
+//	@Summary		Show recent Competitions dealing with User
+//	@Description	Get recent Competitions by User id, head and tail are the range of most recent competitions
+//	@Description	For example, head = 0, tail = 10, then return the most recent 10 competitions
+//	@Description	head >= 0, tail >= 0, head <= tail
+//	@Tags			Competition
+//	@Produce		json
+//	@Param			userid	query	int	true	"User ID"
+//	@Param			head	query	int	true	"head"
+//	@Param			tail	query	int	true	"tail"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/api/competition/recent/{userid}/{head}/{tail} [get]
+func GetCompetitionsOfUser(context *gin.Context) {
+	head := convert2int(context, "head")
+	tail := convert2int(context, "tail")
+	userId := convert2uint(context, "userid")
+	if response.ErrorIdTest(context, userId, database.GetUserIsExist(userId), "User") {
+		return
+	}
+	competitions, err := database.GetCompetitionsOfUser(userId, head, tail)
+	if response.ErrorInternalErrorTest(context, userId, "Get Competitions Of User", err) {
+		return
+	}
+	context.IndentedJSON(http.StatusOK, competitions)
+}
+
 // Post Competition godoc
 //
 //	@Summary		Create one Competition and related data
-//	@Description	Post one new Competition data with new id, create UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup, and return the new Competition data
+//	@Description	Post one new Competition data with new id, create UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup, add host as admin of competition, and return the new Competition data
+//	@Description	zeroTime 0001-01-01T00:00:00+00:01
 //	@Tags			Competition
 //	@Accept			json
 //	@Produce		json
@@ -220,9 +283,22 @@ func PostCompetition(context *gin.Context) {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "When creating Competition, roundsNum must > 0"})
 		return
 	}
+	/*time*/
+	fmt.Printf("StartTime: %v, EndTime: %v\n", data.StartTime, data.EndTime)
+	fmt.Printf("zeroTime: %v\n", zeroTime)
+	if data.StartTime.Equal(zeroTime) && data.EndTime.Equal(zeroTime) {
+		data.StartTime = time.Now()
+		data.EndTime = time.Now()
+	} else if data.StartTime.Equal(zeroTime) {
+		data.StartTime = data.EndTime
+	} else if data.EndTime.Equal(zeroTime) {
+		data.EndTime = data.StartTime
+	} else if data.StartTime.After(data.EndTime) {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "When creating Competition, startTime must <= endTime"})
+		return
+	}
 	/*auto write Groups_num, minus one for 無組別*/
 	data.GroupsNum = -1
-	data.Date = time.Now()
 	data.CurrentPhase = 0
 	data.QualificationCurrentEnd = 0
 	newData, err := database.PostCompetition(data)
@@ -257,6 +333,14 @@ func PostCompetition(context *gin.Context) {
 	if response.AcceptNotChange(context, id, ischanged, "Update Competition UnassignedLaneId") {
 		return
 	}
+	/*add host as admin of participant*/
+	var newParticipant database.Participant
+	newParticipant.UserID = newData.HostID
+	newParticipant.CompetitionID = newId
+	newParticipant.Role = "admin"
+	newParticipant.Status = "approved"
+	database.AddParticipant(&newParticipant)
+	/*return new data*/
 	response.AcceptPrint(newId, fmt.Sprint(newData), "Competition")
 	context.IndentedJSON(http.StatusOK, newData)
 }
@@ -265,6 +349,7 @@ func PostCompetition(context *gin.Context) {
 //
 //	@Summary		update one Competition without GroupInfo
 //	@Description	Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId
+//	@Description	zeroTime 0001-01-01T00:00:00+00:01
 //	@Tags			Competition
 //	@Accept			json
 //	@Produce		json
@@ -300,8 +385,26 @@ func UpdateCompetition(context *gin.Context) {
 	oldData.CurrentPhase = data.CurrentPhase
 	oldData.QualificationCurrentEnd = data.QualificationCurrentEnd
 	oldData.Script = data.Script
+	/*time*/
+	var currentStartTime time.Time
+	var currentEndTime time.Time
+	if data.StartTime.Equal(zeroTime) {
+		currentStartTime = oldData.StartTime
+	} else {
+		currentStartTime = data.StartTime
+	}
+	if data.EndTime.Equal(zeroTime) {
+		currentEndTime = oldData.EndTime
+	} else {
+		currentEndTime = data.EndTime
+	}
+	if currentStartTime.After(currentEndTime) {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "When creating Competition, startTime must <= endTime"})
+		return
+	}
+	oldData.StartTime = currentStartTime
+	oldData.EndTime = currentEndTime
 	data = oldData
-
 	/*update and check change*/
 	isChanged, err := database.UpdateCompetition(id, data)
 	if response.ErrorInternalErrorTest(context, id, "Update Competition", err) {

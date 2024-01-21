@@ -4,10 +4,10 @@ definitions:
     properties:
       current_phase:
         type: integer
-      date:
-        type: string
       elimination_is_active:
         type: boolean
+      end_time:
+        type: string
       groups:
         items:
           $ref: '#/definitions/database.Group'
@@ -33,6 +33,8 @@ definitions:
       rounds_num:
         type: integer
       script:
+        type: string
+      start_time:
         type: string
       sub_title:
         type: string
@@ -201,9 +203,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Post one new Competition data with new id, create UnassignedGroup,
-        create Lanes and UnassignedLane which link to UnassignedGroup, and return
-        the new Competition data
+      description: |-
+        Post one new Competition data with new id, create UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup, add host as admin of competition, and return the new Competition data
+        zeroTime 0001-01-01T00:00:00+00:01
       parameters:
       - description: Competition
         in: body
@@ -256,7 +258,9 @@ paths:
       tags:
       - Competition
     get:
-      description: Get one Competition by id without GroupInfo
+      description: |-
+        Get one Competition by id without GroupInfo
+        zeroTime 0001-01-01T00:00:00+00:01
       parameters:
       - description: Competition ID
         in: path
@@ -275,6 +279,37 @@ paths:
           schema:
             type: string
       summary: Show one Competition without GroupInfo
+      tags:
+      - Competition
+  /api/competition/current/{head}/{tail}:
+    get:
+      description: |-
+        Get current Competitions, head and tail are the range of most recent competitions
+        For example, head = 0, tail = 10, then return the most recent 10 competitions
+        head >= 0, tail >= 0, head <= tail
+      parameters:
+      - description: head
+        in: query
+        name: head
+        required: true
+        type: integer
+      - description: tail
+        in: query
+        name: tail
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show current Competitions
       tags:
       - Competition
   /api/competition/currentphaseminus/{id}:
@@ -520,6 +555,42 @@ paths:
       summary: update one Competition Qualification Active to be true
       tags:
       - Competition
+  /api/competition/recent/{userid}/{head}/{tail}:
+    get:
+      description: |-
+        Get recent Competitions by User id, head and tail are the range of most recent competitions
+        For example, head = 0, tail = 10, then return the most recent 10 competitions
+        head >= 0, tail >= 0, head <= tail
+      parameters:
+      - description: User ID
+        in: query
+        name: userid
+        required: true
+        type: integer
+      - description: head
+        in: query
+        name: head
+        required: true
+        type: integer
+      - description: tail
+        in: query
+        name: tail
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Show recent Competitions dealing with User
+      tags:
+      - Competition
   /api/competition/teameliminationisactive/{id}:
     put:
       description: update one Competition Team Elimination Active to be true and create
@@ -545,8 +616,9 @@ paths:
     put:
       consumes:
       - application/json
-      description: Put whole new Competition and overwrite with the id but without
-        GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId
+      description: |-
+        Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId
+        zeroTime 0001-01-01T00:00:00+00:01
       parameters:
       - description: Competition ID
         in: path

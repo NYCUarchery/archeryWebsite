@@ -23,7 +23,7 @@ const docTemplate = `{
     "paths": {
         "/api/competition": {
             "post": {
-                "description": "Post one new Competition data with new id, create UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup, and return the new Competition data",
+                "description": "Post one new Competition data with new id, create UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup, add host as admin of competition, and return the new Competition data\nzeroTime 0001-01-01T00:00:00+00:01",
                 "consumes": [
                     "application/json"
                 ],
@@ -43,6 +43,48 @@ const docTemplate = `{
                         "schema": {
                             "type": "string"
                         }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/competition/current/{head}/{tail}": {
+            "get": {
+                "description": "Get current Competitions, head and tail are the range of most recent competitions\nFor example, head = 0, tail = 10, then return the most recent 10 competitions\nhead \u003e= 0, tail \u003e= 0, head \u003c= tail",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "Show current Competitions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "head",
+                        "name": "head",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "tail",
+                        "name": "tail",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -426,6 +468,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/competition/recent/{userid}/{head}/{tail}": {
+            "get": {
+                "description": "Get recent Competitions by User id, head and tail are the range of most recent competitions\nFor example, head = 0, tail = 10, then return the most recent 10 competitions\nhead \u003e= 0, tail \u003e= 0, head \u003c= tail",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "Show recent Competitions dealing with User",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "userid",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "head",
+                        "name": "head",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "tail",
+                        "name": "tail",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/competition/teameliminationisactive/{id}": {
             "put": {
                 "description": "update one Competition Team Elimination Active to be true and create all team elimination for groups",
@@ -457,7 +548,7 @@ const docTemplate = `{
         },
         "/api/competition/whole/{id}": {
             "put": {
-                "description": "Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId",
+                "description": "Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId\nzeroTime 0001-01-01T00:00:00+00:01",
                 "consumes": [
                     "application/json"
                 ],
@@ -516,7 +607,7 @@ const docTemplate = `{
         },
         "/api/competition/{id}": {
             "get": {
-                "description": "Get one Competition by id without GroupInfo",
+                "description": "Get one Competition by id without GroupInfo\nzeroTime 0001-01-01T00:00:00+00:01",
                 "produces": [
                     "application/json"
                 ],
@@ -4238,11 +4329,11 @@ const docTemplate = `{
                 "current_phase": {
                     "type": "integer"
                 },
-                "date": {
-                    "type": "string"
-                },
                 "elimination_is_active": {
                     "type": "boolean"
+                },
+                "end_time": {
+                    "type": "string"
                 },
                 "groups": {
                     "type": "array",
@@ -4281,6 +4372,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "script": {
+                    "type": "string"
+                },
+                "start_time": {
                     "type": "string"
                 },
                 "sub_title": {
