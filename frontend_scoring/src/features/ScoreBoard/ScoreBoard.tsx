@@ -9,7 +9,7 @@ import useGetGroupsWithPlayers from "../../QueryHooks/useGetGroupsWithPlayers";
 const gameInfos = [QualificationInfo, EliminationInfo, TeamEliminationInfo];
 
 export default function ScoreBoard() {
-  const boardShown = useSelector((state: any) => state.boardSwitch.boardShown);
+  const boardShown = useSelector((state: any) => state.boardMenu.boardShown);
   const phaseShown = useSelector(
     (state: any) => state.phaseListButton.phaseShown
   );

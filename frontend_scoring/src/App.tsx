@@ -20,7 +20,7 @@ import {
 function App() {
   const { competitionID } = useParams();
   const dispatch = useDispatch();
-  const boardShown = useSelector((state: any) => state.boardSwitch.boardShown);
+  const boardShown = useSelector((state: any) => state.boardMenu.boardShown);
   const { data: participant, isLoading } = useGetUserParticipant(
     Number(competitionID)
   );

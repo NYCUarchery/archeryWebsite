@@ -6,7 +6,7 @@ import AdminBoardTabs from "./AdminBoardTabs/AdminBoardTabs";
 import useGetGroupsWithPlayers from "../../../QueryHooks/useGetGroupsWithPlayers";
 
 function SubGamesBar() {
-  const boardShown = useSelector((state: any) => state.boardSwitch.boardShown);
+  const boardShown = useSelector((state: any) => state.boardMenu.boardShown);
   let content: any;
   const comepetitionID = useSelector((state: any) => state.game.competitionID);
   const { data: groups, isLoading } = useGetGroupsWithPlayers(comepetitionID);
