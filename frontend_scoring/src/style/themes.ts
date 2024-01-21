@@ -1,5 +1,6 @@
 import { createTheme } from "@mui/material";
 
+//下面看起來多餘的大括號是為了讓編譯器不要報錯，其實沒有它也可以正常編譯，原理可以參閱https://mui.com/material-ui/customization/theming中有關TS的部分。
 export const scoringTheme = createTheme(
   {},
   {

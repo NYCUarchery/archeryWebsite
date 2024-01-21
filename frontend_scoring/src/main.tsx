@@ -7,7 +7,7 @@ import { ReactQueryDevtools } from "react-query/devtools";
 import store from "./app/store.ts";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { ThemeProvider } from "@mui/material";
-import { scoringTheme } from "./style/Themes.ts";
+import { scoringTheme } from "./style/themes.ts";
 
 const queryClient = new QueryClient();
 const router = createBrowserRouter([
