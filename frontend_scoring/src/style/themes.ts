@@ -42,5 +42,14 @@ export const scoringTheme = createTheme(
         contrastText: "#ffffff",
       },
     },
+    components: {
+      MuiButtonGroup: {
+        styleOverrides: {
+          grouped: {
+            border: "none",
+          },
+        },
+      },
+    },
   }
 );

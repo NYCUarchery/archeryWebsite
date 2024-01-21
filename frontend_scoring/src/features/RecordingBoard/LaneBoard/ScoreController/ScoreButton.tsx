@@ -78,12 +78,15 @@ export default function ScoreButton({
       disabled={
         end === undefined || end?.is_confirmed || lastScore === undefined
       }
-      className="score_button "
       id={score.toString()}
       onClick={handleOnClick}
       variant="contained"
       color={buttonColor as unknown as undefined}
-      sx={{ boxShadow: "none" }}
+      sx={{
+        boxShadow: "none",
+        borderRadius: "0px",
+        width: "20%",
+      }}
     >
       {content}
     </Button>
