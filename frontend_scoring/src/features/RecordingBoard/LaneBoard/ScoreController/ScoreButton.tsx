@@ -3,6 +3,21 @@ import axios from "axios";
 import { useMutation, useQueryClient } from "react-query";
 import { findLastScoreInEnd } from "../util";
 
+const buttonColors = new Map([
+  [0, "black_score"],
+  [1, "white_score"],
+  [2, "white_score"],
+  [3, "black_score"],
+  [4, "black_score"],
+  [5, "blue_score"],
+  [6, "blue_score"],
+  [7, "red_score"],
+  [8, "red_score"],
+  [9, "yellow_score"],
+  [10, "yellow_score"],
+  [11, "yellow_score"],
+]);
+
 interface Props {
   selectedPlayer: any;
   end: any;
@@ -34,6 +49,7 @@ export default function ScoreButton({
     },
   });
   let content: string = "";
+  const buttonColor = buttonColors.get(score) as string;
 
   const lastScore = findLastScoreInEnd(end);
   const handleOnClick = () => {
@@ -62,9 +78,12 @@ export default function ScoreButton({
       disabled={
         end === undefined || end?.is_confirmed || lastScore === undefined
       }
-      className="score_button single_score"
+      className="score_button "
       id={score.toString()}
       onClick={handleOnClick}
+      variant="contained"
+      color={buttonColor as unknown as undefined}
+      sx={{ boxShadow: "none" }}
     >
       {content}
     </Button>
