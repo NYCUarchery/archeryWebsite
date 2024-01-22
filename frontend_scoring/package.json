@@ -12,7 +12,7 @@
   "dependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
-    "@mui/material": "^5.14.3",
+    "@mui/material": "^5.15.5",
     "@preact/signals": "^1.2.2",
     "@reduxjs/toolkit": "^1.9.5",
     "axios": "^1.5.1",

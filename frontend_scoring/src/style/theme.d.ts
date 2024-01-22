@@ -1,17 +1,17 @@
 declare module "@mui/material/styles" {
   interface Palette {
-    black_score: Palette["primary"];
-    white_score: Palette["primary"];
-    blue_score: Palette["primary"];
-    yellow_score: Palette["primary"];
-    red_score: Palette["primary"];
+    black_score?: Palette;
+    white_score?: Palette;
+    blue_score?: Palette;
+    yellow_score?: Palette;
+    red_score?: Palette;
   }
   interface PaletteOptions {
-    black_score?: PaletteOptions["primary"];
-    white_score?: PaletteOptions["primary"];
-    blue_score?: PaletteOptions["primary"];
-    yellow_score?: PaletteOptions["primary"];
-    red_score?: PaletteOptions["primary"];
+    black_score?: PaletteOptions;
+    white_score?: PaletteOptions;
+    blue_score?: PaletteOptions;
+    yellow_score?: PaletteOptions;
+    red_score?: PaletteOptions;
   }
 }
 
