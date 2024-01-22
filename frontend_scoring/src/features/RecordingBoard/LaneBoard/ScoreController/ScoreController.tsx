@@ -44,6 +44,7 @@ export default function ScoreController({
         className="score_button_group"
         variant="text"
         disabled={end?.is_confirmed}
+        disableElevation
       >
         {scoreButtons}
       </ButtonGroup>
