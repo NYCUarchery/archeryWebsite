@@ -30,7 +30,8 @@ export default function LaneBoard() {
     isLoadingGroups ||
     isLoadingLane ||
     isLoadingCompetition ||
-    player === undefined
+    player === undefined ||
+    lane === undefined
   )
     return <></>;
 
@@ -41,6 +42,7 @@ export default function LaneBoard() {
   let playerInfos = [];
   for (let i = 0; i < lane.players.length; i++) {
     const player = lane.players[i];
+    if (player === undefined) continue;
     playerInfos.push(
       <ToggleButton value={player.id} key={i} className="player_button">
         <PlayerInfoBar player={player}></PlayerInfoBar>
