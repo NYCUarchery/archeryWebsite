@@ -9,30 +9,21 @@ import TargetSigns from "./TargetSigns";
 import { setSelectedPlayerID } from "./ScoreController/scoreControllerSlice";
 import useGetCompetition from "../../../QueryHooks/useGetCompetition";
 import PreQualificationNote from "./PreQualificationNote";
+import { Group } from "../../../QueryHooks/types/Competition";
 
 export default function LaneBoard() {
   const dispatch = useDispatch();
   const competitionID = useSelector((state: any) => state.game.competitionID);
-  const { data: groups, isLoading: isLoadingGroups } =
-    useGetGroupsWithPlayers(competitionID);
-  const { data: competition, isLoading: isLoadingCompetition } =
-    useGetCompetition(competitionID);
+  const { data: groups } = useGetGroupsWithPlayers(competitionID);
+  const { data: competition } = useGetCompetition(competitionID);
   const participantID = useSelector((state: any) => state.user.userId);
   const player = findPlayer(groups, participantID);
-  const { data: lane, isLoading: isLoadingLane } = useGetLaneWithPlayersScores(
-    player?.lane_id
-  );
+  const { data: lane } = useGetLaneWithPlayersScores(player?.lane_id ?? 0);
   const selectedPlayerID = useSelector(
     (state: any) => state.scoreController.selectedPlayerID
   );
 
-  if (
-    isLoadingGroups ||
-    isLoadingLane ||
-    isLoadingCompetition ||
-    player === undefined ||
-    lane === undefined
-  )
+  if (player === undefined || lane === undefined || competition === undefined)
     return <></>;
 
   const handleOnChange = (_event: any, newID: number) => {
@@ -79,7 +70,7 @@ export default function LaneBoard() {
   );
 }
 
-const findPlayer = (groups: any[], participantID: number) => {
+const findPlayer = (groups: Group[] | undefined, participantID: number) => {
   if (groups === undefined) return;
   for (let i = 0; i < groups.length; i++) {
     for (let j = 0; j < groups[i].players.length; j++) {
