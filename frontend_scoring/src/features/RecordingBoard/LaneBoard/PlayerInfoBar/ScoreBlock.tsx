@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Avatar } from "@mui/material";
 import { useScoreColor } from "../../../../util/useScoreColor.tsx";
 
 interface Props {
@@ -23,22 +23,17 @@ export default function ScoreBlock(props: Props) {
   }
 
   return (
-    <Box
+    <Avatar
       sx={{
-        display: "flex",
         backgroundColor: scoreColor.backgroundColor,
         color: scoreColor.textColor,
         width: "20px",
         height: "20px",
         fontSize: "13px",
         marginBottom: "12px",
-        borderRadius: "50%",
-        justifyContent: "center",
-        alignItems: "center",
-        textAlign: "center",
       }}
     >
       {content}
-    </Box>
+    </Avatar>
   );
 }
