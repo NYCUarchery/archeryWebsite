@@ -3,12 +3,12 @@ import { useMutation, useQueryClient } from "react-query";
 
 import axios from "axios";
 import { findUnfilledScoreInEnd } from "../util";
+import { Player, Round, RoundEnd } from "../../../../QueryHooks/types/Lane";
 
 interface Props {
-  participantEnd: any;
-  selectedPlayer: any;
-  end: any;
-  round: any;
+  selectedPlayer: Player;
+  end: RoundEnd;
+  round: Round;
   isConfirmed: boolean;
 }
 const putIsConfirmed = ({ roundEndID, isConfirmed }: any) => {
@@ -28,7 +28,6 @@ const putScoreDeleted = ({ selectedPlayerID, round, end, lastScore }: any) => {
 export default function ControllButtonGroup({
   end,
   isConfirmed,
-  participantEnd,
   round,
   selectedPlayer,
 }: Props) {
@@ -51,20 +50,27 @@ export default function ControllButtonGroup({
   });
   const lastScore = findUnfilledScoreInEnd(end);
   const handleConfirmation = (_event: any) => {
-    toggleConfirmation({ roundEndID: participantEnd.id, isConfirmed });
+    toggleConfirmation({ roundEndID: end.id, isConfirmed });
   };
   const handledelete = (_event: any) => {
     deleteScore({ selectedPlayerID: selectedPlayer.id, round, end, lastScore });
   };
 
   return (
-    <ButtonGroup className="controll_button_group" fullWidth variant="text">
+    <ButtonGroup
+      className="controll_button_group"
+      fullWidth
+      variant="text"
+      disabled={end?.is_confirmed}
+      disableElevation
+    >
       <Button
         className="confirm_button"
         id={isConfirmed ? "confirmed" : "unconfirmed"}
         onClick={handleConfirmation}
+        disableRipple={isConfirmed}
       >
-        {isConfirmed ? "取消確認" : "確認"}
+        {isConfirmed ? "已確認" : "確認"}
       </Button>
       <Button
         disabled={

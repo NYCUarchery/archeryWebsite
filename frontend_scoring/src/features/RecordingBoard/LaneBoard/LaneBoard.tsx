@@ -60,10 +60,8 @@ export default function LaneBoard() {
         {playerInfos}
       </ToggleButtonGroup>
       <ScoreController
-        player={lane.players.find((p: any) => p.id === player.id)}
-        selectedPlayer={lane.players.find(
-          (p: any) => p.id === selectedPlayerID
-        )}
+        player={lane.players.find((p) => p.id === player.id)}
+        selectedPlayer={lane.players.find((p) => p.id === selectedPlayerID)}
         possibleScores={[11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]} // TODO: get possible scores from "server"
       ></ScoreController>
     </div>
