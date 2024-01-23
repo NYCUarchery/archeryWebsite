@@ -1,5 +1,5 @@
 import { ButtonGroup, Button } from "@mui/material";
-import { useMutation, useQueryClient } from "react-query";
+import { QueryClient, useMutation, useQueryClient } from "react-query";
 
 import axios from "axios";
 import { findUnfilledScoreInEnd } from "../util";
@@ -42,15 +42,15 @@ export default function ControllButtonGroup({
   });
   const { mutate: deleteScore } = useMutation(putScoreDeleted, {
     onSuccess: () => {
-      queryClient.invalidateQueries([
-        "laneWithPlayersScores",
-        selectedPlayer.lane_id,
-      ]);
+      invalidateLaneWithPlayerScoresQuery(queryClient, selectedPlayer);
     },
   });
   const lastScore = findUnfilledScoreInEnd(end);
   const handleConfirmation = (_event: any) => {
-    toggleConfirmation({ roundEndID: end.id, isConfirmed });
+    if (end.is_confirmed)
+      invalidateLaneWithPlayerScoresQuery(queryClient, selectedPlayer);
+    else toggleConfirmation({ roundEndID: end.id, isConfirmed });
+    console.log("handleConfirmation");
   };
   const handledelete = (_event: any) => {
     deleteScore({ selectedPlayerID: selectedPlayer.id, round, end, lastScore });
@@ -61,7 +61,6 @@ export default function ControllButtonGroup({
       className="controll_button_group"
       fullWidth
       variant="text"
-      disabled={end?.is_confirmed}
       disableElevation
     >
       <Button
@@ -83,4 +82,13 @@ export default function ControllButtonGroup({
       </Button>
     </ButtonGroup>
   );
+}
+function invalidateLaneWithPlayerScoresQuery(
+  queryClient: QueryClient,
+  selectedPlayer: Player
+) {
+  queryClient.invalidateQueries([
+    "laneWithPlayersScores",
+    selectedPlayer.lane_id,
+  ]);
 }
