@@ -5,9 +5,9 @@ import { useSelector } from "react-redux";
 
 export default function PlayerStatusBlock() {
   const competitionID = useSelector((state: any) => state.game.competitionID);
-  const { data: lanes, isLoading: isLoadingLanes } = useGetLanes(competitionID);
+  const { data: lanes } = useGetLanes(competitionID);
 
-  if (isLoadingLanes) {
+  if (!lanes) {
     return <></>;
   }
   let items = [];

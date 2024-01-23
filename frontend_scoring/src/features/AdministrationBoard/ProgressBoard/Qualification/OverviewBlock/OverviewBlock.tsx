@@ -5,8 +5,8 @@ import { useSelector } from "react-redux";
 
 export default function OverviewBlock() {
   const competitionID = useSelector((state: any) => state.game.competitionID);
-  const { data: competition, isLoading } = useGetCompetition(competitionID);
-  if (isLoading) return <></>;
+  const { data: competition } = useGetCompetition(competitionID);
+  if (!competition) return <></>;
 
   const currentEnd = competition.qualification_current_end;
 

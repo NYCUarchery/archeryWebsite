@@ -4,9 +4,10 @@ import ScoreBar from "./ScoreBar";
 import { useSelector } from "react-redux";
 import useGetCompetition from "../../../../QueryHooks/useGetCompetition";
 import { extractEnd, extractScores } from "../util";
+import { Player } from "../../../../QueryHooks/types/Lane";
 
 interface Props {
-  player: any;
+  player: Player;
 }
 
 export default function PlayerInfo({ player }: Props) {
