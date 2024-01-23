@@ -2,9 +2,10 @@ import { useSelector } from "react-redux";
 import useGetQualificationWithLanesPlayers from "../../../QueryHooks/useGetQualificationWithLanesPlayers";
 import { RankingInfoBar } from "./RankingInfoBar/RankingInfoBar";
 import { Grid } from "@mui/material";
+import { Group } from "../../../QueryHooks/types/Competition";
 
 interface Props {
-  groups: any;
+  groups: Group[];
 }
 
 export default function QualificationBoard({ groups }: Props) {
@@ -13,9 +14,10 @@ export default function QualificationBoard({ groups }: Props) {
   );
 
   const group = groups.find((g: any) => g.id === groupShown);
-  const { data: qualification, isLoading } =
-    useGetQualificationWithLanesPlayers(group?.id);
-  if (!group || isLoading) return <></>;
+  const { data: qualification } = useGetQualificationWithLanesPlayers(
+    group?.id ?? -1
+  );
+  if (!group) return <></>;
 
   let RankingInfoBars = [];
 
@@ -64,9 +66,4 @@ function ColumnTitle() {
       </Grid>
     </Grid>
   );
-}
-
-export interface RankingProps {
-  player: any;
-  isQudalified: boolean;
 }

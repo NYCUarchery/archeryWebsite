@@ -1,8 +1,12 @@
+import { Player } from "../../../../QueryHooks/types/Player";
 import useGetOnlyLane from "../../../../QueryHooks/useGetOnlyLane";
-import { RankingProps } from "../QualificationBoard";
 import { Grid } from "@mui/material";
+export interface Props {
+  player: Player;
+  isQudalified: boolean;
+}
 
-export function RankingInfoBar(rankingProps: RankingProps) {
+export function RankingInfoBar(rankingProps: Props) {
   let className: string = "scoreboard_row ranking_info_bar";
   const player = rankingProps.player;
   const { data: lane } = useGetOnlyLane(player.lane_id);

@@ -1,3 +1,5 @@
+import { Player } from "./Player";
+
 export interface Competition {
   id: number;
   title: string;
@@ -29,18 +31,4 @@ export interface Group {
   bow_type: string;
   group_index: number;
   players: Player[];
-}
-
-export interface Player {
-  id: number;
-  group_id: number;
-  lane_id: number;
-  participant_id: number;
-  name: string;
-  total_score: number;
-  shoot_off_score: number;
-  rank: number;
-  order: number;
-  rounds: null;
-  player_sets: null;
 }
