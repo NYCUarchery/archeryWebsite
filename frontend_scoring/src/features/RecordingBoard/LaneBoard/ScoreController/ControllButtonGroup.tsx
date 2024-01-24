@@ -1,14 +1,14 @@
 import { ButtonGroup, Button } from "@mui/material";
-import { useMutation, useQueryClient } from "react-query";
+import { QueryClient, useMutation, useQueryClient } from "react-query";
 
 import axios from "axios";
 import { findUnfilledScoreInEnd } from "../util";
+import { Player, Round, RoundEnd } from "../../../../QueryHooks/types/Lane";
 
 interface Props {
-  participantEnd: any;
-  selectedPlayer: any;
-  end: any;
-  round: any;
+  selectedPlayer: Player;
+  end: RoundEnd;
+  round: Round;
   isConfirmed: boolean;
 }
 const putIsConfirmed = ({ roundEndID, isConfirmed }: any) => {
@@ -28,7 +28,6 @@ const putScoreDeleted = ({ selectedPlayerID, round, end, lastScore }: any) => {
 export default function ControllButtonGroup({
   end,
   isConfirmed,
-  participantEnd,
   round,
   selectedPlayer,
 }: Props) {
@@ -43,28 +42,34 @@ export default function ControllButtonGroup({
   });
   const { mutate: deleteScore } = useMutation(putScoreDeleted, {
     onSuccess: () => {
-      queryClient.invalidateQueries([
-        "laneWithPlayersScores",
-        selectedPlayer.lane_id,
-      ]);
+      invalidateLaneWithPlayerScoresQuery(queryClient, selectedPlayer);
     },
   });
   const lastScore = findUnfilledScoreInEnd(end);
   const handleConfirmation = (_event: any) => {
-    toggleConfirmation({ roundEndID: participantEnd.id, isConfirmed });
+    if (end.is_confirmed)
+      invalidateLaneWithPlayerScoresQuery(queryClient, selectedPlayer);
+    else toggleConfirmation({ roundEndID: end.id, isConfirmed });
+    console.log("handleConfirmation");
   };
   const handledelete = (_event: any) => {
     deleteScore({ selectedPlayerID: selectedPlayer.id, round, end, lastScore });
   };
 
   return (
-    <ButtonGroup className="controll_button_group" fullWidth variant="text">
+    <ButtonGroup
+      className="controll_button_group"
+      fullWidth
+      variant="text"
+      disableElevation
+    >
       <Button
         className="confirm_button"
         id={isConfirmed ? "confirmed" : "unconfirmed"}
         onClick={handleConfirmation}
+        disableRipple={isConfirmed}
       >
-        {isConfirmed ? "取消確認" : "確認"}
+        {isConfirmed ? "已確認" : "確認"}
       </Button>
       <Button
         disabled={
@@ -77,4 +82,13 @@ export default function ControllButtonGroup({
       </Button>
     </ButtonGroup>
   );
+}
+function invalidateLaneWithPlayerScoresQuery(
+  queryClient: QueryClient,
+  selectedPlayer: Player
+) {
+  queryClient.invalidateQueries([
+    "laneWithPlayersScores",
+    selectedPlayer.lane_id,
+  ]);
 }
