@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setPlayerLane } from "../../../../GroupsBoard/groupsBoardSlice";
 import useGetGroupsWithPlayers from "../../../../../../QueryHooks/useGetGroupsWithPlayers";
 import PlayerSlot from "./PlayerSlot";
+import { Group } from "../../../../../../QueryHooks/types/Competition";
 
 interface Props {
   laneNum: number;
@@ -20,10 +21,9 @@ export default function LanePlayerList({ laneNum, laneID }: Props) {
   const groupShown = useSelector(
     (state: any) => state.gameStructureGroupMenu.groupShown
   );
-  const { data: groups, isLoading: isLoadingGroups } =
-    useGetGroupsWithPlayers(competitionID);
-  if (isLoadingGroups) return <></>;
-  const group = groups.find((e: any) => e.id == groupShown);
+  const { data: groups } = useGetGroupsWithPlayers(competitionID);
+  if (!groups) return <></>;
+  const group = groups.find((e: any) => e.id == groupShown) as Group;
 
   const handleClick = (_event: React.MouseEvent) => {
     dispatch(

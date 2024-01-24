@@ -1,9 +1,10 @@
 import { ToggleButton, ToggleButtonGroup } from "@mui/material";
 import { useSelector, useDispatch } from "react-redux";
 import { selectGroup } from "./groupSelectorSlice";
+import { Group } from "../../../../QueryHooks/types/Competition";
 
 interface Props {
-  groups: any[];
+  groups: Group[];
 }
 
 export default function GroupSelector({ groups }: Props) {

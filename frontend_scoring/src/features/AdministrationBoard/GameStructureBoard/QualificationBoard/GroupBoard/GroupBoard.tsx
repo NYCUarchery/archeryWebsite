@@ -9,8 +9,8 @@ export default function GroupBoard() {
     (state: any) => state.gameStructureGroupMenu.groupShown
   );
   const competitionID = useSelector((state: any) => state.game.competitionID);
-  const { data: lanes, isLoading: isLoadingLanes } = useGetLanes(competitionID);
-  if (isLoadingLanes) {
+  const { data: lanes } = useGetLanes(competitionID);
+  if (!lanes) {
     return <></>;
   }
 

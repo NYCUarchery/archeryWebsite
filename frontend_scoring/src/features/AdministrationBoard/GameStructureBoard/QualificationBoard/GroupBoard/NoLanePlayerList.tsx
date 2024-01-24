@@ -6,6 +6,7 @@ import { useQueryClient, useMutation } from "react-query";
 import useGetGroupsWithPlayers from "../../../../../QueryHooks/useGetGroupsWithPlayers";
 import axios from "axios";
 import { setSelectedPlayerId } from "./groupBoardSlice";
+import { Player } from "../../../../../QueryHooks/types/Player";
 const putPlayerLaneID = ({ playerID, laneID }: any) => {
   return axios.put(`/api/player/lane/${playerID}`, { lane_id: laneID });
 };
@@ -23,11 +24,9 @@ export default function NoLanePlayerList() {
     (state: any) => state.gameStructureGroupMenu.groupShown
   );
   const competitionID = useSelector((state: any) => state.game.competitionID);
-  const { data: competition, isLoading: isLoadingCompetition } =
-    useGetCompetition(competitionID);
+  const { data: competition } = useGetCompetition(competitionID);
 
-  const { data: groups, isLoading: isLoadingGroups } =
-    useGetGroupsWithPlayers(competitionID);
+  const { data: groups } = useGetGroupsWithPlayers(competitionID);
   const queryClient = useQueryClient();
   const { mutate: setPlayerLaneID } = useMutation(putPlayerLaneID, {
     onSuccess: () => {
@@ -40,17 +39,18 @@ export default function NoLanePlayerList() {
     if (selectedPlayerId === null) return;
     setPlayerLaneID({
       playerID: selectedPlayerId,
-      laneID: competition.unassigned_lane_id,
+      laneID: competition?.unassigned_lane_id,
     });
     setPlayerOrder({ playerID: selectedPlayerId, order: 0 });
     dispatch(setSelectedPlayerId(null));
   };
-  if (isLoadingGroups || isLoadingCompetition) {
+  if (!groups || !competition) {
     return <></>;
   }
 
   let items = [];
-  const players = groups.find((e: any) => e.id == groupShown).players;
+  const players = groups.find((e: any) => e.id == groupShown)
+    ?.players as Player[];
 
   for (let i = 0; i < players.length; i++) {
     if (players[i].lane_id !== competition.unassigned_lane_id) continue;

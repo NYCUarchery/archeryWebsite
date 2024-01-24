@@ -14,9 +14,9 @@ export default function ScoreBoard() {
     (state: any) => state.phaseListButton.phaseShown
   );
   const competitionID = useSelector((state: any) => state.game.competitionID);
-  const { data: groups, isLoading } = useGetGroupsWithPlayers(competitionID);
+  const { data: groups } = useGetGroupsWithPlayers(competitionID);
 
-  if (isLoading) return <></>;
+  if (!groups) return <></>;
   if (boardShown !== "score") {
     return null;
   }

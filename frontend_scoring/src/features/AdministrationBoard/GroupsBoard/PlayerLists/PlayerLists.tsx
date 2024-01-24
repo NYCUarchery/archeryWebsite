@@ -1,9 +1,10 @@
+import { Group } from "../../../../QueryHooks/types/Competition";
 import PlayerList from "./PlayerList/PlayerList";
 
 import { Box } from "@mui/material";
 
 interface Props {
-  groups: any[];
+  groups: Group[];
 }
 
 export default function PlayerLists({ groups }: Props) {
