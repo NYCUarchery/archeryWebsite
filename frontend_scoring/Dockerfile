@@ -5,8 +5,9 @@ WORKDIR /app
 COPY package.json .
 COPY package-lock.json .
 RUN npm ci
+RUN npm run build
 COPY . .
 
 EXPOSE 3000
 
-ENTRYPOINT npm run dev
+ENTRYPOINT npm run preview
