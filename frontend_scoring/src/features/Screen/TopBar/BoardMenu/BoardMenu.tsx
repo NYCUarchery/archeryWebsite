@@ -35,7 +35,7 @@ export default function boardMenu() {
     return () => {
       dispatch(initBoardMenu({ role: userRole, status: userStatus }));
     };
-  }, []);
+  }, [userRole, userStatus]);
   let indicatorCharacter: string = boardAbbreviations.get(boardShown) as string;
 
   const handleClose = () => {

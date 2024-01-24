@@ -45,7 +45,7 @@ services:
     build: ./reverse-proxy
     restart: always
     ports:
-      - 6969:80
+      - 80:80
     depends_on:
       - frontend-profile
       - frontend-scoring
