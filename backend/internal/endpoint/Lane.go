@@ -51,10 +51,10 @@ func GetLaneByID(context *gin.Context) {
 	context.IndentedJSON(200, data)
 }
 
-// Get One Lane with players, rounds, roundends, roundscores By ID godoc
+// Get One Lane with players, rounds, roundends, endscores By ID godoc
 //
-//	@Summary		Show one Lane with players, rounds, roundends, roundscores
-//	@Description	Get one Lane with players, rounds, roundends, roundscores by id
+//	@Summary		Show one Lane with players, rounds, roundends, endscores
+//	@Description	Get one Lane with players, rounds, roundends, endscores by id
 //	@Tags			Lane
 //	@Produce		json
 //	@Param			id	path	int	true	"Lane ID"

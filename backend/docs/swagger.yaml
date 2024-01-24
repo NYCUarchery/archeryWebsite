@@ -47,6 +47,15 @@ definitions:
       unassigned_lane_id:
         type: integer
     type: object
+  database.EndScore:
+    properties:
+      id:
+        type: integer
+      round_end_id:
+        type: integer
+      score:
+        type: integer
+    type: object
   database.Group:
     properties:
       bow_type:
@@ -147,24 +156,15 @@ definitions:
     type: object
   database.RoundEnd:
     properties:
+      end_scores:
+        items:
+          $ref: '#/definitions/database.EndScore'
+        type: array
       id:
         type: integer
       is_confirmed:
         type: boolean
       round_id:
-        type: integer
-      round_scores:
-        items:
-          $ref: '#/definitions/database.RoundScore'
-        type: array
-    type: object
-  database.RoundScore:
-    properties:
-      id:
-        type: integer
-      round_end_id:
-        type: integer
-      score:
         type: integer
     type: object
   database.User:
@@ -1212,7 +1212,7 @@ paths:
       - Lane
   /api/lane/scores/{id}:
     get:
-      description: Get one Lane with players, rounds, roundends, roundscores by id
+      description: Get one Lane with players, rounds, roundends, endscores by id
       parameters:
       - description: Lane ID
         in: path
@@ -1230,7 +1230,7 @@ paths:
           description: Bad Request
           schema:
             type: string
-      summary: Show one Lane with players, rounds, roundends, roundscores
+      summary: Show one Lane with players, rounds, roundends, endscores
       tags:
       - Lane
   /api/matchend/isconfirmed/{id}:
@@ -2063,7 +2063,7 @@ paths:
       - Participant
   /api/player/{id}:
     delete:
-      description: Delete one Player by id, delete related round, roundend, roundscore
+      description: Delete one Player by id, delete related round, roundend, endscore
         data, and playerNum minus one in lane
       parameters:
       - description: Player ID
@@ -2110,7 +2110,7 @@ paths:
   /api/player/{participantid}:
     post:
       description: Create one Player by participant id, create realeted rounds by
-        laneNum of competition, create 6 roundscores for each 6 roundends, UnassignedLane
+        laneNum of competition, create 6 endscores for each 6 roundends, UnassignedLane
         playerNum ++
       parameters:
       - description: Participant ID
@@ -2176,6 +2176,25 @@ paths:
           schema:
             type: string
       summary: Create dummy player
+      tags:
+      - Player
+  /api/player/endscore:
+    post:
+      consumes:
+      - application/json
+      description: Create one EndScore by roundend id
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Create one EndScore by RoundEnd ID
       tags:
       - Player
   /api/player/groupid/{playerid}/{groupid}:
@@ -2326,34 +2345,15 @@ paths:
       summary: Create one RoundEnd by Round ID
       tags:
       - Player
-  /api/player/roundscore:
-    post:
-      consumes:
-      - application/json
-      description: Create one RoundScore by roundend id
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Create one RoundScore by RoundEnd ID
-      tags:
-      - Player
-  /api/player/score/{roundscoreid}:
+  /api/player/score/{endscoreid}:
     put:
       consumes:
       - application/json
       description: Update one Player score by id
       parameters:
-      - description: RoundScore ID
+      - description: EndScore ID
         in: path
-        name: roundscoreid
+        name: endscoreid
         required: true
         type: integer
       produces:
@@ -2372,7 +2372,7 @@ paths:
       - Player
   /api/player/scores/{id}:
     get:
-      description: Get one Player with rounds, roundends, roundscores by id
+      description: Get one Player with rounds, roundends, endscores by id
       parameters:
       - description: Player ID
         in: path
