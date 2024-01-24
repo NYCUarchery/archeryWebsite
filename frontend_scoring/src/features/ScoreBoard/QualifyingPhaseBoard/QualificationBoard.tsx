@@ -17,7 +17,7 @@ export default function QualificationBoard({ groups }: Props) {
   const { data: qualification } = useGetQualificationWithLanesPlayers(
     group?.id ?? -1
   );
-  if (!group) return <></>;
+  if (!group || !qualification) return <></>;
 
   let RankingInfoBars = [];
 
