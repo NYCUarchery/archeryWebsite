@@ -45,6 +45,7 @@ export default function LaneBlock({ laneShell }: Props) {
       xs={2}
       sx={{
         border: "1px solid #d5d7dc",
+        height: "70px",
       }}
     >
       <Box

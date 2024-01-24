@@ -16,7 +16,7 @@ export default function PlayerStatusBlock() {
   }
 
   return (
-    <Grid container spacing={0}>
+    <Grid container sx={{ width: "100%" }} spacing={0}>
       {items}
     </Grid>
   );
