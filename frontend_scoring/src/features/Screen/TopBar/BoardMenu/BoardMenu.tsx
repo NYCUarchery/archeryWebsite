@@ -2,6 +2,7 @@ import { useDispatch } from "react-redux";
 import { initBoardMenu, selectBoard } from "./boardMenuSlice";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import useGetUserParticipant from "../../../../QueryHooks/useGetUserParticipant";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 
@@ -28,14 +29,20 @@ export default function boardMenu() {
   const avaliableBoards = useSelector(
     (state: any) => state.boardMenu.avaliableBoards
   );
-  const userStatus = useSelector((state: any) => state.user.userStatus);
-  const userRole = useSelector((state: any) => state.user.userRole);
+  const competitionID = useSelector((state: any) => state.game.competitionID);
+  const { data: participant } = useGetUserParticipant(Number(competitionID));
   const dispatch = useDispatch();
   useEffect(() => {
     return () => {
-      dispatch(initBoardMenu({ role: userRole, status: userStatus }));
+      dispatch(
+        initBoardMenu({
+          role: participant?.role ?? "viewer",
+          status: participant?.status ?? "pending",
+        })
+      );
     };
-  }, [userRole, userStatus]);
+  }, [participant]);
+
   let indicatorCharacter: string = boardAbbreviations.get(boardShown) as string;
 
   const handleClose = () => {
