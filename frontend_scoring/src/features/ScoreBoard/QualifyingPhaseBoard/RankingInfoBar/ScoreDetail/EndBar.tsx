@@ -1,13 +1,13 @@
 import { Box, Divider, Grid } from "@mui/material";
-import { RoundEnd } from "../../../../../QueryHooks/types/Player";
 import ScoreBlock from "./ScoreBlock";
+import { EndStats } from "../../../../../util/makePlayerStatistics";
 
 interface Props {
-  end: RoundEnd;
+  end: EndStats;
 }
 
 export default function EndBar({ end }: Props) {
-  const scores = end.round_scores.map((roundScore) => {
+  const scores = end.scores.map((score) => {
     return (
       <Grid
         item
@@ -19,13 +19,10 @@ export default function EndBar({ end }: Props) {
           width: "100%",
         }}
       >
-        <ScoreBlock score={roundScore.score} />
+        <ScoreBlock score={score} />
       </Grid>
     );
   });
-
-  const endScore = getEndScore(end);
-  if (endScore === -1) return <></>;
 
   return (
     <Box
@@ -58,19 +55,8 @@ export default function EndBar({ end }: Props) {
           width: "20%",
         }}
       >
-        {endScore}
+        {end.totalScore}
       </Box>
     </Box>
   );
-}
-
-function getEndScore(end: RoundEnd) {
-  let endScore = 0;
-  let isEndScoreValid = false;
-  end.round_scores.forEach((roundScore) => {
-    if (roundScore.score !== -1) isEndScoreValid = true;
-    endScore += roundScore.score === 11 ? 10 : roundScore.score;
-  });
-  if (!isEndScoreValid) return -1;
-  return endScore;
 }

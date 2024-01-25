@@ -1,11 +1,15 @@
 import { Grid, Divider } from "@mui/material";
 interface Props {
-  _10Num: number;
-  xNum: number;
+  totalTens: number;
+  totalXs: number;
   totalScore: number;
 }
 
-export default function StatisticRow({ _10Num, xNum, totalScore }: Props) {
+export default function StatisticRow({
+  totalTens,
+  totalXs,
+  totalScore,
+}: Props) {
   return (
     <Grid
       container
@@ -31,7 +35,7 @@ export default function StatisticRow({ _10Num, xNum, totalScore }: Props) {
         xs={1}
         sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
       >
-        {xNum}
+        {totalXs}
       </Grid>
       <Divider orientation="vertical" flexItem />
       <Grid
@@ -47,7 +51,7 @@ export default function StatisticRow({ _10Num, xNum, totalScore }: Props) {
         xs={1}
         sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
       >
-        {xNum + _10Num}
+        {totalTens + totalXs}
       </Grid>
       <Divider orientation="vertical" flexItem />
       <Grid
