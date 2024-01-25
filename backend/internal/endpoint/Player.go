@@ -436,6 +436,40 @@ func UpdatePlayerTotalScore(context *gin.Context, playerId uint, roundId uint, s
 	return !response.ErrorInternalErrorTest(context, roundId, "Update Player round total score", err)
 }
 
+// Update one Player TotalScore By ID godoc
+//
+//	@Summary		Update one Player total score by id
+//	@Description	Update one Player total score by id
+//	@Tags			Player
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path	int	true	"Player ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Router			/api/player/totalscore/{id} [put]
+func UpdatePlayerTotalScoreByplayerId(context *gin.Context) {
+	type UpdateTotalScoreData struct {
+		NewScore int `json:"new_score"`
+	}
+
+	var data UpdateTotalScoreData
+	err := context.BindJSON(&data)
+	if response.ErrorReceiveDataTest(context, 0, "Update Player total score", err) {
+		return
+	}
+	playerId := convert2uint(context, "id")
+	if response.ErrorIdTest(context, playerId, database.GetPlayerIsExist(playerId), "Player when updating total score") {
+		return
+	}
+
+	err = database.UpdatePlayerTotalScore(playerId, data.NewScore)
+	if response.ErrorInternalErrorTest(context, playerId, "Update Player total score", err) {
+		return
+	}
+
+	context.IndentedJSON(200, nil)
+}
+
 // Update one Player Score By ID godoc
 //
 //	@Summary		Update one Player score by id
