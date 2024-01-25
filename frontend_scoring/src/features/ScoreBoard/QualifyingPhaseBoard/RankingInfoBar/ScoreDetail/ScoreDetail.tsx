@@ -16,7 +16,7 @@ export default function ScoreDetail({ playerShell }: Props) {
   const { data: player } = useGetPlayerWithScores(playerShell.id);
   if (!player) return <></>;
   const playerStats = calculatePlayerStats(player) as PlayerStats;
-  console.log(playerStats);
+  console.log(playerStats, player);
   const rounds = playerStats.rounds?.map((round) => {
     return <RoundBlock round={round}></RoundBlock>;
   });
