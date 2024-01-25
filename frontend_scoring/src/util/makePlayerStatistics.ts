@@ -36,7 +36,6 @@ export function calculatePlayerStats(player: Player): PlayerStats | undefined {
       totalScore: 0,
       ends: [],
     };
-    if (!round.round_ends) return undefined;
     for (let j = 0; j < round.round_ends.length; j++) {
       const end = round.round_ends[j];
       const endStats: EndStats = {
