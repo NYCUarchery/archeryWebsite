@@ -3,25 +3,32 @@ import { useState } from "react";
 import useGetOnlyLane from "../../../../QueryHooks/useGetOnlyLane";
 import { Grid, Popover } from "@mui/material";
 import ScoreDetail from "./ScoreDetail/ScoreDetail";
+import useGetPlayerWithScores from "../../../../QueryHooks/useGetPlayerWithScores";
+import {
+  calculatePlayerStats,
+  PlayerStats,
+} from "../../../../util/calculatePlayerStatistics";
 export interface Props {
-  player: Player;
+  playerShell: Player;
   isQudalified: boolean;
 }
 
-export function RankingInfoBar({ player, isQudalified }: Props) {
+export function RankingInfoBar({ playerShell, isQudalified }: Props) {
   let className: string = "scoreboard_row ranking_info_bar";
   const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
   const open = Boolean(anchorEl);
-  const { data: lane } = useGetOnlyLane(player.lane_id);
-  if (!lane) return <></>;
+  const { data: lane } = useGetOnlyLane(playerShell.lane_id);
+  const { data: player } = useGetPlayerWithScores(playerShell.id);
+  if (!lane || !player) return <></>;
+  const playerStats = calculatePlayerStats(player) as PlayerStats;
+  const target = lane.lane_number + numberToAlphabet(playerShell.order);
   isQudalified ? (className += " qualified") : (className += " unqualified");
-  const target = lane.lane_number + numberToAlphabet(player.order);
-  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
+    setAnchorEl(event.currentTarget);
   };
   return (
     <>
@@ -42,7 +49,7 @@ export function RankingInfoBar({ player, isQudalified }: Props) {
           {player.name}
         </Grid>
         <Grid item xs={50}>
-          {player.total_score}
+          {playerStats.totalScore}
         </Grid>
       </Grid>
       <Popover
@@ -56,7 +63,7 @@ export function RankingInfoBar({ player, isQudalified }: Props) {
         }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <ScoreDetail playerShell={player}></ScoreDetail>
+        <ScoreDetail playerStats={playerStats}></ScoreDetail>
       </Popover>
     </>
   );

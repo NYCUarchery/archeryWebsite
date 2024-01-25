@@ -30,7 +30,7 @@ export default function QualificationBoard({ groups }: Props) {
     RankingInfoBars.push(
       <RankingInfoBar
         key={i}
-        player={group.players[i]}
+        playerShell={group.players[i]}
         isQudalified={isQudalified}
       ></RankingInfoBar>
     );
