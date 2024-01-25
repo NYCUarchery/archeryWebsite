@@ -1,6 +1,6 @@
 import { Box, Divider, Grid } from "@mui/material";
 import ScoreBlock from "./ScoreBlock";
-import { EndStats } from "../../../../../util/makePlayerStatistics";
+import { EndStats } from "../../../../../util/calculatePlayerStatistics";
 
 interface Props {
   end: EndStats;

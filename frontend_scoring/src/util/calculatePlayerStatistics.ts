@@ -46,6 +46,7 @@ export function calculatePlayerStats(player: Player): PlayerStats | undefined {
       };
       for (let k = 0; k < end.round_scores.length; k++) {
         const score = end.round_scores[k];
+        if (score.score === -1) continue;
         if (score.score === 10) {
           endStats.totalTens++;
         }
@@ -55,6 +56,8 @@ export function calculatePlayerStats(player: Player): PlayerStats | undefined {
         endStats.scores.push(score.score);
         endStats.totalScore += score.score === 11 ? 10 : score.score;
       }
+      if (endStats.scores.length === 0) continue;
+      endStats.scores.sort((a, b) => a - b);
       roundStats.totalXs += endStats.totalXs;
       roundStats.totalTens += endStats.totalTens;
       roundStats.totalScore += endStats.totalScore;
@@ -65,4 +68,6 @@ export function calculatePlayerStats(player: Player): PlayerStats | undefined {
     playerStats.totalScore += roundStats.totalScore;
     playerStats.rounds.push(roundStats);
   }
+
+  return playerStats;
 }

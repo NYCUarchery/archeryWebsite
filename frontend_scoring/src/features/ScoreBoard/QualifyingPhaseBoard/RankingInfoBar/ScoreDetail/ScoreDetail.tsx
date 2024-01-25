@@ -1,22 +1,13 @@
 import { Card, Divider } from "@mui/material";
-import { Player } from "../../../../../QueryHooks/types/Player";
 import RoundBlock from "./RoundBlock";
-import useGetPlayerWithScores from "../../../../../QueryHooks/useGetPlayerWithScores";
 import StatisticRow from "./StatisticRow";
-import {
-  PlayerStats,
-  calculatePlayerStats,
-} from "../../../../../util/makePlayerStatistics";
+import { PlayerStats } from "../../../../../util/calculatePlayerStatistics";
 
 interface Props {
-  playerShell: Player;
+  playerStats: PlayerStats;
 }
 
-export default function ScoreDetail({ playerShell }: Props) {
-  const { data: player } = useGetPlayerWithScores(playerShell.id);
-  if (!player) return <></>;
-  const playerStats = calculatePlayerStats(player) as PlayerStats;
-  console.log(playerStats, player);
+export default function ScoreDetail({ playerStats }: Props) {
   const rounds = playerStats.rounds?.map((round) => {
     return <RoundBlock round={round}></RoundBlock>;
   });

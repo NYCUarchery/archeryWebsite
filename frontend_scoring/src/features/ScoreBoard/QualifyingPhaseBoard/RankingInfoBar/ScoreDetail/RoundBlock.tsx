@@ -1,7 +1,7 @@
 import { Box, Divider } from "@mui/material";
 import EndBar from "./EndBar";
 import StatisticRow from "./StatisticRow";
-import { RoundStats } from "../../../../../util/makePlayerStatistics";
+import { RoundStats } from "../../../../../util/calculatePlayerStatistics";
 
 interface Props {
   round: RoundStats;
