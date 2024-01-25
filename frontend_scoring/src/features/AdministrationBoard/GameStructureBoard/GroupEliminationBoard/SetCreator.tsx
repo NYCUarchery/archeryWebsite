@@ -11,6 +11,7 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useMutation, useQueryClient } from "react-query";
 import axios from "axios";
+import { Player } from "../../../../QueryHooks/types/Player";
 
 const postPlayerSet = ({ eliminationID, name, playerIDs }: any) => {
   const body = {
@@ -44,7 +45,8 @@ export default function SetCreator({ eliminationID, teamSize }: Props) {
   const [fieldValues, setFieldValues] = useState([] as number[]);
 
   if (!groups) return <></>;
-  const players = groups.find((g: any) => g.id === groupID)?.players;
+  const players = groups.find((g: any) => g.id === groupID)
+    ?.players as Player[];
 
   let sets = [];
   for (let i = 0; i < players.length; i++) {

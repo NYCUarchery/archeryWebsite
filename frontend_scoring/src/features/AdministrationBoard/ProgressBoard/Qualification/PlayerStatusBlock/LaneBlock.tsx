@@ -3,6 +3,7 @@ import PlayerLight from "./PlayerLight";
 import { useSelector } from "react-redux";
 import useGetLaneWithPlayersScores from "../../../../../QueryHooks/useGetLaneWithPlayersScores";
 import useGetCompetition from "../../../../../QueryHooks/useGetCompetition";
+import { Player } from "../../../../../QueryHooks/types/Player";
 interface Props {
   laneShell: any;
 }
@@ -20,7 +21,8 @@ export default function LaneBlock({ laneShell }: Props) {
   let playerLights = [];
   if (currentRound !== 0 && currentRound <= competition.rounds_num) {
     for (let i = 0; i < lane.players.length; i++) {
-      const player = lane.players[i];
+      const player = lane.players[i] as Player;
+      if (!player.rounds) break;
       const round = player.rounds[currentRound - 1];
       const endIndex = (currentEnd - 1) % 6;
       console.log(round);
@@ -43,6 +45,7 @@ export default function LaneBlock({ laneShell }: Props) {
       xs={2}
       sx={{
         border: "1px solid #d5d7dc",
+        height: "70px",
       }}
     >
       <Box

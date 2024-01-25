@@ -11,6 +11,7 @@ export default function Qualification() {
         className="process_board"
         sx={{
           display: "flex",
+          width: "100%",
         }}
       >
         <Box sx={{ width: "300px", height: "100%" }}>

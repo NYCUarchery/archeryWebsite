@@ -1,6 +1,6 @@
 import { useDispatch } from "react-redux";
-import { initBoardMenu, selectBoard } from "./boardMenuSlice";
-import { useEffect, useState } from "react";
+import { selectBoard } from "./boardMenuSlice";
+import { useState } from "react";
 import { useSelector } from "react-redux";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
@@ -28,14 +28,8 @@ export default function boardMenu() {
   const avaliableBoards = useSelector(
     (state: any) => state.boardMenu.avaliableBoards
   );
-  const userStatus = useSelector((state: any) => state.user.userStatus);
-  const userRole = useSelector((state: any) => state.user.userRole);
   const dispatch = useDispatch();
-  useEffect(() => {
-    return () => {
-      dispatch(initBoardMenu({ role: userRole, status: userStatus }));
-    };
-  }, []);
+
   let indicatorCharacter: string = boardAbbreviations.get(boardShown) as string;
 
   const handleClose = () => {

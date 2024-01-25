@@ -4,7 +4,7 @@ import ScoreBar from "./ScoreBar";
 import { useSelector } from "react-redux";
 import useGetCompetition from "../../../../QueryHooks/useGetCompetition";
 import { extractEnd, extractScores } from "../util";
-import { Player } from "../../../../QueryHooks/types/Lane";
+import { Player } from "../../../../QueryHooks/types/Player";
 
 interface Props {
   player: Player;
@@ -18,7 +18,7 @@ export default function PlayerInfo({ player }: Props) {
   if (!player || !competition || !currentEnd) return <></>;
   const end = extractEnd(player, currentEnd);
   const scores = extractScores(end);
-  const isConfirmed = end.is_confirmed;
+  const isConfirmed = end?.is_confirmed ?? false;
 
   return (
     <div className="player_info_bar">

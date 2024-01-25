@@ -22,7 +22,7 @@ export default function LanesSetter() {
 
   const marks = [
     { value: 1, label: "1號靶道" },
-    { value: lanesNum, label: lanesNum + "號靶道" },
+    { value: lanesNum as number, label: lanesNum + "號靶道" },
   ];
 
   return (

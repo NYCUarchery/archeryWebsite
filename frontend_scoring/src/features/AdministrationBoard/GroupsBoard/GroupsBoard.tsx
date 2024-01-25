@@ -9,12 +9,8 @@ import DeletePlayerButton from "./DeletePlayerButton";
 
 export default function GroupsBoard() {
   const competitionID = useSelector((state: any) => state.game.competitionID);
-  const {
-    data: groups,
-    isError,
-    isLoading,
-  } = useGetGroupsWithPlayers(competitionID);
-  if (isLoading) {
+  const { data: groups, isError } = useGetGroupsWithPlayers(competitionID);
+  if (!groups) {
     return <h1>Is Loading...</h1>;
   }
   if (isError) {

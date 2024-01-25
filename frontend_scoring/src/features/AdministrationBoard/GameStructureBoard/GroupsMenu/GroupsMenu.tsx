@@ -7,7 +7,7 @@ import { useEffect } from "react";
 
 export default function GroupsMenu() {
   const competitionID = useSelector((state: any) => state.game.competitionID);
-  const { data: groups, isLoading } = useGetGroupsWithPlayers(competitionID);
+  const { data: groups } = useGetGroupsWithPlayers(competitionID);
   const dispatch = useDispatch();
 
   const isOpen = useSelector(
@@ -27,7 +27,7 @@ export default function GroupsMenu() {
     else dispatch(setGroupShown(groups[0].id));
   }, []);
 
-  if (isLoading) {
+  if (!groups) {
     return <></>;
   }
   let items = [];

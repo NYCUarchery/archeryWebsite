@@ -3,7 +3,7 @@ import { QueryClient, useMutation, useQueryClient } from "react-query";
 
 import axios from "axios";
 import { findUnfilledScoreInEnd } from "../util";
-import { Player, Round, RoundEnd } from "../../../../QueryHooks/types/Lane";
+import { Player, Round, RoundEnd } from "../../../../QueryHooks/types/Player";
 
 interface Props {
   selectedPlayer: Player;

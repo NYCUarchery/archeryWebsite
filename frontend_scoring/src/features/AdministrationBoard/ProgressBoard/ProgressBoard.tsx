@@ -52,6 +52,7 @@ export default function ProgressBoard() {
         className="process_board"
         sx={{
           display: "flex",
+          width: "100%",
         }}
       >
         {board}
