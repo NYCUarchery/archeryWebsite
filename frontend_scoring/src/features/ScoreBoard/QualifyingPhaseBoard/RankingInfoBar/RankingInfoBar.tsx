@@ -49,7 +49,7 @@ export function RankingInfoBar({ playerShell, isQudalified }: Props) {
           {player.name}
         </Grid>
         <Grid item xs={50}>
-          {player.total_score}
+          {playerStats.totalScore}
         </Grid>
       </Grid>
       <Popover

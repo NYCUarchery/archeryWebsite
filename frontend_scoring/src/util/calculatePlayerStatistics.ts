@@ -57,7 +57,7 @@ export function calculatePlayerStats(player: Player): PlayerStats | undefined {
         endStats.totalScore += score.score === 11 ? 10 : score.score;
       }
       if (endStats.scores.length === 0) continue;
-      endStats.scores.sort((a, b) => a - b);
+      endStats.scores.sort((a, b) => b - a);
       roundStats.totalXs += endStats.totalXs;
       roundStats.totalTens += endStats.totalTens;
       roundStats.totalScore += endStats.totalScore;
