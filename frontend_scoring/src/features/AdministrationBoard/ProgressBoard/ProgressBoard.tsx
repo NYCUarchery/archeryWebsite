@@ -19,10 +19,13 @@ export default function ProgressBoard() {
   const { data: competition, isLoading } =
     useGetSimpleCompetition(competitionID);
 
-  if (isLoading) return;
-  <>
-    <PhaseSelector></PhaseSelector>;<GroupsMenu></GroupsMenu>
-  </>;
+  if (isLoading)
+    return (
+      <>
+        <PhaseSelector></PhaseSelector>
+        <GroupsMenu></GroupsMenu>
+      </>
+    );
 
   const groups = competition.group_datas;
   const teamSize = teamSizes[phaseShown];

@@ -86,6 +86,8 @@ export default function ScoreButton({
         boxShadow: "none",
         borderRadius: "0px",
         width: "20%",
+        height: "3rem",
+        fontSize: "1rem",
       }}
     >
       {content}
