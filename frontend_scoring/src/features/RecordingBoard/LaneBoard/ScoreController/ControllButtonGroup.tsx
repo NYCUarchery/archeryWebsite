@@ -52,7 +52,6 @@ export default function ControllButtonGroup({
     if (end.is_confirmed)
       invalidateLaneWithPlayerScoresQuery(queryClient, selectedPlayer);
     else toggleConfirmation({ roundEndID: end.id, isConfirmed });
-    console.log("handleConfirmation");
   };
   const handledelete = (_event: any) => {
     deleteScore({ selectedPlayerID: selectedPlayer.id, round, end, lastScore });
@@ -71,6 +70,11 @@ export default function ControllButtonGroup({
         id={isConfirmed ? "confirmed" : "unconfirmed"}
         onClick={handleConfirmation}
         disableRipple={isConfirmed}
+        sx={{
+          height: "3rem",
+          fontSize: "1rem",
+          backgroundColor: isConfirmed ? "success.light" : "error.main",
+        }}
       >
         {isConfirmed ? "已確認" : "確認"}
       </Button>
@@ -82,6 +86,7 @@ export default function ControllButtonGroup({
         color="error"
         variant="contained"
         onClick={handledelete}
+        sx={{ height: "3rem", fontSize: "1rem" }}
       ></Button>
     </ButtonGroup>
   );
