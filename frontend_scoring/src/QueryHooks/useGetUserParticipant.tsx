@@ -2,17 +2,18 @@ import { useQuery } from "react-query";
 import axios from "axios";
 
 export default function useGetUserParticipant(competitionID: number) {
-  const { data: id, isLoading, isError } = uesGetUID();
+  const { data: id, isError } = uesGetUID();
 
   return useQuery(
-    "userParticipants",
+    "userParticipant",
     () => axios.get(`/api/participant/competition/user/${competitionID}/${id}`),
     {
-      enabled: !!id || !isLoading || isError,
-      staleTime: 3000000,
+      enabled: !!id || isError,
+      staleTime: Infinity,
+      retry: false,
       select: (data: any) => {
-        const participants = data?.data[0];
-        return participants as any;
+        const participant = data?.data[0];
+        return participant as any;
       },
     }
   );
@@ -20,7 +21,9 @@ export default function useGetUserParticipant(competitionID: number) {
 
 export function uesGetUID() {
   return useQuery("uid", () => axios.get(`/api/user/me`), {
-    staleTime: 3000000,
+    staleTime: Infinity,
+    retry: false,
+
     select: (data: any) => {
       const uid = data?.data.id;
       return uid as any;
