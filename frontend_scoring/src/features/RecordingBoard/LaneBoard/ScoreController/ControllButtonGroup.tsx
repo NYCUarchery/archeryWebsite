@@ -1,5 +1,7 @@
-import { ButtonGroup, Button } from "@mui/material";
 import { QueryClient, useMutation, useQueryClient } from "react-query";
+import { Button } from "@mui/material";
+import ButtonGroup from "@mui/material/ButtonGroup";
+import { Backspace } from "@mui/icons-material";
 
 import axios from "axios";
 import { findUnfilledScoreInEnd } from "../util";
@@ -64,7 +66,8 @@ export default function ControllButtonGroup({
       disableElevation
     >
       <Button
-        className="confirm_button"
+        color={isConfirmed ? "success" : "error"}
+        variant="contained"
         id={isConfirmed ? "confirmed" : "unconfirmed"}
         onClick={handleConfirmation}
         disableRipple={isConfirmed}
@@ -72,14 +75,14 @@ export default function ControllButtonGroup({
         {isConfirmed ? "已確認" : "確認"}
       </Button>
       <Button
+        startIcon={<Backspace />}
         disabled={
           end === undefined || end?.is_confirmed || lastScore === undefined
         }
-        className="cancel_button"
+        color="error"
+        variant="contained"
         onClick={handledelete}
-      >
-        &lt;=
-      </Button>
+      ></Button>
     </ButtonGroup>
   );
 }
