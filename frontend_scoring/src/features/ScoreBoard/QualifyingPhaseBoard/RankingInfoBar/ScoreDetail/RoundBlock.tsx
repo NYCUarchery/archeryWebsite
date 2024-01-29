@@ -7,8 +7,8 @@ interface Props {
   round: RoundStats;
 }
 export default function RoundBlock({ round }: Props) {
-  const ends = round.ends.map((end) => {
-    return <EndBar end={end}></EndBar>;
+  const ends = round.ends.map((end, index) => {
+    return <EndBar end={end} key={index}></EndBar>;
   });
 
   return (

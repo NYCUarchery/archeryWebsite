@@ -8,8 +8,8 @@ interface Props {
 }
 
 export default function ScoreDetail({ playerStats }: Props) {
-  const rounds = playerStats.rounds?.map((round) => {
-    return <RoundBlock round={round}></RoundBlock>;
+  const rounds = playerStats.rounds?.map((round, index) => {
+    return <RoundBlock key={index} round={round}></RoundBlock>;
   });
 
   return (
