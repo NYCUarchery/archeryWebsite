@@ -16,8 +16,9 @@ import { initParticipant } from "./features/States/parcitipantSlice";
 import { initUser } from "./features/States/userSlice";
 
 function App() {
-  const { competitionID } = useParams();
   const dispatch = useDispatch();
+  const { competitionID } = useParams();
+  dispatch(initialize({ competitionID }));
   const boardShown = useSelector((state: any) => state.boardMenu.boardShown);
   const { data: participant, isLoading: isParticipantLoading } =
     useGetSelfParticipant(Number(competitionID));
@@ -25,7 +26,6 @@ function App() {
   let board: any;
 
   if (isParticipantLoading || isUserLoading) return <></>;
-  dispatch(initialize({ competitionID }));
   if (user !== undefined) dispatch(initUser(user));
   if (participant !== undefined) {
     dispatch(initParticipant(participant));
