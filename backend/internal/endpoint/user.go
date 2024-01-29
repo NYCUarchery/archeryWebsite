@@ -81,7 +81,7 @@ func Register(c *gin.Context) {
 	}
 	user.InstitutionID = uint(insID)
 
-	err = database.CreateUser(user)
+	user, err = database.CreateUser(user)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"result": "db error"})
 		return

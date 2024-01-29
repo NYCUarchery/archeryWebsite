@@ -40,9 +40,9 @@ func FindByUsername(username string) User {
 }
 
 /* post new user data */
-func CreateUser(user User) error {
+func CreateUser(user User) (User, error) {
 	err := DB.Create(&user).Error
-	return err
+	return user, err
 }
 
 /*delete user by ID*/
