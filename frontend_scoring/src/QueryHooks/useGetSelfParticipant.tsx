@@ -1,11 +1,12 @@
 import { useQuery } from "react-query";
 import axios from "axios";
+import { uesGetUID } from "./uesGetUID";
 
-export default function useGetUserParticipant(competitionID: number) {
+export default function useGetSelfParticipant(competitionID: number) {
   const { data: id, isError } = uesGetUID();
 
   return useQuery(
-    "userParticipant",
+    "selfParticipant",
     () => axios.get(`/api/participant/competition/user/${competitionID}/${id}`),
     {
       enabled: !!id || isError,
@@ -17,16 +18,4 @@ export default function useGetUserParticipant(competitionID: number) {
       },
     }
   );
-}
-
-export function uesGetUID() {
-  return useQuery("uid", () => axios.get(`/api/user/me`), {
-    staleTime: Infinity,
-    retry: false,
-
-    select: (data: any) => {
-      const uid = data?.data.id;
-      return uid as any;
-    },
-  });
 }

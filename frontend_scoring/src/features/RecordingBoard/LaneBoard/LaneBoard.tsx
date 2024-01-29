@@ -16,14 +16,21 @@ export default function LaneBoard() {
   const competitionID = useSelector((state: any) => state.game.competitionID);
   const { data: groups } = useGetGroupsWithPlayers(competitionID);
   const { data: competition } = useGetCompetition(competitionID);
-  const participantID = useSelector((state: any) => state.user.userId);
-  const player = findPlayer(groups, participantID);
+  const participantId = useSelector(
+    (state: any) => state.participant.participantId
+  );
+  const player = findPlayer(groups, participantId);
   const { data: lane } = useGetLaneWithPlayersScores(player?.lane_id ?? 0);
   const selectedPlayerID = useSelector(
     (state: any) => state.scoreController.selectedPlayerID
   );
 
-  if (player === undefined || lane === undefined || competition === undefined)
+  if (
+    player === undefined ||
+    lane === undefined ||
+    competition === undefined ||
+    participantId === undefined
+  )
     return <></>;
 
   const handleOnChange = (_event: any, newID: number) => {
@@ -68,11 +75,11 @@ export default function LaneBoard() {
   );
 }
 
-const findPlayer = (groups: Group[] | undefined, participantID: number) => {
+const findPlayer = (groups: Group[] | undefined, participantId: number) => {
   if (groups === undefined) return;
   for (let i = 0; i < groups.length; i++) {
     for (let j = 0; j < groups[i].players.length; j++) {
-      if (groups[i].players[j].participant_id === participantID) {
+      if (groups[i].players[j].participant_id === participantId) {
         return groups[i].players[j];
       }
     }

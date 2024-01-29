@@ -9,36 +9,28 @@ import { useSelector } from "react-redux/es/hooks/useSelector";
 import { useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { initialize } from "./features/States/gameSlice";
-import useGetUserParticipant from "./QueryHooks/useGetUserParticipant";
-import { initUserStatus } from "./features/States/userSlice";
-import {
-  initUserId,
-  initUserName,
-  initUserRole,
-} from "./features/States/userSlice";
+import useGetSelfParticipant from "./QueryHooks/useGetSelfParticipant";
 import { initBoardMenu } from "./features/Screen/TopBar/BoardMenu/boardMenuSlice";
+import useGetSelfUser from "./QueryHooks/useGetSelfUser";
+import { initParticipant } from "./features/States/parcitipantSlice";
+import { initUser } from "./features/States/userSlice";
 
 function App() {
   const { competitionID } = useParams();
   const dispatch = useDispatch();
   const boardShown = useSelector((state: any) => state.boardMenu.boardShown);
-  const { data: participant, isLoading } = useGetUserParticipant(
-    Number(competitionID)
-  );
+  const { data: participant, isLoading: isParticipantLoading } =
+    useGetSelfParticipant(Number(competitionID));
+  const { data: user, isLoading: isUserLoading } = useGetSelfUser();
   let board: any;
 
-  if (isLoading) return <></>;
+  if (isParticipantLoading || isUserLoading) return <></>;
   dispatch(initialize({ competitionID }));
-  dispatch(initUserId(participant?.id ?? 0));
-  dispatch(initUserName(participant?.name ?? "訪客"));
-  dispatch(initUserRole(participant?.role ?? "viewer"));
-  dispatch(initUserStatus(participant?.status ?? "pending"));
-  dispatch(
-    initBoardMenu({
-      role: participant?.role ?? "viewer",
-      status: participant?.status ?? "pending",
-    })
-  );
+  if (user !== undefined) dispatch(initUser(user));
+  if (participant !== undefined) {
+    dispatch(initParticipant(participant));
+    dispatch(initBoardMenu(participant));
+  }
 
   switch (boardShown) {
     case "score":
