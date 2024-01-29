@@ -17,25 +17,26 @@ import (
 //	@Tags			User
 //	@Accept			json
 //	@Produce		json
-//	@Param			username		formData	string				true	"user's name"
-//	@Param			password		formData	string				true	"password"
-//	@Param			email			formData	string				true	"email"
-//	@Param			overview		formData	string				false	"overview"
-//	@Param			institutionID	formData	string				true	"institution ID"
+//	@Param			user_name		path	string				true	"user's name"
+//	@Param			real_name		path	string				false	"real name"
+//	@Param			password		path	string				true	"password"
+//	@Param			email			path	string				true	"email"
+//	@Param			overview		path	string				false	"overview"
+//	@Param			institutionID	path	string				true	"institution ID"
 //	@Success		200				{object}	database.User		"a user object"
 //	@Failure		400				{object}	response.Response	"username/email exists | empty username/password/email/institutionID | invalid info"
 //	@Failure		500				{object}	response.Response	"db error"
 //	@Router			/user [post]
 func Register(c *gin.Context) {
 	var user database.User
-	user.Username = c.PostForm("username")
+	user.UserName = c.PostForm("username")
 
-	if user.Username == "" {
+	if user.UserName == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "empty username"})
 		return
 	}
 
-	if findUser := database.FindByUsername(user.Username); findUser.ID != 0 {
+	if findUser := database.FindByUsername(user.UserName); findUser.ID != 0 {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "username exists"})
 		return
 	}

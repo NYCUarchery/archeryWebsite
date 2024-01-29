@@ -18,8 +18,8 @@ import (
 //	@Produce		json
 //	@Param			username	formData	string				true	"user's name"
 //	@Param			password	formData	string				true	"password"
-//	@Success		200			{object}	response.Response	"success | has loginned"
-//	@Failure		401			{object}	response.Response	"wrong username or password"
+//	@Success		200			string	string
+//	@Failure		401			string	string
 //	@Router			/session [post]
 func Login(c *gin.Context) {
 	username := c.PostForm("username")
@@ -34,17 +34,17 @@ func Login(c *gin.Context) {
 
 	// No user found
 	if user.ID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"result": "wrong username or password"})
+		c.JSON(http.StatusUnauthorized, gin.H{"result": "user not found"})
 		return
 	}
 
 	// Wrong password
 	if err := pkg.Compare(user.Password, password); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"result": "wrong username or password"})
+		c.JSON(http.StatusUnauthorized, gin.H{"result": "wrong password"})
 		return
 	}
 
-	pkg.SaveAuthSession(c, user.ID, user.Username)
+	pkg.SaveAuthSession(c, user.ID, user.UserName)
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
 

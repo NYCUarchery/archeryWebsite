@@ -173,13 +173,13 @@ definitions:
         type: string
       id:
         type: integer
-      institutionID:
+      institution_id:
         type: integer
-      name:
-        type: string
       overview:
         type: string
-      realName:
+      real_name:
+        type: string
+      user_name:
         type: string
     type: object
   response.Response:
@@ -2888,13 +2888,13 @@ paths:
       - application/json
       responses:
         "200":
-          description: success | has loginned
+          description: OK
           schema:
-            $ref: '#/definitions/response.Response'
+            type: string
         "401":
-          description: wrong username or password
+          description: Unauthorized
           schema:
-            $ref: '#/definitions/response.Response'
+            type: string
       summary: login
       tags:
       - Session
@@ -2918,26 +2918,30 @@ paths:
       description: add a user to db
       parameters:
       - description: user's name
-        in: formData
-        name: username
+        in: path
+        name: user_name
         required: true
         type: string
+      - description: real name
+        in: path
+        name: real_name
+        type: string
       - description: password
-        in: formData
+        in: path
         name: password
         required: true
         type: string
       - description: email
-        in: formData
+        in: path
         name: email
         required: true
         type: string
       - description: overview
-        in: formData
+        in: path
         name: overview
         type: string
       - description: institution ID
-        in: formData
+        in: path
         name: institutionID
         required: true
         type: string

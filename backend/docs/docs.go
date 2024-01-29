@@ -4031,15 +4031,15 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "success | has loginned",
+                        "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.Response"
+                            "type": "string"
                         }
                     },
                     "401": {
-                        "description": "wrong username or password",
+                        "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/response.Response"
+                            "type": "string"
                         }
                     }
                 }
@@ -4100,35 +4100,41 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "user's name",
-                        "name": "username",
-                        "in": "formData",
+                        "name": "user_name",
+                        "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "real name",
+                        "name": "real_name",
+                        "in": "path"
                     },
                     {
                         "type": "string",
                         "description": "password",
                         "name": "password",
-                        "in": "formData",
+                        "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "email",
                         "name": "email",
-                        "in": "formData",
+                        "in": "path",
                         "required": true
                     },
                     {
                         "type": "string",
                         "description": "overview",
                         "name": "overview",
-                        "in": "formData"
+                        "in": "path"
                     },
                     {
                         "type": "string",
                         "description": "institution ID",
                         "name": "institutionID",
-                        "in": "formData",
+                        "in": "path",
                         "required": true
                     }
                 ],
@@ -4587,16 +4593,16 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
-                "institutionID": {
+                "institution_id": {
                     "type": "integer"
-                },
-                "name": {
-                    "type": "string"
                 },
                 "overview": {
                     "type": "string"
                 },
-                "realName": {
+                "real_name": {
+                    "type": "string"
+                },
+                "user_name": {
                     "type": "string"
                 }
             }
