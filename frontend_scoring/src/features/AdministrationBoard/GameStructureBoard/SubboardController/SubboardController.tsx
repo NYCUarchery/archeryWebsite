@@ -5,7 +5,7 @@ import useGetCompetition from "../../../../QueryHooks/useGetCompetition";
 
 export default function SubboardController() {
   const competitionID = useSelector((state: any) => state.game.competitionID);
-  const { data: competition, isLoading } = useGetCompetition(competitionID);
+  const { data: competition } = useGetCompetition(competitionID);
   const dispatch = useDispatch();
   const subboardNames = useSelector(
     (state: any) => state.gameStructureBoard.subboardNames
@@ -13,7 +13,7 @@ export default function SubboardController() {
   const subboardShown = useSelector(
     (state: any) => state.gameStructureBoard.subboardShown
   );
-  if (isLoading) return <></>;
+  if (!competition) return <></>;
   const qualificationIsActive = competition.qualification_is_active;
   const eliminationIsActive = competition.elimination_is_active;
   const teamEliminationIsActive = competition.team_elimination_is_active;

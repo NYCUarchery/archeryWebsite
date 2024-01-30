@@ -1,5 +1,5 @@
 import { Avatar } from "@mui/material";
-import { useScoreColor } from "../../../../util/useScoreColor.tsx";
+import { useScoreColor } from "../../../../../util/useScoreColor";
 
 interface Props {
   score: number;
@@ -30,7 +30,6 @@ export default function ScoreBlock(props: Props) {
         width: "20px",
         height: "20px",
         fontSize: "13px",
-        marginBottom: "12px",
       }}
     >
       {content}

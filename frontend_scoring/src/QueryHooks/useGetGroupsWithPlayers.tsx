@@ -1,5 +1,6 @@
 import { useQuery } from "react-query";
 import axios from "axios";
+import { Group } from "./types/Competition";
 
 export default function useGetGroupsWithPlayers(competitionID: number) {
   return useQuery(
@@ -9,7 +10,7 @@ export default function useGetGroupsWithPlayers(competitionID: number) {
       staleTime: 2000,
       select: (data: any) => {
         const groups = data?.data.groups;
-        return groups as any;
+        return groups as Group[];
       },
     }
   );

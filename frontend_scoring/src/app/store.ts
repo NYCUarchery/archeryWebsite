@@ -1,4 +1,4 @@
-import { configureStore } from "@reduxjs/toolkit";
+import { Middleware, configureStore } from "@reduxjs/toolkit";
 import ReduxLogger from "redux-logger";
 import { groupListButtonReducer } from "../features/Screen/SubGameBar/GroupList/groupListButtonSlice";
 import { phaseListButtonReducer } from "../features/Screen/SubGameBar/PhaseList/phaseListButtonSlice";
@@ -37,7 +37,7 @@ const store = configureStore({
     qualificationStructureSetter: qualificationStructureSetterReducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(ReduxLogger),
+    getDefaultMiddleware().concat(ReduxLogger as Middleware),
 });
 
 export default store;

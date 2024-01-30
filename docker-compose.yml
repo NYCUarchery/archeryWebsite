@@ -1,18 +1,20 @@
-version: '3.9'
+version: "3.9"
 
 services:
   frontend-scoring:
     build: ./frontend_scoring
     restart: always
-    volumes: 
+    volumes:
       - ./frontend_scoring:/app
       - /app/node_modules
+      - /app/dist
   frontend-profile:
     build: ./frontend_profile
     restart: always
-    volumes: 
+    volumes:
       - ./frontend_profile:/app
       - /app/node_modules
+      - /app/dist
   mysql:
     image: mysql:8
     environment:

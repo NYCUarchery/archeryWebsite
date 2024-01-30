@@ -1,5 +1,7 @@
-export const extractEnd = (player: any, currentEnd: number) => {
-  if (player === undefined) return;
+import { Player, RoundEnd } from "../../../QueryHooks/types/Player";
+
+export const extractEnd = (player: Player, currentEnd: number) => {
+  if (!player || !player.rounds) return;
 
   const currentRound = Math.ceil(currentEnd / 6);
   const round = player.rounds[currentRound - 1];
@@ -8,14 +10,17 @@ export const extractEnd = (player: any, currentEnd: number) => {
 
   return end;
 };
-export const extractround = (player: any, currentEnd: number) => {
-  if (player === undefined) return;
+export const extractround = (
+  player: Player | undefined,
+  currentEnd: number
+) => {
+  if (!player || !player.rounds) return;
   const currentRound = Math.ceil(currentEnd / 6);
   const round = player.rounds[currentRound - 1];
 
   return round;
 };
-export const extractScores = (end: any) => {
+export const extractScores = (end: RoundEnd | undefined) => {
   if (end === undefined) return [];
   let scores = [];
   for (let i = 0; i < end.round_scores.length; i++) {
@@ -24,14 +29,14 @@ export const extractScores = (end: any) => {
   return scores;
 };
 
-export const findLastScoreInEnd = (end: any) => {
+export const findLastScoreInEnd = (end: RoundEnd | undefined) => {
   if (end === undefined) return;
   for (let i = 0; i < end.round_scores.length; i++) {
     if (end.round_scores[i].score === -1) return end.round_scores[i];
   }
   return undefined;
 };
-export const findUnfilledScoreInEnd = (end: any) => {
+export const findUnfilledScoreInEnd = (end: RoundEnd) => {
   if (end === undefined) return;
   for (let i = 0; i < end.round_scores.length; i++) {
     if (end.round_scores[i].score === -1) return end.round_scores[i - 1];

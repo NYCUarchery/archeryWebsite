@@ -39,7 +39,10 @@ func playerRouter(api *gin.RouterGroup) {
 	api.PUT("/group/:id", endpoint.UpdataPlayerGroupId)
 	api.PUT("/order/:id", endpoint.UpdatePlayerOrder)
 	api.PUT("/isconfirmed/:id", endpoint.UpdatePlayerIsConfirmed)
-	api.PUT("/endscore/:id", endpoint.UpdatePlayerScore)
+
+	api.PUT("/totalscore/:id", endpoint.UpdatePlayerTotalScoreByplayerId)
+  api.PUT("/endscore/:id", endpoint.UpdatePlayerScore)
+
 	api.PUT("/shootoffscore/:id", endpoint.UpdatePlayerShootoffScore)
 	api.DELETE("/:id", endpoint.DeletePlayer)
 

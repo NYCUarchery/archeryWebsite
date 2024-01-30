@@ -2,6 +2,7 @@ import { Slider } from "@mui/material";
 import { useSelector, useDispatch } from "react-redux";
 import useGetGroupsWithPlayers from "../../../../../QueryHooks/useGetGroupsWithPlayers";
 import { setAdvancingNum } from "./qualificationStructureSetterSlice";
+import { Group } from "../../../../../QueryHooks/types/Competition";
 
 export default function AdvancingNumSetter() {
   const dispatch = useDispatch();
@@ -12,14 +13,13 @@ export default function AdvancingNumSetter() {
     (state: any) => state.gameStructureGroupMenu.groupShown
   );
   const competitionID = useSelector((state: any) => state.game.competitionID);
-  const { data: groups, isLoading: isLoadingGroups } =
-    useGetGroupsWithPlayers(competitionID);
+  const { data: groups } = useGetGroupsWithPlayers(competitionID);
 
-  if (isLoadingGroups) {
+  if (!groups) {
     return <></>;
   }
 
-  const group = groups.find((e: any) => e.id == groupShown);
+  const group = groups.find((e: any) => e.id == groupShown) as Group;
 
   const marks = [
     { value: 1, label: "1人晉級" },

@@ -2456,6 +2456,31 @@ paths:
       summary: Update one Player shootoffScore by id
       tags:
       - Player
+  /api/player/totalscore/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Update one Player total score by id
+      parameters:
+      - description: Player ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+      summary: Update one Player total score by id
+      tags:
+      - Player
   /api/qualification/{id}:
     get:
       description: Get one Qualification by id

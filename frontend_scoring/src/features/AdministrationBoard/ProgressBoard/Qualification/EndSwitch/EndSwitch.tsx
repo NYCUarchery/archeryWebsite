@@ -33,8 +33,8 @@ export default function EndSwitch() {
     },
   });
   if (isLoading) return <></>;
-  const currentEnd = competition?.qualification_current_end;
-  const roundsNum = competition?.rounds_num;
+  const currentEnd = competition?.qualification_current_end as number;
+  const roundsNum = competition?.rounds_num as number;
 
   return (
     <ButtonGroup fullWidth>

@@ -1,5 +1,6 @@
 import { useQuery } from "react-query";
 import axios from "axios";
+import { Player } from "./types/Player";
 
 export default function useGetPlayerWithScores(playerID: number) {
   return useQuery(
@@ -9,7 +10,7 @@ export default function useGetPlayerWithScores(playerID: number) {
       staleTime: 2000,
       select: (data: any) => {
         const player = data?.data;
-        return player as any;
+        return player as Player;
       },
     }
   );

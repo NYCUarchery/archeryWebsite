@@ -17,8 +17,8 @@ export default function ScoreController({
   possibleScores,
 }: Props) {
   const competitionID = useSelector((state: any) => state.game.competitionID);
-  const { data: competition, isLoading } = useGetCompetition(competitionID);
-  if (isLoading) return <></>;
+  const { data: competition } = useGetCompetition(competitionID);
+  if (!competition) return <></>;
   console.log(player);
   const currentEnd = competition.qualification_current_end;
   const round = extractround(selectedPlayer, currentEnd);
@@ -26,6 +26,7 @@ export default function ScoreController({
   const participantEnd = extractEnd(player, currentEnd);
   let scoreButtons = [];
 
+  if (!round || !end || !participantEnd) return <></>;
   for (let i = 0; i < possibleScores.length; i++) {
     scoreButtons.push(
       <ScoreButton
@@ -49,11 +50,10 @@ export default function ScoreController({
         {scoreButtons}
       </ButtonGroup>
       <ControllButtonGroup
-        participantEnd={participantEnd}
         selectedPlayer={selectedPlayer}
         round={round}
         end={end}
-        isConfirmed={participantEnd?.is_confirmed}
+        isConfirmed={end?.is_confirmed ?? false}
       ></ControllButtonGroup>
     </>
   );

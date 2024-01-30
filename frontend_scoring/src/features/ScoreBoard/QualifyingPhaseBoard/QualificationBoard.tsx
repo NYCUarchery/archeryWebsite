@@ -1,13 +1,11 @@
-import RankColumnElement from "./ColumnElements/RankColumnElement";
-import TargetColumnElement from "./ColumnElements/TargetColumnElement";
-import NameColumnElement from "./ColumnElements/NameColumnElement";
-import ScoreColumnElement from "./ColumnElements/ScoreColumnElement";
 import { useSelector } from "react-redux";
 import useGetQualificationWithLanesPlayers from "../../../QueryHooks/useGetQualificationWithLanesPlayers";
-import useGetOnlyLane from "../../../QueryHooks/useGetOnlyLane";
+import { RankingInfoBar } from "./RankingInfoBar/RankingInfoBar";
+import { Grid } from "@mui/material";
+import { Group } from "../../../QueryHooks/types/Competition";
 
 interface Props {
-  groups: any;
+  groups: Group[];
 }
 
 export default function QualificationBoard({ groups }: Props) {
@@ -16,9 +14,10 @@ export default function QualificationBoard({ groups }: Props) {
   );
 
   const group = groups.find((g: any) => g.id === groupShown);
-  const { data: qualification, isLoading } =
-    useGetQualificationWithLanesPlayers(group?.id);
-  if (!group || isLoading) return <></>;
+  const { data: qualification } = useGetQualificationWithLanesPlayers(
+    group?.id ?? -1
+  );
+  if (!group || !qualification) return <></>;
 
   let RankingInfoBars = [];
 
@@ -31,7 +30,7 @@ export default function QualificationBoard({ groups }: Props) {
     RankingInfoBars.push(
       <RankingInfoBar
         key={i}
-        player={group.players[i]}
+        playerShell={group.players[i]}
         isQudalified={isQudalified}
       ></RankingInfoBar>
     );
@@ -39,7 +38,7 @@ export default function QualificationBoard({ groups }: Props) {
 
   return (
     <div className="qualification_board">
-      <ColumnTitle></ColumnTitle>
+      <ColumnTitle />
       {RankingInfoBars}
     </div>
   );
@@ -47,51 +46,24 @@ export default function QualificationBoard({ groups }: Props) {
 
 function ColumnTitle() {
   return (
-    <div className="scoreboard_row column_title">
-      <RankColumnElement content="排名"></RankColumnElement>
-      <TargetColumnElement content="靶號"></TargetColumnElement>
-      <NameColumnElement content="姓名"></NameColumnElement>
-      <ScoreColumnElement content="分數"></ScoreColumnElement>
-    </div>
+    <Grid
+      container
+      columns={90}
+      className="scoreboard_row column_title"
+      sx={{ alignItems: "center", height: "23px" }}
+    >
+      <Grid item xs={10}>
+        排名
+      </Grid>
+      <Grid item xs={10}>
+        靶號
+      </Grid>
+      <Grid item xs={20}>
+        姓名
+      </Grid>
+      <Grid item xs={50}>
+        分數
+      </Grid>
+    </Grid>
   );
 }
-
-interface RankingProps {
-  player: any;
-  isQudalified: boolean;
-}
-
-function RankingInfoBar(rankingProps: RankingProps) {
-  let className: string = "scoreboard_row ranking_info_bar";
-  const player = rankingProps.player;
-  const { data: lane, isLoading } = useGetOnlyLane(player.lane_id);
-  if (!lane || isLoading) return <></>;
-  rankingProps.isQudalified
-    ? (className += " qualified")
-    : (className += " unqualified");
-  const target = lane.lane_number + numberToAlphabet(player.order);
-  return (
-    <div className={className}>
-      {
-        <>
-          <RankColumnElement
-            content={rankingProps.player.rank}
-          ></RankColumnElement>
-          <TargetColumnElement content={target}></TargetColumnElement>
-          <NameColumnElement
-            content={rankingProps.player.name}
-          ></NameColumnElement>
-          <ScoreColumnElement
-            content={rankingProps.player.total_score}
-          ></ScoreColumnElement>
-        </>
-      }
-    </div>
-  );
-}
-
-const numberToAlphabet = (num: number) => {
-  num--;
-  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  return alphabet[num];
-};

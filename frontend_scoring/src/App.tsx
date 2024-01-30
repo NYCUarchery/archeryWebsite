@@ -16,6 +16,7 @@ import {
   initUserName,
   initUserRole,
 } from "./features/States/userSlice";
+import { initBoardMenu } from "./features/Screen/TopBar/BoardMenu/boardMenuSlice";
 
 function App() {
   const { competitionID } = useParams();
@@ -32,6 +33,12 @@ function App() {
   dispatch(initUserName(participant?.name ?? "訪客"));
   dispatch(initUserRole(participant?.role ?? "viewer"));
   dispatch(initUserStatus(participant?.status ?? "pending"));
+  dispatch(
+    initBoardMenu({
+      role: participant?.role ?? "viewer",
+      status: participant?.status ?? "pending",
+    })
+  );
 
   switch (boardShown) {
     case "score":
