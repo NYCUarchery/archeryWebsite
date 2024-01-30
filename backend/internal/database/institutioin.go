@@ -35,3 +35,8 @@ func AllInstitutionInfo() (ins []Institution, err error) {
 	err = DB.Find(&ins).Error
 	return
 }
+
+func DeleteInstitutionByID(id uint) (err error) {
+	err = DB.Where("id = ?", id).Delete(&Institution{}).Error
+	return err
+}

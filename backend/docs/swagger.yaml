@@ -2661,6 +2661,34 @@ paths:
       tags:
       - Institution
   /institution/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete an institution from db
+      parameters:
+      - description: institution's id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: invalid id
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: institution not found
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: delete an institution
+      tags:
+      - Institution
     get:
       consumes:
       - application/json

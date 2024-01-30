@@ -194,5 +194,6 @@ func profileRouter(api *gin.RouterGroup) {
 		insr.POST("/", endpoint.CreateInstitution)
 		insr.GET("/:id", endpoint.InstitutionInfo)
 		insr.GET("/", endpoint.AllInstitutionInfo)
+		insr.DELETE("/:id", endpoint.DeleteInstitution)
 	}
 }

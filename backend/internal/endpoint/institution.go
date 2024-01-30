@@ -102,4 +102,38 @@ func AllInstitutionInfo(c *gin.Context) {
 	c.JSON(http.StatusOK, institutions)
 }
 
+// DeleteInstitution godoc
+//
+//	@Summary		delete an institution
+//	@Description	delete an institution from db
+//	@Tags			Institution
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string				true	"institution's id"
+//	@Success		200	{object}	response.Response	"success"
+//	@Failure		400	{object}	response.Response	"invalid id"
+//	@Failure		404	{object}	response.Response	"institution not found"
+//	@Router			/institution/{id} [delete]
+func DeleteInstitution(c *gin.Context) {
+	idstr := c.Param("id")
+	id, err := strconv.Atoi(idstr)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "invalid id"})
+		return
+	}
+
+	if !database.GetInstitutionIsExist(uint(id)) {
+		c.JSON(http.StatusNotFound, gin.H{"result": "institution not found"})
+		return
+	}
+
+	err = database.DeleteInstitutionByID(uint(id))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"result": "DB error"})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"result": "success"})
+}
+
 // response.Response{data=[]database.Institution}
