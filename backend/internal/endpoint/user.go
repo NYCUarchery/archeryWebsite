@@ -168,18 +168,67 @@ func ModifyInfo(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
 
-// if err := pkg.Compare(user.Password, oriPassword); err != nil {
-// 	c.JSON(http.StatusForbidden, gin.H{"result": "wrong original password"})
-// 	return
-// }
+// ModifyPassword godoc
+//
+//	@Summary		modify user's password
+//	@Description	modify user's password
+//	@Description	cannot change other's password
+//	@Description	original password cannot be empty
+//	@Description	new password cannot be empty
+//	@Description	original password must be correct
+//	@Description	new password cannot be the same as original password
+//	@Tags			User
+//	@Accept			json
+//	@Produce		json
+//	@Param			id			path		string								true	"user's id"
+//	@Param			ModifyInfo	body		endpoint.ModifyAccountPasswordInfo	true	"modified password information"
+//	@Success		200			{object}	response.Response					"success"
+//	@Failure		400			{object}	response.Response					"empty/invalid user id | invalid modified information"
+//	@Failure		403			{object}	response.Response					"cannot change other's password | wrong original password | original & modified passwords are the same"
+//	@Failure		500			{object}	response.Response					"internal db error"
+//	@Router			/user/password/{id} [put]
+func ModifyPassword(c *gin.Context) {
+	// check id
+	userId := convert2uint(c, "id")
+	if response.ErrorIdTest(c, userId, database.GetUserIsExist(userId), "user id when modify password") {
+		return
+	}
+	if pkg.QuerySession(c, "id") != userId {
+		c.JSON(http.StatusForbidden, gin.H{"result": "cannot change other's password"})
+		return
+	}
+	// get user
+	user, _ := database.FindByUserID(userId)
+	var modifyInfo ModifyAccountPasswordInfo
+	if err := c.ShouldBindJSON(&modifyInfo); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "invalid info"})
+		return
+	}
+	// check original password
+	if modifyInfo.OriginalPassword == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "empty original password"})
+		return
+	}
+	if err := pkg.Compare(user.Password, modifyInfo.OriginalPassword); err != nil {
+		c.JSON(http.StatusForbidden, gin.H{"result": "wrong original password"})
+		return
+	}
+	// check new password
+	if modifyInfo.NewPassword == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "empty new password"})
+		return
+	}
+	if err := pkg.Compare(user.Password, modifyInfo.NewPassword); err == nil {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "original & modified passwords are the same"})
+		return
+	}
+	// modify
+	user.Password = pkg.EncryptPassword(modifyInfo.NewPassword)
 
-// if modPassword != "" {
-// 	if err := pkg.Compare(user.Password, modPassword); err == nil {
-// 		c.JSON(http.StatusBadRequest, gin.H{"result": "original & modified passwords are the same"})
-// 		return
-// 	}
-// 	user.Password = pkg.EncryptPassword(modPassword)
-// }
+	database.SaveUserInfo(&user)
+
+	c.JSON(http.StatusOK, gin.H{"result": "success"})
+}
 
 // GetUserID godoc
 //

@@ -164,6 +164,7 @@ func profileRouter(api *gin.RouterGroup) {
 	{
 		userssr.POST("/", endpoint.Register)
 		userssr.PUT("/:id", pkg.AuthSessionMiddleware(), endpoint.ModifyInfo)
+		userssr.PUT("/password/:id", pkg.AuthSessionMiddleware(), endpoint.ModifyPassword)
 		userssr.GET("/me", pkg.AuthSessionMiddleware(), endpoint.GetUserID)
 		userssr.GET("/:id", endpoint.UserInfo)
 	}

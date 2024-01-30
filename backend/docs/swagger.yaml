@@ -204,6 +204,13 @@ definitions:
       user_name:
         type: string
     type: object
+  endpoint.ModifyAccountPasswordInfo:
+    properties:
+      new_password:
+        type: string
+      original_password:
+        type: string
+    type: object
   response.Response:
     properties:
       result:
@@ -3058,6 +3065,52 @@ paths:
                   type: integer
               type: object
       summary: get my uid
+      tags:
+      - User
+  /user/password/{id}:
+    put:
+      consumes:
+      - application/json
+      description: |-
+        modify user's password
+        cannot change other's password
+        original password cannot be empty
+        new password cannot be empty
+        original password must be correct
+        new password cannot be the same as original password
+      parameters:
+      - description: user's id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: modified password information
+        in: body
+        name: ModifyInfo
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.ModifyAccountPasswordInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: empty/invalid user id | invalid modified information
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: cannot change other's password | wrong original password |
+            original & modified passwords are the same
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: internal db error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: modify user's password
       tags:
       - User
 swagger: "2.0"
