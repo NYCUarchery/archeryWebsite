@@ -13,7 +13,7 @@ export default function ScoreDetail({ playerStats }: Props) {
   });
 
   return (
-    <Card sx={{ width: "350px" }}>
+    <Card sx={{ width: "22rem", height: "22rem", overflow: "auto" }}>
       {rounds}
       <Divider textAlign="left">總計</Divider>
       <StatisticRow
