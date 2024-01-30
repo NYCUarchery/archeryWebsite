@@ -39,6 +39,20 @@ func FindByUsername(username string) User {
 	return user
 }
 
+func GetUserNameIsExist(username string) bool {
+	var user User
+	DB.Where("user_name = ?", username).First(&user)
+	isFounded := user.ID != 0
+	return isFounded
+}
+
+func GetEmailIsExist(email string) bool {
+	var user User
+	DB.Where("email = ?", email).First(&user)
+	isFounded := user.ID != 0
+	return isFounded
+}
+
 /* post new user data */
 func CreateUser(user User) (User, error) {
 	err := DB.Create(&user).Error

@@ -4015,18 +4015,13 @@ const docTemplate = `{
                 "summary": "login",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "user's name",
-                        "name": "username",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "password",
-                        "name": "password",
-                        "in": "formData",
-                        "required": true
+                        "description": "user_name, password",
+                        "name": "LoginInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.LoginInfo"
+                        }
                     }
                 ],
                 "responses": {
@@ -4085,7 +4080,7 @@ const docTemplate = `{
         },
         "/user": {
             "post": {
-                "description": "add a user to db",
+                "description": "add a user to db\nno need to post id\nusername cannot be empty, repeated\npassword cannot be empty\nemail cannot be empty, repeated",
                 "consumes": [
                     "application/json"
                 ],
@@ -4098,44 +4093,13 @@ const docTemplate = `{
                 "summary": "register a user",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "user's name",
-                        "name": "user_name",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "real name",
-                        "name": "real_name",
-                        "in": "path"
-                    },
-                    {
-                        "type": "string",
-                        "description": "password",
-                        "name": "password",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "email",
-                        "name": "email",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "overview",
-                        "name": "overview",
-                        "in": "path"
-                    },
-                    {
-                        "type": "string",
-                        "description": "institution ID",
-                        "name": "institutionID",
-                        "in": "path",
-                        "required": true
+                        "description": "nessary information for register",
+                        "name": "RegisterInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.RegisterInfo"
+                        }
                     }
                 ],
                 "responses": {
@@ -4607,6 +4571,40 @@ const docTemplate = `{
                 }
             }
         },
+        "endpoint.LoginInfo": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "user_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoint.RegisterInfo": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "institution_id": {
+                    "type": "integer"
+                },
+                "overview": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "real_name": {
+                    "type": "string"
+                },
+                "user_name": {
+                    "type": "string"
+                }
+            }
+        },
         "response.Response": {
             "type": "object",
             "properties": {
@@ -4622,7 +4620,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:6969",
+	Host:             "localhost:8080",
 	BasePath:         "/api/",
 	Schemes:          []string{},
 	Title:            "Gin swagger",

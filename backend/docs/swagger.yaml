@@ -182,13 +182,35 @@ definitions:
       user_name:
         type: string
     type: object
+  endpoint.LoginInfo:
+    properties:
+      password:
+        type: string
+      user_name:
+        type: string
+    type: object
+  endpoint.RegisterInfo:
+    properties:
+      email:
+        type: string
+      institution_id:
+        type: integer
+      overview:
+        type: string
+      password:
+        type: string
+      real_name:
+        type: string
+      user_name:
+        type: string
+    type: object
   response.Response:
     properties:
       result:
         example: result description
         type: string
     type: object
-host: localhost:6969
+host: localhost:8080
 info:
   contact:
     name: NYCUArchery
@@ -2874,16 +2896,12 @@ paths:
       - application/json
       description: get a session
       parameters:
-      - description: user's name
-        in: formData
-        name: username
+      - description: user_name, password
+        in: body
+        name: LoginInfo
         required: true
-        type: string
-      - description: password
-        in: formData
-        name: password
-        required: true
-        type: string
+        schema:
+          $ref: '#/definitions/endpoint.LoginInfo'
       produces:
       - application/json
       responses:
@@ -2915,36 +2933,19 @@ paths:
     post:
       consumes:
       - application/json
-      description: add a user to db
+      description: |-
+        add a user to db
+        no need to post id
+        username cannot be empty, repeated
+        password cannot be empty
+        email cannot be empty, repeated
       parameters:
-      - description: user's name
-        in: path
-        name: user_name
+      - description: nessary information for register
+        in: body
+        name: RegisterInfo
         required: true
-        type: string
-      - description: real name
-        in: path
-        name: real_name
-        type: string
-      - description: password
-        in: path
-        name: password
-        required: true
-        type: string
-      - description: email
-        in: path
-        name: email
-        required: true
-        type: string
-      - description: overview
-        in: path
-        name: overview
-        type: string
-      - description: institution ID
-        in: path
-        name: institutionID
-        required: true
-        type: string
+        schema:
+          $ref: '#/definitions/endpoint.RegisterInfo'
       produces:
       - application/json
       responses:

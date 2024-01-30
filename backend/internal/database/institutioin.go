@@ -1,12 +1,18 @@
 package database
 
 type Institution struct {
-	ID 		uint 	`gorm:"primaryKey;autoIncrement" json:"id"`
-	Name 	string 	`gorm:"not null" json:"name"`
+	ID   uint   `gorm:"primaryKey;autoIncrement" json:"id"`
+	Name string `gorm:"not null" json:"name"`
 }
 
 func InitInstitution() {
 	DB.AutoMigrate(&Institution{})
+}
+
+func GetInstitutionIsExist(id uint) bool {
+	var institution Institution
+	DB.Table("institutions").Where("id = ?", id).First(&institution)
+	return institution.ID != 0
 }
 
 func AddInstitution(ins *Institution) (err error) {

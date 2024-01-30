@@ -9,6 +9,11 @@ import (
 	"backend/internal/pkg"
 )
 
+type LoginInfo struct {
+	UserName string `json:"user_name"`
+	Password string `json:"password"`
+}
+
 // Login godoc
 //
 //	@Summary		login
@@ -16,36 +21,37 @@ import (
 //	@Tags			Session
 //	@Accept			json
 //	@Produce		json
-//	@Param			username	formData	string				true	"user's name"
-//	@Param			password	formData	string				true	"password"
+//	@Param			LoginInfo	body	endpoint.LoginInfo	true "user_name, password"
 //	@Success		200			string	string
 //	@Failure		401			string	string
 //	@Router			/session [post]
 func Login(c *gin.Context) {
-	username := c.PostForm("username")
-	password := c.PostForm("password")
-
-	if pkg.IsAuthenticated(c) {
-		c.JSON(http.StatusOK, gin.H{"result": "has loginned"})
+	var loginInfo LoginInfo
+	if err := c.ShouldBindJSON(&loginInfo); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"message": "invalid info"})
 		return
 	}
-
-	user := database.FindByUsername(username)
+	// check if server has session which is logined
+	if pkg.IsAuthenticated(c) {
+		c.JSON(http.StatusOK, gin.H{"message": "has loginned"})
+		return
+	}
+	user := database.FindByUsername(loginInfo.UserName)
 
 	// No user found
 	if user.ID == 0 {
-		c.JSON(http.StatusUnauthorized, gin.H{"result": "user not found"})
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "user not found"})
 		return
 	}
 
 	// Wrong password
-	if err := pkg.Compare(user.Password, password); err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"result": "wrong password"})
+	if err := pkg.Compare(user.Password, loginInfo.Password); err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"message": "wrong password"})
 		return
 	}
-
+	// if all correct, save session
 	pkg.SaveAuthSession(c, user.ID, user.UserName)
-	c.JSON(http.StatusOK, gin.H{"result": "success"})
+	c.JSON(http.StatusOK, gin.H{"message": "success"})
 }
 
 // Logout godoc
@@ -58,5 +64,5 @@ func Login(c *gin.Context) {
 //	@Router			/session [delete]
 func Logout(c *gin.Context) {
 	pkg.ClearAuthSession(c)
-	c.JSON(http.StatusOK, gin.H{"result": "success"})
+	c.JSON(http.StatusOK, gin.H{"message": "success"})
 }

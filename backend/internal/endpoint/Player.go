@@ -444,8 +444,8 @@ func UpdatePlayerTotalScore(context *gin.Context, playerId uint, roundId uint, s
 //	@Accept			json
 //	@Produce		json
 //	@Param			endscoreid	path	int	true	"EndScore ID"
-//	@Success		200				string	string
-//	@Failure		400				string	string
+//	@Success		200			string	string
+//	@Failure		400			string	string
 //	@Router			/api/player/score/{endscoreid} [put]
 func UpdatePlayerScore(context *gin.Context) {
 	var data UpdateTotalScoreData
@@ -580,8 +580,8 @@ func GetDummyPlayerByParticipantId(context *gin.Context) {
 //	@Tags			Player
 //	@Produce		json
 //	@Param			playerid	path	int	true	"Player ID"
-//	@Success		200				string	string
-//	@Failure		400				string	string
+//	@Success		200			string	string
+//	@Failure		400			string	string
 //	@Router			/api/player/dummy/{playerid} [post]
 func PostDummyPlayerByPlayerId(context *gin.Context) {
 	id := convert2uint(context, "playerid")

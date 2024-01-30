@@ -12,7 +12,7 @@
         },
         "version": "1.0"
     },
-    "host": "localhost:6969",
+    "host": "localhost:8080",
     "basePath": "/api/",
     "paths": {
         "/api/competition": {
@@ -4009,18 +4009,13 @@
                 "summary": "login",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "user's name",
-                        "name": "username",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "password",
-                        "name": "password",
-                        "in": "formData",
-                        "required": true
+                        "description": "user_name, password",
+                        "name": "LoginInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.LoginInfo"
+                        }
                     }
                 ],
                 "responses": {
@@ -4079,7 +4074,7 @@
         },
         "/user": {
             "post": {
-                "description": "add a user to db",
+                "description": "add a user to db\nno need to post id\nusername cannot be empty, repeated\npassword cannot be empty\nemail cannot be empty, repeated",
                 "consumes": [
                     "application/json"
                 ],
@@ -4092,44 +4087,13 @@
                 "summary": "register a user",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "user's name",
-                        "name": "user_name",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "real name",
-                        "name": "real_name",
-                        "in": "path"
-                    },
-                    {
-                        "type": "string",
-                        "description": "password",
-                        "name": "password",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "email",
-                        "name": "email",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "overview",
-                        "name": "overview",
-                        "in": "path"
-                    },
-                    {
-                        "type": "string",
-                        "description": "institution ID",
-                        "name": "institutionID",
-                        "in": "path",
-                        "required": true
+                        "description": "nessary information for register",
+                        "name": "RegisterInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.RegisterInfo"
+                        }
                     }
                 ],
                 "responses": {
@@ -4591,6 +4555,40 @@
                     "type": "integer"
                 },
                 "overview": {
+                    "type": "string"
+                },
+                "real_name": {
+                    "type": "string"
+                },
+                "user_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoint.LoginInfo": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "user_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoint.RegisterInfo": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "institution_id": {
+                    "type": "integer"
+                },
+                "overview": {
+                    "type": "string"
+                },
+                "password": {
                     "type": "string"
                 },
                 "real_name": {
