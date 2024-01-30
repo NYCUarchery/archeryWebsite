@@ -9,21 +9,37 @@ import (
 	"backend/internal/database"
 )
 
+type NewInstitutionInfo struct {
+	Name string `json:"name"`
+}
+
 // CreateInstitution godoc
+//
 //	@Summary		create an institution
 //	@Description	add an institution to db
+//	@Description	cannot repeat institution name
 //	@Tags			Institution
 //	@Accept			json
 //	@Produce		json
-//	@Param			name	formData	string				true	"institution's name"
-//	@Success		200		{object}	response.Response	"success"
-//	@Failure		400		{object}	response.Response	"empty institution name"
-//	@Failure		500		{object}	response.Response	"db error"
+//	@Param			NewInstitutionInfo	body		NewInstitutionInfo	true	"institution's information"
+//	@Success		200					{object}	response.Response	"success"
+//	@Failure		400					{object}	response.Response	"empty institution name || institution already exists"
+//	@Failure		500					{object}	response.Response	"db error"
 //	@Router			/institution [post]
 func CreateInstitution(c *gin.Context) {
-	name := c.PostForm("name")
+	var newInstitutionInfo NewInstitutionInfo
+	if err := c.ShouldBindJSON(&newInstitutionInfo); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "invalid info"})
+		return
+	}
+	name := newInstitutionInfo.Name
 	if name == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "empty institution name"})
+		return
+	}
+
+	if database.GetInstitutionIsExistByName(name) {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "institution already exists"})
 		return
 	}
 
@@ -38,6 +54,7 @@ func CreateInstitution(c *gin.Context) {
 }
 
 // InstitutionInfo godoc
+//
 //	@Summary		get institution info by id
 //	@Description	get institution info from db by id
 //	@Tags			Institution
@@ -62,13 +79,11 @@ func InstitutionInfo(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"result": "success",
-		"data":   institution,
-	})
+	c.JSON(http.StatusOK, institution)
 }
 
 // AllInstitutionInfo godoc
+//
 //	@Summary		get all institution info
 //	@Description	get all institution info from db
 //	@Tags			Institution
@@ -84,8 +99,7 @@ func AllInstitutionInfo(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"result": "success",
-		"data":   institutions,
-	})
+	c.JSON(http.StatusOK, institutions)
 }
+
+// response.Response{data=[]database.Institution}

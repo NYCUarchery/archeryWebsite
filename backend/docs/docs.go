@@ -3603,7 +3603,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "add an institution to db",
+                "description": "add an institution to db\ncannot repeat institution name",
                 "consumes": [
                     "application/json"
                 ],
@@ -3616,11 +3616,13 @@ const docTemplate = `{
                 "summary": "create an institution",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "institution's name",
-                        "name": "name",
-                        "in": "formData",
-                        "required": true
+                        "description": "institution's information",
+                        "name": "NewInstitutionInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.NewInstitutionInfo"
+                        }
                     }
                 ],
                 "responses": {
@@ -3631,7 +3633,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "empty institution name",
+                        "description": "empty institution name || institution already exists",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }
@@ -4649,6 +4651,14 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "original_password": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoint.NewInstitutionInfo": {
+            "type": "object",
+            "properties": {
+                "name": {
                     "type": "string"
                 }
             }

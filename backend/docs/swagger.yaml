@@ -211,6 +211,11 @@ definitions:
       original_password:
         type: string
     type: object
+  endpoint.NewInstitutionInfo:
+    properties:
+      name:
+        type: string
+    type: object
   response.Response:
     properties:
       result:
@@ -2627,13 +2632,16 @@ paths:
     post:
       consumes:
       - application/json
-      description: add an institution to db
+      description: |-
+        add an institution to db
+        cannot repeat institution name
       parameters:
-      - description: institution's name
-        in: formData
-        name: name
+      - description: institution's information
+        in: body
+        name: NewInstitutionInfo
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/endpoint.NewInstitutionInfo'
       produces:
       - application/json
       responses:
@@ -2642,7 +2650,7 @@ paths:
           schema:
             $ref: '#/definitions/response.Response'
         "400":
-          description: empty institution name
+          description: empty institution name || institution already exists
           schema:
             $ref: '#/definitions/response.Response'
         "500":

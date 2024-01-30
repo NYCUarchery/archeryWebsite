@@ -15,6 +15,12 @@ func GetInstitutionIsExist(id uint) bool {
 	return institution.ID != 0
 }
 
+func GetInstitutionIsExistByName(name string) bool {
+	var institution Institution
+	DB.Table("institutions").Where("name = ?", name).First(&institution)
+	return institution.ID != 0
+}
+
 func AddInstitution(ins *Institution) (err error) {
 	err = DB.Create(ins).Error
 	return
