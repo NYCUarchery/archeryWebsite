@@ -2483,7 +2483,7 @@ const docTemplate = `{
         },
         "/api/participant/": {
             "post": {
-                "description": "post a particpant to the competition",
+                "description": "post a particpant to the competition\ncannot repeat participant\nrole cannot be empty\nstatus is always \"pending\"",
                 "consumes": [
                     "application/json"
                 ],
@@ -2496,44 +2496,32 @@ const docTemplate = `{
                 "summary": "post a particpant to the competition",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "user id",
-                        "name": "userID",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "competition id",
-                        "name": "competitionID",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "role",
-                        "name": "role",
-                        "in": "formData",
-                        "required": true
+                        "name": "NewParticipantInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.NewParticipantInfo"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/database.Participant"
+                            "type": "string"
                         }
                     },
                     "400": {
-                        "description": "no user/competition found",
+                        "description": "competition ID is not exist",
                         "schema": {
-                            "$ref": "#/definitions/response.Response"
+                            "type": "string"
                         }
                     },
                     "500": {
-                        "description": "internal db error",
+                        "description": "db error",
                         "schema": {
-                            "$ref": "#/definitions/response.Response"
+                            "type": "string"
                         }
                     }
                 }
@@ -4702,6 +4690,20 @@ const docTemplate = `{
             "properties": {
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "endpoint.NewParticipantInfo": {
+            "type": "object",
+            "properties": {
+                "competitionID": {
+                    "type": "integer"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "userID": {
+                    "type": "integer"
                 }
             }
         },

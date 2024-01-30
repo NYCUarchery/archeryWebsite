@@ -216,6 +216,15 @@ definitions:
       name:
         type: string
     type: object
+  endpoint.NewParticipantInfo:
+    properties:
+      competitionID:
+        type: integer
+      role:
+        type: string
+      userID:
+        type: integer
+    type: object
   response.Response:
     properties:
       result:
@@ -1892,38 +1901,33 @@ paths:
     post:
       consumes:
       - application/json
-      description: post a particpant to the competition
+      description: |-
+        post a particpant to the competition
+        cannot repeat participant
+        role cannot be empty
+        status is always "pending"
       parameters:
-      - description: user id
-        in: formData
-        name: userID
-        required: true
-        type: integer
-      - description: competition id
-        in: formData
-        name: competitionID
-        required: true
-        type: integer
       - description: role
-        in: formData
-        name: role
+        in: body
+        name: NewParticipantInfo
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/endpoint.NewParticipantInfo'
       produces:
       - application/json
       responses:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/database.Participant'
+            type: string
         "400":
-          description: no user/competition found
+          description: competition ID is not exist
           schema:
-            $ref: '#/definitions/response.Response'
+            type: string
         "500":
-          description: internal db error
+          description: db error
           schema:
-            $ref: '#/definitions/response.Response'
+            type: string
       summary: post a particpant to the competition
       tags:
       - Participant
