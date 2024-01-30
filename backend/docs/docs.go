@@ -4094,11 +4094,11 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "nessary information for register",
-                        "name": "RegisterInfo",
+                        "name": "AccountInfo",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/endpoint.RegisterInfo"
+                            "$ref": "#/definitions/endpoint.AccountInfo"
                         }
                     }
                 ],
@@ -4212,7 +4212,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "modify username, password, overview, and institution_id",
+                "description": "modify username, realname, email, overview, and institution_id\ncannot change other's info\ncannot change password\nusername cannot be empty, repeated\nemail cannot be empty, repeated",
                 "consumes": [
                     "application/json"
                 ],
@@ -4232,35 +4232,13 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "string",
-                        "description": "original password",
-                        "name": "oriPassword",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "modified password",
-                        "name": "modPassword",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "description": "modified email",
-                        "name": "email",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "description": "modified overview",
-                        "name": "overview",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "description": "modified institution ID",
-                        "name": "institutionID",
-                        "in": "formData"
+                        "description": "modified information",
+                        "name": "ModifyInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/database.User"
+                        }
                     }
                 ],
                 "responses": {
@@ -4571,18 +4549,7 @@ const docTemplate = `{
                 }
             }
         },
-        "endpoint.LoginInfo": {
-            "type": "object",
-            "properties": {
-                "password": {
-                    "type": "string"
-                },
-                "user_name": {
-                    "type": "string"
-                }
-            }
-        },
-        "endpoint.RegisterInfo": {
+        "endpoint.AccountInfo": {
             "type": "object",
             "properties": {
                 "email": {
@@ -4598,6 +4565,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "real_name": {
+                    "type": "string"
+                },
+                "user_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoint.LoginInfo": {
+            "type": "object",
+            "properties": {
+                "password": {
                     "type": "string"
                 },
                 "user_name": {

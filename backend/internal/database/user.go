@@ -53,6 +53,18 @@ func GetEmailIsExist(email string) bool {
 	return isFounded
 }
 
+func GetUserNameIsExistExclude(username string, uid uint) bool {
+	var user User
+	DB.Where("user_name = ?", username).First(&user)
+	return user.ID != 0 && user.ID != uid
+}
+
+func GetEmailIsExistExclude(email string, uid uint) bool {
+	var user User
+	DB.Where("email = ?", email).First(&user)
+	return user.ID != 0 && user.ID != uid
+}
+
 /* post new user data */
 func CreateUser(user User) (User, error) {
 	err := DB.Create(&user).Error
