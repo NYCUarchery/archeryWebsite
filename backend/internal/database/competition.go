@@ -106,7 +106,7 @@ func GetCurrentCompetitions(head int, tail int) ([]Competition, error) {
 	var competitions []Competition
 	result := DB.
 		Table("competitions").
-		Order("date desc").
+		Order("start_time desc").
 		Offset(head).
 		Limit(tail - head + 1).
 		Find(&competitions)
@@ -124,7 +124,7 @@ func GetCompetitionsOfUser(userID uint, head int, tail int) ([]Competition, erro
 	result := DB.
 		Table("competitions").
 		Where("id IN (?)", subQueryA).
-		Order("date desc").
+		Order("start_time desc").
 		Offset(head).
 		Limit(tail - head + 1).
 		Find(&competitions)
