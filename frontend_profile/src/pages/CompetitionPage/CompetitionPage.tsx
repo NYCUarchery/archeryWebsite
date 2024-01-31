@@ -1,5 +1,3 @@
-import { useEffect, useState } from "react";
-
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -7,54 +5,16 @@ import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 
-import { useNavigate } from "react-router-dom";
-
-import { joinCompetition, getCompetitions } from "../../util/api";
-import getDate from "date-fns/getDate";
-import getMonth from "date-fns/getMonth";
-import getYear from "date-fns/getYear";
-import getISODay from "date-fns/getISODay";
-
 import { Competition } from "./CompetitionPageComponents/Competition";
 import ToCreateButton from "./CompetitionPageComponents/ToCreateButton";
-
-const Day2Mandarin = (day: number) => {
-  return ["一", "二", "三", "四", "五", "六", "日"][day - 1];
-};
-
-export const TimeView = (date: string) => {
-  const fdate = new Date(date);
-  const dateString = `${getYear(fdate)}年${getMonth(fdate)}月${getDate(
-    fdate
-  )}日 （${Day2Mandarin(getISODay(fdate))}）`;
-  return <p>{dateString}</p>;
-};
+import useGetCompetitions from "../../util/QueryHooks/useGetCompetitions";
+import useGetUid from "../../util/QueryHooks/useGetUid";
 
 // The updated ContestPage component
 const ContestPage = () => {
-  const navigate = useNavigate();
-  var [rows, setRows] = useState<any[]>([]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await getCompetitions();
-        setRows(response.data.data);
-      } catch (error) {}
-    };
-    fetchData();
-  }, []);
-
-  const handleJoinCompetition = async (competitionId: any) => {
-    try {
-      const result = await joinCompetition(competitionId);
-      if (result.result == "success") {
-        window.alert("報名成功");
-      } else {
-        window.alert("報名失敗");
-      }
-    } catch (error) {}
-  };
+  const { data: competitions, isLoading: isLoadingCompetitions } =
+    useGetCompetitions(0, 5);
+  const { data: uid, isLoading: isLoadingUid } = useGetUid();
 
   return (
     <Card sx={{ p: 2, mb: 2 }}>
@@ -67,14 +27,14 @@ const ContestPage = () => {
               </Typography>
             </Grid>
           </Grid>
+          {isLoadingCompetitions || isLoadingUid ? (
+            <p>loading...</p>
+          ) : (
+            competitions?.map((competition: any) => (
+              <Competition competition={competition} uid={uid} />
+            ))
+          )}
         </Box>
-        {rows.map((v, i) => (
-          <Competition
-            key={i}
-            competition={v}
-            onJoin={() => handleJoinCompetition(v.id)}
-          />
-        ))}
         <ToCreateButton />
       </CardContent>
     </Card>
