@@ -54,7 +54,13 @@ export function RankingInfoBar({ playerShell, isQudalified }: Props) {
           {playerStats.totalScore}
         </Grid>
       </Grid>
-      <Dialog open={open} keepMounted onClose={handleClose}>
+      <Dialog
+        open={open}
+        keepMounted
+        fullWidth={true}
+        maxWidth="xs"
+        onClose={handleClose}
+      >
         <DialogTitle>
           排名{player.rank} {target} {player.name}
         </DialogTitle>
