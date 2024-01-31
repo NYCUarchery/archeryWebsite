@@ -1,7 +1,9 @@
 import { Player } from "../../../../QueryHooks/types/Player";
 import { useState } from "react";
 import useGetOnlyLane from "../../../../QueryHooks/useGetOnlyLane";
-import { Grid, Popover } from "@mui/material";
+import Grid from "@mui/material/Grid";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
 import ScoreDetail from "./ScoreDetail/ScoreDetail";
 import useGetPlayerWithScores from "../../../../QueryHooks/useGetPlayerWithScores";
 import {
@@ -15,8 +17,8 @@ export interface Props {
 
 export function RankingInfoBar({ playerShell, isQudalified }: Props) {
   let className: string = "scoreboard_row ranking_info_bar";
-  const [anchorEl, setAnchorEl] = useState<HTMLDivElement | null>(null);
-  const open = Boolean(anchorEl);
+  const [open, setOpen] = useState(false);
+
   const { data: lane } = useGetOnlyLane(playerShell.lane_id);
   const { data: player } = useGetPlayerWithScores(playerShell.id);
   if (!lane || !player) return <></>;
@@ -25,10 +27,10 @@ export function RankingInfoBar({ playerShell, isQudalified }: Props) {
   isQudalified ? (className += " qualified") : (className += " unqualified");
 
   const handleClose = () => {
-    setAnchorEl(null);
+    setOpen(false);
   };
-  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    setAnchorEl(event.currentTarget);
+  const handleClick = () => {
+    setOpen(true);
   };
   return (
     <>
@@ -52,19 +54,18 @@ export function RankingInfoBar({ playerShell, isQudalified }: Props) {
           {playerStats.totalScore}
         </Grid>
       </Grid>
-      <Popover
+      <Dialog
         open={open}
-        anchorEl={anchorEl}
         keepMounted
+        fullWidth={true}
+        maxWidth="xs"
         onClose={handleClose}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "right",
-        }}
-        transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
+        <DialogTitle>
+          排名{player.rank} {target} {player.name}
+        </DialogTitle>
         <ScoreDetail playerStats={playerStats}></ScoreDetail>
-      </Popover>
+      </Dialog>
     </>
   );
 }
