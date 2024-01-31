@@ -14,10 +14,10 @@ const userSlice = createSlice({
   reducers: {
     initUser: (state, action) => {
       const user = action.payload as User;
-      state.userName = user.name;
+      state.userName = user.user_name;
       state.userId = user.id;
-      state.userRealName = user.realName;
-      state.institutionId = user.institutionID;
+      state.userRealName = user.real_name;
+      state.institutionId = user.institution_id;
     },
   },
 });
