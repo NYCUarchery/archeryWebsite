@@ -5,7 +5,6 @@ import (
 	"backend/internal/response"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -15,11 +14,16 @@ type Participants struct {
 }
 type ParticipantWName struct {
 	ID            uint   `gorm:"primaryKey;autoIncrement" json:"id"`
-	UserID        uint   `gorm:"not null" json:"userID"`
-	CompetitionID uint   `gorm:"not null" json:"competitionID"`
+	UserID        uint   `gorm:"not null" json:"user_id"`
+	CompetitionID uint   `gorm:"not null" json:"competition_id"`
 	Name          string `gorm:"not null" json:"name"`
 	Role          string `gorm:"not null" json:"role"`
 	Status        string `gorm:"not null" json:"status"`
+}
+type NewParticipantInfo struct {
+	UserID        uint   `json:"user_id"`
+	CompetitionID uint   `json:"competition_id"`
+	Role          string `json:"role"`
 }
 
 //JSON
@@ -28,69 +32,48 @@ type ParticipantWName struct {
 //
 //	@Summary		post a particpant to the competition
 //	@Description	post a particpant to the competition
+//	@Description	cannot repeat participant
+//	@Description	role cannot be empty
+//	@Description	status is always "pending"
 //	@Tags			Participant
 //	@Accept			json
 //	@Produce		json
-//	@Param			userID			formData	int					true	"user id"
-//	@Param			competitionID	formData	int					true	"competition id"
-//	@Param			role			formData	string				true	"role"
-//	@Success		200				{object}	database.Participant	"success"
-//	@Failure		400				{object}	response.Response		"cannot parse competitionID | participant exists"
-//	@Failure		400				{object}	response.Response		"no user/competition found"
-//	@Failure		500				{object}	response.Response		"internal db error"
+//	@Param			NewParticipantInfo	body	endpoint.NewParticipantInfo	true	"role"
+//	@Success		200					string	string						"success"
+//	@Failure		400					string	string						"invalid info"
+//	@Failure		400					string	string						"role is empty"
+//	@Failure		400					string	string						"participant exists"
+//	@Failure		400					string	string						"user ID is not exist"
+//	@Failure		400					string	string						"competition ID is not exist"
+//	@Failure		500					string	string						"db error"
 //	@Router			/api/participant/ [post]
 func PostParticipant(c *gin.Context) {
-	userIDu64, err := strconv.ParseUint(c.PostForm("userID"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"result": "cannot parse userID"})
+	var newParticipantInfo NewParticipantInfo
+	if err := c.ShouldBindJSON(&newParticipantInfo); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "invalid info"})
 		return
 	}
-	userID := uint(userIDu64)
-
-	compIDu64, err := strconv.ParseUint(c.PostForm("competitionID"), 10, 32)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"result": "cannot parse competitionID"})
+	if response.ErrorIdTest(c, newParticipantInfo.CompetitionID, database.GetCompetitionIsExist(newParticipantInfo.CompetitionID), "Competition ID when posting participant") {
 		return
 	}
-	compID := uint(compIDu64)
-
-	user, err := database.FindByUserID(userID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"result": "internal db error"})
+	if response.ErrorIdTest(c, newParticipantInfo.UserID, database.GetUserIsExist(newParticipantInfo.UserID), "User ID when posting participant") {
 		return
 	}
 
-	if user.ID == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"result": "no user found"})
-		return
-	}
-
-	comp, err := database.GetOnlyCompetition(compID)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"result": "internal db error"})
-		return
-	}
-
-	if comp.ID == 0 {
-		c.JSON(http.StatusNotFound, gin.H{"result": "no competition found"})
-		return
-	}
-
-	if database.CheckParticipantExist(userID, compID) {
+	if database.CheckParticipantExist(newParticipantInfo.UserID, newParticipantInfo.CompetitionID) {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "participant exists"})
 		return
 	}
 
-	role := c.PostForm("role")
-	if role == "" {
+	if newParticipantInfo.Role == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "role is empty"})
 		return
 	}
 
 	var par database.Participant
-	par.UserID = userID
-	par.CompetitionID = compID
-	par.Role = role
+	par.UserID = newParticipantInfo.UserID
+	par.CompetitionID = newParticipantInfo.CompetitionID
+	par.Role = newParticipantInfo.Role
 	par.Status = "pending"
 
 	database.AddParticipant(&par)

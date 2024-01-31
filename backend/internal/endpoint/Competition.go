@@ -207,8 +207,8 @@ func GetCompetitionWGroupsPlayersByID(context *gin.Context) {
 //	@Produce		json
 //	@Param			head	query	int	true	"head"
 //	@Param			tail	query	int	true	"tail"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Success		200		string	string
+//	@Failure		400		string	string
 //	@Router			/api/competition/current/{head}/{tail} [get]
 func GetCurrentCompetitions(context *gin.Context) {
 	head := convert2int(context, "head")
@@ -239,8 +239,8 @@ func GetCurrentCompetitions(context *gin.Context) {
 //	@Param			userid	query	int	true	"User ID"
 //	@Param			head	query	int	true	"head"
 //	@Param			tail	query	int	true	"tail"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Success		200		string	string
+//	@Failure		400		string	string
 //	@Router			/api/competition/recent/{userid}/{head}/{tail} [get]
 func GetCompetitionsOfUser(context *gin.Context) {
 	head := convert2int(context, "head")

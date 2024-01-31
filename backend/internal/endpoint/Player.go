@@ -614,8 +614,8 @@ func GetDummyPlayerByParticipantId(context *gin.Context) {
 //	@Tags			Player
 //	@Produce		json
 //	@Param			playerid	path	int	true	"Player ID"
-//	@Success		200				string	string
-//	@Failure		400				string	string
+//	@Success		200			string	string
+//	@Failure		400			string	string
 //	@Router			/api/player/dummy/{playerid} [post]
 func PostDummyPlayerByPlayerId(context *gin.Context) {
 	id := convert2uint(context, "playerid")

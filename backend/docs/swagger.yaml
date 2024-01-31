@@ -173,14 +173,57 @@ definitions:
         type: string
       id:
         type: integer
-      institutionID:
+      institution_id:
         type: integer
-      name:
-        type: string
       overview:
         type: string
-      realName:
+      real_name:
         type: string
+      user_name:
+        type: string
+    type: object
+  endpoint.AccountInfo:
+    properties:
+      email:
+        type: string
+      institution_id:
+        type: integer
+      overview:
+        type: string
+      password:
+        type: string
+      real_name:
+        type: string
+      user_name:
+        type: string
+    type: object
+  endpoint.LoginInfo:
+    properties:
+      password:
+        type: string
+      user_name:
+        type: string
+    type: object
+  endpoint.ModifyAccountPasswordInfo:
+    properties:
+      new_password:
+        type: string
+      original_password:
+        type: string
+    type: object
+  endpoint.NewInstitutionInfo:
+    properties:
+      name:
+        type: string
+    type: object
+  endpoint.NewParticipantInfo:
+    properties:
+      competition_id:
+        type: integer
+      role:
+        type: string
+      user_id:
+        type: integer
     type: object
   response.Response:
     properties:
@@ -188,7 +231,7 @@ definitions:
         example: result description
         type: string
     type: object
-host: localhost:6969
+host: localhost:8080
 info:
   contact:
     name: NYCUArchery
@@ -1858,38 +1901,33 @@ paths:
     post:
       consumes:
       - application/json
-      description: post a particpant to the competition
+      description: |-
+        post a particpant to the competition
+        cannot repeat participant
+        role cannot be empty
+        status is always "pending"
       parameters:
-      - description: user id
-        in: formData
-        name: userID
-        required: true
-        type: integer
-      - description: competition id
-        in: formData
-        name: competitionID
-        required: true
-        type: integer
       - description: role
-        in: formData
-        name: role
+        in: body
+        name: NewParticipantInfo
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/endpoint.NewParticipantInfo'
       produces:
       - application/json
       responses:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/database.Participant'
+            type: string
         "400":
-          description: no user/competition found
+          description: competition ID is not exist
           schema:
-            $ref: '#/definitions/response.Response'
+            type: string
         "500":
-          description: internal db error
+          description: db error
           schema:
-            $ref: '#/definitions/response.Response'
+            type: string
       summary: post a particpant to the competition
       tags:
       - Participant
@@ -2623,13 +2661,16 @@ paths:
     post:
       consumes:
       - application/json
-      description: add an institution to db
+      description: |-
+        add an institution to db
+        cannot repeat institution name
       parameters:
-      - description: institution's name
-        in: formData
-        name: name
+      - description: institution's information
+        in: body
+        name: NewInstitutionInfo
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/endpoint.NewInstitutionInfo'
       produces:
       - application/json
       responses:
@@ -2638,7 +2679,7 @@ paths:
           schema:
             $ref: '#/definitions/response.Response'
         "400":
-          description: empty institution name
+          description: empty institution name || institution already exists
           schema:
             $ref: '#/definitions/response.Response'
         "500":
@@ -2649,6 +2690,34 @@ paths:
       tags:
       - Institution
   /institution/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: delete an institution from db
+      parameters:
+      - description: institution's id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: invalid id
+          schema:
+            $ref: '#/definitions/response.Response'
+        "404":
+          description: institution not found
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: delete an institution
+      tags:
+      - Institution
     get:
       consumes:
       - application/json
@@ -2899,27 +2968,23 @@ paths:
       - application/json
       description: get a session
       parameters:
-      - description: user's name
-        in: formData
-        name: username
+      - description: user_name, password
+        in: body
+        name: LoginInfo
         required: true
-        type: string
-      - description: password
-        in: formData
-        name: password
-        required: true
-        type: string
+        schema:
+          $ref: '#/definitions/endpoint.LoginInfo'
       produces:
       - application/json
       responses:
         "200":
-          description: success | has loginned
+          description: OK
           schema:
-            $ref: '#/definitions/response.Response'
+            type: string
         "401":
-          description: wrong username or password
+          description: Unauthorized
           schema:
-            $ref: '#/definitions/response.Response'
+            type: string
       summary: login
       tags:
       - Session
@@ -2940,32 +3005,19 @@ paths:
     post:
       consumes:
       - application/json
-      description: add a user to db
+      description: |-
+        add a user to db
+        no need to post id
+        username cannot be empty, repeated
+        password cannot be empty
+        email cannot be empty, repeated
       parameters:
-      - description: user's name
-        in: formData
-        name: username
+      - description: nessary information for register
+        in: body
+        name: AccountInfo
         required: true
-        type: string
-      - description: password
-        in: formData
-        name: password
-        required: true
-        type: string
-      - description: email
-        in: formData
-        name: email
-        required: true
-        type: string
-      - description: overview
-        in: formData
-        name: overview
-        type: string
-      - description: institution ID
-        in: formData
-        name: institutionID
-        required: true
-        type: string
+        schema:
+          $ref: '#/definitions/endpoint.AccountInfo'
       produces:
       - application/json
       responses:
@@ -3022,34 +3074,24 @@ paths:
     put:
       consumes:
       - application/json
-      description: modify username, password, overview, and institution_id
+      description: |-
+        modify username, realname, email, overview, and institution_id
+        cannot change other's info
+        cannot change password
+        username cannot be empty, repeated
+        email cannot be empty, repeated
       parameters:
       - description: user's id
         in: path
         name: id
         required: true
         type: string
-      - description: original password
-        in: formData
-        name: oriPassword
+      - description: modified information
+        in: body
+        name: ModifyInfo
         required: true
-        type: string
-      - description: modified password
-        in: formData
-        name: modPassword
-        type: string
-      - description: modified email
-        in: formData
-        name: email
-        type: string
-      - description: modified overview
-        in: formData
-        name: overview
-        type: string
-      - description: modified institution ID
-        in: formData
-        name: institutionID
-        type: string
+        schema:
+          $ref: '#/definitions/database.User'
       produces:
       - application/json
       responses:
@@ -3088,6 +3130,52 @@ paths:
                   type: integer
               type: object
       summary: get my uid
+      tags:
+      - User
+  /user/password/{id}:
+    put:
+      consumes:
+      - application/json
+      description: |-
+        modify user's password
+        cannot change other's password
+        original password cannot be empty
+        new password cannot be empty
+        original password must be correct
+        new password cannot be the same as original password
+      parameters:
+      - description: user's id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: modified password information
+        in: body
+        name: ModifyInfo
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.ModifyAccountPasswordInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: empty/invalid user id | invalid modified information
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: cannot change other's password | wrong original password |
+            original & modified passwords are the same
+          schema:
+            $ref: '#/definitions/response.Response'
+        "500":
+          description: internal db error
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: modify user's password
       tags:
       - User
 swagger: "2.0"

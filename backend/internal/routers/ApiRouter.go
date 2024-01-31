@@ -39,8 +39,10 @@ func playerRouter(api *gin.RouterGroup) {
 	api.PUT("/group/:id", endpoint.UpdataPlayerGroupId)
 	api.PUT("/order/:id", endpoint.UpdatePlayerOrder)
 	api.PUT("/isconfirmed/:id", endpoint.UpdatePlayerIsConfirmed)
+
 	api.PUT("/totalscore/:id", endpoint.UpdatePlayerTotalScoreByplayerId)
-	api.PUT("/roundscore/:id", endpoint.UpdatePlayerScore)
+  api.PUT("/roundscore/:id", endpoint.UpdatePlayerScore)
+
 	api.PUT("/shootoffscore/:id", endpoint.UpdatePlayerShootoffScore)
 	api.DELETE("/:id", endpoint.DeletePlayer)
 
@@ -165,6 +167,7 @@ func profileRouter(api *gin.RouterGroup) {
 	{
 		userssr.POST("/", endpoint.Register)
 		userssr.PUT("/:id", pkg.AuthSessionMiddleware(), endpoint.ModifyInfo)
+		userssr.PUT("/password/:id", pkg.AuthSessionMiddleware(), endpoint.ModifyPassword)
 		userssr.GET("/me", pkg.AuthSessionMiddleware(), endpoint.GetUserID)
 		userssr.GET("/:id", endpoint.UserInfo)
 	}
@@ -194,5 +197,6 @@ func profileRouter(api *gin.RouterGroup) {
 		insr.POST("/", endpoint.CreateInstitution)
 		insr.GET("/:id", endpoint.InstitutionInfo)
 		insr.GET("/", endpoint.AllInstitutionInfo)
+		insr.DELETE("/:id", endpoint.DeleteInstitution)
 	}
 }

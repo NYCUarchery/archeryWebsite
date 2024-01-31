@@ -16,10 +16,10 @@ func loadOldLaneInfo(data *database.LaneData) {
 	/* save LaneStage indexing*/
 	for index, laneStage := range data.Stages {
 		laneStage.StageIndex = index
-		/*save LaneStage.EndScores*/
-		for end_index, end := range laneStage.EndScores {
+		/*save LaneStage.OldEndScores*/
+		for end_index, end := range laneStage.OldEndScores {
 			end.UserIndex = end_index
-			/*save EndScores.AllScres */
+			/*save OldEndScores.AllScres */
 			for all_index, all := range end.AllScores {
 				all.ArrowIndex = all_index
 			}
