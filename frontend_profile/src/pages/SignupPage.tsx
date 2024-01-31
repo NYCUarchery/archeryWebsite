@@ -18,7 +18,6 @@ import { useNavigate } from "react-router-dom";
 import useGetInstitutions from "../util/QueryHooks/useGetInstitution";
 
 import routing from "../util/routing";
-import { Menu } from "@mui/material";
 
 const SignupPage = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -161,6 +160,9 @@ const SignupPage = () => {
                   variant="outlined"
                   value={email}
                   sx={{ mb: "10px" }}
+                  onChange={(event) => {
+                    setEmail(event.target.value);
+                  }}
                 />
               </Grid>
               <Grid item xs={2}>
@@ -194,6 +196,9 @@ const SignupPage = () => {
                   multiline
                   rows={4}
                   sx={{ mb: "10px" }}
+                  onChange={(event) => {
+                    setOverview(event.target.value);
+                  }}
                 />
               </Grid>
               <Grid item xs={2}>
@@ -220,7 +225,6 @@ const SignupPage = () => {
                   }}
                   color="secondary"
                   noWrap={true}
-                  sx={{ mb: "10px" }}
                 >
                   已有帳號
                 </Typography>
