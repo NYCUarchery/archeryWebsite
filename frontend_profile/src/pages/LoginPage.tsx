@@ -30,7 +30,7 @@ const LoginPage = () => {
     login,
     {
       onSuccess: () => {
-        navigate(routing.Home);
+        window.location.href = routing.Home;
       },
     }
   );
