@@ -6,11 +6,11 @@ import (
 
 type User struct {
 	ID            uint   `gorm:"primaryKey;autoIncrement" json:"id"`
-	Username      string `gorm:"unique;not null" json:"name"`
-	RealName	  string `json:"realName"`
+	UserName      string `gorm:"unique;not null" json:"user_name"`
+	RealName      string `json:"real_name"`
 	Password      string `gorm:"not null" json:"-"`
 	Email         string `gorm:"unique;not null" json:"email"`
-	InstitutionID uint   `json:"institutionID"`
+	InstitutionID uint   `json:"institution_id"`
 	Overview      string `json:"overview"`
 }
 
@@ -35,14 +35,40 @@ func FindByUserID(userID uint) (User, error) {
 
 func FindByUsername(username string) User {
 	var user User
-	DB.Where("username = ?", username).First(&user)
+	DB.Where("user_name = ?", username).First(&user)
 	return user
 }
 
+func GetUserNameIsExist(username string) bool {
+	var user User
+	DB.Where("user_name = ?", username).First(&user)
+	isFounded := user.ID != 0
+	return isFounded
+}
+
+func GetEmailIsExist(email string) bool {
+	var user User
+	DB.Where("email = ?", email).First(&user)
+	isFounded := user.ID != 0
+	return isFounded
+}
+
+func GetUserNameIsExistExclude(username string, uid uint) bool {
+	var user User
+	DB.Where("user_name = ?", username).First(&user)
+	return user.ID != 0 && user.ID != uid
+}
+
+func GetEmailIsExistExclude(email string, uid uint) bool {
+	var user User
+	DB.Where("email = ?", email).First(&user)
+	return user.ID != 0 && user.ID != uid
+}
+
 /* post new user data */
-func CreateUser(user User) error {
+func CreateUser(user User) (User, error) {
 	err := DB.Create(&user).Error
-	return err
+	return user, err
 }
 
 /*delete user by ID*/

@@ -25,7 +25,7 @@ type LaneStage struct { // DB : land_stage
 	LaneDataID    uint            `json:"-"`
 	Status        string          `json:"status"`
 	StageIndex    int             `json:"-"`
-	EndScores     []*EndScore     `json:"all_scores" gorm:"constraint:ondelete:CASCADE;"`
+	OldEndScores  []*OldEndScore  `json:"all_scores" gorm:"constraint:ondelete:CASCADE;"`
 	Confirmations []*Confirmation `json:"is_confirmed" gorm:"constraint:ondelete:CASCADE;"`
 }
 
@@ -35,17 +35,17 @@ type Confirmation struct { // DB : confirmations
 	UserIndex   int  `json:"-"`
 	Confirm     bool `json:"confirm"`
 }
-type EndScore struct {
+type OldEndScore struct {
 	ID          uint        `json:"-"`
 	LaneStageID uint        `json:"-"`
 	UserIndex   int         `json:"-"`
 	AllScores   []*AllScore `json:"player" gorm:"constraint:ondelete:CASCADE;"`
 }
 type AllScore struct { // DB: all_score
-	ID         uint `json:"-"`
-	EndScoreID uint `json:"-"`
-	ArrowIndex int  `json:"-"`
-	Score      int  `json:"score"`
+	ID            uint `json:"-"`
+	OldEndScoreID uint `json:"-"`
+	ArrowIndex    int  `json:"-"`
+	Score         int  `json:"score"`
 }
 
 func InitOldLaneInfo() {
@@ -56,7 +56,7 @@ func InitOldLaneInfo() {
 	DB.AutoMigrate(&Confirmation{})
 
 	DB.AutoMigrate(&AllScore{})
-	DB.AutoMigrate(&EndScore{})
+	DB.AutoMigrate(&OldEndScore{})
 }
 
 func preloadLane(ID uint, data *LaneData) *LaneData {
@@ -65,7 +65,7 @@ func preloadLane(ID uint, data *LaneData) *LaneData {
 		Preload("UserIds", func(*gorm.DB) *gorm.DB { return DB.Order("user_index asc") }).
 		Preload("Stages", func(*gorm.DB) *gorm.DB {
 			return DB.Order("stage_index asc").
-				Preload("EndScores", func(*gorm.DB) *gorm.DB {
+				Preload("OldEndScores", func(*gorm.DB) *gorm.DB {
 					return DB.Order("user_index asc").
 						Preload("AllScores", func(*gorm.DB) *gorm.DB { return DB.Order("arrow_index asc") })
 				}).
