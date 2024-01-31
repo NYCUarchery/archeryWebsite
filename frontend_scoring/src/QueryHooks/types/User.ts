@@ -2,9 +2,9 @@
 
 export interface User {
   id: number;
-  name: string;
-  realName: string;
+  user_name: string;
+  real_name: string;
   email: string;
-  institutionID: number;
+  institution_id: number;
   overview: string;
 }
