@@ -96,6 +96,30 @@ func GetCompetitionWGroupsPlayers(ID uint) (Competition, error) {
 	return data, result.Error
 }
 
+func GetCompetitionWGroupsPlayersScores(ID uint) (Competition, error) {
+	var data Competition
+	result := DB.
+		Preload("Groups", func(*gorm.DB) *gorm.DB {
+			return DB.Order("group_index asc").
+				Preload("Players", func(*gorm.DB) *gorm.DB {
+					return DB.Order("`id` asc").
+						Preload("Rounds", func(*gorm.DB) *gorm.DB {
+							return DB.Order("id asc").
+								Preload("RoundEnds", func(*gorm.DB) *gorm.DB {
+									return DB.Order("id asc").
+										Preload("RoundScores", func(*gorm.DB) *gorm.DB {
+											return DB.Order("id asc")
+										})
+								})
+						})
+				})
+		}).
+		Model(&Competition{}).
+		Where("id = ?", ID).
+		First(&data)
+	return data, result.Error
+}
+
 func GetAllCompetition() ([]Competition, error) {
 	var comps []Competition
 	err := DB.Find(&comps).Error
@@ -106,7 +130,7 @@ func GetCurrentCompetitions(head int, tail int) ([]Competition, error) {
 	var competitions []Competition
 	result := DB.
 		Table("competitions").
-		Order("date desc").
+		Order("start_time desc").
 		Offset(head).
 		Limit(tail - head + 1).
 		Find(&competitions)
@@ -124,7 +148,7 @@ func GetCompetitionsOfUser(userID uint, head int, tail int) ([]Competition, erro
 	result := DB.
 		Table("competitions").
 		Where("id IN (?)", subQueryA).
-		Order("date desc").
+		Order("start_time desc").
 		Offset(head).
 		Limit(tail - head + 1).
 		Find(&competitions)
