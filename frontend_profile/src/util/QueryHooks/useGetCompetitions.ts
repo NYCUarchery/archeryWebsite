@@ -4,7 +4,7 @@ import axios from "axios";
 const useGetCompetitions = (start: number, end: number) => {
   return useQuery(
     "competitions",
-    () => axios.get(`competition/current/${start}/${end}`),
+    () => axios.get(`/api/competition/current/${start}/${end}`),
     {
       staleTime: Infinity,
       select: (responseData: any) => responseData?.data,

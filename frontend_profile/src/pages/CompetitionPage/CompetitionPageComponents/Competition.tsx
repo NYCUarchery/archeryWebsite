@@ -61,11 +61,24 @@ export const Competition = ({ competition, uid }: Props) => {
         {competition.title}
       </Typography>
       <Typography variant="body1" component="div" sx={{ p: 2 }}>
-        {competition.subtitle}
+        {competition.sub_title}
       </Typography>
 
-      <Button onClick={() => navigate(`scoring/${competition.id}`)}></Button>
-      <Button onClick={handleJoin}></Button>
+      <Button
+        onClick={() => (window.location.href = `/scoring/${competition.id}`)}
+        sx={{ ml: 2, mb: 2 }}
+        variant="contained"
+      >
+        查看記分板
+      </Button>
+      <Button
+        onClick={handleJoin}
+        color="secondary"
+        variant="contained"
+        sx={{ ml: 2, mb: 2 }}
+      >
+        申請加入
+      </Button>
       <Dialog open={open} onClose={() => setOpen(false)}>
         <DialogActions>
           <Button onClick={handleAdminApplication}>申請為管理員</Button>
