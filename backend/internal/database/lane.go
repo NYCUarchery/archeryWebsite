@@ -35,7 +35,7 @@ func GetLaneWScoresById(id uint) (Lane, error) {
 					return DB.Order("id asc").
 						Preload("RoundEnds", func(*gorm.DB) *gorm.DB {
 							return DB.Order("id asc").
-								Preload("EndScores")
+								Preload("RoundScores")
 						})
 				})
 		}).

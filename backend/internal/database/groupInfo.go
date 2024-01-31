@@ -51,10 +51,10 @@ type GroupPlayer struct {
 func GetGroupPlayerIdRankOrderById(groupId uint) ([]GroupPlayer, error) {
 	var data []GroupPlayer
 	subquery := DB.Table("players").
-		Select("players.id, SUM(IF(end_scores.score = 11, 1, 0))AS x_cnt, SUM(IF(end_scores.score >= 10, 1, 0))AS ten_up_cnt").
+		Select("players.id, SUM(IF(round_scores.score = 11, 1, 0))AS x_cnt, SUM(IF(round_scores.score >= 10, 1, 0))AS ten_up_cnt").
 		Joins("JOIN rounds ON players.id = rounds.player_id").
 		Joins("JOIN round_ends ON rounds.id = round_ends.round_id").
-		Joins("JOIN end_scores ON round_ends.id = end_scores.round_end_id").
+		Joins("JOIN round_scores ON round_ends.id = round_scores.round_end_id").
 		Where("players.group_id = ? AND players.`rank` != -1", groupId).
 		Group("players.id")
 
