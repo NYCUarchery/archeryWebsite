@@ -96,6 +96,30 @@ func GetCompetitionWGroupsPlayers(ID uint) (Competition, error) {
 	return data, result.Error
 }
 
+func GetCompetitionWGroupsPlayersScores(ID uint) (Competition, error) {
+	var data Competition
+	result := DB.
+		Preload("Groups", func(*gorm.DB) *gorm.DB {
+			return DB.Order("group_index asc").
+				Preload("Players", func(*gorm.DB) *gorm.DB {
+					return DB.Order("`id` asc").
+						Preload("Rounds", func(*gorm.DB) *gorm.DB {
+							return DB.Order("id asc").
+								Preload("RoundEnds", func(*gorm.DB) *gorm.DB {
+									return DB.Order("id asc").
+										Preload("RoundScores", func(*gorm.DB) *gorm.DB {
+											return DB.Order("id asc")
+										})
+								})
+						})
+				})
+		}).
+		Model(&Competition{}).
+		Where("id = ?", ID).
+		First(&data)
+	return data, result.Error
+}
+
 func GetAllCompetition() ([]Competition, error) {
 	var comps []Competition
 	err := DB.Find(&comps).Error

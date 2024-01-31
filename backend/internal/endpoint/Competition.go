@@ -777,3 +777,54 @@ func PutCompetitionMixedEliminationActive(context *gin.Context) {
 	}
 	context.IndentedJSON(http.StatusOK, nil)
 }
+
+// update competition recount player total score godoc
+//
+//	@Summary		update competition recount player total score
+//	@Description	update competition recount player total score
+//	@Tags			Competition
+//	@Produce		json
+//	@Param			id	path	string	true	"Competition ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
+//	@Failure		500	string	string
+//	@Router			/api/competition//groups/players/playertotal/{id} [put]
+func UpdateCompetitionRecountPlayerTotalScore(context *gin.Context) {
+	id := convert2uint(context, "id")
+	/*check data exist*/
+	if response.ErrorIdTest(context, id, database.GetCompetitionIsExist(id), "Competition") {
+		return
+	}
+	competition, err := database.GetCompetitionWGroupsPlayersScores(id)
+	if response.ErrorInternalErrorTest(context, id, "Get Competition with Groups Players Scores", err) {
+		return
+	}
+
+	/*update and check change*/
+	for _, group := range competition.Groups {
+		for _, player := range group.Players {
+			var newPlayerTotalScore int
+			for _, round := range player.Rounds {
+				var newRoundTotalScore int
+				for _, end := range round.RoundEnds {
+					for _, arrow := range end.RoundScores {
+						fmtScore := scorefmt(arrow.Score)
+						newRoundTotalScore += fmtScore
+					}
+				}
+				newPlayerTotalScore += newRoundTotalScore
+				/*update round total score*/
+				err := database.UpdatePlayerRoundTotalScore(round.ID, newRoundTotalScore)
+				if response.ErrorInternalErrorTest(context, id, "Update Round Total Score", err) {
+					return
+				}
+			}
+			/*update player total score*/
+			err := database.UpdatePlayerTotalScore(player.ID, newPlayerTotalScore)
+			if response.ErrorInternalErrorTest(context, id, "Update Player Total Score", err) {
+				return
+			}
+		}
+	}
+	context.IndentedJSON(http.StatusOK, nil)
+}
