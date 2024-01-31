@@ -7,6 +7,7 @@ import { boardMenuReducer } from "../features/Screen/TopBar/BoardMenu/boardMenuS
 import { scoreControllerReducer } from "../features/RecordingBoard/LaneBoard/ScoreController/scoreControllerSlice";
 import { gameReducer } from "../features/States/gameSlice";
 import { userReducer } from "../features/States/userSlice";
+import { participantReducer } from "../features/States/parcitipantSlice";
 import { adminBoardTabsReducer } from "../features/Screen/SubGameBar/AdminBoardTabs/adminBoardTabsSlice";
 import { groupsBoardReducer } from "../features/AdministrationBoard/GroupsBoard/groupsBoardSlice";
 import { groupSelectorReducer } from "../features/AdministrationBoard/GroupsBoard/GroupSelector/groupSelectorSlice";
@@ -25,6 +26,7 @@ const store = configureStore({
     scoreController: scoreControllerReducer,
     game: gameReducer,
     user: userReducer,
+    participant: participantReducer,
     adminBoardTabs: adminBoardTabsReducer,
 
     groupsBoard: groupsBoardReducer,

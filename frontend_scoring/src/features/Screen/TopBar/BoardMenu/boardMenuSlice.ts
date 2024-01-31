@@ -1,4 +1,5 @@
 import { createSlice } from "@reduxjs/toolkit";
+import { Participant } from "../../../../QueryHooks/types/Participant";
 
 const initialState = {
   boardShown: "score",
@@ -13,10 +14,13 @@ const boardMenuSlice = createSlice({
       state.boardShown = action.payload;
     },
     initBoardMenu: (state, action) => {
-      const user = action.payload;
-      if (user.role === "admin" && user.status === "approved") {
+      const participant = action.payload as Participant;
+      if (participant.role === "admin" && participant.status === "approved") {
         state.avaliableBoards = ["score", "administration"];
-      } else if (user.role === "player" && user.status === "approved") {
+      } else if (
+        participant.role === "player" &&
+        participant.status === "approved"
+      ) {
         state.avaliableBoards = ["score", "recording"];
       }
     },

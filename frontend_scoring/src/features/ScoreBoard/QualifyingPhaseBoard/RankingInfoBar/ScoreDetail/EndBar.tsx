@@ -7,7 +7,7 @@ interface Props {
 }
 
 export default function EndBar({ end }: Props) {
-  const scores = end.scores.map((score) => {
+  const scores = end.scores.map((score, index) => {
     return (
       <Grid
         item
@@ -18,6 +18,7 @@ export default function EndBar({ end }: Props) {
           alignItems: "center",
           width: "100%",
         }}
+        key={index}
       >
         <ScoreBlock score={score} />
       </Grid>

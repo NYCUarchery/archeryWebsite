@@ -1,7 +1,7 @@
 import { useSelector } from "react-redux";
 
 export default function UserNamePrompt() {
-  const userName = useSelector((state: any) => state.user.userName);
+  const userName = useSelector((state: any) => state.user.userRealName);
   const promptId: number = getRandomInt(3);
   let content: string = userName;
 
