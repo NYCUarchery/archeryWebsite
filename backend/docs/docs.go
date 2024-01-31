@@ -2524,7 +2524,7 @@ const docTemplate = `{
         },
         "/api/participant/": {
             "post": {
-                "description": "post a particpant to the competition",
+                "description": "post a particpant to the competition\ncannot repeat participant\nrole cannot be empty\nstatus is always \"pending\"",
                 "consumes": [
                     "application/json"
                 ],
@@ -2537,44 +2537,32 @@ const docTemplate = `{
                 "summary": "post a particpant to the competition",
                 "parameters": [
                     {
-                        "type": "integer",
-                        "description": "user id",
-                        "name": "userID",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "competition id",
-                        "name": "competitionID",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
                         "description": "role",
-                        "name": "role",
-                        "in": "formData",
-                        "required": true
+                        "name": "NewParticipantInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.NewParticipantInfo"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/database.Participant"
+                            "type": "string"
                         }
                     },
                     "400": {
-                        "description": "no user/competition found",
+                        "description": "competition ID is not exist",
                         "schema": {
-                            "$ref": "#/definitions/response.Response"
+                            "type": "string"
                         }
                     },
                     "500": {
-                        "description": "internal db error",
+                        "description": "db error",
                         "schema": {
-                            "$ref": "#/definitions/response.Response"
+                            "type": "string"
                         }
                     }
                 }
@@ -3682,7 +3670,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "add an institution to db",
+                "description": "add an institution to db\ncannot repeat institution name",
                 "consumes": [
                     "application/json"
                 ],
@@ -3695,11 +3683,13 @@ const docTemplate = `{
                 "summary": "create an institution",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "institution's name",
-                        "name": "name",
-                        "in": "formData",
-                        "required": true
+                        "description": "institution's information",
+                        "name": "NewInstitutionInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.NewInstitutionInfo"
+                        }
                     }
                 ],
                 "responses": {
@@ -3710,7 +3700,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "empty institution name",
+                        "description": "empty institution name || institution already exists",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }
@@ -3773,6 +3763,48 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "no institution found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "delete an institution from db",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Institution"
+                ],
+                "summary": "delete an institution",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "institution's id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid id",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "404": {
+                        "description": "institution not found",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }
@@ -4094,31 +4126,26 @@ const docTemplate = `{
                 "summary": "login",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "user's name",
-                        "name": "username",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "password",
-                        "name": "password",
-                        "in": "formData",
-                        "required": true
+                        "description": "user_name, password",
+                        "name": "LoginInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.LoginInfo"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "success | has loginned",
+                        "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.Response"
+                            "type": "string"
                         }
                     },
                     "401": {
-                        "description": "wrong username or password",
+                        "description": "Unauthorized",
                         "schema": {
-                            "$ref": "#/definitions/response.Response"
+                            "type": "string"
                         }
                     }
                 }
@@ -4164,7 +4191,7 @@ const docTemplate = `{
         },
         "/user": {
             "post": {
-                "description": "add a user to db",
+                "description": "add a user to db\nno need to post id\nusername cannot be empty, repeated\npassword cannot be empty\nemail cannot be empty, repeated",
                 "consumes": [
                     "application/json"
                 ],
@@ -4177,38 +4204,13 @@ const docTemplate = `{
                 "summary": "register a user",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "user's name",
-                        "name": "username",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "password",
-                        "name": "password",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "email",
-                        "name": "email",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "overview",
-                        "name": "overview",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "description": "institution ID",
-                        "name": "institutionID",
-                        "in": "formData",
-                        "required": true
+                        "description": "nessary information for register",
+                        "name": "AccountInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.AccountInfo"
+                        }
                     }
                 ],
                 "responses": {
@@ -4260,6 +4262,65 @@ const docTemplate = `{
                                     }
                                 }
                             ]
+                        }
+                    }
+                }
+            }
+        },
+        "/user/password/{id}": {
+            "put": {
+                "description": "modify user's password\ncannot change other's password\noriginal password cannot be empty\nnew password cannot be empty\noriginal password must be correct\nnew password cannot be the same as original password",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "modify user's password",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "user's id",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "modified password information",
+                        "name": "ModifyInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.ModifyAccountPasswordInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "empty/invalid user id | invalid modified information",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "cannot change other's password | wrong original password | original \u0026 modified passwords are the same",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -4321,7 +4382,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "modify username, password, overview, and institution_id",
+                "description": "modify username, realname, email, overview, and institution_id\ncannot change other's info\ncannot change password\nusername cannot be empty, repeated\nemail cannot be empty, repeated",
                 "consumes": [
                     "application/json"
                 ],
@@ -4341,35 +4402,13 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "string",
-                        "description": "original password",
-                        "name": "oriPassword",
-                        "in": "formData",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "modified password",
-                        "name": "modPassword",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "description": "modified email",
-                        "name": "email",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "description": "modified overview",
-                        "name": "overview",
-                        "in": "formData"
-                    },
-                    {
-                        "type": "string",
-                        "description": "modified institution ID",
-                        "name": "institutionID",
-                        "in": "formData"
+                        "description": "modified information",
+                        "name": "ModifyInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/database.User"
+                        }
                     }
                 ],
                 "responses": {
@@ -4666,17 +4705,84 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
-                "institutionID": {
+                "institution_id": {
                     "type": "integer"
-                },
-                "name": {
-                    "type": "string"
                 },
                 "overview": {
                     "type": "string"
                 },
-                "realName": {
+                "real_name": {
                     "type": "string"
+                },
+                "user_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoint.AccountInfo": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "institution_id": {
+                    "type": "integer"
+                },
+                "overview": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "real_name": {
+                    "type": "string"
+                },
+                "user_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoint.LoginInfo": {
+            "type": "object",
+            "properties": {
+                "password": {
+                    "type": "string"
+                },
+                "user_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoint.ModifyAccountPasswordInfo": {
+            "type": "object",
+            "properties": {
+                "new_password": {
+                    "type": "string"
+                },
+                "original_password": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoint.NewInstitutionInfo": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoint.NewParticipantInfo": {
+            "type": "object",
+            "properties": {
+                "competition_id": {
+                    "type": "integer"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
                 }
             }
         },
@@ -4695,7 +4801,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:6969",
+	Host:             "localhost:8080",
 	BasePath:         "/api/",
 	Schemes:          []string{},
 	Title:            "Gin swagger",

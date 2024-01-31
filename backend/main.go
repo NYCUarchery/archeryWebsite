@@ -17,7 +17,7 @@ import (
 
 //	@license.name	no license yet
 
-//	@host	localhost:6969
+//	@host	localhost:8080
 //	@BasePath  /api/
 //
 // schemes http
