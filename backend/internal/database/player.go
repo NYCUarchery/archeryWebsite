@@ -23,13 +23,13 @@ type Round struct {
 }
 
 type RoundEnd struct {
-	ID          uint        `json:"id"           gorm:"primary_key"`
-	RoundId     uint        `json:"round_id"`
-	IsConfirmed bool        `json:"is_confirmed"`
-	EndScores   []*EndScore `json:"end_scores" gorm:"constraint:OnDelete:CASCADE;"`
+	ID          uint          `json:"id"           gorm:"primary_key"`
+	RoundId     uint          `json:"round_id"`
+	IsConfirmed bool          `json:"is_confirmed"`
+	RoundScores []*RoundScore `json:"round_scores" gorm:"constraint:OnDelete:CASCADE;"`
 }
 
-type EndScore struct {
+type RoundScore struct {
 	ID         uint `json:"id"           gorm:"primary_key"`
 	RoundEndId uint `json:"round_end_id"`
 	Score      int  `json:"score"`
@@ -39,7 +39,7 @@ func InitPlayer() {
 	DB.AutoMigrate(&Player{})
 	DB.AutoMigrate(&Round{})
 	DB.AutoMigrate(&RoundEnd{})
-	DB.AutoMigrate(&EndScore{})
+	DB.AutoMigrate(&RoundScore{})
 }
 
 func GetPlayerIsExist(id uint) bool {
@@ -60,9 +60,9 @@ func GetRoundEndIsExist(id uint) bool {
 	return data.ID != 0
 }
 
-func GetEndScoreIsExist(id uint) bool {
-	var data EndScore
-	DB.Table("end_scores").Where("id = ?", id).First(&data)
+func GetRoundScoreIsExist(id uint) bool {
+	var data RoundScore
+	DB.Table("round_scores").Where("id = ?", id).First(&data)
 	return data.ID != 0
 }
 
@@ -83,16 +83,16 @@ func GetDummyPlayersByParticipantId(participantId uint) ([]Player, error) {
 func GetPlayerWScores(id uint) (Player, error) {
 	var data Player
 	result := DB.
-		Preload("Rounds.RoundEnds.EndScores").
+		Preload("Rounds.RoundEnds.RoundScores").
 		Model(&Player{}).
 		Where("id = ?", id).
 		First(&data)
 	return data, result.Error
 }
 
-func GetPlayerScoreByEndScoreId(id uint) (int, error) {
-	var data EndScore
-	result := DB.Table("end_scores").Where("id = ?", id).First(&data)
+func GetPlayerScoreByRoundScoreId(id uint) (int, error) {
+	var data RoundScore
+	result := DB.Table("round_scores").Where("id = ?", id).First(&data)
 	return data.Score, result.Error
 }
 
@@ -120,21 +120,21 @@ func GetPlayerIdsByCompetitionIdGroupId(competitionId uint, groupId uint) ([]uin
 	return playerIds, result.Error
 }
 
-func GetRoundIdByEndScoreId(endScoreId uint) (uint, error) {
+func GetRoundIdByRoundScoreId(roundScoreId uint) (uint, error) {
 	type RoundId struct {
 		RoundId uint
 	}
 	var roundId RoundId
 	result := DB.Table("round_ends").
 		Select("round_ends.round_id").
-		Joins("JOIN end_scores ON end_scores.round_end_id = round_ends.id").
-		Where("end_scores.id = ?", endScoreId).
+		Joins("JOIN round_scores ON round_scores.round_end_id = round_ends.id").
+		Where("round_scores.id = ?", roundScoreId).
 		Order("round_ends.id DESC").
 		First(&roundId)
 	return roundId.RoundId, result.Error
 }
 
-func GetPlayerIdByEndScoreId(endScoreId uint) (uint, error) {
+func GetPlayerIdByRoundScoreId(roundScoreId uint) (uint, error) {
 	type PlayerId struct {
 		PlayerId uint
 	}
@@ -142,8 +142,8 @@ func GetPlayerIdByEndScoreId(endScoreId uint) (uint, error) {
 	result := DB.Table("rounds").
 		Select("rounds.player_id").
 		Joins("JOIN round_ends ON rounds.id = round_ends.round_id").
-		Joins("JOIN end_scores ON end_scores.round_end_id = round_ends.id").
-		Where("end_scores.id = ?", endScoreId).
+		Joins("JOIN round_scores ON round_scores.round_end_id = round_ends.id").
+		Where("round_scores.id = ?", roundScoreId).
 		Order("round_ends.id DESC").
 		First(&playerId)
 	return playerId.PlayerId, result.Error
@@ -161,8 +161,8 @@ func CreateRoundEnd(data RoundEnd) (RoundEnd, error) {
 	result := DB.Table("round_ends").Create(&data)
 	return data, result.Error
 }
-func CreateEndScore(data EndScore) (EndScore, error) {
-	result := DB.Table("end_scores").Create(&data)
+func CreateRoundScore(data RoundScore) (RoundScore, error) {
+	result := DB.Table("round_scores").Create(&data)
 	return data, result.Error
 }
 
@@ -191,8 +191,8 @@ func UpdatePlayerIsConfirmed(roundEndId uint, isConfirmed bool) error {
 	return result.Error
 }
 
-func UpdatePlayerScore(endScoreId uint, score int) error {
-	result := DB.Table("end_scores").Where("id = ?", endScoreId).Update("score", score)
+func UpdatePlayerScore(roundScoreId uint, score int) error {
+	result := DB.Table("round_scores").Where("id = ?", roundScoreId).Update("score", score)
 	return result.Error
 }
 

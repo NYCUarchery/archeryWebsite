@@ -1482,14 +1482,14 @@ const docTemplate = `{
         },
         "/api/lane/scores/{id}": {
             "get": {
-                "description": "Get one Lane with players, rounds, roundends, endscores by id",
+                "description": "Get one Lane with players, rounds, roundends, roundscores by id",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Lane"
                 ],
-                "summary": "Show one Lane with players, rounds, roundends, endscores",
+                "summary": "Show one Lane with players, rounds, roundends, roundscores",
                 "parameters": [
                     {
                         "type": "integer",
@@ -2853,35 +2853,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/player/endscore": {
-            "post": {
-                "description": "Create one EndScore by roundend id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Player"
-                ],
-                "summary": "Create one EndScore by RoundEnd ID",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/api/player/groupid/{playerid}/{groupid}": {
             "put": {
                 "description": "Update one Player groupId by id, and change player laneid to Unassigned lane",
@@ -3105,7 +3076,36 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/player/score/{endscoreid}": {
+        "/api/player/roundscore": {
+            "post": {
+                "description": "Create one RoundScore by roundend id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Create one RoundScore by RoundEnd ID",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/player/score/{roundscoreid}": {
             "put": {
                 "description": "Update one Player score by id",
                 "consumes": [
@@ -3121,8 +3121,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "EndScore ID",
-                        "name": "endscoreid",
+                        "description": "RoundScore ID",
+                        "name": "roundscoreid",
                         "in": "path",
                         "required": true
                     }
@@ -3145,7 +3145,7 @@ const docTemplate = `{
         },
         "/api/player/scores/{id}": {
             "get": {
-                "description": "Get one Player with rounds, roundends, endscores by id",
+                "description": "Get one Player with rounds, roundends, roundscores by id",
                 "produces": [
                     "application/json"
                 ],
@@ -3289,7 +3289,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Delete one Player by id, delete related round, roundend, endscore data, and playerNum minus one in lane",
+                "description": "Delete one Player by id, delete related round, roundend, roundscore data, and playerNum minus one in lane",
                 "produces": [
                     "application/json"
                 ],
@@ -3324,7 +3324,7 @@ const docTemplate = `{
         },
         "/api/player/{participantid}": {
             "post": {
-                "description": "Create one Player by participant id, create realeted rounds by laneNum of competition, create 6 endscores for each 6 roundends, UnassignedLane playerNum ++",
+                "description": "Create one Player by participant id, create realeted rounds by laneNum of competition, create 6 roundscores for each 6 roundends, UnassignedLane playerNum ++",
                 "produces": [
                     "application/json"
                 ],
@@ -4471,20 +4471,6 @@ const docTemplate = `{
                 }
             }
         },
-        "database.EndScore": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "integer"
-                },
-                "round_end_id": {
-                    "type": "integer"
-                },
-                "score": {
-                    "type": "integer"
-                }
-            }
-        },
         "database.Group": {
             "type": "object",
             "properties": {
@@ -4638,12 +4624,6 @@ const docTemplate = `{
         "database.RoundEnd": {
             "type": "object",
             "properties": {
-                "end_scores": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/database.EndScore"
-                    }
-                },
                 "id": {
                     "type": "integer"
                 },
@@ -4651,6 +4631,26 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "round_id": {
+                    "type": "integer"
+                },
+                "round_scores": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.RoundScore"
+                    }
+                }
+            }
+        },
+        "database.RoundScore": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "round_end_id": {
+                    "type": "integer"
+                },
+                "score": {
                     "type": "integer"
                 }
             }
@@ -4734,13 +4734,13 @@ const docTemplate = `{
         "endpoint.NewParticipantInfo": {
             "type": "object",
             "properties": {
-                "competitionID": {
+                "competition_id": {
                     "type": "integer"
                 },
                 "role": {
                     "type": "string"
                 },
-                "userID": {
+                "user_id": {
                     "type": "integer"
                 }
             }
