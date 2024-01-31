@@ -241,7 +241,7 @@ func PostRoundScore(context *gin.Context) {
 	}
 	/*auto update total score in rounds when create score*/
 	score = scorefmt(score)
-	if !UpdatePlayerTotalScore(context, playerId, roundId, score) {
+	if !UpdatePlayerTotalScoreWithOneScore(context, playerId, roundId, score) {
 		return
 	}
 	response.AcceptPrint(newRoundScore.ID, fmt.Sprint(newRoundScore.ID), "Create RoundScore")
@@ -410,13 +410,15 @@ func UpdatePlayerIsConfirmed(context *gin.Context) {
 	context.IndentedJSON(200, nil)
 }
 
-/*auto update total score in rounds when update score*/
-func UpdatePlayerTotalScore(context *gin.Context, playerId uint, roundId uint, score int) bool {
+/*auto update player total score and round total score in rounds when update score*/
+func UpdatePlayerTotalScoreWithOneScore(context *gin.Context, playerId uint, roundId uint, score int) bool {
+	/*check validity*/
 	if response.ErrorIdTest(context, playerId, database.GetPlayerIsExist(playerId), "Player when updating total score") {
 		return false
 	} else if response.ErrorIdTest(context, roundId, database.GetRoundIsExist(roundId), "Round when updating total score") {
 		return false
 	}
+	/*get old total score*/
 	fmt.Printf("score: %d\n", score)
 	oldPlayerTotalScore, err := database.GetPlayerTotalScoreByPlayerId(playerId)
 	fmt.Printf("oldPlayerTotalScore: %d\n", oldPlayerTotalScore)
@@ -428,6 +430,7 @@ func UpdatePlayerTotalScore(context *gin.Context, playerId uint, roundId uint, s
 	if response.ErrorInternalErrorTest(context, roundId, "Get Player round total score", err) {
 		return false
 	}
+	/*update total score*/
 	err = database.UpdatePlayerTotalScore(playerId, score+oldPlayerTotalScore)
 	if response.ErrorInternalErrorTest(context, playerId, "Update Player total score", err) {
 		return false
@@ -485,12 +488,24 @@ func UpdatePlayerScore(context *gin.Context) {
 	var data UpdateTotalScoreData
 	roundScoreId := convert2uint(context, "id")
 	err := context.BindJSON(&data)
-	newScore := data.Score
+	/*check data validity*/
 	if response.ErrorReceiveDataTest(context, roundScoreId, "Update Player score", err) {
 		return
-	} else if response.ErrorIdTest(context, roundScoreId, database.GetRoundScoreIsExist(roundScoreId), "RoundScore when updating score") {
+	}
+	if response.ErrorIdTest(context, roundScoreId, database.GetRoundScoreIsExist(roundScoreId), "RoundScore when updating score") {
 		return
 	}
+	if response.ErrorIdTest(context, data.PlayerId, database.GetPlayerIsExist(data.PlayerId), "Player when updating score") {
+		return
+	}
+	if response.ErrorIdTest(context, data.RoundId, database.GetRoundIsExist(data.RoundId), "Round when updating score") {
+		return
+	}
+	if response.ErrorIdTest(context, data.RoundEndId, database.GetRoundEndIsExist(data.RoundEndId), "RoundEnd when updating score") {
+		return
+	}
+	/*update one score*/
+	newScore := data.Score
 	oldScore, err := database.GetPlayerScoreByRoundScoreId(roundScoreId)
 	if response.ErrorInternalErrorTest(context, roundScoreId, "Get Player score when update totalscore", err) {
 		return
@@ -501,7 +516,7 @@ func UpdatePlayerScore(context *gin.Context) {
 		return
 	}
 
-	/*auto update total score in rounds when update score*/
+	/*auto update player total score and round total score in rounds when update score*/
 	newScore = scorefmt(newScore)
 	fmt.Printf("oldScore: %d\n", oldScore)
 	oldScore = scorefmt(oldScore)
@@ -513,7 +528,7 @@ func UpdatePlayerScore(context *gin.Context) {
 	if response.ErrorInternalErrorTest(context, playerId, "Get Player id by roundScoreId", err) {
 		return
 	}
-	if !UpdatePlayerTotalScore(context, playerId, roundId, newScore-oldScore) {
+	if !UpdatePlayerTotalScoreWithOneScore(context, playerId, roundId, newScore-oldScore) {
 		return
 	}
 
@@ -614,8 +629,8 @@ func GetDummyPlayerByParticipantId(context *gin.Context) {
 //	@Tags			Player
 //	@Produce		json
 //	@Param			playerid	path	int	true	"Player ID"
-//	@Success		200				string	string
-//	@Failure		400				string	string
+//	@Success		200			string	string
+//	@Failure		400			string	string
 //	@Router			/api/player/dummy/{playerid} [post]
 func PostDummyPlayerByPlayerId(context *gin.Context) {
 	id := convert2uint(context, "playerid")

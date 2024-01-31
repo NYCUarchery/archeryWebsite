@@ -31,9 +31,9 @@ type ParticipantWName struct {
 //	@Tags			Participant
 //	@Accept			json
 //	@Produce		json
-//	@Param			userID			formData	int					true	"user id"
-//	@Param			competitionID	formData	int					true	"competition id"
-//	@Param			role			formData	string				true	"role"
+//	@Param			userID			formData	int						true	"user id"
+//	@Param			competitionID	formData	int						true	"competition id"
+//	@Param			role			formData	string					true	"role"
 //	@Success		200				{object}	database.Participant	"success"
 //	@Failure		400				{object}	response.Response		"cannot parse competitionID | participant exists"
 //	@Failure		400				{object}	response.Response		"no user/competition found"

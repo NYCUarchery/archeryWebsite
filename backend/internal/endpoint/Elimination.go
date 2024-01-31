@@ -149,8 +149,8 @@ func GetEliminationById(context *gin.Context) {
 //	@Tags			Elimination
 //	@Produce		json
 //	@Param			matchid	path	int	true	"Match ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Success		200		string	string
+//	@Failure		400		string	string
 //	@Router			/api/elimination/match/scores/{matchid} [get]
 func GetMatchWScoresById(context *gin.Context) {
 	id := convert2uint(context, "matchid")
