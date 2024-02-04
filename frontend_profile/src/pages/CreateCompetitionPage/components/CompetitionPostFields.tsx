@@ -21,9 +21,12 @@ export default function CompetitionPostFields({ postBody }: Props) {
 
   const navigate = useNavigate();
 
-  const { data: uid, isLoading, isError } = useGetUid();
+  const { data: uid, isLoading, isError, isSuccess } = useGetUid();
   if (isLoading) return <div>loading...</div>;
   if (isError) navigate("/Login");
+  if (isSuccess) {
+    postBody.value.host_id = uid;
+  }
 
   const handleFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
