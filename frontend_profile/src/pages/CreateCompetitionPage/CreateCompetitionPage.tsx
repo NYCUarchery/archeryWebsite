@@ -13,16 +13,13 @@ import useGetUid from "../../util/QueryHooks/useGetUid";
 
 let postBody = signal<PostCompetitionBody>({} as PostCompetitionBody);
 const CreateContestPage = () => {
-  const { data: uid, isLoading, isSuccess, isFetching, isError } = useGetUid();
-  const navigate = useNavigate();
-
   return (
     <Card sx={{ p: 2, mb: 2 }}>
       <CardContent>
+        <CompetitionPostFields postBody={postBody} />
         <Box sx={{ display: "flex", mt: 2, justifyContent: "center" }}>
           <CreateButton postBody={postBody}></CreateButton>
         </Box>
-        <CompetitionPostFields postBody={postBody} />
       </CardContent>
     </Card>
   );
