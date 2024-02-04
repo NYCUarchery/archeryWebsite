@@ -5,5 +5,6 @@ export type PostCompetitionBody = {
   rounds_num: number;
   lanes_num: number;
   script: string;
-  date: string;
+  start_time: string;
+  end_time: string;
 };

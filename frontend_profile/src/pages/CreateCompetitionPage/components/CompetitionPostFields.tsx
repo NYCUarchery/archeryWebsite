@@ -8,14 +8,16 @@ import { Signal, signal } from "@preact/signals-react";
 import useGetUid from "../../../util/QueryHooks/useGetUid";
 import { useNavigate } from "react-router-dom";
 
-let date = signal<Dayjs>(dayjs());
+let startTime = signal<Dayjs>(dayjs());
+let endTime = signal<Dayjs>(dayjs());
 
 type Props = {
   postBody: Signal<PostCompetitionBody>;
 };
 
 export default function CompetitionPostFields({ postBody }: Props) {
-  postBody.value.date = dayjsToISO(date.value);
+  postBody.value.start_time = dayjsToISO(startTime.value);
+  postBody.value.end_time = dayjsToISO(endTime.value);
   const navigate = useNavigate();
 
   const { data: uid, isLoading, isError } = useGetUid();
@@ -30,10 +32,15 @@ export default function CompetitionPostFields({ postBody }: Props) {
     };
   };
 
-  const handleDateChange = (newValue: Dayjs | null) => {
+  const handleStartTimeChange = (newValue: Dayjs | null) => {
     if (newValue == null) return;
-    date.value = newValue;
-    postBody.value.date = dayjsToISO(newValue);
+    startTime.value = newValue;
+    postBody.value.start_time = dayjsToISO(newValue);
+  };
+  const handleEndTimeChange = (newValue: Dayjs | null) => {
+    if (newValue == null) return;
+    endTime.value = newValue;
+    postBody.value.end_time = dayjsToISO(newValue);
   };
 
   return (
@@ -85,9 +92,18 @@ export default function CompetitionPostFields({ postBody }: Props) {
       <Box>
         <LocalizationProvider dateAdapter={AdapterDayjs}>
           <DatePicker
-            label="日期"
-            value={date.value}
-            onChange={handleDateChange}
+            label="起始日期"
+            value={startTime.value}
+            onChange={handleStartTimeChange}
+          />
+        </LocalizationProvider>
+      </Box>
+      <Box>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <DatePicker
+            label="結束日期"
+            value={endTime.value}
+            onChange={handleEndTimeChange}
           />
         </LocalizationProvider>
       </Box>
@@ -107,5 +123,5 @@ export default function CompetitionPostFields({ postBody }: Props) {
 }
 
 const dayjsToISO = (dayjs: Dayjs) => {
-  return dayjs.format("YYYY-MM-DDTHH:mm:ss") + "." + dayjs.format("SSS") + "Z";
+  return dayjs.format("YYYY-MM-DDTHH:mm:ss") + "+00:00";
 };
