@@ -25,7 +25,6 @@ const CreateButton: React.FC<Props> = ({ postBody }: Props) => {
   const { mutate: createCompetition } = useMutation(postCompetition, {
     onSuccess: () => {
       setIsCreationSuccess(true);
-      navigate(routing.Contests);
     },
     onError: () => {
       setIsCreationError(true);
@@ -41,8 +40,11 @@ const CreateButton: React.FC<Props> = ({ postBody }: Props) => {
     <>
       <Snackbar
         open={isCreationSuccess}
-        onClose={() => setIsCreationSuccess(false)}
-        autoHideDuration={6000}
+        onClose={() => {
+          setIsCreationSuccess(false);
+          navigate(routing.Contests);
+        }}
+        autoHideDuration={3000}
         key={"bottomcenter"}
       >
         <Alert severity="success" sx={{ width: "100%" }}>
