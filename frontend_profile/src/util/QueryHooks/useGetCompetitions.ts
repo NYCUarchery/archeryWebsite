@@ -1,5 +1,6 @@
 import { useQuery } from "react-query";
 import axios from "axios";
+import { Competition } from "./types/competition";
 
 const useGetCompetitions = (start: number, end: number) => {
   return useQuery(
@@ -8,7 +9,7 @@ const useGetCompetitions = (start: number, end: number) => {
     {
       staleTime: Infinity,
       keepPreviousData: true,
-      select: (responseData: any) => responseData?.data,
+      select: (responseData: any) => responseData?.data as Competition[],
     }
   );
 };
