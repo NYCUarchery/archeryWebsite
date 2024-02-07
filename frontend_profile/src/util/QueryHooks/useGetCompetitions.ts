@@ -1,6 +1,6 @@
 import { useQuery } from "react-query";
 import axios from "axios";
-import { Competition } from "./types/competition";
+import { Competition } from "./types/Competition";
 
 const useGetCompetitions = (start: number, end: number) => {
   return useQuery(
