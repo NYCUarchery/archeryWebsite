@@ -29,6 +29,7 @@ const ContestPage = () => {
               </Typography>
             </Grid>
           </Grid>
+          <ToCreateButton />
           {isLoadingCompetitions || isLoadingUid ? (
             <p>loading...</p>
           ) : (
@@ -41,7 +42,6 @@ const ContestPage = () => {
             ))
           )}
         </Box>
-        <ToCreateButton />
       </CardContent>
     </Card>
   );
