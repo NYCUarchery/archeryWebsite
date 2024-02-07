@@ -33,7 +33,11 @@ const ContestPage = () => {
             <p>loading...</p>
           ) : (
             competitions?.map((competition: any) => (
-              <Competition competition={competition} uid={uid} />
+              <Competition
+                competition={competition}
+                uid={uid}
+                key={competition.id}
+              />
             ))
           )}
         </Box>
