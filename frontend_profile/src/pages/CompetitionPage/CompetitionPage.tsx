@@ -11,37 +11,64 @@ import { Competition } from "./CompetitionPageComponents/Competition";
 import ToCreateButton from "./CompetitionPageComponents/ToCreateButton";
 import useGetCompetitions from "../../util/QueryHooks/useGetCompetitions";
 import useGetUid from "../../util/QueryHooks/useGetUid";
+import Pagination from "@mui/material/Pagination";
+import { set } from "date-fns";
 
-// The updated ContestPage component
 const ContestPage = () => {
+  const [page, setPage] = useState(1);
+  const [startIndex, setStartIndex] = useState((page - 1) * 5);
+  const [endIndex, setEndIndex] = useState(page * 5 - 1);
+
   const { data: competitions, isLoading: isLoadingCompetitions } =
-    useGetCompetitions(0, 5);
+    useGetCompetitions(startIndex, endIndex);
   const { data: uid, isLoading: isLoadingUid } = useGetUid();
+  const handlePageChange = (
+    event: React.ChangeEvent<unknown>,
+    value: number
+  ) => {
+    setPage(value);
+    setStartIndex((value - 1) * 5);
+    setEndIndex(value * 5 - 1);
+  };
 
   return (
     <Card sx={{ p: 2, mb: 2 }}>
       <CardContent>
-        <Box sx={{ mb: 4 }}>
-          <Grid container justifyContent="center">
-            <Grid item>
-              <Typography variant="h5" component="div">
-                近期比賽
-              </Typography>
-            </Grid>
+        <Grid container justifyContent="center">
+          <Grid item>
+            <Typography variant="h5" component="div">
+              近期比賽
+            </Typography>
           </Grid>
-          <ToCreateButton />
-          {isLoadingCompetitions || isLoadingUid ? (
-            <p>loading...</p>
-          ) : (
-            competitions?.map((competition: any) => (
-              <Competition
-                competition={competition}
-                uid={uid}
-                key={competition.id}
-              />
-            ))
-          )}
-        </Box>
+        </Grid>
+        <ToCreateButton />
+        <Pagination
+          count={10}
+          color="primary"
+          onChange={handlePageChange}
+          page={page}
+          sx={{ display: "flex", justifyContent: "center" }}
+        />
+        {competitions?.length === 0 && <h2>沒有更多比賽了喲 ;(</h2>}
+        {isLoadingCompetitions || isLoadingUid ? (
+          <p>loading...</p>
+        ) : (
+          competitions?.map((competition: any) => (
+            <Competition
+              competition={competition}
+              uid={uid}
+              key={competition.id}
+            />
+          ))
+        )}
+
+        <Pagination
+          count={10}
+          color="primary"
+          onChange={handlePageChange}
+          page={page}
+          sx={{ display: "flex", justifyContent: "center" }}
+        />
       </CardContent>
     </Card>
   );

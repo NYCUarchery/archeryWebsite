@@ -3,10 +3,11 @@ import axios from "axios";
 
 const useGetCompetitions = (start: number, end: number) => {
   return useQuery(
-    "competitions",
+    ["competitions", start, end],
     () => axios.get(`/api/competition/current/${start}/${end}`),
     {
       staleTime: Infinity,
+      keepPreviousData: true,
       select: (responseData: any) => responseData?.data,
     }
   );
