@@ -13,6 +13,7 @@ import useGetCompetitions from "../../util/QueryHooks/useGetCompetitions";
 import useGetUid from "../../util/QueryHooks/useGetUid";
 import Pagination from "@mui/material/Pagination";
 import { set } from "date-fns";
+import { CompetitionList } from "./CompetitionPageComponents/CompetitionList";
 
 const ContestPage = () => {
   const [page, setPage] = useState(1);
@@ -53,13 +54,7 @@ const ContestPage = () => {
         {isLoadingCompetitions || isLoadingUid ? (
           <p>loading...</p>
         ) : (
-          competitions?.map((competition: any) => (
-            <Competition
-              competition={competition}
-              uid={uid}
-              key={competition.id}
-            />
-          ))
+          <CompetitionList competitions={competitions} uid={uid} />
         )}
 
         <Pagination
