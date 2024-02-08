@@ -34,7 +34,7 @@ export default function MyCompetitionPage() {
         <Grid container justifyContent="center">
           <Grid item>
             <Typography variant="h5" component="div">
-              近期比賽
+              我的比賽
             </Typography>
           </Grid>
         </Grid>
