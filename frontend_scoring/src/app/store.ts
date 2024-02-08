@@ -1,7 +1,7 @@
 import { Middleware, configureStore } from "@reduxjs/toolkit";
 import ReduxLogger from "redux-logger";
 import { groupListButtonReducer } from "../features/Screen/SubGameBar/GroupList/groupListButtonSlice";
-import { phaseListButtonReducer } from "../features/Screen/SubGameBar/PhaseList/phaseListButtonSlice";
+import { phaseMenuReducer } from "../features/Screen/SubGameBar/PhaseMenu/phaseMenuSlice";
 import { stageControllerReducer } from "../features/Screen/BottomBar/StageController/stageControllerSlice";
 import { boardMenuReducer } from "../features/Screen/TopBar/BoardMenu/boardMenuSlice";
 import { scoreControllerReducer } from "../features/RecordingBoard/LaneBoard/ScoreController/scoreControllerSlice";
@@ -20,7 +20,7 @@ import { qualificationStructureSetterReducer } from "../features/AdministrationB
 const store = configureStore({
   reducer: {
     groupListButton: groupListButtonReducer,
-    phaseListButton: phaseListButtonReducer,
+    phaseMenu: phaseMenuReducer,
     stageController: stageControllerReducer,
     boardMenu: boardMenuReducer,
     scoreController: scoreControllerReducer,

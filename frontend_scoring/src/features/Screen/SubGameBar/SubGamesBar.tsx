@@ -1,6 +1,9 @@
 import { useSelector } from "react-redux/es/hooks/useSelector";
+
+import Box from "@mui/material/Box";
+
 import GroupList from "./GroupList/GroupList";
-import PhaseList from "./PhaseList/PhaseList";
+import PhaseMenu from "./PhaseMenu/PhaseMenu";
 import GroupPhaseTag from "./GroupPhaseTag";
 import AdminBoardTabs from "./AdminBoardTabs/AdminBoardTabs";
 import useGetGroupsWithPlayers from "../../../QueryHooks/useGetGroupsWithPlayers";
@@ -18,7 +21,7 @@ function SubGamesBar() {
       content = (
         <>
           <GroupList groups={groups}></GroupList>
-          <PhaseList></PhaseList>
+          <PhaseMenu />
         </>
       );
       break;
@@ -29,7 +32,7 @@ function SubGamesBar() {
       content = <AdminBoardTabs></AdminBoardTabs>;
   }
 
-  return <div className="sub_game_bar">{content}</div>;
+  return <Box sx={{ backgroundColor: "primary.main" }}>{content}</Box>;
 }
 
 export default SubGamesBar;

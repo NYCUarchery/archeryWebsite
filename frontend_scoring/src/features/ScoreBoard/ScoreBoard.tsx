@@ -10,9 +10,7 @@ const gameInfos = [QualificationInfo, EliminationInfo, TeamEliminationInfo];
 
 export default function ScoreBoard() {
   const boardShown = useSelector((state: any) => state.boardMenu.boardShown);
-  const phaseShown = useSelector(
-    (state: any) => state.phaseListButton.phaseShown
-  );
+  const phaseShown = useSelector((state: any) => state.phaseMenu.phaseShown);
   const competitionID = useSelector((state: any) => state.game.competitionID);
   const { data: groups } = useGetGroupsWithPlayers(competitionID);
 
