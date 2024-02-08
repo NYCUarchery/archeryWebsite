@@ -2,11 +2,12 @@ import { useSelector } from "react-redux/es/hooks/useSelector";
 
 import Box from "@mui/material/Box";
 
-import GroupList from "./GroupList/GroupList";
+import GroupMenu from "./GroupMenu/GroupMenu";
 import PhaseMenu from "./PhaseMenu/PhaseMenu";
 import GroupPhaseTag from "./GroupPhaseTag";
 import AdminBoardTabs from "./AdminBoardTabs/AdminBoardTabs";
 import useGetGroupsWithPlayers from "../../../QueryHooks/useGetGroupsWithPlayers";
+import { Group } from "../../../QueryHooks/types/Competition";
 
 function SubGamesBar() {
   const boardShown = useSelector((state: any) => state.boardMenu.boardShown);
@@ -20,7 +21,7 @@ function SubGamesBar() {
     case "score":
       content = (
         <>
-          <GroupList groups={groups}></GroupList>
+          <GroupMenu groups={groups as Group[]}></GroupMenu>
           <PhaseMenu />
         </>
       );
