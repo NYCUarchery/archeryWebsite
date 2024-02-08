@@ -5,17 +5,14 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 // import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
 
-import { Competition } from "./CompetitionPageComponents/Competition";
-import ToCreateButton from "./CompetitionPageComponents/ToCreateButton";
+import ToCreateButton from "./components/ToCreateButton";
 import useGetCompetitions from "../../util/QueryHooks/useGetCompetitions";
 import useGetUid from "../../util/QueryHooks/useGetUid";
 import Pagination from "@mui/material/Pagination";
-import { set } from "date-fns";
-import { CompetitionList } from "./CompetitionPageComponents/CompetitionList";
+import { CompetitionList } from "./components/CompetitionList";
 
-const ContestPage = () => {
+export default function RecentCompetitionPage() {
   const [page, setPage] = useState(1);
   const [startIndex, setStartIndex] = useState((page - 1) * 5);
   const [endIndex, setEndIndex] = useState(page * 5 - 1);
@@ -67,6 +64,4 @@ const ContestPage = () => {
       </CardContent>
     </Card>
   );
-};
-
-export default ContestPage;
+}

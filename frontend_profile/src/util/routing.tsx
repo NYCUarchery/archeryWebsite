@@ -2,7 +2,7 @@ const routing = {
   Home: "/",
   Personal: "/PersonalPage",
   About: "/Abouts",
-  Contests: "/Contests",
+  RecentCompetitions: "/RecentCompetitions",
   MyCompetition: "/MyCompetition",
   ChangeInfo: "/ChangeInfo",
   CreateContest: "/CreateContest",

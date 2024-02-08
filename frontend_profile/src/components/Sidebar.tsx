@@ -75,11 +75,11 @@ const Sidebar: FC<SidebarProps> = ({ sideBarOpen, setSideBarOpen }) => {
     },
     {
       label: "比賽",
-      route: routing.Contests,
+      route: routing.RecentCompetitions,
       subitem: [
         {
           label: "近期比賽",
-          route: routing.Contests,
+          route: routing.RecentCompetitions,
         },
         {
           label: "我的比賽",
