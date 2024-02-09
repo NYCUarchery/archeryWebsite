@@ -7,6 +7,7 @@ export const scoringTheme = createTheme(
     palette: {
       primary: {
         main: "#2056CC",
+        dark: "#1448b8",
       },
       secondary: {
         main: "#4020cc",

@@ -6,7 +6,7 @@ type PhaseMenuState = {
 };
 
 const initialState: PhaseMenuState = {
-  phaseShown: 0,
+  phaseShown: 4,
   phaseKindShown: "Qualification",
 };
 

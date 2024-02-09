@@ -1,6 +1,13 @@
 import { Group } from "../../../../QueryHooks/types/Competition";
 
-import { Menu, MenuItem, Button } from "@mui/material";
+import {
+  Accordion,
+  AccordionDetails,
+  AccordionSummary,
+  List,
+  ListItem,
+  Divider,
+} from "@mui/material";
 
 import { useSelector, useDispatch } from "react-redux";
 import { selectGroup } from "./groupMenuSlice";
@@ -12,43 +19,93 @@ interface Props {
 }
 
 export default function GroupMenu({ groups }: Props) {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [open, setOpen] = useState(false);
   const dispatch = useDispatch();
   useEffect(() => {
     if (groups.length > 1) dispatch(selectGroup(groups[1].id));
     else dispatch(selectGroup(groups[0].id));
   }, []);
   const groupShown = useSelector((state: any) => state.groupMenu.groupShown);
+  const selectedGroup = groups.find(
+    (group) => group.id === groupShown
+  ) as Group;
+
+  if (!selectedGroup) return <></>;
 
   return (
-    <>
-      <Button
-        color="primary"
-        variant="contained"
-        onClick={(event) => setAnchorEl(event.currentTarget)}
+    <Accordion
+      square={true}
+      expanded={open}
+      elevation={0}
+      sx={{
+        width: "50%",
+        height: "100%",
+        backgroundColor: "primary.dark",
+        color: "primary.contrastText",
+      }}
+    >
+      <AccordionSummary
+        sx={AccordionSummaryStyle}
+        onClick={() => setOpen(!open)}
       >
-        {groups.find((group) => group.id == groupShown)?.group_name}
-      </Button>
-      <Menu
-        open={Boolean(anchorEl)}
-        anchorEl={anchorEl}
-        onClose={() => setAnchorEl(null)}
+        {selectedGroup.group_name}
+      </AccordionSummary>
+      <AccordionDetails
+        sx={{
+          backgroundColor: "primary.dark",
+          color: "primary.contrastText",
+          padding: "0",
+        }}
       >
-        {groups.map((group, index) => {
-          if (index === 0) return;
-          return (
-            <MenuItem
-              key={index}
-              onClick={() => {
-                setAnchorEl(null);
-                dispatch(selectGroup({ groupShown: group.id }));
-              }}
-            >
-              {group.group_name}
-            </MenuItem>
-          );
-        })}
-      </Menu>
-    </>
+        <List
+          sx={{
+            p: 0,
+            "& .MuiListItem-root": {
+              justifyContent: "center",
+              height: "2rem",
+              fonxSize: "2rem",
+            },
+          }}
+        >
+          {groups.map((group, index) => {
+            if (index === 0) return null;
+            return (
+              <>
+                {index === 1 ? (
+                  <Divider sx={{ borderColor: "primary.contrastText" }} />
+                ) : null}
+                <ListItem
+                  key={group.id}
+                  onClick={() => {
+                    dispatch(selectGroup(group.id));
+                    setOpen(false);
+                  }}
+                >
+                  {group.group_name}
+                </ListItem>
+                {index !== groups.length - 1 ? (
+                  <Divider sx={{ borderColor: "primary.contrastText" }} />
+                ) : null}
+              </>
+            );
+          })}
+        </List>
+      </AccordionDetails>
+    </Accordion>
   );
 }
+
+const AccordionSummaryStyle = {
+  "&.MuiAccordionSummary-root": {
+    height: "100%",
+    minHeight: "0",
+  },
+
+  "& .MuiAccordionSummary-content": {
+    height: "100%",
+    fontSize: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    margin: "0",
+  },
+};

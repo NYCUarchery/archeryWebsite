@@ -20,10 +20,17 @@ function SubGamesBar() {
   switch (boardShown) {
     case "score":
       content = (
-        <>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            width: "100%",
+            maxWidth: "400px",
+          }}
+        >
           <GroupMenu groups={groups as Group[]}></GroupMenu>
           <PhaseMenu />
-        </>
+        </Box>
       );
       break;
     case "recording":
@@ -33,7 +40,18 @@ function SubGamesBar() {
       content = <AdminBoardTabs></AdminBoardTabs>;
   }
 
-  return <Box sx={{ backgroundColor: "primary.main" }}>{content}</Box>;
+  return (
+    <Box
+      sx={{
+        backgroundColor: "primary.main",
+        display: "flex",
+        justifyContent: "center",
+        height: "2rem",
+      }}
+    >
+      {content}
+    </Box>
+  );
 }
 
 export default SubGamesBar;
