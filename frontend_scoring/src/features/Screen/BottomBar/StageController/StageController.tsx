@@ -5,16 +5,14 @@ import StageListButton from "./StageListButton";
 import { useSelector } from "react-redux";
 
 export default function StageController() {
-  const phaseShown = useSelector(
-    (state: any) => state.phaseListButton.phaseShown
-  );
+  const phaseShown = useSelector((state: any) => state.phaseMenu.phaseShown);
   const boardShown = useSelector((state: any) => state.boardMenu.boardShown);
 
   const currentPhaseKind = useSelector(
     (state: any) => state.game.currentPhaseKind
   );
   const phaseKindShown = useSelector(
-    (state: any) => state.phaseListButton.phaseKindShown
+    (state: any) => state.phaseMenu.phaseKindShown
   );
   if (phaseShown === 0 && boardShown === "score") {
     return null;

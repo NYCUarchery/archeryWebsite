@@ -10,7 +10,7 @@ interface Props {
 
 export default function QualificationBoard({ groups }: Props) {
   const groupShown: number = useSelector(
-    (state: any) => state.groupListButton.groupShown
+    (state: any) => state.groupMenu.groupShown
   );
 
   const group = groups.find((g: any) => g.id === groupShown);

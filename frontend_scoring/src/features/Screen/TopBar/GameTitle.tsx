@@ -1,29 +1,14 @@
 import { useSelector } from "react-redux";
-import { useQuery } from "react-query";
-import axios from "axios";
-
-const fetchCompetition = (competitionId: number) => {
-  return axios.get(`/api/competition/${competitionId}`);
-};
+import useGetCompetition from "../../../QueryHooks/useGetCompetition";
 
 function GameTitle() {
-  let competitionId = 1;
+  const competitionId = useSelector((state: any) => state.game.competitionID);
   const boardShown = useSelector((state: any) => state.boardMenu.boardShown);
 
-  const { isLoading, data, isError } = useQuery(
-    ["competition", competitionId],
-    () => fetchCompetition(competitionId),
-    {
-      select: (data: any) => {
-        const title = data?.data.title;
-        const subTitle = data?.data.sub_title;
-        return { title, subTitle };
-      },
-    }
-  );
+  const { isLoading, data, isError } = useGetCompetition(competitionId);
 
   let title = data?.title;
-  let subTitle = data?.subTitle;
+  let subTitle = data?.sub_title;
 
   if (isLoading) {
     title = "讓我看看";
