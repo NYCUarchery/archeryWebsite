@@ -21,7 +21,7 @@ docker compose -f docker-compose-dev.yml up --build
 ## API Reference
 
 如果更新了 gin swag 的註解，在運行前需要在 terminal 中輸入 swag init (應該會出現 doc 檔案)。
-http://localhost:8080/swagger/index.html#/
+http://localhost/swagger/index.html#/
 
 ## Tech Stack
 
@@ -45,3 +45,17 @@ http://localhost:8080/swagger/index.html#/
 
 目前在正確的擴展套件後，編譯器仍然會有一些意見，然而整個前段是可以正常建起來的。所以目前是用可以讓編譯器安靜的各種方法先讓它安靜。
 在使用 custom color 的時候要進行斷言`as unknow as undifined`
+
+## FAQ
+
+#### 註冊帳號時沒有組織可以選怎麼辦？
+
+目前要手動戳 API POST `http://localhost/api/institution`。
+
+POST body:
+
+```
+{
+    name: "institution"
+}
+```
