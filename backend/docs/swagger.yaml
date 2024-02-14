@@ -231,7 +231,7 @@ definitions:
         example: result description
         type: string
     type: object
-host: localhost:8080
+host: localhost:80
 info:
   contact:
     name: NYCUArchery

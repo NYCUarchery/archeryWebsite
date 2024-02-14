@@ -17,14 +17,14 @@ import (
 
 //	@license.name	no license yet
 
-//	@host	localhost:8080
+//	@host	localhost:80
 //	@BasePath  /api/
 //
 // schemes http
 func main() {
 	server := gin.Default() // initialize a Gin router
 	ip := getIpByMode()
-	port := "8080"
+	port := "80"
 
 	database.DatabaseInitial()
 	routers.SetUpRouter(server, ip, port)
