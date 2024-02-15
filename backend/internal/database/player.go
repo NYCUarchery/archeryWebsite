@@ -11,8 +11,8 @@ type Player struct {
 	ShootOffScore int          `json:"shoot_off_score"`
 	Rank          int          `json:"rank"`
 	Order         int          `json:"order" gorm:"column:order_number"`
-	Rounds        []*Round     `json:"rounds" gorm:"constraint:OnDelete:CASCADE;"`
-	PlayerSets    []*PlayerSet `json:"player_sets" gorm:"many2many:player_set_match_tables;"`
+	Rounds        []*Round     `json:"rounds" gorm:"constraint:OnDelete:CASCADE; swagger:"interface{}"`
+	PlayerSets    []*PlayerSet `json:"player_sets" gorm:"many2many:player_set_match_tables;" swagger:"interface{}"`
 }
 
 type Round struct {

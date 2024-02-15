@@ -15,708 +15,6 @@
     "host": "localhost:80",
     "basePath": "/api/",
     "paths": {
-        "/api/competition": {
-            "post": {
-                "description": "Post one new Competition data with new id, create UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup, add host as admin of competition, and return the new Competition data\nzeroTime 0001-01-01T00:00:00+00:01",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "Create one Competition and related data",
-                "parameters": [
-                    {
-                        "description": "Competition",
-                        "name": "Competition",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/competition//groups/players/playertotal/{id}": {
-            "put": {
-                "description": "update competition recount player total score",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "update competition recount player total score",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/competition/current/{head}/{tail}": {
-            "get": {
-                "description": "Get current Competitions, head and tail are the range of most recent competitions\nFor example, head = 0, tail = 10, then return the most recent 10 competitions\nhead \u003e= 0, tail \u003e= 0, head \u003c= tail",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "Show current Competitions",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "head",
-                        "name": "head",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "tail",
-                        "name": "tail",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/competition/currentphaseminus/{id}": {
-            "put": {
-                "description": "update one Competition currentPhase --",
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "update one Competition currentPhase --",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/competition/currentphaseplus/{id}": {
-            "put": {
-                "description": "update one Competition currentPhase ++",
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "update one Competition currentPhase ++",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/competition/eliminationisactive/{id}": {
-            "put": {
-                "description": "update one Competition Elimination Active to be true",
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "update one Competition Elimination Active to be true",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/competition/groups/players/rank/{id}": {
-            "put": {
-                "description": "Update update all  player ranking of different groups in one Competition",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "update one Competition Ranking",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/competition/groups/players/{id}": {
-            "get": {
-                "description": "Get one Competition by id with GroupInfos and Players",
-                "summary": "Show one Competition with GroupInfos and Players",
-                "responses": {}
-            }
-        },
-        "/api/competition/groups/qualieli/{id}": {
-            "get": {
-                "description": "Get one Competition by id with related Groups which have related one Qualification id and many Elimination ids",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "Show one Competition with Groups Qualification Elimination",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/competition/groups/{id}": {
-            "get": {
-                "description": "Get one Competition by id with GroupInfos",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "Show one Competition with GroupInfos",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/competition/mixedeliminationisactive/{id}": {
-            "put": {
-                "description": "update one Competition Mixed Elimination Active to be true and create all mixed elimination for groups",
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "update one Competition Mixed Elimination Active to be true and create all mixed elimination for groups",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/competition/participants/{id}": {
-            "get": {
-                "description": "Get one Competition by id with Participants",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "Show one Competition with Participants",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/competition/qualificationcurrentendminus/{id}": {
-            "put": {
-                "description": "update one Competition Qualification currentEnd --",
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "update one Competition Qualification currentEnd --",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/competition/qualificationcurrentendplus/{id}": {
-            "put": {
-                "description": "update one Competition Qualification currentEnd ++",
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "update one Competition Qualification currentEnd ++",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/competition/qualificationisactive/{id}": {
-            "put": {
-                "description": "update one Competition Qualification Active to be true",
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "update one Competition Qualification Active to be true",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/competition/recent/{userid}/{head}/{tail}": {
-            "get": {
-                "description": "Get recent Competitions by User id, head and tail are the range of most recent competitions\nFor example, head = 0, tail = 10, then return the most recent 10 competitions\nhead \u003e= 0, tail \u003e= 0, head \u003c= tail",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "Show recent Competitions dealing with User",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "User ID",
-                        "name": "userid",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "head",
-                        "name": "head",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "tail",
-                        "name": "tail",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/competition/teameliminationisactive/{id}": {
-            "put": {
-                "description": "update one Competition Team Elimination Active to be true and create all team elimination for groups",
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "update one Competition Team Elimination Active to be true and create all team elimination for groups",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/competition/whole/{id}": {
-            "put": {
-                "description": "Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId\nzeroTime 0001-01-01T00:00:00+00:01",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "update one Competition without GroupInfo",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Competition",
-                        "name": "Competition",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/competition/{id}": {
-            "get": {
-                "description": "Get one Competition by id without GroupInfo\nzeroTime 0001-01-01T00:00:00+00:01",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "Show one Competition without GroupInfo",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "delete one Competition by id, delete all related groups, lanes, players",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "delete one Competition",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/api/elimination": {
             "post": {
                 "description": "Post one new Elimination data, and three medals",
@@ -3548,6 +2846,875 @@
                         }
                     }
                 }
+            },
+            "post": {
+                "description": "Post one new Competition data with new id\nCreate UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup\nAdd host as admin of competition, and return the new Competition data\nZeroTime 0001-01-01T00:00:00+00:01",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "Create one Competition and related data",
+                "parameters": [
+                    {
+                        "description": "Competition",
+                        "name": "Competition",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.CompetitionPostData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/database.Competition"
+                        }
+                    },
+                    "400": {
+                        "description": "roundsNum must \u003e 0 / When creating Competition, startTime must \u003c= endTime",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorReceiveDataFormatResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error / Post GroupInfo / Update Competition UnassignedLaneId / Update Competition UnassignedGroupId",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/competition//groups/players/playertotal/{id}": {
+            "put": {
+                "description": "update competition recount player total score",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "update competition recount player total score",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/competition/current/{head}/{tail}": {
+            "get": {
+                "description": "Get current Competitions, head and tail are the range of most recent competitions\nFor example, head = 0, tail = 10, then return the most recent 10 competitions\nhead \u003e= 0, tail \u003e= 0, head \u003c= tail",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "Show current Competitions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "head",
+                        "name": "head",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "tail",
+                        "name": "tail",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/database.Competition"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "head and tail must \u003e= 0 / head must \u003c= tail / invalid head parameter / invalid tail parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorReceiveDataFormatResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error / Get Current Competitions",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/competition/currentphaseminus/{id}": {
+            "put": {
+                "description": "update one Competition currentPhase --",
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "update one Competition currentPhase --",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/competition/currentphaseplus/{id}": {
+            "put": {
+                "description": "update one Competition currentPhase ++",
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "update one Competition currentPhase ++",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/competition/eliminationisactive/{id}": {
+            "put": {
+                "description": "update one Competition Elimination Active to be true",
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "update one Competition Elimination Active to be true",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/competition/groups/players/rank/{id}": {
+            "put": {
+                "description": "Update update all  player ranking of different groups in one Competition",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "update one Competition Ranking",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/competition/groups/players/{id}": {
+            "get": {
+                "description": "Get one Competition by id with GroupInfos and Players",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "Show one Competition with GroupInfos and Players",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success, but groups is empty",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Competition"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "groups": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/database.Group"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "players": {
+                                                            "allOf": [
+                                                                {
+                                                                    "$ref": "#/definitions/database.Player"
+                                                                },
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "player_sets": {
+                                                                            "$ref": "#/definitions/response.Nill"
+                                                                        },
+                                                                        "rounds": {
+                                                                            "$ref": "#/definitions/response.Nill"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            ]
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "participants": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "invalid comepetition id parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/competition/groups/qualieli/{id}": {
+            "get": {
+                "description": "Get one Competition by id with related Groups which have related one Qualification id and many Elimination ids",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "Show Qualifications and Eliminations of one Competition",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.CompetitionWGroupsQuaEliData"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid comepetition id parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error / Get Competition Group Ids when get Competition with Groups Qualification Elimination / Get Elimination By Group Id when get Competition with Groups Qualification Elimination",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/competition/groups/{id}": {
+            "get": {
+                "description": "Get one Competition by id with GroupInfos",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "Show one Competition with GroupInfos",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success, but participants is empty",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Competition"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "groups": {
+                                            "$ref": "#/definitions/database.Group"
+                                        },
+                                        "participants": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "invalid competition id parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/competition/mixedeliminationisactive/{id}": {
+            "put": {
+                "description": "update one Competition Mixed Elimination Active to be true and create all mixed elimination for groups",
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "update one Competition Mixed Elimination Active to be true and create all mixed elimination for groups",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/competition/participants/{id}": {
+            "get": {
+                "description": "Get one Competition by id with Participants",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "Show one Competition with Participants",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success, but groups is empty",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Competition"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "groups": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        },
+                                        "participants": {
+                                            "$ref": "#/definitions/database.Participant"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "invalid comepetition id parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/competition/qualificationcurrentendminus/{id}": {
+            "put": {
+                "description": "update one Competition Qualification currentEnd --",
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "update one Competition Qualification currentEnd --",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/competition/qualificationcurrentendplus/{id}": {
+            "put": {
+                "description": "update one Competition Qualification currentEnd ++",
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "update one Competition Qualification currentEnd ++",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/competition/qualificationisactive/{id}": {
+            "put": {
+                "description": "update one Competition Qualification Active to be true",
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "update one Competition Qualification Active to be true",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/competition/recent/{userid}/{head}/{tail}": {
+            "get": {
+                "description": "Get recent Competitions by User id, head and tail are the range of most recent competitions\nFor example, head = 0, tail = 10, then return the most recent 10 competitions\nhead \u003e= 0, tail \u003e= 0, head \u003c= tail",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "Show recent Competitions dealing with User",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "User ID",
+                        "name": "userid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "head",
+                        "name": "head",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "tail",
+                        "name": "tail",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/database.Competition"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "head and tail must \u003e= 0 / head must \u003c= tail / invalid head parameter / invalid tail parameter / invalid userid parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorReceiveDataFormatResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error / Get User Is Exist / Get Competitions Of User",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/competition/teameliminationisactive/{id}": {
+            "put": {
+                "description": "update one Competition Team Elimination Active to be true and create all team elimination for groups",
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "update one Competition Team Elimination Active to be true and create all team elimination for groups",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/competition/whole/{id}": {
+            "put": {
+                "description": "Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId\nzeroTime 0001-01-01T00:00:00+00:01",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "update one Competition without GroupInfo",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Competition",
+                        "name": "Competition",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/competition/{id}": {
+            "get": {
+                "description": "Get one Competition by id without groups and participants\nzeroTime 0001-01-01T00:00:00+00:01",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "Show one Competition without groups and participants",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success, but groups and participants are empty",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Competition"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "groups": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        },
+                                        "participants": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "invalid competition id parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "delete one Competition by id, delete all related groups, lanes, players",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "delete one Competition",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
             }
         },
         "/data/qualification/lanes/Unassigned/{id}": {
@@ -4736,6 +4903,83 @@
                 }
             }
         },
+        "endpoint.CompetitionPostData": {
+            "type": "object",
+            "properties": {
+                "end_time": {
+                    "type": "string"
+                },
+                "host_id": {
+                    "type": "integer"
+                },
+                "lane_num": {
+                    "type": "integer"
+                },
+                "round_num": {
+                    "type": "integer"
+                },
+                "script": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "sub_title": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoint.CompetitionWGroupsQuaEliData": {
+            "type": "object",
+            "properties": {
+                "competition_id": {
+                    "type": "integer"
+                },
+                "group_data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/endpoint.GroupData"
+                    }
+                }
+            }
+        },
+        "endpoint.EliminationData": {
+            "type": "object",
+            "properties": {
+                "elimination_id": {
+                    "type": "integer"
+                },
+                "team_size": {
+                    "type": "integer"
+                }
+            }
+        },
+        "endpoint.GroupData": {
+            "type": "object",
+            "properties": {
+                "bow_type": {
+                    "type": "string"
+                },
+                "elimination_data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/endpoint.EliminationData"
+                    }
+                },
+                "group_id": {
+                    "type": "integer"
+                },
+                "group_name": {
+                    "type": "string"
+                },
+                "group_range": {
+                    "type": "string"
+                }
+            }
+        },
         "endpoint.LoginInfo": {
             "type": "object",
             "properties": {
@@ -4780,14 +5024,97 @@
                 }
             }
         },
+        "response.ErrorIdResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "invalid ID(1) : sth error"
+                }
+            }
+        },
+        "response.ErrorInternalErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "sth need fix ID(1) : sth error"
+                }
+            }
+        },
+        "response.ErrorReceiveDataFormatResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "bad request data: sth error"
+                }
+            }
+        },
+        "response.Nill": {
+            "type": "object"
+        },
         "response.Response": {
             "type": "object",
             "properties": {
-                "result": {
+                "message": {
                     "type": "string",
                     "example": "result description"
                 }
             }
         }
-    }
+    },
+    "tags": [
+        {
+            "name": "Session"
+        },
+        {
+            "name": "User"
+        },
+        {
+            "name": "Institution"
+        },
+        {
+            "name": "Competition"
+        },
+        {
+            "name": "Participant"
+        },
+        {
+            "name": "Group"
+        },
+        {
+            "name": "Qualification"
+        },
+        {
+            "name": "Lane"
+        },
+        {
+            "name": "Player"
+        },
+        {
+            "name": "Elimination"
+        },
+        {
+            "name": "PlayerSet"
+        },
+        {
+            "name": "MatchResult"
+        },
+        {
+            "name": "MatchEnd"
+        },
+        {
+            "name": "MatchScore"
+        },
+        {
+            "name": "Medal"
+        },
+        {
+            "name": "OldLaneInfo"
+        },
+        {
+            "name": "docs"
+        }
+    ]
 }

@@ -19,7 +19,25 @@ import (
 
 //	@host	localhost:80
 //	@BasePath  /api/
-//
+
+//	@tag.name	Session
+//	@tag.name	User
+//	@tag.name	Institution
+//	@tag.name	Competition
+//	@tag.name	Participant
+//	@tag.name	Group
+//	@tag.name	Qualification
+//	@tag.name	Lane
+//	@tag.name	Player
+//	@tag.name	Elimination
+//	@tag.name	PlayerSet
+//	@tag.name	MatchResult
+//	@tag.name	MatchEnd
+//	@tag.name	MatchScore
+//	@tag.name	Medal
+//	@tag.name	OldLaneInfo
+//	@tag.name	docs
+
 // schemes http
 func main() {
 	server := gin.Default() // initialize a Gin router

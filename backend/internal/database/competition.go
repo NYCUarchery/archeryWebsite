@@ -25,8 +25,8 @@ type Competition struct { // DB : game_info
 	TeamEliminationIsActive  bool           `json:"team_elimination_is_active"`
 	MixedEliminationIsActive bool           `json:"mixed_elimination_is_active"`
 	Script                   string         `json:"script"`
-	Groups                   []*Group       `json:"groups" gorm:"constraint:OnDelete:CASCADE;"`
-	Participants             []*Participant `json:"participants"`
+	Groups                   []*Group       `json:"groups" gorm:"constraint:OnDelete:CASCADE;" swagger:"interface{}"`
+	Participants             []*Participant `json:"participants" swagger:"interface{}"`
 }
 
 func InitCompetition() {

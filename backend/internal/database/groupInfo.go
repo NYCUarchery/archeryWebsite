@@ -11,7 +11,7 @@ type Group struct {
 	GroupRange    string    `json:"group_range"`
 	BowType       string    `json:"bow_type"`
 	GroupIndex    int       `json:"group_index"`
-	Players       []*Player `json:"players" `
+	Players       []*Player `json:"players" swagger:"interface{}"`
 }
 
 func InitGroupInfo() {

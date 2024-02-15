@@ -1,7 +1,8 @@
 package response
 
-type ErrorResponse struct {
-	Error string `json:"error" example:"error description"`
+type Nill struct{}
+type Response struct {
+	Message string `json:"message" example:"result description"`
 }
 
 type DeleteSuccessResponse struct {
@@ -10,6 +11,10 @@ type DeleteSuccessResponse struct {
 
 type DeleteFailedResponse struct {
 	Message string `json:"message" example:"Delete ID(1) : sth delete failed"`
+}
+
+type ErrorResponse struct {
+	Error string `json:"error" example:"error description"`
 }
 
 type ErrorReceiveDataResponse struct {
