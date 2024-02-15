@@ -1,5 +1,6 @@
 import axios from "axios";
 import { useQuery } from "react-query";
+import { Participant } from "./types/Participant";
 
 export default function useGetParcipants(competitionID: number) {
   return useQuery(
@@ -11,7 +12,7 @@ export default function useGetParcipants(competitionID: number) {
       staleTime: 2000,
       select: (data: any) => {
         const participants = data?.data;
-        return participants;
+        return participants as Participant[];
       },
     }
   );

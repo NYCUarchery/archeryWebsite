@@ -1,6 +1,7 @@
 import { useQuery } from "react-query";
 import axios from "axios";
 import { uesGetUID } from "./uesGetUID";
+import { Participant } from "./types/Participant";
 
 export default function useGetSelfParticipant(competitionID: number) {
   const { data: id, isError } = uesGetUID();
@@ -14,7 +15,7 @@ export default function useGetSelfParticipant(competitionID: number) {
       retry: false,
       select: (data: any) => {
         const participant = data?.data[0];
-        return participant as any;
+        return participant as Participant;
       },
     }
   );

@@ -9,7 +9,7 @@ export default function useGetSimpleCompetition(competitionID: number) {
       staleTime: 2000,
       select: (data: any) => {
         const competition = data?.data;
-        return competition as any;
+        return competition as Competition;
       },
     }
   );

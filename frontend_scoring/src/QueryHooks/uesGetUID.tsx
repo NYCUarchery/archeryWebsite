@@ -8,7 +8,7 @@ export function uesGetUID() {
 
     select: (data: any) => {
       const uid = data?.data.id;
-      return uid as any;
+      return uid as number;
     },
   });
 }
