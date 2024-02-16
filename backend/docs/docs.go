@@ -2826,33 +2826,6 @@ const docTemplate = `{
             }
         },
         "/competition": {
-            "get": {
-                "description": "get information of all the competitions",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "get information of all the competitions",
-                "responses": {
-                    "200": {
-                        "description": "success",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/database.Competition"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "internal db error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
             "post": {
                 "description": "Post one new Competition data with new id\nCreate UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup\nAdd host as admin of competition, and return the new Competition data\nZeroTime 0001-01-01T00:00:00+00:01",
                 "consumes": [
@@ -2872,7 +2845,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/endpoint.CompetitionPostData"
+                            "$ref": "#/definitions/endpoint.PostCompetition.CompetitionPostData"
                         }
                     }
                 ],
@@ -2880,7 +2853,22 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "$ref": "#/definitions/database.Competition"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Competition"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "groups": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        },
+                                        "participants": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -2898,40 +2886,43 @@ const docTemplate = `{
                 }
             }
         },
-        "/competition//groups/players/playertotal/{id}": {
-            "put": {
-                "description": "update competition recount player total score",
+        "/competition/": {
+            "get": {
+                "description": "get information of all the competitions",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Competition"
                 ],
-                "summary": "update competition recount player total score",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
+                "summary": "get information of all the competitions",
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
+                            "type": "array",
+                            "items": {
+                                "allOf": [
+                                    {
+                                        "$ref": "#/definitions/database.Competition"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "groups": {
+                                                "$ref": "#/definitions/response.Nill"
+                                            },
+                                            "participants": {
+                                                "$ref": "#/definitions/response.Nill"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal db error",
                         "schema": {
                             "type": "string"
                         }
@@ -2992,14 +2983,14 @@ const docTemplate = `{
         },
         "/competition/currentphaseminus/{id}": {
             "put": {
-                "description": "update one Competition currentPhase --",
+                "description": "update one Competition currentPhase -- by id",
                 "tags": [
                     "Competition"
                 ],
-                "summary": "update one Competition currentPhase --",
+                "summary": "update one Competition currentPhase -- by id",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "Competition ID",
                         "name": "id",
                         "in": "path",
@@ -3008,15 +2999,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "type": "ojbect"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid competition id parameter",
                         "schema": {
-                            "type": "string"
+                            "type": "ojbect"
+                        }
+                    },
+                    "500": {
+                        "description": "Update Competition CurrentPhase Minus",
+                        "schema": {
+                            "type": "ojbect"
                         }
                     }
                 }
@@ -3024,11 +3021,93 @@ const docTemplate = `{
         },
         "/competition/currentphaseplus/{id}": {
             "put": {
-                "description": "update one Competition currentPhase ++",
+                "description": "update one Competition currentPhase ++ by id",
                 "tags": [
                     "Competition"
                 ],
-                "summary": "update one Competition currentPhase ++",
+                "summary": "update one Competition currentPhase ++ by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "type": "ojbect"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid competition id parameter",
+                        "schema": {
+                            "type": "ojbect"
+                        }
+                    },
+                    "500": {
+                        "description": "Update Competition CurrentPhase Plus",
+                        "schema": {
+                            "type": "ojbect"
+                        }
+                    }
+                }
+            }
+        },
+        "/competition/eliminationisactive/{id}": {
+            "put": {
+                "description": "update one Competition Elimination Active to be true by id",
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "update one Competition Elimination Active to be true by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "type": "ojbect"
+                        }
+                    },
+                    "204": {
+                        "description": "success, but no change",
+                        "schema": {
+                            "type": "ojbect"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid competition id parameter",
+                        "schema": {
+                            "type": "ojbect"
+                        }
+                    },
+                    "500": {
+                        "description": "Update Competition Elimination Active",
+                        "schema": {
+                            "type": "ojbect"
+                        }
+                    }
+                }
+            }
+        },
+        "/competition/groups/players/playertotal/{id}": {
+            "put": {
+                "description": "update competition recount player total score by id",
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "update competition recount player total score by id",
                 "parameters": [
                     {
                         "type": "string",
@@ -3040,38 +3119,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "type": "ojbect"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid competition id parameter",
                         "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/competition/eliminationisactive/{id}": {
-            "put": {
-                "description": "update one Competition Elimination Active to be true",
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "update one Competition Elimination Active to be true",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
+                            "type": "ojbect"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "500": {
+                        "description": "Get Competition with Groups Players Scores / Update Round Total Score / Update Player Total Score",
                         "schema": {
-                            "type": "string"
+                            "type": "ojbect"
                         }
                     }
                 }
@@ -3092,7 +3154,7 @@ const docTemplate = `{
                 "summary": "update one Competition Ranking",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "Competition ID",
                         "name": "id",
                         "in": "path",
@@ -3101,27 +3163,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Update Competition Ranking Success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid competition id parameter",
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal db error / Get Competition GroupIds when update ranking / Get player ids when update ranking / Update player rank when update ranking by competition id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -3309,28 +3365,43 @@ const docTemplate = `{
         },
         "/competition/mixedeliminationisactive/{id}": {
             "put": {
-                "description": "update one Competition Mixed Elimination Active to be true and create all mixed elimination for groups",
+                "description": "update one Competition Mixed Elimination Active to be true by id\ncreate all mixed elimination for groups",
                 "tags": [
                     "Competition"
                 ],
-                "summary": "update one Competition Mixed Elimination Active to be true and create all mixed elimination for groups",
+                "summary": "update one Competition Mixed Elimination Active to be true and create mixed elimination",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "type": "ojbect"
+                        }
+                    },
+                    "204": {
+                        "description": "success, but no change",
+                        "schema": {
+                            "type": "ojbect"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid competition id parameter",
                         "schema": {
-                            "type": "string"
+                            "type": "ojbect"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Update Competition Mixed Elimination Active / Get Competition Group Ids / Post Elimination By Id",
                         "schema": {
-                            "type": "string"
+                            "type": "ojbect"
                         }
                     }
                 }
@@ -3394,14 +3465,14 @@ const docTemplate = `{
         },
         "/competition/qualificationcurrentendminus/{id}": {
             "put": {
-                "description": "update one Competition Qualification currentEnd --",
+                "description": "update one Competition Qualification currentEnd -- by id",
                 "tags": [
                     "Competition"
                 ],
-                "summary": "update one Competition Qualification currentEnd --",
+                "summary": "update one Competition Qualification currentEnd -- by id",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "Competition ID",
                         "name": "id",
                         "in": "path",
@@ -3410,15 +3481,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "type": "ojbect"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid competition id parameter",
                         "schema": {
-                            "type": "string"
+                            "type": "ojbect"
+                        }
+                    },
+                    "500": {
+                        "description": "Update Competition Qualification CurrentEnd Minus",
+                        "schema": {
+                            "type": "ojbect"
                         }
                     }
                 }
@@ -3426,14 +3503,14 @@ const docTemplate = `{
         },
         "/competition/qualificationcurrentendplus/{id}": {
             "put": {
-                "description": "update one Competition Qualification currentEnd ++",
+                "description": "update one Competition Qualification currentEnd ++ by id",
                 "tags": [
                     "Competition"
                 ],
-                "summary": "update one Competition Qualification currentEnd ++",
+                "summary": "update one Competition Qualification currentEnd ++ by id",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "Competition ID",
                         "name": "id",
                         "in": "path",
@@ -3442,15 +3519,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "type": "ojbect"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid competition id parameter",
                         "schema": {
-                            "type": "string"
+                            "type": "ojbect"
+                        }
+                    },
+                    "500": {
+                        "description": "Update Competition Qualification CurrentEnd Plus",
+                        "schema": {
+                            "type": "ojbect"
                         }
                     }
                 }
@@ -3458,22 +3541,43 @@ const docTemplate = `{
         },
         "/competition/qualificationisactive/{id}": {
             "put": {
-                "description": "update one Competition Qualification Active to be true",
+                "description": "update one Competition Qualification Active to be true by id",
                 "tags": [
                     "Competition"
                 ],
-                "summary": "update one Competition Qualification Active to be true",
+                "summary": "update one Competition Qualification Active to be true by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "type": "ojbect"
+                        }
+                    },
+                    "204": {
+                        "description": "success, but no change",
+                        "schema": {
+                            "type": "ojbect"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid competition id parameter",
                         "schema": {
-                            "type": "string"
+                            "type": "ojbect"
+                        }
+                    },
+                    "500": {
+                        "description": "Update Competition Qualification Active",
+                        "schema": {
+                            "type": "ojbect"
                         }
                     }
                 }
@@ -3539,28 +3643,43 @@ const docTemplate = `{
         },
         "/competition/teameliminationisactive/{id}": {
             "put": {
-                "description": "update one Competition Team Elimination Active to be true and create all team elimination for groups",
+                "description": "update one Competition Team Elimination Active to be true by id\ncreate all team elimination for groups",
                 "tags": [
                     "Competition"
                 ],
-                "summary": "update one Competition Team Elimination Active to be true and create all team elimination for groups",
+                "summary": "update one Competition Team Elimination Active to be true and create team elimination",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "type": "ojbect"
+                        }
+                    },
+                    "204": {
+                        "description": "success, but no change",
+                        "schema": {
+                            "type": "ojbect"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid competition id parameter",
                         "schema": {
-                            "type": "string"
+                            "type": "ojbect"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "Update Competition Team Elimination Active / Get Competition Group Ids / Post Elimination By Id",
                         "schema": {
-                            "type": "string"
+                            "type": "ojbect"
                         }
                     }
                 }
@@ -3568,7 +3687,7 @@ const docTemplate = `{
         },
         "/competition/whole/{id}": {
             "put": {
-                "description": "Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId\nzeroTime 0001-01-01T00:00:00+00:01",
+                "description": "Put whole new Competition and overwrite by the id, cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId\nzeroTime 0001-01-01T00:00:00+00:01",
                 "consumes": [
                     "application/json"
                 ],
@@ -3578,7 +3697,7 @@ const docTemplate = `{
                 "tags": [
                     "Competition"
                 ],
-                "summary": "update one Competition without GroupInfo",
+                "summary": "update one Competition",
                 "parameters": [
                     {
                         "type": "string",
@@ -3593,33 +3712,48 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/endpoint.UpdateCompetition.CompetitionUpdateData"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Competition"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "groups": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        },
+                                        "participants": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "204": {
+                        "description": "success, but no change",
+                        "schema": {
+                            "$ref": "#/definitions/response.Nill"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid competition id parameter / bad request data ID(1): sth error / bad request data is nil ID(1): sth error / When creating Competition, startTime must \u003c= endTime",
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorReceiveDataResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal db error / Get Competition / Update Competition",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -3681,10 +3815,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "delete one Competition by id, delete all related groups, lanes, players",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "delete one Competition by id\ndelete all related groups, lanes, players, participants",
                 "produces": [
                     "application/json"
                 ],
@@ -3694,7 +3825,7 @@ const docTemplate = `{
                 "summary": "delete one Competition",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "Competition ID",
                         "name": "id",
                         "in": "path",
@@ -3703,21 +3834,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Delete ID(1) : sth delete success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.DeleteSuccessResponse"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid competition id parameter",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "500": {
+                        "description": "internal db error / Delete Competition with Groups / Delete GroupInfo By Id Through Competition / Delete Player Through Competition / Delete Participaint / Delete Lane By Competition Id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -4909,35 +5040,6 @@ const docTemplate = `{
                 }
             }
         },
-        "endpoint.CompetitionPostData": {
-            "type": "object",
-            "properties": {
-                "end_time": {
-                    "type": "string"
-                },
-                "host_id": {
-                    "type": "integer"
-                },
-                "lane_num": {
-                    "type": "integer"
-                },
-                "round_num": {
-                    "type": "integer"
-                },
-                "script": {
-                    "type": "string"
-                },
-                "start_time": {
-                    "type": "string"
-                },
-                "sub_title": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                }
-            }
-        },
         "endpoint.CompetitionWGroupsQuaEliData": {
             "type": "object",
             "properties": {
@@ -5030,6 +5132,70 @@ const docTemplate = `{
                 }
             }
         },
+        "endpoint.PostCompetition.CompetitionPostData": {
+            "type": "object",
+            "properties": {
+                "end_time": {
+                    "type": "string"
+                },
+                "host_id": {
+                    "type": "integer"
+                },
+                "lanes_num": {
+                    "type": "integer"
+                },
+                "rounds_num": {
+                    "type": "integer"
+                },
+                "script": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "sub_title": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoint.UpdateCompetition.CompetitionUpdateData": {
+            "type": "object",
+            "properties": {
+                "current_phase": {
+                    "type": "integer"
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "qualification_current_end": {
+                    "type": "integer"
+                },
+                "script": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "sub_title": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.DeleteSuccessResponse": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string",
+                    "example": "Delete ID(1) : sth delete success"
+                }
+            }
+        },
         "response.ErrorIdResponse": {
             "type": "object",
             "properties": {
@@ -5054,6 +5220,15 @@ const docTemplate = `{
                 "error": {
                     "type": "string",
                     "example": "bad request data: sth error"
+                }
+            }
+        },
+        "response.ErrorReceiveDataResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "bad request data ID(1): sth error"
                 }
             }
         },

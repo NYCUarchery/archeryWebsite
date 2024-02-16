@@ -197,25 +197,6 @@ definitions:
       user_name:
         type: string
     type: object
-  endpoint.CompetitionPostData:
-    properties:
-      end_time:
-        type: string
-      host_id:
-        type: integer
-      lane_num:
-        type: integer
-      round_num:
-        type: integer
-      script:
-        type: string
-      start_time:
-        type: string
-      sub_title:
-        type: string
-      title:
-        type: string
-    type: object
   endpoint.CompetitionWGroupsQuaEliData:
     properties:
       competition_id:
@@ -275,6 +256,48 @@ definitions:
       user_id:
         type: integer
     type: object
+  endpoint.PostCompetition.CompetitionPostData:
+    properties:
+      end_time:
+        type: string
+      host_id:
+        type: integer
+      lanes_num:
+        type: integer
+      rounds_num:
+        type: integer
+      script:
+        type: string
+      start_time:
+        type: string
+      sub_title:
+        type: string
+      title:
+        type: string
+    type: object
+  endpoint.UpdateCompetition.CompetitionUpdateData:
+    properties:
+      current_phase:
+        type: integer
+      end_time:
+        type: string
+      qualification_current_end:
+        type: integer
+      script:
+        type: string
+      start_time:
+        type: string
+      sub_title:
+        type: string
+      title:
+        type: string
+    type: object
+  response.DeleteSuccessResponse:
+    properties:
+      message:
+        example: 'Delete ID(1) : sth delete success'
+        type: string
+    type: object
   response.ErrorIdResponse:
     properties:
       error:
@@ -291,6 +314,12 @@ definitions:
     properties:
       error:
         example: 'bad request data: sth error'
+        type: string
+    type: object
+  response.ErrorReceiveDataResponse:
+    properties:
+      error:
+        example: 'bad request data ID(1): sth error'
         type: string
     type: object
   response.Nill:
@@ -2184,24 +2213,6 @@ paths:
       tags:
       - Qualification
   /competition:
-    get:
-      description: get information of all the competitions
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: success
-          schema:
-            items:
-              $ref: '#/definitions/database.Competition'
-            type: array
-        "500":
-          description: internal db error
-          schema:
-            type: string
-      summary: get information of all the competitions
-      tags:
-      - Competition
     post:
       consumes:
       - application/json
@@ -2216,14 +2227,21 @@ paths:
         name: Competition
         required: true
         schema:
-          $ref: '#/definitions/endpoint.CompetitionPostData'
+          $ref: '#/definitions/endpoint.PostCompetition.CompetitionPostData'
       produces:
       - application/json
       responses:
         "200":
           description: success
           schema:
-            $ref: '#/definitions/database.Competition'
+            allOf:
+            - $ref: '#/definitions/database.Competition'
+            - properties:
+                groups:
+                  $ref: '#/definitions/response.Nill'
+                participants:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
           description: roundsNum must > 0 / When creating Competition, startTime must
             <= endTime
@@ -2237,60 +2255,60 @@ paths:
       summary: Create one Competition and related data
       tags:
       - Competition
-  /competition//groups/players/playertotal/{id}:
-    put:
-      description: update competition recount player total score
-      parameters:
-      - description: Competition ID
-        in: path
-        name: id
-        required: true
-        type: string
+  /competition/:
+    get:
+      description: get information of all the competitions
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
+            items:
+              allOf:
+              - $ref: '#/definitions/database.Competition'
+              - properties:
+                  groups:
+                    $ref: '#/definitions/response.Nill'
+                  participants:
+                    $ref: '#/definitions/response.Nill'
+                type: object
+            type: array
         "500":
-          description: Internal Server Error
+          description: internal db error
           schema:
             type: string
-      summary: update competition recount player total score
+      summary: get information of all the competitions
       tags:
       - Competition
   /competition/{id}:
     delete:
-      consumes:
-      - application/json
-      description: delete one Competition by id, delete all related groups, lanes,
-        players
+      description: |-
+        delete one Competition by id
+        delete all related groups, lanes, players, participants
       parameters:
       - description: Competition ID
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: 'Delete ID(1) : sth delete success'
           schema:
-            type: string
+            $ref: '#/definitions/response.DeleteSuccessResponse'
         "400":
-          description: Bad Request
+          description: invalid competition id parameter
           schema:
-            type: string
-        "404":
-          description: Not Found
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Delete Competition with Groups / Delete
+            GroupInfo By Id Through Competition / Delete Player Through Competition
+            / Delete Participaint / Delete Lane By Competition Id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: delete one Competition
       tags:
       - Competition
@@ -2369,59 +2387,81 @@ paths:
       - Competition
   /competition/currentphaseminus/{id}:
     put:
-      description: update one Competition currentPhase --
+      description: update one Competition currentPhase -- by id
       parameters:
       - description: Competition ID
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            type: ojbect
         "400":
-          description: Bad Request
+          description: invalid competition id parameter
           schema:
-            type: string
-      summary: update one Competition currentPhase --
+            type: ojbect
+        "500":
+          description: Update Competition CurrentPhase Minus
+          schema:
+            type: ojbect
+      summary: update one Competition currentPhase -- by id
       tags:
       - Competition
   /competition/currentphaseplus/{id}:
     put:
-      description: update one Competition currentPhase ++
+      description: update one Competition currentPhase ++ by id
       parameters:
       - description: Competition ID
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            type: ojbect
         "400":
-          description: Bad Request
+          description: invalid competition id parameter
           schema:
-            type: string
-      summary: update one Competition currentPhase ++
+            type: ojbect
+        "500":
+          description: Update Competition CurrentPhase Plus
+          schema:
+            type: ojbect
+      summary: update one Competition currentPhase ++ by id
       tags:
       - Competition
   /competition/eliminationisactive/{id}:
     put:
-      description: update one Competition Elimination Active to be true
+      description: update one Competition Elimination Active to be true by id
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            type: ojbect
+        "204":
+          description: success, but no change
+          schema:
+            type: ojbect
         "400":
-          description: Bad Request
+          description: invalid competition id parameter
           schema:
-            type: string
-      summary: update one Competition Elimination Active to be true
+            type: ojbect
+        "500":
+          description: Update Competition Elimination Active
+          schema:
+            type: ojbect
+      summary: update one Competition Elimination Active to be true by id
       tags:
       - Competition
   /competition/groups/{id}:
@@ -2504,6 +2544,32 @@ paths:
       summary: Show one Competition with GroupInfos and Players
       tags:
       - Competition
+  /competition/groups/players/playertotal/{id}:
+    put:
+      description: update competition recount player total score by id
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: success
+          schema:
+            type: ojbect
+        "400":
+          description: invalid competition id parameter
+          schema:
+            type: ojbect
+        "500":
+          description: Get Competition with Groups Players Scores / Update Round Total
+            Score / Update Player Total Score
+          schema:
+            type: ojbect
+      summary: update competition recount player total score by id
+      tags:
+      - Competition
   /competition/groups/players/rank/{id}:
     put:
       consumes:
@@ -2514,26 +2580,24 @@ paths:
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Update Competition Ranking Success
           schema:
-            type: string
+            $ref: '#/definitions/response.Response'
         "400":
-          description: Bad Request
+          description: invalid competition id parameter
           schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: Internal Server Error
+          description: internal db error / Get Competition GroupIds when update ranking
+            / Get player ids when update ranking / Update player rank when update
+            ranking by competition id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: update one Competition Ranking
       tags:
       - Competition
@@ -2569,23 +2633,35 @@ paths:
       - Competition
   /competition/mixedeliminationisactive/{id}:
     put:
-      description: update one Competition Mixed Elimination Active to be true and
+      description: |-
+        update one Competition Mixed Elimination Active to be true by id
         create all mixed elimination for groups
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            type: ojbect
+        "204":
+          description: success, but no change
+          schema:
+            type: ojbect
         "400":
-          description: Bad Request
+          description: invalid competition id parameter
           schema:
-            type: string
+            type: ojbect
         "500":
-          description: Internal Server Error
+          description: Update Competition Mixed Elimination Active / Get Competition
+            Group Ids / Post Elimination By Id
           schema:
-            type: string
+            type: ojbect
       summary: update one Competition Mixed Elimination Active to be true and create
-        all mixed elimination for groups
+        mixed elimination
       tags:
       - Competition
   /competition/participants/{id}:
@@ -2624,59 +2700,81 @@ paths:
       - Competition
   /competition/qualificationcurrentendminus/{id}:
     put:
-      description: update one Competition Qualification currentEnd --
+      description: update one Competition Qualification currentEnd -- by id
       parameters:
       - description: Competition ID
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            type: ojbect
         "400":
-          description: Bad Request
+          description: invalid competition id parameter
           schema:
-            type: string
-      summary: update one Competition Qualification currentEnd --
+            type: ojbect
+        "500":
+          description: Update Competition Qualification CurrentEnd Minus
+          schema:
+            type: ojbect
+      summary: update one Competition Qualification currentEnd -- by id
       tags:
       - Competition
   /competition/qualificationcurrentendplus/{id}:
     put:
-      description: update one Competition Qualification currentEnd ++
+      description: update one Competition Qualification currentEnd ++ by id
       parameters:
       - description: Competition ID
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            type: ojbect
         "400":
-          description: Bad Request
+          description: invalid competition id parameter
           schema:
-            type: string
-      summary: update one Competition Qualification currentEnd ++
+            type: ojbect
+        "500":
+          description: Update Competition Qualification CurrentEnd Plus
+          schema:
+            type: ojbect
+      summary: update one Competition Qualification currentEnd ++ by id
       tags:
       - Competition
   /competition/qualificationisactive/{id}:
     put:
-      description: update one Competition Qualification Active to be true
+      description: update one Competition Qualification Active to be true by id
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            type: ojbect
+        "204":
+          description: success, but no change
+          schema:
+            type: ojbect
         "400":
-          description: Bad Request
+          description: invalid competition id parameter
           schema:
-            type: string
-      summary: update one Competition Qualification Active to be true
+            type: ojbect
+        "500":
+          description: Update Competition Qualification Active
+          schema:
+            type: ojbect
+      summary: update one Competition Qualification Active to be true by id
       tags:
       - Competition
   /competition/recent/{userid}/{head}/{tail}:
@@ -2725,23 +2823,35 @@ paths:
       - Competition
   /competition/teameliminationisactive/{id}:
     put:
-      description: update one Competition Team Elimination Active to be true and create
-        all team elimination for groups
+      description: |-
+        update one Competition Team Elimination Active to be true by id
+        create all team elimination for groups
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            type: ojbect
+        "204":
+          description: success, but no change
+          schema:
+            type: ojbect
         "400":
-          description: Bad Request
+          description: invalid competition id parameter
           schema:
-            type: string
+            type: ojbect
         "500":
-          description: Internal Server Error
+          description: Update Competition Team Elimination Active / Get Competition
+            Group Ids / Post Elimination By Id
           schema:
-            type: string
+            type: ojbect
       summary: update one Competition Team Elimination Active to be true and create
-        all team elimination for groups
+        team elimination
       tags:
       - Competition
   /competition/whole/{id}:
@@ -2749,7 +2859,7 @@ paths:
       consumes:
       - application/json
       description: |-
-        Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId
+        Put whole new Competition and overwrite by the id, cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId
         zeroTime 0001-01-01T00:00:00+00:01
       parameters:
       - description: Competition ID
@@ -2762,27 +2872,36 @@ paths:
         name: Competition
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.UpdateCompetition.CompetitionUpdateData'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Competition'
+            - properties:
+                groups:
+                  $ref: '#/definitions/response.Nill'
+                participants:
+                  $ref: '#/definitions/response.Nill'
+              type: object
+        "204":
+          description: success, but no change
+          schema:
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: 'invalid competition id parameter / bad request data ID(1):
+            sth error / bad request data is nil ID(1): sth error / When creating Competition,
+            startTime must <= endTime'
           schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
+            $ref: '#/definitions/response.ErrorReceiveDataResponse'
         "500":
-          description: Internal Server Error
+          description: internal db error / Get Competition / Update Competition
           schema:
-            type: string
-      summary: update one Competition without GroupInfo
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: update one Competition
       tags:
       - Competition
   /data/qualification/lanes/Unassigned/{id}:

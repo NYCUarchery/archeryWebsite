@@ -41,7 +41,7 @@ func playerRouter(api *gin.RouterGroup) {
 	api.PUT("/isconfirmed/:id", endpoint.UpdatePlayerIsConfirmed)
 
 	api.PUT("/totalscore/:id", endpoint.UpdatePlayerTotalScoreByplayerId)
-  api.PUT("/roundscore/:id", endpoint.UpdatePlayerScore)
+	api.PUT("/roundscore/:id", endpoint.UpdatePlayerScore)
 
 	api.PUT("/shootoffscore/:id", endpoint.UpdatePlayerShootoffScore)
 	api.DELETE("/:id", endpoint.DeletePlayer)
@@ -62,10 +62,11 @@ func playerSetRouter(api *gin.RouterGroup) {
 
 func competitionRouter(api *gin.RouterGroup) {
 	api.GET("/:id", endpoint.GetOnlyCompetitionByID)
+	api.GET("/", endpoint.GetAllCompetition)
 	api.GET("/participants/:id", endpoint.GetCompetitionWParticipantsByID)
 	api.GET("/groups/:id", endpoint.GetCompetitionWGroupsByID)
 	api.GET("/groups/players/:id", endpoint.GetCompetitionWGroupsPlayersByID)
-	api.GET("groups/quaeli/:id", endpoint.GetCompetitionWGroupsQuaEliByID)
+	api.GET("/groups/quaeli/:id", endpoint.GetCompetitionWGroupsQuaEliByID)
 
 	api.GET("/current/:head/:tail", endpoint.GetCurrentCompetitions)
 	api.GET("/user/:userid/:head/:tail", endpoint.GetCompetitionsOfUser)
