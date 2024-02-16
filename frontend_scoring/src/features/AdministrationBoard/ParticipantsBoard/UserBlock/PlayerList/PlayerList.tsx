@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 export default function PlayerList() {
   const competitionID = useSelector((state: any) => state.game.competitionID);
   const { data: participants, isFetching } = useGetParcipants(competitionID);
-  if (isFetching) {
+  if (!participants || isFetching) {
     return <></>;
   }
   let playerItems = [];
