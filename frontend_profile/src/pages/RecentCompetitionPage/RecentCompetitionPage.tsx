@@ -48,7 +48,7 @@ export default function RecentCompetitionPage() {
           sx={{ display: "flex", justifyContent: "center" }}
         />
         {competitions?.length === 0 && <h2>沒有更多比賽了喲 ;(</h2>}
-        {isLoadingCompetitions || isLoadingUid ? (
+        {isLoadingCompetitions || isLoadingUid || !uid ? (
           <p>loading...</p>
         ) : (
           <CompetitionList competitions={competitions} uid={uid} />

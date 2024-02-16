@@ -1,7 +1,8 @@
+import { Competition } from "../../../util/QueryHooks/types/Competition";
 import { Competition } from "./Competition";
 
 interface Props {
-  competitions: any;
+  competitions: Competition[];
   uid: number;
 }
 

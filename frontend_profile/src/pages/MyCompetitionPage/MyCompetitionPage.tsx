@@ -18,6 +18,7 @@ export default function MyCompetitionPage() {
   const { data: competitions, isLoading: isLoadingCompetitions } =
     useGetUserCompetitions(startIndex, endIndex);
   const { data: uid, isLoading: isLoadingUid } = useGetUid();
+
   const handlePageChange = (
     event: React.ChangeEvent<unknown>,
     value: number
@@ -46,7 +47,7 @@ export default function MyCompetitionPage() {
           sx={{ display: "flex", justifyContent: "center" }}
         />
         {competitions?.length === 0 && <h2>沒有更多比賽了喲 ;(</h2>}
-        {isLoadingCompetitions || isLoadingUid ? (
+        {isLoadingCompetitions || isLoadingUid || !uid ? (
           <p>loading...</p>
         ) : (
           <CompetitionList competitions={competitions} uid={uid} />
