@@ -6,7 +6,15 @@ interface Props {
 }
 
 export const CompetitionList = ({ competitions, uid }: Props) => {
-  return competitions?.map((competition: any) => (
-    <CompetitionItem competition={competition} uid={uid} key={competition.id} />
-  ));
+  return (
+    <>
+      {competitions?.map((competition: any) => (
+        <CompetitionItem
+          competition={competition}
+          uid={uid}
+          key={competition.id}
+        />
+      ))}
+    </>
+  );
 };
