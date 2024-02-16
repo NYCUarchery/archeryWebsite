@@ -1,5 +1,6 @@
 import { useQuery } from "react-query";
 import axios from "axios";
+import { Competition } from "./types/Competition";
 
 export default function useGetSimpleCompetition(competitionID: number) {
   return useQuery(
