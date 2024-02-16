@@ -6,7 +6,7 @@ import useGetParcipants from "../../../../../QueryHooks/useGetParticipants";
 export default function AdminList() {
   const competitionID = useSelector((state: any) => state.game.competitionID);
   const { data: participants, isFetching } = useGetParcipants(competitionID);
-  if (isFetching) {
+  if (isFetching || !participants) {
     return <></>;
   }
 

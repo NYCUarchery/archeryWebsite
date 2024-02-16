@@ -1,5 +1,6 @@
 import { useQuery } from "react-query";
 import axios from "axios";
+import { Competition } from "./types/Competition";
 
 export default function useGetSimpleCompetition(competitionID: number) {
   return useQuery(
@@ -9,7 +10,7 @@ export default function useGetSimpleCompetition(competitionID: number) {
       staleTime: 2000,
       select: (data: any) => {
         const competition = data?.data;
-        return competition as any;
+        return competition as Competition;
       },
     }
   );

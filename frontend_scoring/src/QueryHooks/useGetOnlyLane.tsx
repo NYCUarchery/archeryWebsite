@@ -1,5 +1,6 @@
 import { useQuery } from "react-query";
 import axios from "axios";
+import { Lane } from "./types/Lane";
 
 export default function useGetOnlyLane(laneID: number) {
   return useQuery(
@@ -9,7 +10,7 @@ export default function useGetOnlyLane(laneID: number) {
       staleTime: 2000,
       select: (data: any) => {
         const lane = data?.data;
-        return lane as any;
+        return lane as Lane;
       },
     }
   );

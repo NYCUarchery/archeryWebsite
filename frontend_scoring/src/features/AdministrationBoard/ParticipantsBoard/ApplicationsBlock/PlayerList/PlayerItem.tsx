@@ -2,7 +2,7 @@ import { ListItem, ListItemText, ListItemButton } from "@mui/material";
 import axios from "axios";
 import { useMutation } from "react-query";
 import { useQueryClient } from "react-query";
-import { Participant } from "../../participantInteface";
+import { Participant } from "../../../../../QueryHooks/types/Participant";
 
 interface Props {
   participant: Participant;
