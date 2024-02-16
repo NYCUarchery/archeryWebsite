@@ -26,7 +26,35 @@ interface Props {
   uid: number;
 }
 
-export const Competition = ({ competition, uid }: Props) => {
+export const CompetitionItem = ({ competition, uid }: Props) => {
+  const [open, setOpen] = useState(false);
+  const navigate = useNavigate();
+  const { mutate: apply } = useMutation(postParticipant);
+
+  const handleJoin = () => {
+    setOpen(true);
+  };
+
+  const handlePlayeApplication = () => {
+    apply({
+      competition_id: competition.id,
+      user_id: uid,
+      status: "pending",
+      role: "player",
+    });
+    setOpen(false);
+  };
+
+  const handleAdminApplication = () => {
+    apply({
+      competition_id: competition.id,
+      user_id: uid,
+      status: "pending",
+      role: "admin",
+    });
+    setOpen(false);
+  };
+
   return (
     <Card sx={{ mb: 2 }}>
       <Typography variant="h6" component="div" sx={{ p: 2 }}>
@@ -43,6 +71,20 @@ export const Competition = ({ competition, uid }: Props) => {
       >
         查看記分板
       </Button>
+      <Button
+        onClick={handleJoin}
+        color="secondary"
+        variant="contained"
+        sx={{ ml: 2, mb: 2 }}
+      >
+        申請加入
+      </Button>
+      <Dialog open={open} onClose={() => setOpen(false)}>
+        <DialogActions>
+          <Button onClick={handleAdminApplication}>申請為管理員</Button>
+          <Button onClick={handlePlayeApplication}>申請為選手</Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 };
