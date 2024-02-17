@@ -27,7 +27,7 @@ export default function ProgressBoard() {
       </>
     );
 
-  const groups = competition.groups;
+  const groups = competition.group_datas;
   const teamSize = teamSizes[phaseShown];
   const eliminationID = extractEliminationID(groups, groupShown, teamSize);
 
