@@ -1,0 +1,27 @@
+.groups_board {
+  $lists-width: 80%;
+  .group_selector {
+    .group_selector_button {
+      width: 200px;
+      border-radius: 0;
+    }
+  }
+  .player_lists {
+    display: flex;
+    .player_list {
+      width: 198.5px;
+      border: 1px solid $gray-main-color;
+      border-left: 0px;
+      .player_list_subheader {
+        border-bottom: 1px solid $gray-main-color;
+      }
+      .player_item {
+        border-bottom: 1px solid $gray-main-color;
+        text-transform: none;
+        &:last-child {
+          border-bottom: none;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,4 @@
+{
+  "phases": ["資格賽", "對抗賽", "團體對抗賽"],
+  "phase_kinds": ["Qualification", "Elimination", "Elimination"]
+}
