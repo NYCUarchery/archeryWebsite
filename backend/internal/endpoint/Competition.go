@@ -300,7 +300,9 @@ func PostCompetition(context *gin.Context) {
 		LanesNum  int       `json:"lanes_num"`
 		Script    string    `json:"script"`
 	}
-	var data database.Competition
+	var data CompetitionPostData
+	var newData database.Competition
+	/*parse data*/
 	err := context.BindJSON(&data)
 	/*parse data check*/
 	if response.ErrorReceiveDataTest(context, 0, "Competition", err) {
@@ -327,11 +329,20 @@ func PostCompetition(context *gin.Context) {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "When creating Competition, startTime must <= endTime"})
 		return
 	}
+	/*auto write data*/
+	newData.Title = data.Title
+	newData.SubTitle = data.SubTitle
+	newData.HostID = data.HostId
+	newData.StartTime = data.StartTime
+	newData.EndTime = data.EndTime
+	newData.RoundsNum = data.RoundsNum
+	newData.LanesNum = data.LanesNum
+	newData.Script = data.Script
 	/*auto write Groups_num, minus one for 無組別*/
-	data.GroupsNum = -1
-	data.CurrentPhase = 0
-	data.QualificationCurrentEnd = 0
-	newData, err := database.PostCompetition(data)
+	newData.GroupsNum = -1
+	newData.CurrentPhase = 0
+	newData.QualificationCurrentEnd = 0
+	newData, err = database.PostCompetition(newData)
 	newId := newData.ID
 	if response.ErrorInternalErrorTest(context, newId, "Post GroupInfo", err) {
 		return
@@ -400,10 +411,8 @@ func UpdateCompetition(context *gin.Context) {
 		QualificationCurrentEnd int       `json:"qualification_current_end"`
 		Script                  string    `json:"script"`
 	}
-	var data database.Competition
+	var data CompetitionUpdateData
 	id := convert2uint(context, "id")
-	/*write id for update success*/
-	data.ID = id
 	err := context.BindJSON(&data)
 	/*parse data check*/
 	if response.ErrorReceiveDataTest(context, id, "Competition", err) {
@@ -443,9 +452,9 @@ func UpdateCompetition(context *gin.Context) {
 	}
 	oldData.StartTime = currentStartTime
 	oldData.EndTime = currentEndTime
-	data = oldData
+	newData := oldData
 	/*update and check change*/
-	isChanged, err := database.UpdateCompetition(id, data)
+	isChanged, err := database.UpdateCompetition(id, newData)
 	if response.ErrorInternalErrorTest(context, id, "Update Competition", err) {
 		return
 	} else if response.AcceptNotChange(context, id, isChanged, "Update Competition") {
@@ -568,7 +577,7 @@ func DeleteCompetition(context *gin.Context) {
 //	@Produce		json
 //	@Success		200	{object}	[]database.Competition{groups=response.Nill,participants=response.Nill}	"success"
 //	@Failure		500	{object}	string																	"internal db error"
-//	@Router			/competition/ [get]
+//	@Router			/competition [get]
 func GetAllCompetition(c *gin.Context) {
 	comps, err := database.GetAllCompetition()
 	if err != nil {

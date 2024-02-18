@@ -2213,6 +2213,31 @@ paths:
       tags:
       - Qualification
   /competition:
+    get:
+      description: get information of all the competitions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            items:
+              allOf:
+              - $ref: '#/definitions/database.Competition'
+              - properties:
+                  groups:
+                    $ref: '#/definitions/response.Nill'
+                  participants:
+                    $ref: '#/definitions/response.Nill'
+                type: object
+            type: array
+        "500":
+          description: internal db error
+          schema:
+            type: string
+      summary: get information of all the competitions
+      tags:
+      - Competition
     post:
       consumes:
       - application/json
@@ -2253,32 +2278,6 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Create one Competition and related data
-      tags:
-      - Competition
-  /competition/:
-    get:
-      description: get information of all the competitions
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: success
-          schema:
-            items:
-              allOf:
-              - $ref: '#/definitions/database.Competition'
-              - properties:
-                  groups:
-                    $ref: '#/definitions/response.Nill'
-                  participants:
-                    $ref: '#/definitions/response.Nill'
-                type: object
-            type: array
-        "500":
-          description: internal db error
-          schema:
-            type: string
-      summary: get information of all the competitions
       tags:
       - Competition
   /competition/{id}:

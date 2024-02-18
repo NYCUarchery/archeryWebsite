@@ -2826,6 +2826,48 @@ const docTemplate = `{
             }
         },
         "/competition": {
+            "get": {
+                "description": "get information of all the competitions",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "get information of all the competitions",
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "allOf": [
+                                    {
+                                        "$ref": "#/definitions/database.Competition"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "groups": {
+                                                "$ref": "#/definitions/response.Nill"
+                                            },
+                                            "participants": {
+                                                "$ref": "#/definitions/response.Nill"
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Post one new Competition data with new id\nCreate UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup\nAdd host as admin of competition, and return the new Competition data\nZeroTime 0001-01-01T00:00:00+00:01",
                 "consumes": [
@@ -2881,50 +2923,6 @@ const docTemplate = `{
                         "description": "internal db error / Post GroupInfo / Update Competition UnassignedLaneId / Update Competition UnassignedGroupId",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/competition/": {
-            "get": {
-                "description": "get information of all the competitions",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "get information of all the competitions",
-                "responses": {
-                    "200": {
-                        "description": "success",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "allOf": [
-                                    {
-                                        "$ref": "#/definitions/database.Competition"
-                                    },
-                                    {
-                                        "type": "object",
-                                        "properties": {
-                                            "groups": {
-                                                "$ref": "#/definitions/response.Nill"
-                                            },
-                                            "participants": {
-                                                "$ref": "#/definitions/response.Nill"
-                                            }
-                                        }
-                                    }
-                                ]
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "internal db error",
-                        "schema": {
-                            "type": "string"
                         }
                     }
                 }
