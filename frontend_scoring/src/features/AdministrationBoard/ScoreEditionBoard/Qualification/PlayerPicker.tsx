@@ -6,7 +6,11 @@ import { useSelector } from "react-redux";
 
 import { useEffect, useState } from "react";
 
-export default function PlayerPicker() {
+interface Props {
+  setSelectedPlayerId: React.Dispatch<React.SetStateAction<number>>;
+}
+
+export default function PlayerPicker({ setSelectedPlayerId }: Props) {
   const competitionID = useSelector((state: any) => state.game.competitionID);
   const { data: groups, isLoading } = useGetGroupsWithPlayers(competitionID);
   const [groupOption, setGroupOption] = useState({ label: "", id: 0 });
@@ -16,7 +20,7 @@ export default function PlayerPicker() {
   if (isLoading || !groups) return <Card>載入中</Card>;
 
   const groupOptions = groups.map((group, index) => {
-    if (index === 0) return;
+    if (index === 0) return { label: "", id: 0 };
     return { label: group.group_name, id: group.id };
   });
 
@@ -24,36 +28,43 @@ export default function PlayerPicker() {
     const players = groups.find(
       (group) => group.id === groupOption.id
     )?.players;
-    const options =
-      players?.map((player) => {
-        return { label: player.name, id: player.id };
-      }) ?? [];
+    const options = players?.map((player) => {
+      return { label: player.name, id: player.id };
+    }) ?? [{ label: "", id: 0 }];
     setPlayersOptions(options);
   }, [groupOption]);
 
   return (
     <Card sx={{ padding: 4 }}>
       <Autocomplete
+        className="group-picker"
         sx={{ marginBottom: 2 }}
         options={groupOptions}
         defaultValue={groupOptions[0] ?? { label: "", id: 0 }}
         getOptionLabel={(option) => option?.label ?? ""}
+        isOptionEqualToValue={(option, value) => option?.id == value?.id}
         value={groupOption}
-        onChange={(_e, newValue) =>
-          setGroupOption(newValue ?? { label: "", id: 0 })
-        }
+        onChange={(_e, newValue) => {
+          setGroupOption(newValue ?? { label: "", id: 0 });
+          setPlayerOption({ label: "", id: 0 });
+          setSelectedPlayerId(0);
+        }}
         renderInput={(params) => (
           <TextField {...params} variant="standard" placeholder="組別" />
         )}
         disableClearable
       />
       <Autocomplete
+        className="player-picker"
         options={playersOptions}
         defaultValue={playersOptions[0] ?? { label: "", id: 0 }}
+        getOptionLabel={(option) => option?.label ?? ""}
+        isOptionEqualToValue={(option, value) => option?.id === value?.id}
         value={playerOption}
-        onChange={(_e, newValue) =>
-          setPlayerOption(newValue ?? { label: "", id: 0 })
-        }
+        onChange={(_e, newValue) => {
+          setPlayerOption(newValue ?? { label: "", id: 0 });
+          setSelectedPlayerId(newValue?.id ?? 0);
+        }}
         renderInput={(params) => (
           <TextField {...params} variant="standard" placeholder="選手" />
         )}
