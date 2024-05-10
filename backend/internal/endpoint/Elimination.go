@@ -2,6 +2,7 @@ package endpoint
 
 import (
 	"backend/internal/database"
+	"backend/internal/endpoint/tools"
 	response "backend/internal/response"
 	"fmt"
 
@@ -9,7 +10,7 @@ import (
 )
 
 func IsGetEliminationById(context *gin.Context) (bool, database.Elimination) {
-	id := Convert2uint(context, "id")
+	id := tools.Convert2uint(context, "id")
 	data, err := database.GetOnlyEliminationById(id)
 	isExist := (data.ID == id)
 	if response.ErrorIdTest(context, id, isExist, "Elimination") {
@@ -22,7 +23,7 @@ func IsGetEliminationById(context *gin.Context) (bool, database.Elimination) {
 }
 
 func IsGetEliminationWStagesMatchesById(context *gin.Context) (bool, database.Elimination) {
-	id := Convert2uint(context, "id")
+	id := tools.Convert2uint(context, "id")
 	data, err := database.GetEliminationWStagesMatchesById(id)
 	isExist := (data.ID == id)
 	if response.ErrorIdTest(context, id, isExist, "Elimination") {
@@ -63,7 +64,7 @@ func GetOnlyEliminationById(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/elimination/playersets/{id} [get]
 func GetEliminationWPlayerSetsById(context *gin.Context) {
-	id := Convert2uint(context, "id")
+	id := tools.Convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
 	if !isExist {
 		return
@@ -105,7 +106,7 @@ func GetEliminationWStagesMatchesById(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/elimination/scores/{id} [get]
 func GetEliminationWScoresById(context *gin.Context) {
-	id := Convert2uint(context, "id")
+	id := tools.Convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
 	if !isExist {
 		return
@@ -129,7 +130,7 @@ func GetEliminationWScoresById(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/elimination/stages/scores/medals/{id} [get]
 func GetEliminationById(context *gin.Context) {
-	id := Convert2uint(context, "id")
+	id := tools.Convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
 	if !isExist {
 		return
@@ -153,7 +154,7 @@ func GetEliminationById(context *gin.Context) {
 //	@Failure		400		string	string
 //	@Router			/api/elimination/match/scores/{matchid} [get]
 func GetMatchWScoresById(context *gin.Context) {
-	id := Convert2uint(context, "matchid")
+	id := tools.Convert2uint(context, "matchid")
 	if response.ErrorIdTest(context, id, database.GetMatchIsExist(id), "Match") {
 		return
 	}
@@ -345,7 +346,7 @@ func PostMatch(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/elimination/currentstage/plus/{id} [put]
 func PutEliminationCurrentStagePlusById(context *gin.Context) {
-	id := Convert2uint(context, "id")
+	id := tools.Convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
 	if !isExist {
 		return
@@ -367,7 +368,7 @@ func PutEliminationCurrentStagePlusById(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/elimination/currentstage/minus/{id} [put]
 func PutEliminationCurrentStageMinusById(context *gin.Context) {
-	id := Convert2uint(context, "id")
+	id := tools.Convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
 	if !isExist {
 		return
@@ -389,7 +390,7 @@ func PutEliminationCurrentStageMinusById(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/elimination/currentend/plus/{id} [put]
 func PutEliminationCurrentEndPlusById(context *gin.Context) {
-	id := Convert2uint(context, "id")
+	id := tools.Convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
 	if !isExist {
 		return
@@ -411,7 +412,7 @@ func PutEliminationCurrentEndPlusById(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/elimination/currentend/minus/{id} [put]
 func PutEliminationCurrentEndMinusById(context *gin.Context) {
-	id := Convert2uint(context, "id")
+	id := tools.Convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
 	if !isExist {
 		return
@@ -436,7 +437,7 @@ func PutEliminationCurrentEndMinusById(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/elimination/{id} [delete]
 func DeleteElimination(context *gin.Context) {
-	id := Convert2uint(context, "id")
+	id := tools.Convert2uint(context, "id")
 	isChanged, err := database.DeleteElimination(id)
 	if response.ErrorInternalErrorTest(context, id, "Delete Elimination", err) {
 		return

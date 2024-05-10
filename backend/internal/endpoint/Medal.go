@@ -2,6 +2,7 @@ package endpoint
 
 import (
 	"backend/internal/database"
+	"backend/internal/endpoint/tools"
 	response "backend/internal/response"
 	"fmt"
 	"net/http"
@@ -50,7 +51,7 @@ func IsGetMedalsByEliminationId(context *gin.Context, id uint) (bool, []database
 //	@Failure		400	string	string
 //	@Router			/api/medal/{id} [get]
 func GetMedalById(context *gin.Context) {
-	id := Convert2uint(context, "id")
+	id := tools.Convert2uint(context, "id")
 	isExist, data := IsGetMedalById(context, id)
 	if !isExist {
 		return
@@ -69,7 +70,7 @@ func GetMedalById(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/medal/elimination/{id} [get]
 func GetMedalInfoByEliminationId(context *gin.Context) {
-	eliminationId := Convert2uint(context, "eliminationid")
+	eliminationId := tools.Convert2uint(context, "eliminationid")
 	isExist, data := IsGetMedalsByEliminationId(context, eliminationId)
 	if !isExist {
 		return
@@ -92,7 +93,7 @@ func PutMedalPlayerSetIdById(context *gin.Context) {
 	type RequestBody struct {
 		PlayerSetId uint `json:"player_set_id"`
 	}
-	id := Convert2uint(context, "id")
+	id := tools.Convert2uint(context, "id")
 	var requestBody RequestBody
 	err := context.BindJSON(&requestBody)
 	if response.ErrorInternalErrorTest(context, id, "Request data of PutMedalPlayerSetIdById", err) {

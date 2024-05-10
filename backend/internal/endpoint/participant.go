@@ -2,6 +2,7 @@ package endpoint
 
 import (
 	"backend/internal/database"
+	"backend/internal/endpoint/tools"
 	"backend/internal/response"
 	"fmt"
 	"net/http"
@@ -104,7 +105,7 @@ func IsGetParticipant(context *gin.Context, id uint) (bool, database.Participant
 //	@Failure		400	string	string
 //	@Router			/api/participant/{id} [get]
 func GetParticipantById(context *gin.Context) {
-	id := Convert2uint(context, "id")
+	id := tools.Convert2uint(context, "id")
 	isExist, data := IsGetParticipant(context, id)
 	if !isExist {
 		return
@@ -123,7 +124,7 @@ func GetParticipantById(context *gin.Context) {
 //	@Failure		400		string	string
 //	@Router			/api/participant/user [get]
 func GetParticipantByUserId(context *gin.Context) {
-	userId := Convert2uint(context, "userid")
+	userId := tools.Convert2uint(context, "userid")
 	var newData []database.Participant
 	if response.ErrorIdTest(context, userId, database.GetUserIsExist(userId), "User ID when getting participants") {
 		return
@@ -146,7 +147,7 @@ func GetParticipantByUserId(context *gin.Context) {
 //	@Failure		400				string	string
 //	@Router			/api/participant/competition [get]
 func GetParticipantByCompetitionId(context *gin.Context) {
-	competitionId := Convert2uint(context, "competitionid")
+	competitionId := tools.Convert2uint(context, "competitionid")
 	var newData []ParticipantWName
 	if response.ErrorIdTest(context, competitionId, database.GetCompetitionIsExist(competitionId), "Competition ID when getting participants") {
 		return
@@ -184,8 +185,8 @@ func GetParticipantByCompetitionId(context *gin.Context) {
 //	@Failure		400				string	string
 //	@Router			/api/participant/competition/user [get]
 func GetParticipantByCompetitionIdUserId(context *gin.Context) {
-	competitionId := Convert2uint(context, "competitionid")
-	userId := Convert2uint(context, "userid")
+	competitionId := tools.Convert2uint(context, "competitionid")
+	userId := tools.Convert2uint(context, "userid")
 	var newData []database.Participant
 	if response.ErrorIdTest(context, userId, database.GetUserIsExist(userId), "User ID when getting participants") {
 		return
@@ -216,7 +217,7 @@ func GetParticipantByCompetitionIdUserId(context *gin.Context) {
 func UpdateParticipant(context *gin.Context) {
 	var data database.Participant
 	err := context.BindJSON(&data)
-	id := Convert2uint(context, "id")
+	id := tools.Convert2uint(context, "id")
 	if response.ErrorReceiveDataTest(context, id, "Participant", err) {
 		return
 	}
@@ -252,7 +253,7 @@ func UpdateParticipant(context *gin.Context) {
 //	@Failure		404	string	string
 //	@Router			/api/participant/{id} [delete]
 func DeleteParticipantById(context *gin.Context) {
-	id := Convert2uint(context, "id")
+	id := tools.Convert2uint(context, "id")
 	DeleteParticipaint(context, id)
 }
 

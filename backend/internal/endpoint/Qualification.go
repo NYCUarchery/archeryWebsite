@@ -2,7 +2,9 @@ package endpoint
 
 import (
 	"backend/internal/database"
+	"backend/internal/endpoint/tools"
 	response "backend/internal/response"
+
 	"fmt"
 	"net/http"
 
@@ -68,7 +70,7 @@ func IsGetQualificationWUnassignedLanes(context *gin.Context, id uint) (bool, da
 //	@Failure		400	string	string
 //	@Router			/api/qualification/{id} [get]
 func GetOnlyQualificationByID(context *gin.Context) {
-	id := Convert2uint(context, "id")
+	id := tools.Convert2uint(context, "id")
 	isExist, data := IsGetQualification(context, id)
 	if !isExist {
 		return
@@ -87,7 +89,7 @@ func GetOnlyQualificationByID(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/qualification/lanes/{id} [get]
 func GetQualificationWLanesByID(context *gin.Context) {
-	id := Convert2uint(context, "id")
+	id := tools.Convert2uint(context, "id")
 	isExist, data := IsGetQualificationWLanes(context, id)
 	if !isExist {
 		return
@@ -106,7 +108,7 @@ func GetQualificationWLanesByID(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/data/qualification/lanes/Unassigned/{id} [get]
 func GetQualificationWUnassignedLanesByID(context *gin.Context) {
-	id := Convert2uint(context, "id")
+	id := tools.Convert2uint(context, "id")
 	data := []database.Qualification{}
 	isExist, wLaneData := IsGetQualificationWLanesPlayers(context, id)
 	if !isExist {
@@ -132,7 +134,7 @@ func GetQualificationWUnassignedLanesByID(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/data/qualification/lanes/players/{id} [get]
 func GetQualificationWLanesPlayersByID(context *gin.Context) {
-	id := Convert2uint(context, "id")
+	id := tools.Convert2uint(context, "id")
 	if response.ErrorIdTest(context, id, database.GetQualificationIsExist(id), "Qualification") {
 		return
 	}
@@ -174,7 +176,7 @@ func PostQualificationThroughGroup(context *gin.Context, id uint) bool {
 func UpdateQualificationByID(context *gin.Context) {
 	var data database.Qualification
 	err := context.BindJSON(&data)
-	id := Convert2uint(context, "id")
+	id := tools.Convert2uint(context, "id")
 	/*parse data check*/
 	if response.ErrorReceiveDataTest(context, id, "Qualification", err) {
 		return
