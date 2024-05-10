@@ -1,4 +1,4 @@
-package endpoint
+package tools
 
 import (
 	"strconv"
