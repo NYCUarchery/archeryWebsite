@@ -34,8 +34,6 @@ func DummyDatabaseInitial() {
 
 func connectDummyDB() {
 	var err error
-	//const dummyDBPath = "internal/database/testData/dummy.db"
-
 	for retry := 0; retry < 5; retry++ {
 		DB, err = gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
 		if err != nil {
@@ -50,7 +48,7 @@ func connectDummyDB() {
 }
 
 func InitDummyData() {
-	const dummyDataPath = "internal/database/testData/dummyData.sql"
+	const dummyDataPath = "assets/testData/dummyData.sql"
 	sqlBytes, err := os.ReadFile(dummyDataPath)
 	if err != nil {
 		fmt.Println("fail to load dummyData.sql: ", err)
