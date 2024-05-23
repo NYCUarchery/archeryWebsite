@@ -2,7 +2,6 @@ package endpoint
 
 import (
 	"backend/internal/database"
-	"backend/internal/endpoint/tools"
 	response "backend/internal/response"
 
 	"fmt"
@@ -53,7 +52,7 @@ func IsGetPlayerWScores(context *gin.Context, id uint) (bool, database.Player) {
 //	@Failure		400	string	string
 //	@Router			/api/player/{id} [get]
 func GetOnlyPlayerByID(context *gin.Context) {
-	id := tools.Convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	isExist, data := IsGetOnlyPlayer(context, id)
 	if !isExist {
 		return
@@ -72,7 +71,7 @@ func GetOnlyPlayerByID(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/player/scores/{id} [get]
 func GetPlayerWScoresByID(context *gin.Context) {
-	id := tools.Convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	isExist, data := IsGetPlayerWScores(context, id)
 	if !isExist {
 		return
@@ -92,8 +91,8 @@ func GetPlayerWScoresByID(context *gin.Context) {
 //	@Failure		400				string	string
 //	@Router			/api/player/playersets/{id}/{eliminationid} [get]
 func GetPlayerWPlayerSetsByIDEliminationID(context *gin.Context) {
-	id := tools.Convert2uint(context, "id")
-	eliminationId := tools.Convert2uint(context, "eliminationid")
+	id := Convert2uint(context, "id")
+	eliminationId := Convert2uint(context, "eliminationid")
 	if response.ErrorIdTest(context, eliminationId, database.GetEliminationIsExist(eliminationId), "Elimination when getting player sets") {
 		return
 	} else if response.ErrorIdTest(context, id, database.GetPlayerIsExist(id), "Player when getting player sets") {
@@ -120,7 +119,7 @@ func GetPlayerWPlayerSetsByIDEliminationID(context *gin.Context) {
 func PostPlayer(context *gin.Context) {
 	var data database.Player
 	/*only get participant_id*/
-	participantId := tools.Convert2uint(context, "participantid")
+	participantId := Convert2uint(context, "participantid")
 	data.ParticipantId = participantId
 	if response.ErrorIdTest(context, participantId, database.GetParticipantIsExist(participantId), "Participant when creating Player") {
 		return
@@ -242,7 +241,7 @@ func PostRoundScore(context *gin.Context) {
 		return
 	}
 	/*auto update total score in rounds when create score*/
-	score = tools.Scorefmt(score)
+	score = Scorefmt(score)
 	if !UpdatePlayerTotalScoreWithOneScore(context, playerId, roundId, score) {
 		return
 	}
@@ -286,7 +285,7 @@ func IsUpdatePlayerLaneId(context *gin.Context, playerId uint, laneId uint) bool
 //	@Router			/api/player/groupid/{playerid}/{groupid} [put]
 func UpdataPlayerGroupId(context *gin.Context) {
 	var data database.Player
-	playerId := tools.Convert2uint(context, "id")
+	playerId := Convert2uint(context, "id")
 	err := context.BindJSON(&data)
 	groupId := data.GroupId
 	if response.ErrorReceiveDataTest(context, playerId, "Update Player laneId", err) {
@@ -329,7 +328,7 @@ func UpdataPlayerGroupId(context *gin.Context) {
 //	@Router			/api/player/laneid/{playerid} [put]
 func UpdatePlayerLaneId(context *gin.Context) {
 	var data database.Player
-	playerId := tools.Convert2uint(context, "id")
+	playerId := Convert2uint(context, "id")
 	err := context.BindJSON(&data)
 	laneId := data.LaneId
 	if response.ErrorReceiveDataTest(context, playerId, "Update Player laneId", err) {
@@ -360,7 +359,7 @@ func UpdatePlayerLaneId(context *gin.Context) {
 //	@Router			/api/player/order/{id} [put]
 func UpdatePlayerOrder(context *gin.Context) {
 	var data database.Player
-	playerId := tools.Convert2uint(context, "id")
+	playerId := Convert2uint(context, "id")
 	err := context.BindJSON(&data)
 	order := data.Order
 	if response.ErrorReceiveDataTest(context, playerId, "Update Player order", err) {
@@ -395,7 +394,7 @@ func UpdatePlayerOrder(context *gin.Context) {
 //	@Router			/api/player/isconfirmed/{roundendid} [put]
 func UpdatePlayerIsConfirmed(context *gin.Context) {
 	var newRoundEnd database.RoundEnd
-	roundEndId := tools.Convert2uint(context, "id")
+	roundEndId := Convert2uint(context, "id")
 	err := context.BindJSON(&newRoundEnd)
 	if response.ErrorReceiveDataTest(context, roundEndId, "Update Player isConfirmed", err) {
 		return
@@ -462,7 +461,7 @@ func UpdatePlayerTotalScoreByplayerId(context *gin.Context) {
 	if response.ErrorReceiveDataTest(context, 0, "Update Player total score", err) {
 		return
 	}
-	playerId := tools.Convert2uint(context, "id")
+	playerId := Convert2uint(context, "id")
 	if response.ErrorIdTest(context, playerId, database.GetPlayerIsExist(playerId), "Player when updating total score") {
 		return
 	}
@@ -488,7 +487,7 @@ func UpdatePlayerTotalScoreByplayerId(context *gin.Context) {
 //	@Router			/api/player/score/{roundscoreid} [put]
 func UpdatePlayerScore(context *gin.Context) {
 	var data UpdateTotalScoreData
-	roundScoreId := tools.Convert2uint(context, "id")
+	roundScoreId := Convert2uint(context, "id")
 	err := context.BindJSON(&data)
 	/*check data validity*/
 	if response.ErrorReceiveDataTest(context, roundScoreId, "Update Player score", err) {
@@ -519,9 +518,9 @@ func UpdatePlayerScore(context *gin.Context) {
 	}
 
 	/*auto update player total score and round total score in rounds when update score*/
-	newScore = tools.Scorefmt(newScore)
+	newScore = Scorefmt(newScore)
 	fmt.Printf("oldScore: %d\n", oldScore)
-	oldScore = tools.Scorefmt(oldScore)
+	oldScore = Scorefmt(oldScore)
 	roundId, err := database.GetRoundIdByRoundScoreId(roundScoreId)
 	if response.ErrorInternalErrorTest(context, roundId, "Get Round id by roundScoreId", err) {
 		return
@@ -550,7 +549,7 @@ func UpdatePlayerScore(context *gin.Context) {
 //	@Router			/api/player/shootoffscore/{id} [put]
 func UpdatePlayerShootoffScore(context *gin.Context) {
 	var data database.Player
-	playerId := tools.Convert2uint(context, "id")
+	playerId := Convert2uint(context, "id")
 	err := context.BindJSON(&data)
 	shootoffScore := data.ShootOffScore
 	if response.ErrorReceiveDataTest(context, playerId, "Update Player shootoffScore", err) {
@@ -583,7 +582,7 @@ func UpdatePlayerShootoffScore(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/player/{id} [delete]
 func DeletePlayer(context *gin.Context) {
-	id := tools.Convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	isExist, _ := IsGetOnlyPlayer(context, id)
 	if !isExist {
 		return
@@ -612,7 +611,7 @@ func DeletePlayerThroughCompetition(context *gin.Context, id uint) bool {
 //	@Router			/api/player/dummy/{participantid} [get]
 func GetDummyPlayerByParticipantId(context *gin.Context) {
 	var data []database.Player
-	participantId := tools.Convert2uint(context, "participantid")
+	participantId := Convert2uint(context, "participantid")
 	if response.ErrorIdTest(context, participantId, database.GetParticipantIsExist(participantId), "Participant when getting dummy players") {
 		return
 	}
@@ -635,7 +634,7 @@ func GetDummyPlayerByParticipantId(context *gin.Context) {
 //	@Failure		400			string	string
 //	@Router			/api/player/dummy/{playerid} [post]
 func PostDummyPlayerByPlayerId(context *gin.Context) {
-	id := tools.Convert2uint(context, "playerid")
+	id := Convert2uint(context, "playerid")
 	if response.ErrorIdTest(context, id, database.GetPlayerIsExist(id), "Player when creating dummy player") {
 		return
 	}

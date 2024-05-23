@@ -2,7 +2,7 @@ package main
 
 import (
 	"backend/internal/database"
-	"backend/internal/endpoint/tools"
+	"backend/internal/endpoint"
 	"backend/internal/routers"
 	"fmt"
 
@@ -24,7 +24,7 @@ import (
 // schemes http
 func main() {
 	server := gin.Default() // initialize a Gin router
-	mode := tools.GetConf().Mode
+	mode := endpoint.GetConf().Mode
 	ip := getIpByMode()
 	port := "8080"
 

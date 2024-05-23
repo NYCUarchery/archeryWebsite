@@ -2,7 +2,6 @@ package endpoint
 
 import (
 	"backend/internal/database"
-	"backend/internal/endpoint/tools"
 	response "backend/internal/response"
 	"fmt"
 	"net/http"
@@ -73,7 +72,7 @@ func IsGetCompetitionWParticipants(context *gin.Context, id uint) (bool, databas
 //	@Failure		400	string	string
 //	@Router			/api/competition/{id} [get]
 func GetOnlyCompetitionByID(context *gin.Context) {
-	id := tools.Convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	isExist, data := IsGetOnlyCompetition(context, id)
 	if !isExist {
 		return
@@ -93,7 +92,7 @@ func GetOnlyCompetitionByID(context *gin.Context) {
 //	@Router			/api/competition/participants/{id} [get]
 func GetCompetitionWParticipantsByID(context *gin.Context) {
 	var data database.Competition
-	id := tools.Convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	isExist, data := IsGetCompetitionWParticipants(context, id)
 	if !isExist {
 		return
@@ -112,7 +111,7 @@ func GetCompetitionWParticipantsByID(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/competition/groups/{id} [get]
 func GetCompetitionWGroupsByID(context *gin.Context) {
-	id := tools.Convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	isExist, data := IsGetCompetitionWGroup(context, id)
 	if !isExist {
 		return
@@ -147,7 +146,7 @@ func GetCompetitionWGroupsQuaEliByID(context *gin.Context) {
 		GroupDatas    []GroupData `json:"group_datas"`
 	}
 	var data CompetitionWGroupsQuaEliData
-	id := tools.Convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
 		return
@@ -190,7 +189,7 @@ func GetCompetitionWGroupsQuaEliByID(context *gin.Context) {
 //	@Description	Get one Competition by id with GroupInfos and Players
 //	@Router			/api/competition/groups/players/{id} [get]
 func GetCompetitionWGroupsPlayersByID(context *gin.Context) {
-	id := tools.Convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	isExist, data := IsGetCompetitionWGroupsPlayers(context, id)
 	if !isExist {
 		return
@@ -212,8 +211,8 @@ func GetCompetitionWGroupsPlayersByID(context *gin.Context) {
 //	@Failure		400		string	string
 //	@Router			/api/competition/current/{head}/{tail} [get]
 func GetCurrentCompetitions(context *gin.Context) {
-	head := tools.Convert2int(context, "head")
-	tail := tools.Convert2int(context, "tail")
+	head := Convert2int(context, "head")
+	tail := Convert2int(context, "tail")
 	if head < 0 || tail < 0 {
 		response.ErrorReceiveDataFormat(context, "head and tail must >= 0")
 		return
@@ -244,9 +243,9 @@ func GetCurrentCompetitions(context *gin.Context) {
 //	@Failure		400		string	string
 //	@Router			/api/competition/recent/{userid}/{head}/{tail} [get]
 func GetCompetitionsOfUser(context *gin.Context) {
-	head := tools.Convert2int(context, "head")
-	tail := tools.Convert2int(context, "tail")
-	userId := tools.Convert2uint(context, "userid")
+	head := Convert2int(context, "head")
+	tail := Convert2int(context, "tail")
+	userId := Convert2uint(context, "userid")
 	if response.ErrorIdTest(context, userId, database.GetUserIsExist(userId), "User") {
 		return
 	}
@@ -363,7 +362,7 @@ func PostCompetition(context *gin.Context) {
 //	@Router			/api/competition/whole/{id} [put]
 func UpdateCompetition(context *gin.Context) {
 	var data database.Competition
-	id := tools.Convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	/*write id for update success*/
 	data.ID = id
 	err := context.BindJSON(&data)
@@ -435,7 +434,7 @@ func UpdateCompetition(context *gin.Context) {
 //	@Failure		500	string	string
 //	@Router			/api/competition/groups/players/rank/{id} [put]
 func UpdateCompetitionRank(context *gin.Context) {
-	id := tools.Convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
@@ -477,7 +476,7 @@ func UpdateCompetitionRank(context *gin.Context) {
 //	@Failure		404	string	string
 //	@Router			/api/competition/{id} [delete]
 func DeleteCompetition(context *gin.Context) {
-	id := tools.Convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, data := IsGetCompetitionWGroupsPlayers(context, id)
 	if !isExist {
@@ -552,7 +551,7 @@ func GetAllCompetition(c *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/competition/currentphaseplus/{id} [put]
 func PutCompetitionCurrentPhasePlus(context *gin.Context) {
-	id := tools.Convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
@@ -576,7 +575,7 @@ func PutCompetitionCurrentPhasePlus(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/competition/currentphaseminus/{id} [put]
 func PutCompetitionCurrentPhaseMinus(context *gin.Context) {
-	id := tools.Convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
@@ -600,7 +599,7 @@ func PutCompetitionCurrentPhaseMinus(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/competition/qualificationcurrentendplus/{id} [put]
 func PutCompetitionQualificationCurrentEndPlus(context *gin.Context) {
-	id := tools.Convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
@@ -625,7 +624,7 @@ func PutCompetitionQualificationCurrentEndPlus(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/competition/qualificationcurrentendminus/{id} [put]
 func PutCompetitionQualificationCurrentEndMinus(context *gin.Context) {
-	id := tools.Convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
@@ -648,7 +647,7 @@ func PutCompetitionQualificationCurrentEndMinus(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/competition/qualificationisactive/{id} [put]
 func PutCompetitionQualificationActive(context *gin.Context) {
-	id := tools.Convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
@@ -674,7 +673,7 @@ func PutCompetitionQualificationActive(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/competition/eliminationisactive/{id} [put]
 func PutCompetitionEliminationActive(context *gin.Context) {
-	id := tools.Convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
@@ -701,7 +700,7 @@ func PutCompetitionEliminationActive(context *gin.Context) {
 //	@Failure		500	string	string
 //	@Router			/api/competition/teameliminationisactive/{id} [put]
 func PutCompetitionTeamEliminationActive(context *gin.Context) {
-	id := tools.Convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
@@ -745,7 +744,7 @@ func PutCompetitionTeamEliminationActive(context *gin.Context) {
 //	@Failure		500	string	string
 //	@Router			/api/competition/mixedeliminationisactive/{id} [put]
 func PutCompetitionMixedEliminationActive(context *gin.Context) {
-	id := tools.Convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
@@ -791,7 +790,7 @@ func PutCompetitionMixedEliminationActive(context *gin.Context) {
 //	@Failure		500	string	string
 //	@Router			/api/competition//groups/players/playertotal/{id} [put]
 func UpdateCompetitionRecountPlayerTotalScore(context *gin.Context) {
-	id := tools.Convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	/*check data exist*/
 	if response.ErrorIdTest(context, id, database.GetCompetitionIsExist(id), "Competition") {
 		return
@@ -809,7 +808,7 @@ func UpdateCompetitionRecountPlayerTotalScore(context *gin.Context) {
 				var newRoundTotalScore int
 				for _, end := range round.RoundEnds {
 					for _, arrow := range end.RoundScores {
-						fmtScore := tools.Scorefmt(arrow.Score)
+						fmtScore := Scorefmt(arrow.Score)
 						newRoundTotalScore += fmtScore
 					}
 				}

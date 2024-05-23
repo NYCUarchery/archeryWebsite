@@ -1,6 +1,7 @@
-package tools
+package endpoint
 
 import (
+	. "backend/internal/endpoint"
 	"fmt"
 	"net/http/httptest"
 	"testing"

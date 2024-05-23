@@ -5,8 +5,6 @@ import (
 	"os"
 	"time"
 
-	"backend/internal/endpoint/tools"
-
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -43,7 +41,7 @@ func SetupDatabaseByMode(mode string) {
 }
 
 func connectDB() {
-	DSN := tools.GetConf()
+	DSN := GetConf()
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify",
 		DSN.Username, DSN.Password, DSN.Host, DSN.Port, DSN.Database)
