@@ -2,38 +2,16 @@ package database
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"time"
 
-	"gopkg.in/yaml.v2"
+	"backend/internal/endpoint/tools"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
-type conf struct {
-	Username string
-	Password string
-	Host     string
-	Port     int
-	Database string
-}
-
 var DB *gorm.DB
-
-func getConf() (c conf) {
-	yamlFile, err := os.ReadFile("config/db.yaml")
-	if err != nil {
-		log.Printf("yamlFile.Get err   #%v ", err)
-	}
-
-	err = yaml.Unmarshal(yamlFile, &c)
-	if err != nil {
-		log.Fatalf("Unmarshal: %v", err)
-	}
-	return
-}
 
 func DatabaseInitial() {
 	connectDB()
@@ -56,8 +34,16 @@ func DatabaseInitial() {
 	InitOldLaneInfo()
 }
 
+func SetupDatabaseByMode(mode string) {
+	if mode == "test" {
+		DummyDatabaseInitial()
+	} else {
+		DatabaseInitial()
+	}
+}
+
 func connectDB() {
-	DSN := getConf()
+	DSN := tools.GetConf()
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify",
 		DSN.Username, DSN.Password, DSN.Host, DSN.Port, DSN.Database)

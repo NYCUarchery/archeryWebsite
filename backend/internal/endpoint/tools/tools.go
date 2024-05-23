@@ -1,10 +1,35 @@
 package tools
 
 import (
+	"log"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"gopkg.in/yaml.v2"
 )
+
+type conf struct {
+	Username string
+	Password string
+	Host     string
+	Port     int
+	Database string
+	Mode     string
+}
+
+func GetConf() (c conf) {
+	yamlFile, err := os.ReadFile("config/db.yaml")
+	if err != nil {
+		log.Printf("yamlFile.Get err   #%v ", err)
+	}
+
+	err = yaml.Unmarshal(yamlFile, &c)
+	if err != nil {
+		log.Fatalf("Unmarshal: %v", err)
+	}
+	return
+}
 
 func Convert2int(c *gin.Context, name string) int {
 	dataStr := c.Param(name)

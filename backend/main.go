@@ -2,6 +2,7 @@ package main
 
 import (
 	"backend/internal/database"
+	"backend/internal/endpoint/tools"
 	"backend/internal/routers"
 	"fmt"
 
@@ -23,10 +24,11 @@ import (
 // schemes http
 func main() {
 	server := gin.Default() // initialize a Gin router
+	mode := tools.GetConf().Mode
 	ip := getIpByMode()
 	port := "8080"
 
-	database.DatabaseInitial()
+	database.SetupDatabaseByMode(mode)
 	routers.SetUpRouter(server, ip, port)
 
 	server.Run(fmt.Sprintf("%s:%s", ip, port))
