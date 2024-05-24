@@ -117,7 +117,7 @@ func Register(c *gin.Context) {
 //	@Router			/user/{id} [put]
 func ModifyInfo(c *gin.Context) {
 	// check id
-	userId := convert2uint(c, "id")
+	userId := Convert2uint(c, "id")
 	if response.ErrorIdTest(c, userId, database.GetUserIsExist(userId), "user id when modify") {
 		return
 	}
@@ -189,7 +189,7 @@ func ModifyInfo(c *gin.Context) {
 //	@Router			/user/password/{id} [put]
 func ModifyPassword(c *gin.Context) {
 	// check id
-	userId := convert2uint(c, "id")
+	userId := Convert2uint(c, "id")
 	if response.ErrorIdTest(c, userId, database.GetUserIsExist(userId), "user id when modify password") {
 		return
 	}

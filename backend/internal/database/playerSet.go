@@ -19,7 +19,7 @@ type PlayerSetMatchTable struct {
 
 func InitPlayerSet() {
 	DB.AutoMigrate(&PlayerSet{})
-	DB.AutoMigrate(&PlayerSetMatchTable{})
+	DB.Table("player_set_match_tables").AutoMigrate(&PlayerSetMatchTable{})
 }
 
 func GetPlayerSetIsExist(id uint) bool {

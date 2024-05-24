@@ -3,6 +3,7 @@ package endpoint
 import (
 	"backend/internal/database"
 	"backend/internal/response"
+
 	"fmt"
 
 	"github.com/gin-gonic/gin"
@@ -35,7 +36,7 @@ func IsGetPlayerSetById(context *gin.Context, id uint) (bool, database.PlayerSet
 //	@Failure		500	string	string
 //	@Router			/playerset/{id} [get]
 func GetPlayerSetWPlayerById(context *gin.Context) {
-	id := convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	var isExist bool
 	isExist, data := IsGetPlayerSetById(context, id)
 	if !isExist {
@@ -56,7 +57,7 @@ func GetPlayerSetWPlayerById(context *gin.Context) {
 //	@Failure		500				string	string
 //	@Router			/playerset/elimination/{eliminationid} [get]
 func GetAllPlayerSetsByEliminationId(context *gin.Context) {
-	id := convert2uint(context, "eliminationid")
+	id := Convert2uint(context, "eliminationid")
 	var data []database.PlayerSet
 	data, err := database.GetPlayerSetsByEliminationId(id)
 	if response.ErrorInternalErrorTest(context, id, "get player sets by elimination id", err) {
@@ -83,7 +84,7 @@ func GetPlayerSetsByMedalByEliminationId(context *gin.Context) {
 		SetName string `json:"set_name"`
 		Type    int    `json:"type"`
 	}
-	eliminationId := convert2uint(context, "eliminationid")
+	eliminationId := Convert2uint(context, "eliminationid")
 	var data []playerSetData
 	isExist, medals := IsGetMedalsByEliminationId(context, eliminationId)
 	if !isExist {
@@ -195,7 +196,7 @@ func PutPlayerSetName(context *gin.Context) {
 	type playerSetData struct {
 		SetName string `json:"set_name"`
 	}
-	id := convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	var data playerSetData
 	isExist, playerSet := IsGetPlayerSetById(context, id)
 	if !isExist {
@@ -234,7 +235,7 @@ func PutPlayerSetName(context *gin.Context) {
 //	@Router			/playerset/preranking/{eliminationid} [put]
 func PutPlayerSetPreRankingByEliminationId(context *gin.Context) {
 	var yourResultStruct []database.ResultStruct
-	eliminationId := convert2uint(context, "eliminationid")
+	eliminationId := Convert2uint(context, "eliminationid")
 	yourResultStruct, err := database.GetEliminationPlayerSetIdRankOrderById(eliminationId)
 	if response.ErrorInternalErrorTest(context, eliminationId, "get elimination player set id rank order by id", err) {
 		return
@@ -260,7 +261,7 @@ func PutPlayerSetPreRankingByEliminationId(context *gin.Context) {
 //	@Failure		500	string	string
 //	@Router			/playerset/{id} [delete]
 func DeletePlayerSet(context *gin.Context) {
-	id := convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	isExist, playerSet := IsGetPlayerSetById(context, id)
 	if !isExist {
 		return
