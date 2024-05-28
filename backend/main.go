@@ -24,7 +24,7 @@ import (
 // schemes http
 func main() {
 	server := gin.Default() // initialize a Gin router
-	mode := endpoint.GetConf().Mode
+	mode := endpoint.GetConf("config/db.yaml").Mode
 	ip := getIpByMode()
 	port := "8080"
 
