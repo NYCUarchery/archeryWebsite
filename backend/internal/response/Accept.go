@@ -17,10 +17,9 @@ func AcceptDeleteSuccess(context *gin.Context, id uint, isChanged bool, message 
 	}
 }
 
-func AcceptNotChange(context *gin.Context, id uint, isChange bool, message string) bool {
+func AcceptNotChange(context *gin.Context, id uint, isChange bool) bool {
 	if !isChange {
-		errorMessage := fmt.Sprintf("Delete ID(%d): %s no change ", id, message)
-		context.IndentedJSON(http.StatusNoContent, gin.H{"message": errorMessage})
+		context.IndentedJSON(http.StatusNoContent, nil)
 		return true
 	}
 	return false

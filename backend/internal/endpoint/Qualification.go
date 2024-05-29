@@ -299,7 +299,7 @@ func DeleteQualificationThroughGroup(context *gin.Context, id uint) bool {
 	if response.ErrorInternalErrorTest(context, id, "Delete Qualification", err) {
 		return false
 	} else if !isChanged {
-		response.AcceptNotChange(context, id, isChanged, "Qualification")
+		response.AcceptNotChange(context, id, isChanged)
 		return false
 	}
 	response.AcceptPrint(id, fmt.Sprint(id), "Qualification")
@@ -318,7 +318,7 @@ func DeleteQualificationThroughGroupThroughCompetition(context *gin.Context, id 
 	if response.ErrorInternalErrorTest(context, id, "Delete Qualification", err) {
 		return false
 	} else if !isChanged {
-		response.AcceptNotChange(context, id, isChanged, "Qualification")
+		response.AcceptNotChange(context, id, isChanged)
 		return false
 	}
 	response.AcceptPrint(id, fmt.Sprint(id), "Qualification")
