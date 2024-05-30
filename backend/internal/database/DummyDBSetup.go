@@ -3,6 +3,8 @@ package database
 import (
 	"fmt"
 	"os"
+	"path/filepath"
+	"runtime"
 	"time"
 
 	"gorm.io/driver/sqlite"
@@ -11,24 +13,7 @@ import (
 
 func DummyDatabaseInitial() {
 	connectDummyDB()
-
-	InitUser()
-	InitInstitution()
-	InitParticipant()
-	InitPlayer()
-	InitPlayerSet()
-
-	InitCompetition()
-	InitGroupInfo()
-	InitQualification()
-	InitLane()
-
-	InitElimination()
-	InitMatchResult()
-	InitMedal()
-
-	InitOldLaneInfo()
-
+	setTables()
 	InitDummyData()
 }
 
@@ -48,7 +33,13 @@ func connectDummyDB() {
 }
 
 func InitDummyData() {
-	const dummyDataPath = "assets/testData/dummyData.sql"
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		fmt.Println("Unable to get caller information")
+		os.Exit(1)
+	}
+	dir := filepath.Dir(filename)
+	dummyDataPath := filepath.Join(dir, "../../assets/testData/dummyData.sql")
 	sqlBytes, err := os.ReadFile(dummyDataPath)
 	if err != nil {
 		fmt.Println("fail to load dummyData.sql: ", err)
@@ -64,15 +55,8 @@ func InitDummyData() {
 	fmt.Println("load dummyData.sql successfully")
 }
 
-func DummyDBRestore() *gorm.DB {
-	return DB.Debug().Begin()
-}
-
-func DummyDBDelete() {
-	err := os.Remove("internal/database/testData/dummy.db")
-	if err != nil {
-		fmt.Println("fail to remove dummy.db: ", err)
-	} else {
-		fmt.Println("remove dummy.db successfully")
-	}
+func DummyDBRestore() {
+	DropTables()
+	setTables()
+	InitDummyData()
 }
