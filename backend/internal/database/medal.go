@@ -11,6 +11,10 @@ func InitMedal() {
 	DB.AutoMigrate(&Medal{})
 }
 
+func DropMedal() {
+	DB.Migrator().DropTable(&Medal{})
+}
+
 func GetMedalIsExist(id uint) bool {
 	var data Medal
 	DB.Table("medals").Where("id = ?", id).First(&data)

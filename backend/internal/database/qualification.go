@@ -16,6 +16,10 @@ func InitQualification() {
 	DB.AutoMigrate(&Qualification{})
 }
 
+func DropQualification() {
+	DB.Migrator().DropTable(&Qualification{})
+}
+
 func GetQualificationIsExist(id uint) bool {
 	var data Qualification
 	DB.Model(&Qualification{}).Where("id = ?", id).First(&data)

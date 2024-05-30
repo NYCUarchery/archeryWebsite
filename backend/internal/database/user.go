@@ -19,6 +19,10 @@ func InitUser() {
 	DB.AutoMigrate(&User{})
 }
 
+func DropUser() {
+	DB.Migrator().DropTable(&User{})
+}
+
 /*get all user data */
 func FindAllUsers() []User {
 	var users []User

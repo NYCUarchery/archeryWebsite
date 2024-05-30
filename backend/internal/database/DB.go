@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -13,7 +14,10 @@ var DB *gorm.DB
 
 func DatabaseInitial() {
 	connectDB()
+	setTables()
+}
 
+func setTables() {
 	InitUser()
 	InitInstitution()
 	InitParticipant()
@@ -30,6 +34,27 @@ func DatabaseInitial() {
 	InitMedal()
 
 	InitOldLaneInfo()
+	log.Println("All tables are created")
+}
+
+func DropTables() {
+	DropOldLaneInfo()
+
+	DropMedal()
+	DropMatchResult()
+	DropElimination()
+
+	DropLane()
+	DropQualification()
+	DropGroupInfo()
+	DropCompetition()
+
+	DropPlayerSet()
+	DropPlayer()
+	DropParticipant()
+	DropInstitution()
+	DropUser()
+	log.Println("All tables are dropped")
 }
 
 func SetupDatabaseByMode(mode string) {

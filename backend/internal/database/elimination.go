@@ -30,6 +30,12 @@ func InitElimination() {
 	DB.AutoMigrate(&Match{})
 }
 
+func DropElimination() {
+	DB.Migrator().DropTable(&Match{})
+	DB.Migrator().DropTable(&Stage{})
+	DB.Migrator().DropTable(&Elimination{})
+}
+
 func GetEliminationIsExist(id uint) bool {
 	var data Elimination
 	DB.Table("eliminations").Where("id = ?", id).First(&data)

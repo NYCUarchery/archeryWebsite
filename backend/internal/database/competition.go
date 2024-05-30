@@ -33,6 +33,10 @@ func InitCompetition() {
 	DB.AutoMigrate(&Competition{})
 }
 
+func DropCompetition() {
+	DB.Migrator().DropTable(&Competition{})
+}
+
 func GetCompetitionIsExist(id uint) bool {
 	var data Competition
 	DB.Table("competitions").Where("id = ?", id).First(&data)

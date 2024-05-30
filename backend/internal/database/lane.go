@@ -14,6 +14,10 @@ func InitLane() {
 	DB.AutoMigrate(&Lane{})
 }
 
+func DropLane() {
+	DB.Migrator().DropTable(&Lane{})
+}
+
 func GetLaneIsExist(id uint) bool {
 	var lane Lane
 	DB.Model(&Lane{}).Where("id = ?", id).First(&lane)

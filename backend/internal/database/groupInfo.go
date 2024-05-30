@@ -18,6 +18,10 @@ func InitGroupInfo() {
 	DB.Table("groups").AutoMigrate(&Group{})
 }
 
+func DropGroupInfo() {
+	DB.Table("groups").Migrator().DropTable(&Group{})
+}
+
 func GetGroupIsExist(id uint) bool {
 	var group Group
 	DB.Table("groups").Where("id = ?", id).First(&group)

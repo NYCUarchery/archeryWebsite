@@ -1,6 +1,10 @@
 package database
 
-import "gorm.io/gorm"
+import (
+	"log"
+
+	"gorm.io/gorm"
+)
 
 type PlayerSet struct {
 	ID            uint      `json:"id"        gorm:"primary_key"`
@@ -18,8 +22,35 @@ type PlayerSetMatchTable struct {
 }
 
 func InitPlayerSet() {
-	DB.AutoMigrate(&PlayerSet{})
-	DB.Table("player_set_match_tables").AutoMigrate(&PlayerSetMatchTable{})
+	if !DB.Migrator().HasTable(&PlayerSet{}) {
+		if err := DB.Table("player_sets").AutoMigrate(&PlayerSet{}); err != nil {
+			log.Println("Failed to auto migrate PlayerSet:", err)
+			return
+		}
+	}
+
+	if !DB.Migrator().HasTable(&PlayerSetMatchTable{}) {
+		if err := DB.Table("player_set_match_tables").AutoMigrate(&PlayerSetMatchTable{}); err != nil {
+			log.Println("Failed to auto migrate PlayerSetMatchTable:", err)
+			return
+		}
+	}
+}
+
+func DropPlayerSet() {
+	if DB.Migrator().HasTable(&PlayerSetMatchTable{}) {
+		if err := DB.Table("player_set_match_tables").Migrator().DropTable(&PlayerSetMatchTable{}); err != nil {
+			log.Println("Failed to drop PlayerSetMatchTable:", err)
+			return
+		}
+	}
+
+	if DB.Migrator().HasTable(&PlayerSet{}) {
+		if err := DB.Migrator().DropTable(&PlayerSet{}); err != nil {
+			log.Println("Failed to drop PlayerSet:", err)
+			return
+		}
+	}
 }
 
 func GetPlayerSetIsExist(id uint) bool {

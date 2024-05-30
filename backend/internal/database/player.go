@@ -42,6 +42,13 @@ func InitPlayer() {
 	DB.AutoMigrate(&RoundScore{})
 }
 
+func DropPlayer() {
+	DB.Migrator().DropTable(&RoundScore{})
+	DB.Migrator().DropTable(&RoundEnd{})
+	DB.Migrator().DropTable(&Round{})
+	DB.Migrator().DropTable(&Player{})
+}
+
 func GetPlayerIsExist(id uint) bool {
 	var data Player
 	DB.Table("players").Where("id = ?", id).First(&data)

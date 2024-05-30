@@ -59,6 +59,17 @@ func InitOldLaneInfo() {
 	DB.AutoMigrate(&OldEndScore{})
 }
 
+func DropOldLaneInfo() {
+	DB.Migrator().DropTable(&OldEndScore{})
+	DB.Migrator().DropTable(&AllScore{})
+
+	DB.Migrator().DropTable(&Confirmation{})
+	DB.Migrator().DropTable(&LaneStage{})
+
+	DB.Migrator().DropTable(&LaneUser{})
+	DB.Migrator().DropTable(&LaneData{})
+}
+
 func preloadLane(ID uint, data *LaneData) *LaneData {
 	DB.Preload(clause.Associations).
 		Preload("Stages."+clause.Associations).

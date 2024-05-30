@@ -12,6 +12,10 @@ func InitParticipant() {
 	DB.AutoMigrate(&Participant{})
 }
 
+func DropParticipant() {
+	DB.Migrator().DropTable(&Participant{})
+}
+
 /*JSON*/
 func AddParticipant(par *Participant) {
 	DB.Create(par)

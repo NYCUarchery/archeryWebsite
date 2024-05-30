@@ -9,6 +9,10 @@ func InitInstitution() {
 	DB.AutoMigrate(&Institution{})
 }
 
+func DropInstitution() {
+	DB.Table("institutions").Migrator().DropTable(&Institution{})
+}
+
 func GetInstitutionIsExist(id uint) bool {
 	var institution Institution
 	DB.Table("institutions").Where("id = ?", id).First(&institution)

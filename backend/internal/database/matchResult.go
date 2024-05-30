@@ -34,6 +34,13 @@ func InitMatchResult() {
 	DB.AutoMigrate(&MatchScore{})
 }
 
+func DropMatchResult() {
+	DB.Migrator().DropTable(&MatchScore{})
+	DB.Migrator().DropTable(&MatchEnd{})
+	DB.Migrator().DropTable(&MatchResult{})
+
+}
+
 func GetMatchResultIsExist(id uint) bool {
 	var data MatchResult
 	DB.Table("match_results").Where("id = ?", id).First(&data)
