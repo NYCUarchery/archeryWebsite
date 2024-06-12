@@ -36,6 +36,14 @@ services:
       MYSQL_USER: user
       MYSQL_PASSWORD: password
     restart: always
+  mysql-test:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: testdb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    restart: always
   backend:
     build: ./backend
     restart: always
