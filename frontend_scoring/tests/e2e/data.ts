@@ -1,4 +1,4 @@
-class User {
+export class User {
   username: string;
   password: string;
   name: string;
@@ -16,8 +16,8 @@ class User {
   }
 }
 
-class Admin extends User {}
-class Player extends User {
+export class Admin extends User {}
+export class Player extends User {
   target: number;
   lane: number;
   rounds: Round[];
