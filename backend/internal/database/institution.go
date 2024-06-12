@@ -1,5 +1,7 @@
 package database
 
+import "log"
+
 type Institution struct {
 	ID   uint   `gorm:"primaryKey;autoIncrement" json:"id"`
 	Name string `gorm:"not null" json:"name"`
@@ -10,7 +12,12 @@ func InitInstitution() {
 }
 
 func DropInstitution() {
-	DB.Table("institutions").Migrator().DropTable(&Institution{})
+	if DB.Migrator().HasTable(&Institution{}) {
+		if err := DB.Migrator().DropTable(&Institution{}); err != nil {
+			log.Println("Failed to drop Institution:", err)
+			return
+		}
+	}
 }
 
 func GetInstitutionIsExist(id uint) bool {

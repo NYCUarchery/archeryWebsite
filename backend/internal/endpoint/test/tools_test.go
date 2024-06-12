@@ -21,7 +21,7 @@ func TestGetConf(t *testing.T) {
 			/*set up fake path and fake file, would be delete after test*/
 			tempFile := "tempFile.yaml"
 			tempFile = tempDir + "/" + tempFile
-			configMockContent :=
+			configMockContent := // using inverse quote to write real multi-line string
 				`username: user
 password: password
 host: mysql
@@ -52,7 +52,7 @@ mode : test`
 			result := GetConf(filepath)
 			logMessage := logOutput.String()
 			t := time.Now()
-			formatTime := t.Format("2006/01/02 15:04:05")
+			formatTime := t.Format("2006/01/02 15:04:05") // special format
 			expectedLogMessage := formatTime + " yamlFile.Get err   #open " + filepath + ": no such file or directory \n"
 
 			So(result, ShouldResemble, Conf{})

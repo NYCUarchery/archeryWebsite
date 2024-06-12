@@ -1,6 +1,7 @@
 package database
 
 import (
+	"log"
 	"time"
 
 	"gorm.io/gorm"
@@ -34,7 +35,12 @@ func InitCompetition() {
 }
 
 func DropCompetition() {
-	DB.Migrator().DropTable(&Competition{})
+	if DB.Migrator().HasTable(&Competition{}) {
+		if err := DB.Migrator().DropTable(&Competition{}); err != nil {
+			log.Println("Failed to drop Competition:", err)
+			return
+		}
+	}
 }
 
 func GetCompetitionIsExist(id uint) bool {

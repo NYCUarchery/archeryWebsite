@@ -512,8 +512,10 @@ func UpdatePlayerScore(context *gin.Context) {
 		return
 	}
 
-	err = database.UpdatePlayerScore(roundScoreId, newScore)
+	err, isChanged := database.UpdatePlayerScore(roundScoreId, newScore)
 	if response.ErrorInternalErrorTest(context, roundScoreId, "Update Player score", err) {
+		return
+	} else if !response.AcceptNotChange(context, roundScoreId, isChanged) {
 		return
 	}
 

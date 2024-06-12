@@ -1,5 +1,7 @@
 package database
 
+import "log"
+
 // terms reference : https://hackmd.io/@cT-ZX_mHQ4utYON6GCLQEA/BJPfmNPza
 type Player struct {
 	ID            uint         `json:"id"           gorm:"primary_key"`
@@ -43,10 +45,30 @@ func InitPlayer() {
 }
 
 func DropPlayer() {
-	DB.Migrator().DropTable(&RoundScore{})
-	DB.Migrator().DropTable(&RoundEnd{})
-	DB.Migrator().DropTable(&Round{})
-	DB.Migrator().DropTable(&Player{})
+	if DB.Migrator().HasTable(&RoundScore{}) {
+		if err := DB.Migrator().DropTable(&RoundScore{}); err != nil {
+			log.Println("Failed to drop RoundScore:", err)
+			return
+		}
+	}
+	if DB.Migrator().HasTable(&RoundEnd{}) {
+		if err := DB.Migrator().DropTable(&RoundEnd{}); err != nil {
+			log.Println("Failed to drop RoundEnd:", err)
+			return
+		}
+	}
+	if DB.Migrator().HasTable(&Round{}) {
+		if err := DB.Migrator().DropTable(&Round{}); err != nil {
+			log.Println("Failed to drop Round:", err)
+			return
+		}
+	}
+	if DB.Migrator().HasTable(&Player{}) {
+		if err := DB.Migrator().DropTable(&Player{}); err != nil {
+			log.Println("Failed to drop Player:", err)
+			return
+		}
+	}
 }
 
 func GetPlayerIsExist(id uint) bool {
@@ -136,7 +158,6 @@ func GetRoundIdByRoundScoreId(roundScoreId uint) (uint, error) {
 		Select("round_ends.round_id").
 		Joins("JOIN round_scores ON round_scores.round_end_id = round_ends.id").
 		Where("round_scores.id = ?", roundScoreId).
-		Order("round_ends.id DESC").
 		First(&roundId)
 	return roundId.RoundId, result.Error
 }
@@ -198,9 +219,9 @@ func UpdatePlayerIsConfirmed(roundEndId uint, isConfirmed bool) error {
 	return result.Error
 }
 
-func UpdatePlayerScore(roundScoreId uint, score int) error {
+func UpdatePlayerScore(roundScoreId uint, score int) (error, bool) {
 	result := DB.Table("round_scores").Where("id = ?", roundScoreId).Update("score", score)
-	return result.Error
+	return result.Error, result.RowsAffected != 0
 }
 
 func UpdatePlayerShootoffScore(playerId uint, shootoffScore int) error {

@@ -12,12 +12,17 @@ import (
 )
 
 type Conf struct {
-	Username string `yaml:"username"`
-	Password string `yaml:"password"`
-	Host     string `yaml:"host"`
-	Port     int    `yaml:"port"`
-	Database string `yaml:"database"`
-	Mode     string `yaml:"mode"`
+	Username     string `yaml:"username"`
+	Password     string `yaml:"password"`
+	Host         string `yaml:"host"`
+	Port         int    `yaml:"port"`
+	Database     string `yaml:"database"`
+	Mode         string `yaml:"mode"`
+	TestUsername string `yaml:"TestUsername"`
+	TestPassword string `yaml:"TestPassword"`
+	TestHost     string `yaml:"TestHost"`
+	TestPort     int    `yaml:"TestPort"`
+	TestDatabase string `yaml:"TestDatabase"`
 }
 
 func GetConf(filePath string) (c Conf) {

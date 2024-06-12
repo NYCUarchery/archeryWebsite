@@ -1,6 +1,8 @@
 package database
 
 import (
+	"log"
+
 	"gorm.io/gorm"
 )
 
@@ -17,7 +19,12 @@ func InitQualification() {
 }
 
 func DropQualification() {
-	DB.Migrator().DropTable(&Qualification{})
+	if DB.Migrator().HasTable(&Qualification{}) {
+		if err := DB.Migrator().DropTable(&Qualification{}); err != nil {
+			log.Println("Failed to drop Qualification:", err)
+			return
+		}
+	}
 }
 
 func GetQualificationIsExist(id uint) bool {

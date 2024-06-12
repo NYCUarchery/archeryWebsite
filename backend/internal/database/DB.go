@@ -58,8 +58,10 @@ func DropTables() {
 }
 
 func SetupDatabaseByMode(mode string) {
-	if mode == "test" {
+	if mode == "unit_test" {
 		DummyDatabaseInitial()
+	} else if mode == "test" {
+		TestDatabaseInitial()
 	} else {
 		DatabaseInitial()
 	}
