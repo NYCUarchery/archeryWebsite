@@ -1,5 +1,7 @@
 package database
 
+import "log"
+
 type Medal struct {
 	ID            uint `gorm:"primaryKey;autoIncrement" json:"id"`
 	EliminationId uint `gorm:"not null" json:"elimination_id"`
@@ -12,7 +14,12 @@ func InitMedal() {
 }
 
 func DropMedal() {
-	DB.Migrator().DropTable(&Medal{})
+	if DB.Migrator().HasTable(&Medal{}) {
+		if err := DB.Migrator().DropTable(&Medal{}); err != nil {
+			log.Println("Failed to drop Medal:", err)
+			return
+		}
+	}
 }
 
 func GetMedalIsExist(id uint) bool {

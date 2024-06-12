@@ -1,6 +1,8 @@
 package database
 
 import (
+	"log"
+
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -60,14 +62,42 @@ func InitOldLaneInfo() {
 }
 
 func DropOldLaneInfo() {
-	DB.Migrator().DropTable(&OldEndScore{})
-	DB.Migrator().DropTable(&AllScore{})
-
-	DB.Migrator().DropTable(&Confirmation{})
-	DB.Migrator().DropTable(&LaneStage{})
-
-	DB.Migrator().DropTable(&LaneUser{})
-	DB.Migrator().DropTable(&LaneData{})
+	if DB.Migrator().HasTable(&OldEndScore{}) {
+		if err := DB.Migrator().DropTable(&OldEndScore{}); err != nil {
+			log.Println("Failed to drop OldEndScore:", err)
+			return
+		}
+	}
+	if DB.Migrator().HasTable(&AllScore{}) {
+		if err := DB.Migrator().DropTable(&AllScore{}); err != nil {
+			log.Println("Failed to drop AllScore:", err)
+			return
+		}
+	}
+	if DB.Migrator().HasTable(&Confirmation{}) {
+		if err := DB.Migrator().DropTable(&Confirmation{}); err != nil {
+			log.Println("Failed to drop Confirmation:", err)
+			return
+		}
+	}
+	if DB.Migrator().HasTable(&LaneStage{}) {
+		if err := DB.Migrator().DropTable(&LaneStage{}); err != nil {
+			log.Println("Failed to drop LaneStage:", err)
+			return
+		}
+	}
+	if DB.Migrator().HasTable(&LaneUser{}) {
+		if err := DB.Migrator().DropTable(&LaneUser{}); err != nil {
+			log.Println("Failed to drop LaneUser:", err)
+			return
+		}
+	}
+	if DB.Migrator().HasTable(&LaneData{}) {
+		if err := DB.Migrator().DropTable(&LaneData{}); err != nil {
+			log.Println("Failed to drop LaneData:", err)
+			return
+		}
+	}
 }
 
 func preloadLane(ID uint, data *LaneData) *LaneData {

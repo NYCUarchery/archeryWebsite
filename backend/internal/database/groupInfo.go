@@ -1,6 +1,8 @@
 package database
 
 import (
+	"log"
+
 	"gorm.io/gorm"
 )
 
@@ -19,7 +21,12 @@ func InitGroupInfo() {
 }
 
 func DropGroupInfo() {
-	DB.Table("groups").Migrator().DropTable(&Group{})
+	if DB.Migrator().HasTable(&Group{}) {
+		if err := DB.Migrator().DropTable(&Group{}); err != nil {
+			log.Println("Failed to drop Group:", err)
+			return
+		}
+	}
 }
 
 func GetGroupIsExist(id uint) bool {

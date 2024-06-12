@@ -20,7 +20,12 @@ func InitUser() {
 }
 
 func DropUser() {
-	DB.Migrator().DropTable(&User{})
+	if DB.Migrator().HasTable(&User{}) {
+		if err := DB.Migrator().DropTable(&User{}); err != nil {
+			log.Println("Failed to drop User:", err)
+			return
+		}
+	}
 }
 
 /*get all user data */
