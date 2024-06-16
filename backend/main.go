@@ -28,6 +28,7 @@ func main() {
 	ip := getIpByMode()
 	port := "8080"
 
+	SetupGinMode(mode)
 	database.SetupDatabaseByMode(mode)
 	routers.SetUpRouter(server, ip, port)
 
@@ -44,5 +45,20 @@ func getIpByMode() string {
 		return "0.0.0.0"
 	default:
 		return "0.0.0.0"
+	}
+}
+
+func SetupGinMode(mode string) {
+	switch mode {
+	case "release":
+		gin.SetMode(gin.ReleaseMode)
+	case "debug":
+		gin.SetMode(gin.DebugMode)
+	case "test":
+		gin.SetMode(gin.TestMode)
+	case "unit_test":
+		gin.SetMode(gin.TestMode)
+	default:
+		gin.SetMode(gin.DebugMode)
 	}
 }

@@ -42,18 +42,19 @@ func DropTables() {
 
 	DropMedal()
 	DropMatchResult()
+	DropPlayerSet()
 	DropElimination()
 
+	DropPlayer()
 	DropLane()
 	DropQualification()
 	DropGroupInfo()
-	DropCompetition()
 
-	DropPlayerSet()
-	DropPlayer()
 	DropParticipant()
-	DropInstitution()
+	DropCompetition()
 	DropUser()
+	DropInstitution()
+
 	log.Println("All tables are dropped")
 }
 

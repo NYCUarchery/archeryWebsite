@@ -105,3 +105,13 @@ func connectTestDB() {
 	}
 	log.Println("test database is connected")
 }
+
+func CloseTestDB() {
+	DropTables()
+	sqlDB, err := DB.DB()
+	if err != nil {
+		log.Println("failed to get sqlDB")
+		return
+	}
+	sqlDB.Close()
+}
