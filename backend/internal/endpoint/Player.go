@@ -432,12 +432,21 @@ func UpdatePlayerTotalScoreWithOneScore(context *gin.Context, playerId uint, rou
 		return false
 	}
 	/*update total score*/
-	err = database.UpdatePlayerTotalScore(playerId, score+oldPlayerTotalScore)
+	err, isChanged := database.UpdatePlayerTotalScore(playerId, score+oldPlayerTotalScore)
 	if response.ErrorInternalErrorTest(context, playerId, "Update Player total score", err) {
 		return false
 	}
-	err = database.UpdatePlayerRoundTotalScore(roundId, score+oldPlayerRoundTotalScore)
-	return !response.ErrorInternalErrorTest(context, roundId, "Update Player round total score", err)
+	if !response.AcceptNotChange(context, playerId, isChanged) {
+		return false
+	}
+	err, isChanged = database.UpdatePlayerRoundTotalScore(roundId, score+oldPlayerRoundTotalScore)
+	if response.ErrorInternalErrorTest(context, roundId, "Update Player round total score", err) {
+		return false
+	}
+	if !response.AcceptNotChange(context, roundId, isChanged) {
+		return false
+	}
+	return true
 }
 
 // Update one Player TotalScore By ID godoc
@@ -466,8 +475,11 @@ func UpdatePlayerTotalScoreByplayerId(context *gin.Context) {
 		return
 	}
 
-	err = database.UpdatePlayerTotalScore(playerId, data.NewScore)
+	err, isChanged := database.UpdatePlayerTotalScore(playerId, data.NewScore)
 	if response.ErrorInternalErrorTest(context, playerId, "Update Player total score", err) {
+		return
+	}
+	if !response.AcceptNotChange(context, playerId, isChanged) {
 		return
 	}
 

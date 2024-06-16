@@ -229,14 +229,14 @@ func UpdatePlayerShootoffScore(playerId uint, shootoffScore int) error {
 	return result.Error
 }
 
-func UpdatePlayerTotalScore(playerId uint, totalScore int) error {
+func UpdatePlayerTotalScore(playerId uint, totalScore int) (error, bool) {
 	result := DB.Table("players").Where("id = ?", playerId).Update("total_score", totalScore)
-	return result.Error
+	return result.Error, result.RowsAffected != 0
 }
 
-func UpdatePlayerRoundTotalScore(roundId uint, totalScore int) error {
+func UpdatePlayerRoundTotalScore(roundId uint, totalScore int) (error, bool) {
 	result := DB.Table("rounds").Where("id = ?", roundId).Update("total_score", totalScore)
-	return result.Error
+	return result.Error, result.RowsAffected != 0
 }
 
 func DeletePlayer(id uint) (bool, error) {

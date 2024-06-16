@@ -814,14 +814,20 @@ func UpdateCompetitionRecountPlayerTotalScore(context *gin.Context) {
 				}
 				newPlayerTotalScore += newRoundTotalScore
 				/*update round total score*/
-				err := database.UpdatePlayerRoundTotalScore(round.ID, newRoundTotalScore)
+				err, isChanged := database.UpdatePlayerRoundTotalScore(round.ID, newRoundTotalScore)
 				if response.ErrorInternalErrorTest(context, id, "Update Round Total Score", err) {
+					return
+				}
+				if !response.AcceptNotChange(context, id, isChanged) {
 					return
 				}
 			}
 			/*update player total score*/
-			err := database.UpdatePlayerTotalScore(player.ID, newPlayerTotalScore)
+			err, isChanged := database.UpdatePlayerTotalScore(player.ID, newPlayerTotalScore)
 			if response.ErrorInternalErrorTest(context, id, "Update Player Total Score", err) {
+				return
+			}
+			if !response.AcceptNotChange(context, id, isChanged) {
 				return
 			}
 		}
