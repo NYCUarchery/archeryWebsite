@@ -1,6 +1,7 @@
 package database
 
 import (
+	"log"
 	"time"
 
 	"gorm.io/gorm"
@@ -31,6 +32,15 @@ type Competition struct { // DB : game_info
 
 func InitCompetition() {
 	DB.AutoMigrate(&Competition{})
+}
+
+func DropCompetition() {
+	if DB.Migrator().HasTable(&Competition{}) {
+		if err := DB.Migrator().DropTable(&Competition{}); err != nil {
+			log.Println("Failed to drop Competition:", err)
+			return
+		}
+	}
 }
 
 func GetCompetitionIsExist(id uint) bool {

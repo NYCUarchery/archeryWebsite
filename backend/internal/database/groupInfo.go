@@ -1,6 +1,8 @@
 package database
 
 import (
+	"log"
+
 	"gorm.io/gorm"
 )
 
@@ -16,6 +18,15 @@ type Group struct {
 
 func InitGroupInfo() {
 	DB.Table("groups").AutoMigrate(&Group{})
+}
+
+func DropGroupInfo() {
+	if DB.Migrator().HasTable(&Group{}) {
+		if err := DB.Migrator().DropTable(&Group{}); err != nil {
+			log.Println("Failed to drop Group:", err)
+			return
+		}
+	}
 }
 
 func GetGroupIsExist(id uint) bool {

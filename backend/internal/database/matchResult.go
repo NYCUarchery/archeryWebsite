@@ -1,6 +1,10 @@
 package database
 
-import "gorm.io/gorm"
+import (
+	"log"
+
+	"gorm.io/gorm"
+)
 
 type MatchResult struct {
 	ID            uint        `json:"id"        gorm:"primary_key"`
@@ -32,6 +36,27 @@ func InitMatchResult() {
 	DB.AutoMigrate(&MatchResult{})
 	DB.AutoMigrate(&MatchEnd{})
 	DB.AutoMigrate(&MatchScore{})
+}
+
+func DropMatchResult() {
+	if DB.Migrator().HasTable(&MatchScore{}) {
+		if err := DB.Migrator().DropTable(&MatchScore{}); err != nil {
+			log.Println("Failed to drop MatchScore:", err)
+			return
+		}
+	}
+	if DB.Migrator().HasTable(&MatchEnd{}) {
+		if err := DB.Migrator().DropTable(&MatchEnd{}); err != nil {
+			log.Println("Failed to drop MatchEnd:", err)
+			return
+		}
+	}
+	if DB.Migrator().HasTable(&MatchResult{}) {
+		if err := DB.Migrator().DropTable(&MatchResult{}); err != nil {
+			log.Println("Failed to drop MatchResult:", err)
+			return
+		}
+	}
 }
 
 func GetMatchResultIsExist(id uint) bool {

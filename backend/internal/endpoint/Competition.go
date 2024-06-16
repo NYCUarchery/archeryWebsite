@@ -324,13 +324,13 @@ func PostCompetition(context *gin.Context) {
 	newData.UnassignedLaneId = database.GetUnassignedLaneId(newId)
 	fmt.Printf("UnassignedLaneId: %d\n", newData.UnassignedLaneId)
 	ischanged := database.UpdateCompetitionUnassignedLaneId(newId, newData.UnassignedLaneId)
-	if response.AcceptNotChange(context, id, ischanged, "Update Competition UnassignedLaneId") {
+	if response.AcceptNotChange(context, id, ischanged) {
 		return
 	}
 	/*auto write UnassignedGroupId*/
 	newData.UnassignedGroupId = UnassignedGroupId
 	ischanged = database.UpdateCompetitionUnassignedGroupId(newId, newData.UnassignedGroupId)
-	if response.AcceptNotChange(context, id, ischanged, "Update Competition UnassignedLaneId") {
+	if response.AcceptNotChange(context, id, ischanged) {
 		return
 	}
 	/*add host as admin of participant*/
@@ -409,7 +409,7 @@ func UpdateCompetition(context *gin.Context) {
 	isChanged, err := database.UpdateCompetition(id, data)
 	if response.ErrorInternalErrorTest(context, id, "Update Competition", err) {
 		return
-	} else if response.AcceptNotChange(context, id, isChanged, "Update Competition") {
+	} else if response.AcceptNotChange(context, id, isChanged) {
 		return
 	}
 	/*return new update data*/
@@ -657,7 +657,7 @@ func PutCompetitionQualificationActive(context *gin.Context) {
 	isChanged, err := database.UpdateCompetitionQualificationActive(id)
 	if response.ErrorInternalErrorTest(context, id, "Update Competition Qualification Active", err) {
 		return
-	} else if response.AcceptNotChange(context, id, isChanged, "Update Competition Qualification Active") {
+	} else if response.AcceptNotChange(context, id, isChanged) {
 		return
 	}
 
@@ -683,7 +683,7 @@ func PutCompetitionEliminationActive(context *gin.Context) {
 	isChanged, err := database.UpdateCompetitionEliminationActive(id)
 	if response.ErrorInternalErrorTest(context, id, "Update Competition Elimination Active", err) {
 		return
-	} else if response.AcceptNotChange(context, id, isChanged, "Update Elimination Active") {
+	} else if response.AcceptNotChange(context, id, isChanged) {
 		return
 	}
 
@@ -710,7 +710,7 @@ func PutCompetitionTeamEliminationActive(context *gin.Context) {
 	isChanged, err := database.UpdateCompetitionTeamEliminationActive(id)
 	if response.ErrorInternalErrorTest(context, id, "Update Competition Team Elimination Active", err) {
 		return
-	} else if response.AcceptNotChange(context, id, isChanged, "Update Competition Team Elimination Active") {
+	} else if response.AcceptNotChange(context, id, isChanged) {
 		return
 	}
 	/*get all group ids except Unassigned group*/
@@ -754,7 +754,7 @@ func PutCompetitionMixedEliminationActive(context *gin.Context) {
 	isChanged, err := database.UpdateCompetitionMixedEliminationActive(id)
 	if response.ErrorInternalErrorTest(context, id, "Update Competition Mixed Elimination Active", err) {
 		return
-	} else if response.AcceptNotChange(context, id, isChanged, "Update Competition Mixed Elimination Active") {
+	} else if response.AcceptNotChange(context, id, isChanged) {
 		return
 	}
 	/*get all group ids except Unassigned group*/
@@ -814,14 +814,20 @@ func UpdateCompetitionRecountPlayerTotalScore(context *gin.Context) {
 				}
 				newPlayerTotalScore += newRoundTotalScore
 				/*update round total score*/
-				err := database.UpdatePlayerRoundTotalScore(round.ID, newRoundTotalScore)
+				err, isChanged := database.UpdatePlayerRoundTotalScore(round.ID, newRoundTotalScore)
 				if response.ErrorInternalErrorTest(context, id, "Update Round Total Score", err) {
+					return
+				}
+				if !response.AcceptNotChange(context, id, isChanged) {
 					return
 				}
 			}
 			/*update player total score*/
-			err := database.UpdatePlayerTotalScore(player.ID, newPlayerTotalScore)
+			err, isChanged := database.UpdatePlayerTotalScore(player.ID, newPlayerTotalScore)
 			if response.ErrorInternalErrorTest(context, id, "Update Player Total Score", err) {
+				return
+			}
+			if !response.AcceptNotChange(context, id, isChanged) {
 				return
 			}
 		}

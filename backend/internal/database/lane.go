@@ -1,6 +1,10 @@
 package database
 
-import "gorm.io/gorm"
+import (
+	"log"
+
+	"gorm.io/gorm"
+)
 
 type Lane struct {
 	ID              uint      `json:"id"`
@@ -12,6 +16,15 @@ type Lane struct {
 
 func InitLane() {
 	DB.AutoMigrate(&Lane{})
+}
+
+func DropLane() {
+	if DB.Migrator().HasTable(&Lane{}) {
+		if err := DB.Migrator().DropTable(&Lane{}); err != nil {
+			log.Println("Failed to drop Lane:", err)
+			return
+		}
+	}
 }
 
 func GetLaneIsExist(id uint) bool {

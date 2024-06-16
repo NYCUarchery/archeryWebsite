@@ -11,17 +11,22 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type conf struct {
-	Username string
-	Password string
-	Host     string
-	Port     int
-	Database string
-	Mode     string
+type Conf struct {
+	Username     string `yaml:"username"`
+	Password     string `yaml:"password"`
+	Host         string `yaml:"host"`
+	Port         int    `yaml:"port"`
+	Database     string `yaml:"database"`
+	Mode         string `yaml:"mode"`
+	TestUsername string `yaml:"TestUsername"`
+	TestPassword string `yaml:"TestPassword"`
+	TestHost     string `yaml:"TestHost"`
+	TestPort     int    `yaml:"TestPort"`
+	TestDatabase string `yaml:"TestDatabase"`
 }
 
-func GetConf() (c conf) {
-	yamlFile, err := os.ReadFile("config/db.yaml")
+func GetConf(filePath string) (c Conf) {
+	yamlFile, err := os.ReadFile(filePath)
 	if err != nil {
 		log.Printf("yamlFile.Get err   #%v ", err)
 	}

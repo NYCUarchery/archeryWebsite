@@ -19,6 +19,15 @@ func InitUser() {
 	DB.AutoMigrate(&User{})
 }
 
+func DropUser() {
+	if DB.Migrator().HasTable(&User{}) {
+		if err := DB.Migrator().DropTable(&User{}); err != nil {
+			log.Println("Failed to drop User:", err)
+			return
+		}
+	}
+}
+
 /*get all user data */
 func FindAllUsers() []User {
 	var users []User

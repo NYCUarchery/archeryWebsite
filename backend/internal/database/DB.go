@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"time"
 
@@ -13,7 +14,10 @@ var DB *gorm.DB
 
 func DatabaseInitial() {
 	connectDB()
+	setTables()
+}
 
+func setTables() {
 	InitUser()
 	InitInstitution()
 	InitParticipant()
@@ -30,18 +34,42 @@ func DatabaseInitial() {
 	InitMedal()
 
 	InitOldLaneInfo()
+	log.Println("All tables are created")
+}
+
+func DropTables() {
+	DropOldLaneInfo()
+
+	DropMedal()
+	DropMatchResult()
+	DropPlayerSet()
+	DropElimination()
+
+	DropPlayer()
+	DropLane()
+	DropQualification()
+	DropGroupInfo()
+
+	DropParticipant()
+	DropCompetition()
+	DropUser()
+	DropInstitution()
+
+	log.Println("All tables are dropped")
 }
 
 func SetupDatabaseByMode(mode string) {
-	if mode == "test" {
+	if mode == "unit_test" {
 		DummyDatabaseInitial()
+	} else if mode == "test" {
+		TestDatabaseInitial()
 	} else {
 		DatabaseInitial()
 	}
 }
 
 func connectDB() {
-	DSN := GetConf()
+	DSN := GetConf("config/db.yaml")
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify",
 		DSN.Username, DSN.Password, DSN.Host, DSN.Port, DSN.Database)

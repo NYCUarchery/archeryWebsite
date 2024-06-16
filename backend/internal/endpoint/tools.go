@@ -9,7 +9,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type conf struct {
+type Conf struct {
 	Username string
 	Password string
 	Host     string
@@ -18,8 +18,8 @@ type conf struct {
 	Mode     string
 }
 
-func GetConf() (c conf) {
-	yamlFile, err := os.ReadFile("config/db.yaml")
+func GetConf(filePath string) (c Conf) {
+	yamlFile, err := os.ReadFile(filePath)
 	if err != nil {
 		log.Printf("yamlFile.Get err   #%v ", err)
 	}

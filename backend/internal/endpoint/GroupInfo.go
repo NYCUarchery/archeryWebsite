@@ -194,7 +194,7 @@ func UpdateGroupInfo(context *gin.Context) {
 	isChanged, err := database.UpdateGroupInfo(id, data)
 	if response.ErrorInternalErrorTest(context, id, "Update GroupInfo", err) {
 		return
-	} else if response.AcceptNotChange(context, id, isChanged, "Update GroupInfo") {
+	} else if response.AcceptNotChange(context, id, isChanged) {
 		return
 	}
 	/*return new updated data*/
