@@ -22,7 +22,7 @@ func (suite *PlayerTestSuite) TearDownSuite() {
 }
 
 func (suite *PlayerTestSuite) SetupTest() {
-	DummyDBRestore()
+	TestDBRestore()
 }
 
 func (suite *PlayerTestSuite) TearDownTest() {
