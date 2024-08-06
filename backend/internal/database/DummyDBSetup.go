@@ -10,31 +10,15 @@ import (
 	"time"
 
 	"gorm.io/driver/mysql"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
-func DummyDatabaseInitial() {
-	connectDummyDB()
+func TestDatabaseInitial() {
+	connectTestDB()
+	DropTables()
 	setTables()
 	InitDummyData()
-	log.Println("Dummy database is initialized")
-}
-
-func connectDummyDB() {
-	var err error
-	for retry := 0; retry < 5; retry++ {
-		DB, err = gorm.Open(sqlite.Open(":memory:"), &gorm.Config{})
-		if err != nil {
-			fmt.Println("dummy database connection error: ", err)
-		}
-		time.Sleep(3 * time.Second)
-	}
-	if err != nil {
-		fmt.Println("failed to connect dummy database")
-		os.Exit(1)
-	}
-	log.Println("dummy database is connected")
+	log.Println("Test database is initialized")
 }
 
 func InitDummyData() {
@@ -63,19 +47,11 @@ func InitDummyData() {
 	log.Println("load dummyData.sql successfully")
 }
 
-func DummyDBRestore() {
+func TestDBRestore() {
 	DropTables()
 	setTables()
 	InitDummyData()
-	log.Println("Dummy database is restored")
-}
-
-func TestDatabaseInitial() {
-	connectTestDB()
-	DropTables()
-	setTables()
-	InitDummyData()
-	log.Println("Test database is initialized")
+	log.Println("Test database is restored")
 }
 
 func connectTestDB() {

@@ -56,8 +56,6 @@ func SetupGinMode(mode string) {
 		gin.SetMode(gin.DebugMode)
 	case "test":
 		gin.SetMode(gin.TestMode)
-	case "unit_test":
-		gin.SetMode(gin.TestMode)
 	default:
 		gin.SetMode(gin.DebugMode)
 	}
