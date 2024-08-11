@@ -36,8 +36,8 @@ services:
   backend:
     build: ./backend
     restart: always
-    # depends_on:
-    #   - mysql
+    depends_on:
+      - mysql
   reverse-proxy:
     build: ./reverse-proxy
     restart: always
