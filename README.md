@@ -18,6 +18,39 @@ Run:
 docker compose -f docker-compose-dev.yml up --build
 ```
 
+- To run only backend with mysql, run:
+
+```bash
+# setup docker images and enter it
+docker pull mysql:8
+docker-compose -f docker-compose-v1.yml up --build
+docker run --name sql2 -p 3306:3306 -e MYSQL_ROOT_PASSWORD=password -d mysql:8
+docker start sql2
+docker exec -it sql2 bash
+```
+```bash
+# enter mysql and input password
+mysql -u root -p
+password
+```
+```sql
+# create database
+create table `db` ;
+```
+- And your /backend/config/db.yaml should be like this:
+```yaml
+username: root
+password: password
+host: localhost
+port: 3306
+database: db
+mode : dev # dev or test 
+TestUsername: root
+TestPassword: password_for_testdb
+TestHost: mysqlTest
+TestPort: 3307
+TestDatabase: testdb
+```
 ## API Reference
 
 如果更新了 gin swag 的註解，在運行前需要在 terminal 中輸入 swag init (應該會出現 doc 檔案)。
