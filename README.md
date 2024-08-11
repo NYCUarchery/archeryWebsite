@@ -8,49 +8,27 @@
 2. Run `docker-compose up --build`.
 3. Test it on `TCP/80` port.
 
-## Test Environment
+## Backend Dev Environment
 
-- To reload frontend, you need to restart the frontend container.
+後端開發環境可以用 container 開一個 DB 來連，不用把整個 app compose 起來。
 
-Run:
-
-```bash
-docker compose -f docker-compose-dev.yml up --build
-```
-
-- To run only backend with mysql, run:
+用下面的指令可以創建一個 mysql db container:
 
 ```bash
-# setup docker images and enter it
-docker pull mysql:8
-docker-compose -f docker-compose-v1.yml up --build
-docker run --name sql2 -p 3306:3306 -e MYSQL_ROOT_PASSWORD=password -d mysql:8
-docker start sql2
-docker exec -it sql2 bash
+docker run --name mysql-container -e MYSQL_ROOT_PASSWORD=password -e MYSQL_DATABASE=db -e MYSQL_USER=user -e MYSQL_PASSWORD=password -p 3306:3306 -d mysql:latest
 ```
-```bash
-# enter mysql and input password
-mysql -u root -p
-password
-```
-```sql
-# create database
-create table `db` ;
-```
+
 - And your /backend/config/db.yaml should be like this:
+
 ```yaml
 username: root
 password: password
 host: localhost
 port: 3306
 database: db
-mode : dev # dev or test 
-TestUsername: root
-TestPassword: password_for_testdb
-TestHost: mysqlTest
-TestPort: 3307
-TestDatabase: testdb
+mode: dev # dev or test
 ```
+
 ## API Reference
 
 如果更新了 gin swag 的註解，在運行前需要在 terminal 中輸入 swag init (應該會出現 doc 檔案)。
