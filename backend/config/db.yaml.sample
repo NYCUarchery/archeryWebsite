@@ -3,3 +3,9 @@ password: password
 host: mysql
 port: 3306
 database: db
+mode : test # dev or test or unit_test
+TestUsername: root
+TestPassword: password_for_testdb
+TestHost: mysqlTest
+TestPort: 3307
+TestDatabase: testdb

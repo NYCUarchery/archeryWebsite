@@ -42,7 +42,7 @@ func IsGetGroupInfo(context *gin.Context, id uint) (bool, database.Group) {
 //	@Failure		400	string	string
 //	@Router			/api/groupinfo/{id} [get]
 func GetGroupInfoByID(context *gin.Context) {
-	id := convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	isExist, data := IsGetGroupInfo(context, id)
 	if !isExist {
 		return
@@ -61,7 +61,7 @@ func GetGroupInfoByID(context *gin.Context) {
 //	@Failure		400	string	string
 //	@Router			/api/groupinfo/players/{id} [get]
 func GetGroupInfoWPlayersByID(context *gin.Context) {
-	id := convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	isExist, _ := IsGetGroupInfo(context, id)
 	if !isExist {
 		return
@@ -168,7 +168,7 @@ func PostUnassignedGroupInfo(context *gin.Context, competitionId uint) (bool, ui
 //	@Router			/api/groupinfo/whole/{id} [put]
 func UpdateGroupInfo(context *gin.Context) {
 	var data database.Group
-	id := convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	/*write id for update success*/
 	data.ID = uint(id)
 	err := context.BindJSON(&data)
@@ -194,7 +194,7 @@ func UpdateGroupInfo(context *gin.Context) {
 	isChanged, err := database.UpdateGroupInfo(id, data)
 	if response.ErrorInternalErrorTest(context, id, "Update GroupInfo", err) {
 		return
-	} else if response.AcceptNotChange(context, id, isChanged, "Update GroupInfo") {
+	} else if response.AcceptNotChange(context, id, isChanged) {
 		return
 	}
 	/*return new updated data*/
@@ -283,7 +283,7 @@ func ReorderGroupInfo(context *gin.Context) {
 //	@Failure		404	string	string
 //	@Router			/api/groupinfo/{id} [delete]
 func DeleteGroupInfo(context *gin.Context) {
-	id := convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	/*cannot delete 無組別*/
 	success, group := IsGetGroupInfo(context, id)
 	if !success {

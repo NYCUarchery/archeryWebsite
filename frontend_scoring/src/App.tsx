@@ -18,7 +18,7 @@ import { initUser } from "./features/States/userSlice";
 function App() {
   const dispatch = useDispatch();
   const { competitionID } = useParams();
-  dispatch(initialize({ competitionID }));
+  dispatch(initialize({ competitionID: Number(competitionID) }));
   const boardShown = useSelector((state: any) => state.boardMenu.boardShown);
   const { data: participant, isLoading: isParticipantLoading } =
     useGetSelfParticipant(Number(competitionID));

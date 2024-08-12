@@ -2,22 +2,19 @@ version: "3.9"
 
 services:
   frontend-scoring:
-    build:
-      context: ./frontend_scoring
-      dockerfile: Dockerfile-dev
-
+    build: ./frontend_scoring
     restart: always
     volumes:
       - ./frontend_scoring:/app
       - /app/node_modules
+      - /app/dist
   frontend-profile:
-    build:
-      context: ./frontend_profile
-      dockerfile: Dockerfile-dev
+    build: ./frontend_profile
     restart: always
     volumes:
       - ./frontend_profile:/app
       - /app/node_modules
+      - /app/dist
   # mysql:
   #   image: mysql:8
   #   environment:
@@ -32,15 +29,15 @@ services:
     image: mysql:8
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: db
+      MYSQL_DATABASE: testdb
       MYSQL_USER: user
       MYSQL_PASSWORD: password
     restart: always
   backend:
     build: ./backend
     restart: always
-    # depends_on:
-    #   - mysql
+    depends_on:
+      - mysql
   reverse-proxy:
     build: ./reverse-proxy
     restart: always

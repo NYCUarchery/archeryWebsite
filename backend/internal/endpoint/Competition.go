@@ -94,7 +94,7 @@ func IsGetCompetitionWParticipants(context *gin.Context, id uint) (bool, databas
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse										"internal db error"
 //	@Router			/competition/{id} [get]
 func GetOnlyCompetitionByID(context *gin.Context) {
-	id := convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	isExist, data := IsGetOnlyCompetition(context, id)
 	if !isExist {
 		return
@@ -115,7 +115,7 @@ func GetOnlyCompetitionByID(context *gin.Context) {
 //	@Router			/competition/participants/{id} [get]
 func GetCompetitionWParticipantsByID(context *gin.Context) {
 	var data database.Competition
-	id := convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	isExist, data := IsGetCompetitionWParticipants(context, id)
 	if !isExist {
 		return
@@ -135,7 +135,7 @@ func GetCompetitionWParticipantsByID(context *gin.Context) {
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse										"internal db error"
 //	@Router			/competition/groups/{id} [get]
 func GetCompetitionWGroupsByID(context *gin.Context) {
-	id := convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	isExist, data := IsGetCompetitionWGroup(context, id)
 	if !isExist {
 		return
@@ -156,7 +156,7 @@ func GetCompetitionWGroupsByID(context *gin.Context) {
 //	@Router			/competition/groups/qualieli/{id} [get]
 func GetCompetitionWGroupsQuaEliByID(context *gin.Context) {
 	var data CompetitionWGroupsQuaEliData
-	id := convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
 		return
@@ -205,7 +205,7 @@ func GetCompetitionWGroupsQuaEliByID(context *gin.Context) {
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse																												"internal db error"
 //	@Router			/competition/groups/players/{id} [get]
 func GetCompetitionWGroupsPlayersByID(context *gin.Context) {
-	id := convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	isExist, data := IsGetCompetitionWGroupsPlayers(context, id)
 	if !isExist {
 		return
@@ -228,8 +228,8 @@ func GetCompetitionWGroupsPlayersByID(context *gin.Context) {
 //	@Failure		500		{object}	response.ErrorInternalErrorResponse		"internal db error / Get Current Competitions"
 //	@Router			/competition/current/{head}/{tail} [get]
 func GetCurrentCompetitions(context *gin.Context) {
-	head := convert2int(context, "head")
-	tail := convert2int(context, "tail")
+	head := Convert2int(context, "head")
+	tail := Convert2int(context, "tail")
 	if head < 0 || tail < 0 {
 		response.ErrorReceiveDataFormat(context, "head and tail must >= 0")
 		return
@@ -261,9 +261,9 @@ func GetCurrentCompetitions(context *gin.Context) {
 //	@Failure		500		{object}	response.ErrorInternalErrorResponse		"internal db error / Get User Is Exist / Get Competitions Of User"
 //	@Router			/competition/recent/{userid}/{head}/{tail} [get]
 func GetCompetitionsOfUser(context *gin.Context) {
-	head := convert2int(context, "head")
-	tail := convert2int(context, "tail")
-	userId := convert2uint(context, "userid")
+	head := Convert2int(context, "head")
+	tail := Convert2int(context, "tail")
+	userId := Convert2uint(context, "userid")
 	if response.ErrorIdTest(context, userId, database.GetUserIsExist(userId), "User") {
 		return
 	}
@@ -365,13 +365,13 @@ func PostCompetition(context *gin.Context) {
 	newData.UnassignedLaneId = database.GetUnassignedLaneId(newId)
 	fmt.Printf("UnassignedLaneId: %d\n", newData.UnassignedLaneId)
 	ischanged := database.UpdateCompetitionUnassignedLaneId(newId, newData.UnassignedLaneId)
-	if response.AcceptNotChange(context, 0, ischanged, "Update Competition UnassignedLaneId") {
+	if response.AcceptNotChange(context, id, ischanged) {
 		return
 	}
 	/*auto write UnassignedGroupId*/
 	newData.UnassignedGroupId = UnassignedGroupId
 	ischanged = database.UpdateCompetitionUnassignedGroupId(newId, newData.UnassignedGroupId)
-	if response.AcceptNotChange(context, 0, ischanged, "Update Competition UnassignedLaneId") {
+	if response.AcceptNotChange(context, id, ischanged) {
 		return
 	}
 	/*add host as admin of participant*/
@@ -402,17 +402,10 @@ func PostCompetition(context *gin.Context) {
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse										"internal db error / Get Competition / Update Competition"
 //	@Router			/competition/whole/{id} [put]
 func UpdateCompetition(context *gin.Context) {
-	type CompetitionUpdateData struct {
-		Title                   string    `json:"title"`
-		SubTitle                string    `json:"sub_title"`
-		StartTime               time.Time `json:"start_time"`
-		EndTime                 time.Time `json:"end_time"`
-		CurrentPhase            int       `json:"current_phase"`
-		QualificationCurrentEnd int       `json:"qualification_current_end"`
-		Script                  string    `json:"script"`
-	}
-	var data CompetitionUpdateData
-	id := convert2uint(context, "id")
+	var data database.Competition
+	id := Convert2uint(context, "id")
+	/*write id for update success*/
+	data.ID = id
 	err := context.BindJSON(&data)
 	/*parse data check*/
 	if response.ErrorReceiveDataTest(context, id, "Competition", err) {
@@ -457,7 +450,7 @@ func UpdateCompetition(context *gin.Context) {
 	isChanged, err := database.UpdateCompetition(id, newData)
 	if response.ErrorInternalErrorTest(context, id, "Update Competition", err) {
 		return
-	} else if response.AcceptNotChange(context, id, isChanged, "Update Competition") {
+	} else if response.AcceptNotChange(context, id, isChanged) {
 		return
 	}
 	/*return new update data*/
@@ -481,7 +474,7 @@ func UpdateCompetition(context *gin.Context) {
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error / Get Competition GroupIds when update ranking / Get player ids when update ranking / Update player rank when update ranking by competition id"
 //	@Router			/competition/groups/players/rank/{id} [put]
 func UpdateCompetitionRank(context *gin.Context) {
-	id := convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
@@ -523,7 +516,7 @@ func UpdateCompetitionRank(context *gin.Context) {
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error / Delete Competition with Groups / Delete GroupInfo By Id Through Competition / Delete Player Through Competition / Delete Participaint / Delete Lane By Competition Id"
 //	@Router			/competition/{id} [delete]
 func DeleteCompetition(context *gin.Context) {
-	id := convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, data := IsGetCompetitionWGroupsPlayers(context, id)
 	if !isExist {
@@ -599,7 +592,7 @@ func GetAllCompetition(c *gin.Context) {
 //	@Failure		500	{ojbect}	response.ErrorInternalErrorResponse	"Update Competition CurrentPhase Plus"
 //	@Router			/competition/currentphaseplus/{id} [put]
 func PutCompetitionCurrentPhasePlus(context *gin.Context) {
-	id := convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
@@ -624,7 +617,7 @@ func PutCompetitionCurrentPhasePlus(context *gin.Context) {
 //	@Failure		500	{ojbect}	response.ErrorInternalErrorResponse	"Update Competition CurrentPhase Minus"
 //	@Router			/competition/currentphaseminus/{id} [put]
 func PutCompetitionCurrentPhaseMinus(context *gin.Context) {
-	id := convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
@@ -649,7 +642,7 @@ func PutCompetitionCurrentPhaseMinus(context *gin.Context) {
 //	@Failure		500	{ojbect}	response.ErrorInternalErrorResponse	"Update Competition Qualification CurrentEnd Plus"
 //	@Router			/competition/qualificationcurrentendplus/{id} [put]
 func PutCompetitionQualificationCurrentEndPlus(context *gin.Context) {
-	id := convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
@@ -675,7 +668,7 @@ func PutCompetitionQualificationCurrentEndPlus(context *gin.Context) {
 //	@Failure		500	{ojbect}	response.ErrorInternalErrorResponse	"Update Competition Qualification CurrentEnd Minus"
 //	@Router			/competition/qualificationcurrentendminus/{id} [put]
 func PutCompetitionQualificationCurrentEndMinus(context *gin.Context) {
-	id := convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
@@ -701,7 +694,7 @@ func PutCompetitionQualificationCurrentEndMinus(context *gin.Context) {
 //	@Failure		500	{ojbect}	response.ErrorInternalErrorResponse	"Update Competition Qualification Active"
 //	@Router			/competition/qualificationisactive/{id} [put]
 func PutCompetitionQualificationActive(context *gin.Context) {
-	id := convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
@@ -711,7 +704,7 @@ func PutCompetitionQualificationActive(context *gin.Context) {
 	isChanged, err := database.UpdateCompetitionQualificationActive(id)
 	if response.ErrorInternalErrorTest(context, id, "Update Competition Qualification Active", err) {
 		return
-	} else if response.AcceptNotChange(context, id, isChanged, "Update Competition Qualification Active") {
+	} else if response.AcceptNotChange(context, id, isChanged) {
 		return
 	}
 
@@ -730,7 +723,7 @@ func PutCompetitionQualificationActive(context *gin.Context) {
 //	@Failure		500	{ojbect}	response.ErrorInternalErrorResponse	"Update Competition Elimination Active"
 //	@Router			/competition/eliminationisactive/{id} [put]
 func PutCompetitionEliminationActive(context *gin.Context) {
-	id := convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
@@ -740,7 +733,7 @@ func PutCompetitionEliminationActive(context *gin.Context) {
 	isChanged, err := database.UpdateCompetitionEliminationActive(id)
 	if response.ErrorInternalErrorTest(context, id, "Update Competition Elimination Active", err) {
 		return
-	} else if response.AcceptNotChange(context, id, isChanged, "Update Elimination Active") {
+	} else if response.AcceptNotChange(context, id, isChanged) {
 		return
 	}
 
@@ -760,7 +753,7 @@ func PutCompetitionEliminationActive(context *gin.Context) {
 //	@Failure		500	{ojbect}	response.ErrorInternalErrorResponse	"Update Competition Team Elimination Active / Get Competition Group Ids / Post Elimination By Id"
 //	@Router			/competition/teameliminationisactive/{id} [put]
 func PutCompetitionTeamEliminationActive(context *gin.Context) {
-	id := convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
@@ -770,7 +763,7 @@ func PutCompetitionTeamEliminationActive(context *gin.Context) {
 	isChanged, err := database.UpdateCompetitionTeamEliminationActive(id)
 	if response.ErrorInternalErrorTest(context, id, "Update Competition Team Elimination Active", err) {
 		return
-	} else if response.AcceptNotChange(context, id, isChanged, "Update Competition Team Elimination Active") {
+	} else if response.AcceptNotChange(context, id, isChanged) {
 		return
 	}
 	/*get all group ids except Unassigned group*/
@@ -807,7 +800,7 @@ func PutCompetitionTeamEliminationActive(context *gin.Context) {
 //	@Failure		500	{ojbect}	response.ErrorInternalErrorResponse	"Update Competition Mixed Elimination Active / Get Competition Group Ids / Post Elimination By Id"
 //	@Router			/competition/mixedeliminationisactive/{id} [put]
 func PutCompetitionMixedEliminationActive(context *gin.Context) {
-	id := convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
@@ -817,7 +810,7 @@ func PutCompetitionMixedEliminationActive(context *gin.Context) {
 	isChanged, err := database.UpdateCompetitionMixedEliminationActive(id)
 	if response.ErrorInternalErrorTest(context, id, "Update Competition Mixed Elimination Active", err) {
 		return
-	} else if response.AcceptNotChange(context, id, isChanged, "Update Competition Mixed Elimination Active") {
+	} else if response.AcceptNotChange(context, id, isChanged) {
 		return
 	}
 	/*get all group ids except Unassigned group*/
@@ -852,7 +845,7 @@ func PutCompetitionMixedEliminationActive(context *gin.Context) {
 //	@Failure		500	{ojbect}	response.ErrorInternalErrorResponse	"Get Competition with Groups Players Scores / Update Round Total Score / Update Player Total Score"
 //	@Router			/competition/groups/players/playertotal/{id} [put]
 func UpdateCompetitionRecountPlayerTotalScore(context *gin.Context) {
-	id := convert2uint(context, "id")
+	id := Convert2uint(context, "id")
 	/*check data exist*/
 	if response.ErrorIdTest(context, id, database.GetCompetitionIsExist(id), "Competition") {
 		return
@@ -870,23 +863,26 @@ func UpdateCompetitionRecountPlayerTotalScore(context *gin.Context) {
 				var newRoundTotalScore int
 				for _, end := range round.RoundEnds {
 					for _, arrow := range end.RoundScores {
-						fmtScore := scorefmt(arrow.Score)
+						fmtScore := Scorefmt(arrow.Score)
 						newRoundTotalScore += fmtScore
 					}
 				}
 				newPlayerTotalScore += newRoundTotalScore
 				/*update round total score*/
-				err := database.UpdatePlayerRoundTotalScore(round.ID, newRoundTotalScore)
+				err, isChanged := database.UpdatePlayerRoundTotalScore(round.ID, newRoundTotalScore)
 				if response.ErrorInternalErrorTest(context, id, "Update Round Total Score", err) {
+					return
+				}
+				if !response.AcceptNotChange(context, id, isChanged) {
 					return
 				}
 			}
 			/*update player total score*/
-			err := database.UpdatePlayerTotalScore(player.ID, newPlayerTotalScore)
+			err, isChanged := database.UpdatePlayerTotalScore(player.ID, newPlayerTotalScore)
 			if response.ErrorInternalErrorTest(context, id, "Update Player Total Score", err) {
 				return
 			}
 		}
 	}
-	context.IndentedJSON(http.StatusOK, gin.H{"message": "Update Competition Recount Player Total Score Success"})
+	context.IndentedJSON(http.StatusOK, nil)
 }

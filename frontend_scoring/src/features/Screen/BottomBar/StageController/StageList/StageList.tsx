@@ -17,9 +17,7 @@ export default function StageList(props: Props) {
   const stageListIsHidden = useSelector(
     (state: any) => state.stageController.stageListIsHidden
   );
-  const groupShown = useSelector(
-    (state: any) => state.groupListButton.groupShown
-  );
+  const groupShown = useSelector((state: any) => state.groupMenu.groupShown);
   const stageNum = useSelector((state: any) => state.stageController.stageNum);
 
   let stages: any;

@@ -1,14 +1,13 @@
 import { Middleware, configureStore } from "@reduxjs/toolkit";
 import ReduxLogger from "redux-logger";
-import { groupListButtonReducer } from "../features/Screen/SubGameBar/GroupList/groupListButtonSlice";
-import { phaseListButtonReducer } from "../features/Screen/SubGameBar/PhaseList/phaseListButtonSlice";
+import { groupMenuReducer } from "../features/Screen/SubGameBar/GroupMenu/groupMenuSlice";
+import { phaseMenuReducer } from "../features/Screen/SubGameBar/PhaseMenu/phaseMenuSlice";
 import { stageControllerReducer } from "../features/Screen/BottomBar/StageController/stageControllerSlice";
 import { boardMenuReducer } from "../features/Screen/TopBar/BoardMenu/boardMenuSlice";
 import { scoreControllerReducer } from "../features/RecordingBoard/LaneBoard/ScoreController/scoreControllerSlice";
 import { gameReducer } from "../features/States/gameSlice";
 import { userReducer } from "../features/States/userSlice";
 import { participantReducer } from "../features/States/parcitipantSlice";
-import { adminBoardTabsReducer } from "../features/Screen/SubGameBar/AdminBoardTabs/adminBoardTabsSlice";
 import { groupsBoardReducer } from "../features/AdministrationBoard/GroupsBoard/groupsBoardSlice";
 import { groupSelectorReducer } from "../features/AdministrationBoard/GroupsBoard/GroupSelector/groupSelectorSlice";
 import { gameStructureBoardReducer } from "../features/AdministrationBoard/GameStructureBoard/gameStructureBoardSlice";
@@ -19,15 +18,14 @@ import { qualificationStructureSetterReducer } from "../features/AdministrationB
 
 const store = configureStore({
   reducer: {
-    groupListButton: groupListButtonReducer,
-    phaseListButton: phaseListButtonReducer,
+    groupMenu: groupMenuReducer,
+    phaseMenu: phaseMenuReducer,
     stageController: stageControllerReducer,
     boardMenu: boardMenuReducer,
     scoreController: scoreControllerReducer,
     game: gameReducer,
     user: userReducer,
     participant: participantReducer,
-    adminBoardTabs: adminBoardTabsReducer,
 
     groupsBoard: groupsBoardReducer,
     groupSelector: groupSelectorReducer,

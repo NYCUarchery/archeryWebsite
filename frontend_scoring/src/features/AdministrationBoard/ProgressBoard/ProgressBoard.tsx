@@ -19,7 +19,7 @@ export default function ProgressBoard() {
   const { data: competition, isLoading } =
     useGetSimpleCompetition(competitionID);
 
-  if (isLoading)
+  if (isLoading || !competition)
     return (
       <>
         <PhaseSelector></PhaseSelector>

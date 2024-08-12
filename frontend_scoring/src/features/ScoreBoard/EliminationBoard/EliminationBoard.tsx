@@ -8,9 +8,7 @@ interface Props {
 }
 
 export default function EliminationBoard(props: Props) {
-  const groupShown = useSelector(
-    (state: any) => state.groupListButton.groupShown
-  );
+  const groupShown = useSelector((state: any) => state.groupMenu.groupShown);
   const stageShown = useSelector(
     (state: any) => state.stageController.stageShown
   );

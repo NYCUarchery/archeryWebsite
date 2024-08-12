@@ -1,6 +1,7 @@
 package routers
 
 import (
+	database "backend/internal/database"
 	endpoint "backend/internal/endpoint"
 	"backend/internal/pkg"
 
@@ -10,6 +11,7 @@ import (
 func AddApiRouter(api *gin.RouterGroup) {
 	api.GET("/albums", endpoint.GetAlbums)          // "pass data" action through api(link)
 	api.GET("/txt/:dataName", endpoint.GetHTTPData) // response "name".txt data file with /translate/2JSON method
+	testRelatedRouter(api.Group("test"))
 
 	profileRouter(api)
 	playerRouter(api.Group("player"))
@@ -29,19 +31,19 @@ func AddApiRouter(api *gin.RouterGroup) {
 
 func playerRouter(api *gin.RouterGroup) {
 	api.GET("/:id", endpoint.GetOnlyPlayerByID)
-	api.GET("/scores/:id", endpoint.GetPlayerWScoresByID)
+	api.GET("/scores/:id", endpoint.GetPlayerWScoresByID) //
 	api.GET("/playersets/:id/:eliminationid", endpoint.GetPlayerWPlayerSetsByIDEliminationID)
 
 	api.POST("/:participantid", endpoint.PostPlayer)
-	api.POST("/roundend", endpoint.PostRoundEnd)
-	api.POST("/roundscore", endpoint.PostRoundScore)
+	api.POST("/roundend", endpoint.PostRoundEnd)     //
+	api.POST("/roundscore", endpoint.PostRoundScore) //
 	api.PUT("/lane/:id", endpoint.UpdatePlayerLaneId)
 	api.PUT("/group/:id", endpoint.UpdataPlayerGroupId)
 	api.PUT("/order/:id", endpoint.UpdatePlayerOrder)
 	api.PUT("/isconfirmed/:id", endpoint.UpdatePlayerIsConfirmed)
 
-	api.PUT("/totalscore/:id", endpoint.UpdatePlayerTotalScoreByplayerId)
-	api.PUT("/roundscore/:id", endpoint.UpdatePlayerScore)
+	api.PUT("/totalscore/:id", endpoint.UpdatePlayerTotalScoreByplayerId) //
+	api.PUT("/roundscore/:id", endpoint.UpdatePlayerScore)                //
 
 	api.PUT("/shootoffscore/:id", endpoint.UpdatePlayerShootoffScore)
 	api.DELETE("/:id", endpoint.DeletePlayer)
@@ -202,4 +204,11 @@ func profileRouter(api *gin.RouterGroup) {
 		insr.GET("/", endpoint.AllInstitutionInfo)
 		insr.DELETE("/:id", endpoint.DeleteInstitution)
 	}
+}
+
+func testRelatedRouter(api *gin.RouterGroup) {
+	api.PUT("/restore", func(c *gin.Context) {
+		database.TestDBRestore()
+		c.JSON(200, gin.H{"message": "Dummy database is restored"})
+	})
 }

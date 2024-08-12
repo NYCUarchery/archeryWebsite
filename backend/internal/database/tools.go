@@ -4,8 +4,39 @@ import (
 	"database/sql/driver"
 	"errors"
 	"fmt"
+	"log"
+	"os"
 	"strings"
+
+	"gopkg.in/yaml.v2"
 )
+
+type Conf struct {
+	Username     string `yaml:"username"`
+	Password     string `yaml:"password"`
+	Host         string `yaml:"host"`
+	Port         int    `yaml:"port"`
+	Database     string `yaml:"database"`
+	Mode         string `yaml:"mode"`
+	TestUsername string `yaml:"TestUsername"`
+	TestPassword string `yaml:"TestPassword"`
+	TestHost     string `yaml:"TestHost"`
+	TestPort     int    `yaml:"TestPort"`
+	TestDatabase string `yaml:"TestDatabase"`
+}
+
+func GetConf(filePath string) (c Conf) {
+	yamlFile, err := os.ReadFile(filePath)
+	if err != nil {
+		log.Printf("yamlFile.Get err   #%v ", err)
+	}
+
+	err = yaml.Unmarshal(yamlFile, &c)
+	if err != nil {
+		log.Fatalf("Unmarshal: %v", err)
+	}
+	return
+}
 
 /*讓我可以存取[]string型別的東西*/
 

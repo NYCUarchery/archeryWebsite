@@ -1,6 +1,10 @@
 package database
 
-import "gorm.io/gorm"
+import (
+	"log"
+
+	"gorm.io/gorm"
+)
 
 type Elimination struct {
 	ID           uint         `json:"id"        gorm:"primary_key"`
@@ -28,6 +32,27 @@ func InitElimination() {
 	DB.AutoMigrate(&Elimination{})
 	DB.AutoMigrate(&Stage{})
 	DB.AutoMigrate(&Match{})
+}
+
+func DropElimination() {
+	if DB.Migrator().HasTable(&Match{}) {
+		if err := DB.Migrator().DropTable(&Elimination{}); err != nil {
+			log.Println("Failed to drop Elimination:", err)
+			return
+		}
+	}
+	if DB.Migrator().HasTable(&Stage{}) {
+		if err := DB.Migrator().DropTable(&Stage{}); err != nil {
+			log.Println("Failed to drop Stage:", err)
+			return
+		}
+	}
+	if DB.Migrator().HasTable(&Elimination{}) {
+		if err := DB.Migrator().DropTable(&Match{}); err != nil {
+			log.Println("Failed to drop Match:", err)
+			return
+		}
+	}
 }
 
 func GetEliminationIsExist(id uint) bool {

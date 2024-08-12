@@ -6,38 +6,18 @@ import (
 	"os"
 	"time"
 
-	"gopkg.in/yaml.v2"
-
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
-type conf struct {
-	Username string
-	Password string
-	Host     string
-	Port     int
-	Database string
-}
-
 var DB *gorm.DB
-
-func getConf() (c conf) {
-	yamlFile, err := os.ReadFile("config/db.yaml")
-	if err != nil {
-		log.Printf("yamlFile.Get err   #%v ", err)
-	}
-
-	err = yaml.Unmarshal(yamlFile, &c)
-	if err != nil {
-		log.Fatalf("Unmarshal: %v", err)
-	}
-	return
-}
 
 func DatabaseInitial() {
 	connectDB()
+	setTables()
+}
 
+func setTables() {
 	InitUser()
 	InitInstitution()
 	InitParticipant()
@@ -54,10 +34,40 @@ func DatabaseInitial() {
 	InitMedal()
 
 	InitOldLaneInfo()
+	log.Println("All tables are created")
+}
+
+func DropTables() {
+	DropOldLaneInfo()
+
+	DropMedal()
+	DropMatchResult()
+	DropPlayerSet()
+	DropElimination()
+
+	DropPlayer()
+	DropLane()
+	DropQualification()
+	DropGroupInfo()
+
+	DropParticipant()
+	DropCompetition()
+	DropUser()
+	DropInstitution()
+
+	log.Println("All tables are dropped")
+}
+
+func SetupDatabaseByMode(mode string) {
+	if mode == "test" {
+		TestDatabaseInitial()
+	} else {
+		DatabaseInitial()
+	}
 }
 
 func connectDB() {
-	DSN := getConf()
+	DSN := GetConf("config/db.yaml")
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify",
 		DSN.Username, DSN.Password, DSN.Host, DSN.Port, DSN.Database)

@@ -1,5 +1,7 @@
 package database
 
+import "log"
+
 type Participant struct {
 	ID            uint   `gorm:"primaryKey;autoIncrement" json:"id"`
 	UserID        uint   `gorm:"not null" json:"userID"`
@@ -10,6 +12,15 @@ type Participant struct {
 
 func InitParticipant() {
 	DB.AutoMigrate(&Participant{})
+}
+
+func DropParticipant() {
+	if DB.Migrator().HasTable(&Participant{}) {
+		if err := DB.Migrator().DropTable(&Participant{}); err != nil {
+			log.Println("Failed to drop Participant:", err)
+			return
+		}
+	}
 }
 
 /*JSON*/

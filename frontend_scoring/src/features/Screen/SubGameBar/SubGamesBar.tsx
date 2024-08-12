@@ -1,9 +1,12 @@
 import { useSelector } from "react-redux/es/hooks/useSelector";
-import GroupList from "./GroupList/GroupList";
-import PhaseList from "./PhaseList/PhaseList";
+
+import Box from "@mui/material/Box";
+
+import GroupMenu from "./GroupMenu/GroupMenu";
+import PhaseMenu from "./PhaseMenu/PhaseMenu";
 import GroupPhaseTag from "./GroupPhaseTag";
-import AdminBoardTabs from "./AdminBoardTabs/AdminBoardTabs";
 import useGetGroupsWithPlayers from "../../../QueryHooks/useGetGroupsWithPlayers";
+import { Group } from "../../../QueryHooks/types/Competition";
 
 function SubGamesBar() {
   const boardShown = useSelector((state: any) => state.boardMenu.boardShown);
@@ -16,20 +19,38 @@ function SubGamesBar() {
   switch (boardShown) {
     case "score":
       content = (
-        <>
-          <GroupList groups={groups}></GroupList>
-          <PhaseList></PhaseList>
-        </>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            width: "100%",
+            maxWidth: "400px",
+          }}
+        >
+          <GroupMenu groups={groups as Group[]}></GroupMenu>
+          <PhaseMenu />
+        </Box>
       );
       break;
     case "recording":
       content = <GroupPhaseTag></GroupPhaseTag>;
       break;
     case "administration":
-      content = <AdminBoardTabs></AdminBoardTabs>;
+      return <></>;
   }
 
-  return <div className="sub_game_bar">{content}</div>;
+  return (
+    <Box
+      sx={{
+        backgroundColor: "primary.main",
+        display: "flex",
+        justifyContent: "center",
+        height: "2rem",
+      }}
+    >
+      {content}
+    </Box>
+  );
 }
 
 export default SubGamesBar;

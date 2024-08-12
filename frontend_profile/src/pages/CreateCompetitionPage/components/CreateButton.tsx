@@ -42,7 +42,7 @@ const CreateButton: React.FC<Props> = ({ postBody }: Props) => {
         open={isCreationSuccess}
         onClose={() => {
           setIsCreationSuccess(false);
-          navigate(routing.Contests);
+          navigate(routing.RecentCompetitions);
         }}
         autoHideDuration={3000}
         key={"bottomcenter"}

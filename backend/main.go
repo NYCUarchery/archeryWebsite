@@ -2,6 +2,7 @@ package main
 
 import (
 	"backend/internal/database"
+	"backend/internal/endpoint"
 	"backend/internal/routers"
 	"fmt"
 
@@ -41,10 +42,12 @@ import (
 // schemes http
 func main() {
 	server := gin.Default() // initialize a Gin router
+	mode := endpoint.GetConf("config/db.yaml").Mode
 	ip := getIpByMode()
 	port := "80"
 
-	database.DatabaseInitial()
+	SetupGinMode(mode)
+	database.SetupDatabaseByMode(mode)
 	routers.SetUpRouter(server, ip, port)
 
 	server.Run(fmt.Sprintf("%s:%s", ip, port))
@@ -60,5 +63,18 @@ func getIpByMode() string {
 		return "0.0.0.0"
 	default:
 		return "0.0.0.0"
+	}
+}
+
+func SetupGinMode(mode string) {
+	switch mode {
+	case "release":
+		gin.SetMode(gin.ReleaseMode)
+	case "debug":
+		gin.SetMode(gin.DebugMode)
+	case "test":
+		gin.SetMode(gin.TestMode)
+	default:
+		gin.SetMode(gin.DebugMode)
 	}
 }
