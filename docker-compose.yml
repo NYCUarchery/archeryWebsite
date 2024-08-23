@@ -1,22 +1,18 @@
-version: "3.9"
+name: nycu-archery-system
 
 services:
   frontend-scoring:
-    build: ./frontend_scoring
+    build:
+      context: ./frontend_scoring
     restart: always
-    volumes:
-      - ./frontend_scoring:/app
-      - /app/node_modules
-      - /app/dist
   frontend-profile:
-    build: ./frontend_profile
+    build:
+      context: ./frontend_profile
     restart: always
-    volumes:
-      - ./frontend_profile:/app
-      - /app/node_modules
-      - /app/dist
   mysql:
     image: mysql:8
+    volumes:
+      - db_data:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: db
@@ -24,10 +20,12 @@ services:
       MYSQL_PASSWORD: password
     restart: always
   backend:
-    build: ./backend
+    build:
+      context: ./backend
     restart: always
   reverse-proxy:
-    build: ./reverse-proxy
+    build:
+      context: ./reverse-proxy
     restart: always
     ports:
       - 80:80
@@ -36,6 +34,8 @@ services:
       - frontend-scoring
       - frontend-profile
       - backend
+volumes:
+  db_data:
 #    volumes:
 #      - /certbot/www:/var/www/certbot/:ro
 #      - /certbot/conf/:/etc/nginx/ssl/:ro
