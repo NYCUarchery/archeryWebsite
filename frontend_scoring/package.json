@@ -4,14 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite --port 3000 --host",
-    "build": "tsc && vite build --base=/scoring/",
-    "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview --port 3000 --host",
-    "next:dev": "next dev",
-    "next:build": "next build",
-    "next:export": "next export",
-    "next:lint": "next lint"
+    "dev": "next dev",
+    "build": "next build",
+    "export": "next export",
+    "lint": "next lint"
   },
   "dependencies": {
     "@emotion/react": "^11.11.3",
