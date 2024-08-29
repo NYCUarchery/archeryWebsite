@@ -141,12 +141,19 @@ export interface ResponseResponse {
   result?: string;
 }
 
-import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, HeadersDefaults, ResponseType } from "axios";
+import type {
+  AxiosInstance,
+  AxiosRequestConfig,
+  AxiosResponse,
+  HeadersDefaults,
+  ResponseType,
+} from "axios";
 import axios from "axios";
 
 export type QueryParamsType = Record<string | number, any>;
 
-export interface FullRequestParams extends Omit<AxiosRequestConfig, "data" | "params" | "url" | "responseType"> {
+export interface FullRequestParams
+  extends Omit<AxiosRequestConfig, "data" | "params" | "url" | "responseType"> {
   /** set parameter to `true` for call `securityWorker` for this request */
   secure?: boolean;
   /** request path */
@@ -161,11 +168,15 @@ export interface FullRequestParams extends Omit<AxiosRequestConfig, "data" | "pa
   body?: unknown;
 }
 
-export type RequestParams = Omit<FullRequestParams, "body" | "method" | "query" | "path">;
+export type RequestParams = Omit<
+  FullRequestParams,
+  "body" | "method" | "query" | "path"
+>;
 
-export interface ApiConfig<SecurityDataType = unknown> extends Omit<AxiosRequestConfig, "data" | "cancelToken"> {
+export interface ApiConfig<SecurityDataType = unknown>
+  extends Omit<AxiosRequestConfig, "data" | "cancelToken"> {
   securityWorker?: (
-    securityData: SecurityDataType | null,
+    securityData: SecurityDataType | null
   ) => Promise<AxiosRequestConfig | void> | AxiosRequestConfig | void;
   secure?: boolean;
   format?: ResponseType;
@@ -185,8 +196,16 @@ export class HttpClient<SecurityDataType = unknown> {
   private secure?: boolean;
   private format?: ResponseType;
 
-  constructor({ securityWorker, secure, format, ...axiosConfig }: ApiConfig<SecurityDataType> = {}) {
-    this.instance = axios.create({ ...axiosConfig, baseURL: axiosConfig.baseURL || "//localhost:8080/api" });
+  constructor({
+    securityWorker,
+    secure,
+    format,
+    ...axiosConfig
+  }: ApiConfig<SecurityDataType> = {}) {
+    this.instance = axios.create({
+      ...axiosConfig,
+      baseURL: axiosConfig.baseURL || "//localhost:8080/api",
+    });
     this.secure = secure;
     this.format = format;
     this.securityWorker = securityWorker;
@@ -196,7 +215,10 @@ export class HttpClient<SecurityDataType = unknown> {
     this.securityData = data;
   };
 
-  protected mergeRequestParams(params1: AxiosRequestConfig, params2?: AxiosRequestConfig): AxiosRequestConfig {
+  protected mergeRequestParams(
+    params1: AxiosRequestConfig,
+    params2?: AxiosRequestConfig
+  ): AxiosRequestConfig {
     const method = params1.method || (params2 && params2.method);
 
     return {
@@ -204,7 +226,11 @@ export class HttpClient<SecurityDataType = unknown> {
       ...params1,
       ...(params2 || {}),
       headers: {
-        ...((method && this.instance.defaults.headers[method.toLowerCase() as keyof HeadersDefaults]) || {}),
+        ...((method &&
+          this.instance.defaults.headers[
+            method.toLowerCase() as keyof HeadersDefaults
+          ]) ||
+          {}),
         ...(params1.headers || {}),
         ...((params2 && params2.headers) || {}),
       },
@@ -225,11 +251,15 @@ export class HttpClient<SecurityDataType = unknown> {
     }
     return Object.keys(input || {}).reduce((formData, key) => {
       const property = input[key];
-      const propertyContent: any[] = property instanceof Array ? property : [property];
+      const propertyContent: any[] =
+        property instanceof Array ? property : [property];
 
       for (const formItem of propertyContent) {
         const isFileType = formItem instanceof Blob || formItem instanceof File;
-        formData.append(key, isFileType ? formItem : this.stringifyFormItem(formItem));
+        formData.append(
+          key,
+          isFileType ? formItem : this.stringifyFormItem(formItem)
+        );
       }
 
       return formData;
@@ -253,11 +283,21 @@ export class HttpClient<SecurityDataType = unknown> {
     const requestParams = this.mergeRequestParams(params, secureParams);
     const responseFormat = format || this.format || undefined;
 
-    if (type === ContentType.FormData && body && body !== null && typeof body === "object") {
+    if (
+      type === ContentType.FormData &&
+      body &&
+      body !== null &&
+      typeof body === "object"
+    ) {
       body = this.createFormData(body as Record<string, unknown>);
     }
 
-    if (type === ContentType.Text && body && body !== null && typeof body !== "string") {
+    if (
+      type === ContentType.Text &&
+      body &&
+      body !== null &&
+      typeof body !== "string"
+    ) {
       body = JSON.stringify(body);
     }
 
@@ -284,7 +324,9 @@ export class HttpClient<SecurityDataType = unknown> {
  *
  * Gin swagger
  */
-export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
+export class Api<
+  SecurityDataType extends unknown
+> extends HttpClient<SecurityDataType> {
   competition = {
     /**
      * @description Post one new Competition data with new id, create UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup, add host as admin of competition, and return the new Competition data zeroTime 0001-01-01T00:00:00+00:01
@@ -312,7 +354,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary update competition recount player total score
      * @request PUT:/api/competition//groups/players/playertotal/{id}
      */
-    competitionGroupsPlayersPlayertotalUpdate: (id: string, params: RequestParams = {}) =>
+    competitionGroupsPlayersPlayertotalUpdate: (
+      id: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/competition//groups/players/playertotal/${id}`,
         method: "PUT",
@@ -337,7 +382,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         /** tail */
         tail: number;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<string, string>({
         path: `/api/competition/current/${head}/${tail}`,
@@ -355,7 +400,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary update one Competition currentPhase --
      * @request PUT:/api/competition/currentphaseminus/{id}
      */
-    competitionCurrentphaseminusUpdate: (id: string, params: RequestParams = {}) =>
+    competitionCurrentphaseminusUpdate: (
+      id: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/competition/currentphaseminus/${id}`,
         method: "PUT",
@@ -370,7 +418,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary update one Competition currentPhase ++
      * @request PUT:/api/competition/currentphaseplus/{id}
      */
-    competitionCurrentphaseplusUpdate: (id: string, params: RequestParams = {}) =>
+    competitionCurrentphaseplusUpdate: (
+      id: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/competition/currentphaseplus/${id}`,
         method: "PUT",
@@ -385,7 +436,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary update one Competition Elimination Active to be true
      * @request PUT:/api/competition/eliminationisactive/{id}
      */
-    competitionEliminationisactiveUpdate: (id: string, params: RequestParams = {}) =>
+    competitionEliminationisactiveUpdate: (
+      id: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/competition/eliminationisactive/${id}`,
         method: "PUT",
@@ -400,7 +454,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary update one Competition Ranking
      * @request PUT:/api/competition/groups/players/rank/{id}
      */
-    competitionGroupsPlayersRankUpdate: (id: string, params: RequestParams = {}) =>
+    competitionGroupsPlayersRankUpdate: (
+      id: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/competition/groups/players/rank/${id}`,
         method: "PUT",
@@ -449,7 +506,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary update one Competition Mixed Elimination Active to be true and create all mixed elimination for groups
      * @request PUT:/api/competition/mixedeliminationisactive/{id}
      */
-    competitionMixedeliminationisactiveUpdate: (id: string, params: RequestParams = {}) =>
+    competitionMixedeliminationisactiveUpdate: (
+      id: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/competition/mixedeliminationisactive/${id}`,
         method: "PUT",
@@ -480,7 +540,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary update one Competition Qualification currentEnd --
      * @request PUT:/api/competition/qualificationcurrentendminus/{id}
      */
-    competitionQualificationcurrentendminusUpdate: (id: string, params: RequestParams = {}) =>
+    competitionQualificationcurrentendminusUpdate: (
+      id: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/competition/qualificationcurrentendminus/${id}`,
         method: "PUT",
@@ -495,7 +558,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary update one Competition Qualification currentEnd ++
      * @request PUT:/api/competition/qualificationcurrentendplus/{id}
      */
-    competitionQualificationcurrentendplusUpdate: (id: string, params: RequestParams = {}) =>
+    competitionQualificationcurrentendplusUpdate: (
+      id: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/competition/qualificationcurrentendplus/${id}`,
         method: "PUT",
@@ -510,7 +576,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary update one Competition Qualification Active to be true
      * @request PUT:/api/competition/qualificationisactive/{id}
      */
-    competitionQualificationisactiveUpdate: (id: string, params: RequestParams = {}) =>
+    competitionQualificationisactiveUpdate: (
+      id: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/competition/qualificationisactive/${id}`,
         method: "PUT",
@@ -537,7 +606,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         /** tail */
         tail: number;
       },
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<string, string>({
         path: `/api/competition/recent/${userid}/${head}/${tail}`,
@@ -555,7 +624,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary update one Competition Team Elimination Active to be true and create all team elimination for groups
      * @request PUT:/api/competition/teameliminationisactive/{id}
      */
-    competitionTeameliminationisactiveUpdate: (id: string, params: RequestParams = {}) =>
+    competitionTeameliminationisactiveUpdate: (
+      id: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/competition/teameliminationisactive/${id}`,
         method: "PUT",
@@ -570,7 +642,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary update one Competition without GroupInfo
      * @request PUT:/api/competition/whole/{id}
      */
-    competitionWholeUpdate: (id: string, Competition: string, params: RequestParams = {}) =>
+    competitionWholeUpdate: (
+      id: string,
+      Competition: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/competition/whole/${id}`,
         method: "PUT",
@@ -671,7 +747,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Update one Elimination current end minus one
      * @request PUT:/api/elimination/currentend/minus/{id}
      */
-    eliminationCurrentendMinusUpdate: (id: number, params: RequestParams = {}) =>
+    eliminationCurrentendMinusUpdate: (
+      id: number,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/elimination/currentend/minus/${id}`,
         method: "PUT",
@@ -701,7 +780,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Update one Elimination current stage minus one
      * @request PUT:/api/elimination/currentstage/minus/{id}
      */
-    eliminationCurrentstageMinusUpdate: (id: number, params: RequestParams = {}) =>
+    eliminationCurrentstageMinusUpdate: (
+      id: number,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/elimination/currentstage/minus/${id}`,
         method: "PUT",
@@ -716,7 +798,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Update one Elimination current stage plus one
      * @request PUT:/api/elimination/currentstage/plus/{id}
      */
-    eliminationCurrentstagePlusUpdate: (id: number, params: RequestParams = {}) =>
+    eliminationCurrentstagePlusUpdate: (
+      id: number,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/elimination/currentstage/plus/${id}`,
         method: "PUT",
@@ -749,7 +834,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Show one Match with all related data
      * @request GET:/api/elimination/match/scores/{matchid}
      */
-    eliminationMatchScoresDetail: (matchid: number, params: RequestParams = {}) =>
+    eliminationMatchScoresDetail: (
+      matchid: number,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/elimination/match/scores/${matchid}`,
         method: "GET",
@@ -815,7 +903,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Show one Elimination with all related data
      * @request GET:/api/elimination/stages/scores/medals/{id}
      */
-    eliminationStagesScoresMedalsDetail: (id: number, params: RequestParams = {}) =>
+    eliminationStagesScoresMedalsDetail: (
+      id: number,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/elimination/stages/scores/medals/${id}`,
         method: "GET",
@@ -915,7 +1006,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary update GroupInfos Indexes under the same Competition
      * @request PUT:/api/groupinfo/reorder
      */
-    groupinfoReorderUpdate: (groupIdsForReorder: string, params: RequestParams = {}) =>
+    groupinfoReorderUpdate: (
+      groupIdsForReorder: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/groupinfo/reorder`,
         method: "PUT",
@@ -933,7 +1027,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary update one GroupInfo
      * @request PUT:/api/groupinfo/whole/{id}
      */
-    groupinfoWholeUpdate: (id: string, GroupInfo: string, params: RequestParams = {}) =>
+    groupinfoWholeUpdate: (
+      id: string,
+      GroupInfo: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/groupinfo/whole/${id}`,
         method: "PUT",
@@ -1034,7 +1132,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Update one MatchEnd isConfirmed
      * @request PUT:/api/matchend/isconfirmed/{id}
      */
-    matchendIsconfirmedUpdate: (id: number, MatchEnd: string, params: RequestParams = {}) =>
+    matchendIsconfirmedUpdate: (
+      id: number,
+      MatchEnd: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/matchend/isconfirmed/${id}`,
         method: "PUT",
@@ -1051,7 +1153,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Update one MatchEnd scores
      * @request PUT:/api/matchend/scores/{id}
      */
-    matchendScoresUpdate: (id: number, matchEndScoresData: string, params: RequestParams = {}) =>
+    matchendScoresUpdate: (
+      id: number,
+      matchEndScoresData: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/matchend/scores/${id}`,
         method: "PUT",
@@ -1068,7 +1174,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Update one MatchEnd totalScores
      * @request PUT:/api/matchend/totalscores/{id}
      */
-    matchendTotalscoresUpdate: (id: number, MatchEnd: string, params: RequestParams = {}) =>
+    matchendTotalscoresUpdate: (
+      id: number,
+      MatchEnd: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/matchend/totalscores/${id}`,
         method: "PUT",
@@ -1085,7 +1195,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Create one MatchEnd
      * @request POST:/api/matchresult/matchend
      */
-    matchresultMatchendCreate: (matchEndData: string, params: RequestParams = {}) =>
+    matchresultMatchendCreate: (
+      matchEndData: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/matchresult/matchend`,
         method: "POST",
@@ -1104,7 +1217,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Update one MatchResult isWinner
      * @request PUT:/api/matchresult/iswinner/{id}
      */
-    matchresultIswinnerUpdate: (id: number, MatchResult: string, params: RequestParams = {}) =>
+    matchresultIswinnerUpdate: (
+      id: number,
+      MatchResult: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/matchresult/iswinner/${id}`,
         method: "PUT",
@@ -1121,7 +1238,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Update one MatchResult laneNumber
      * @request PUT:/api/matchresult/lanenumber/{id}
      */
-    matchresultLanenumberUpdate: (id: number, MatchResult: string, params: RequestParams = {}) =>
+    matchresultLanenumberUpdate: (
+      id: number,
+      MatchResult: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/matchresult/lanenumber/${id}`,
         method: "PUT",
@@ -1154,7 +1275,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Update one MatchResult shootOffScore
      * @request PUT:/api/matchresult/shootoffscore/{id}
      */
-    matchresultShootoffscoreUpdate: (id: number, MatchResult: string, params: RequestParams = {}) =>
+    matchresultShootoffscoreUpdate: (
+      id: number,
+      MatchResult: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/matchresult/shootoffscore/${id}`,
         method: "PUT",
@@ -1171,7 +1296,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Update one MatchResult totalPoints
      * @request PUT:/api/matchresult/totalpoints/{id}
      */
-    matchresultTotalpointsUpdate: (id: number, MatchResult: string, params: RequestParams = {}) =>
+    matchresultTotalpointsUpdate: (
+      id: number,
+      MatchResult: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/matchresult/totalpoints/${id}`,
         method: "PUT",
@@ -1220,7 +1349,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Update one MatchScore score
      * @request PUT:/api/matchscore/score/{id}
      */
-    matchscoreScoreUpdate: (id: number, MatchScore: string, params: RequestParams = {}) =>
+    matchscoreScoreUpdate: (
+      id: number,
+      MatchScore: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/matchscore/score/${id}`,
         method: "PUT",
@@ -1254,7 +1387,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Update medal's player set id by id
      * @request PUT:/api/medal/playersetid/{id}
      */
-    medalPlayersetidUpdate: (id: number, PlayerSetId: string, params: RequestParams = {}) =>
+    medalPlayersetidUpdate: (
+      id: number,
+      PlayerSetId: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/medal/playersetid/${id}`,
         method: "PUT",
@@ -1312,7 +1449,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       stageindex: string,
       userindex: string,
       confirm: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<string, string>({
         path: `/api/oldlaneinfo/confirm/${id}/${stageindex}/${userindex}/${confirm}`,
@@ -1336,7 +1473,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       userindex: string,
       arrowindex: string,
       score: string,
-      params: RequestParams = {},
+      params: RequestParams = {}
     ) =>
       this.request<string, string>({
         path: `/api/oldlaneinfo/score/${id}/${stageindex}/${userindex}/${arrowindex}/${score}`,
@@ -1354,7 +1491,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary update one OldLaneInfo
      * @request PUT:/api/oldlaneinfo/whole/{id}
      */
-    oldlaneinfoWholeUpdate: (id: string, LaneData: string, params: RequestParams = {}) =>
+    oldlaneinfoWholeUpdate: (
+      id: string,
+      LaneData: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/oldlaneinfo/whole/${id}`,
         method: "PUT",
@@ -1406,7 +1547,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary post a particpant to the competition
      * @request POST:/api/participant/
      */
-    participantCreate: (NewParticipantInfo: EndpointNewParticipantInfo, params: RequestParams = {}) =>
+    participantCreate: (
+      NewParticipantInfo: EndpointNewParticipantInfo,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/participant/`,
         method: "POST",
@@ -1424,7 +1568,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Show Participants By competition ID
      * @request GET:/api/participant/competition
      */
-    participantCompetitionList: (competition_id: number, params: RequestParams = {}) =>
+    participantCompetitionList: (
+      competition_id: number,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/participant/competition`,
         method: "GET",
@@ -1442,7 +1589,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Show Participants By competition ID and user ID
      * @request GET:/api/participant/competition/user
      */
-    participantCompetitionUserList: (user_id: number, params: RequestParams = {}) =>
+    participantCompetitionUserList: (
+      user_id: number,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/participant/competition/user`,
         method: "GET",
@@ -1478,7 +1628,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary update one Participant
      * @request PUT:/api/participant/whole/{id}
      */
-    participantWholeUpdate: (id: string, Participant: string, params: RequestParams = {}) =>
+    participantWholeUpdate: (
+      id: string,
+      Participant: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/participant/whole/${id}`,
         method: "PUT",
@@ -1562,7 +1716,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Update one Player groupId by id
      * @request PUT:/api/player/groupid/{playerid}/{groupid}
      */
-    playerGroupidUpdate: (playerid: number, groupid: string, params: RequestParams = {}) =>
+    playerGroupidUpdate: (
+      playerid: number,
+      groupid: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/player/groupid/${playerid}/${groupid}`,
         method: "PUT",
@@ -1630,7 +1788,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Show one Player with player sets
      * @request GET:/api/player/playersets/{id}/{eliminationid}
      */
-    playerPlayersetsDetail: (id: number, eliminationid: number, params: RequestParams = {}) =>
+    playerPlayersetsDetail: (
+      id: number,
+      eliminationid: number,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/player/playersets/${id}/${eliminationid}`,
         method: "GET",
@@ -1812,7 +1974,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary update one Qualification
      * @request PUT:/api/qualification/whole/{id}
      */
-    qualificationWholeUpdate: (id: string, Qualification: string, params: RequestParams = {}) =>
+    qualificationWholeUpdate: (
+      id: string,
+      Qualification: string,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/api/qualification/whole/${id}`,
         method: "PUT",
@@ -1846,7 +2012,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Show one Qualification
      * @request GET:/data/qualification/lanes/Unassigned/{id}
      */
-    qualificationLanesUnassignedDetail: (id: number, params: RequestParams = {}) =>
+    qualificationLanesUnassignedDetail: (
+      id: number,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/data/qualification/lanes/Unassigned/${id}`,
         method: "GET",
@@ -1901,7 +2070,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary create an institution
      * @request POST:/institution
      */
-    institutionCreate: (NewInstitutionInfo: EndpointNewInstitutionInfo, params: RequestParams = {}) =>
+    institutionCreate: (
+      NewInstitutionInfo: EndpointNewInstitutionInfo,
+      params: RequestParams = {}
+    ) =>
       this.request<ResponseResponse, ResponseResponse>({
         path: `/institution`,
         method: "POST",
@@ -1977,7 +2149,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Get player sets which have medals by elimination id
      * @request GET:/playerset/elimination/medal/{eliminationid}
      */
-    eliminationMedalDetail: (eliminationid: number, params: RequestParams = {}) =>
+    eliminationMedalDetail: (
+      eliminationid: number,
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/playerset/elimination/medal/${eliminationid}`,
         method: "GET",
@@ -2127,7 +2302,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary register a user
      * @request POST:/user
      */
-    userCreate: (AccountInfo: EndpointAccountInfo, params: RequestParams = {}) =>
+    userCreate: (
+      AccountInfo: EndpointAccountInfo,
+      params: RequestParams = {}
+    ) =>
       this.request<DatabaseUser, ResponseResponse>({
         path: `/user`,
         method: "POST",
@@ -2166,7 +2344,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary modify user's password
      * @request PUT:/user/password/{id}
      */
-    passwordUpdate: (id: string, ModifyInfo: EndpointModifyAccountPasswordInfo, params: RequestParams = {}) =>
+    passwordUpdate: (
+      id: string,
+      ModifyInfo: EndpointModifyAccountPasswordInfo,
+      params: RequestParams = {}
+    ) =>
       this.request<ResponseResponse, ResponseResponse>({
         path: `/user/password/${id}`,
         method: "PUT",
@@ -2206,7 +2388,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary modify user's information
      * @request PUT:/user/{id}
      */
-    userUpdate: (id: string, ModifyInfo: DatabaseUser, params: RequestParams = {}) =>
+    userUpdate: (
+      id: string,
+      ModifyInfo: DatabaseUser,
+      params: RequestParams = {}
+    ) =>
       this.request<ResponseResponse, ResponseResponse>({
         path: `/user/${id}`,
         method: "PUT",

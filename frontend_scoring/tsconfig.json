@@ -27,7 +27,7 @@
       "@/hooks/*": ["hooks/*"],
       "@/context/*": ["context/*"],
       "@/services/*": ["services/*"],
-      "@/types/*": ["src/types/*"],
+      "@/types/*": ["types/*"],
       "@/public/*": ["public/*"]
     },
     "allowJs": true,
