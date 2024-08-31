@@ -31,6 +31,9 @@ const LoginPage = () => {
         queryClient.invalidateQueries({ queryKey: ["currentUser"] });
         router.push("/");
       },
+      onError: (error) => {
+        alert("有人帳號密碼打錯了\n這個是系統回報的錯誤訊息：" + error);
+      },
     }
   );
 

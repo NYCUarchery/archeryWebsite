@@ -6,7 +6,7 @@ import { useGetUserId } from "./useGetUserID";
 export function useGetCurrentUserDetail() {
   const { data: id, isFetching } = useGetUserId();
   return useQuery("currentUser", () => apiClient.user.userDetail(id as any), {
-    select: (data) => data.data,
+    select: (data) => data.data.data,
     retry: false,
     enabled: !isFetching,
   });

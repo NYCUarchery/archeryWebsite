@@ -11,9 +11,9 @@ import Collapse from "@mui/material/Collapse";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
 
-import { redirect } from "next/navigation";
+import { useRouter } from "next/navigation";
 
-import { ClickAwayListener } from "@mui/material";
+import { ClickAwayListener } from "@mui/base/ClickAwayListener";
 
 interface SidebarProps {
   setSideBarOpen: Dispatch<SetStateAction<boolean>>;
@@ -30,10 +30,11 @@ interface sidebarItemProps {
 
 const SidebarItem: FC<sidebarItemProps> = ({ item }) => {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
 
   const subitemMap = (v: any, i: number) => (
     <List key={i} component="div" disablePadding>
-      <ListItemButton sx={{ pl: 4 }} onClick={() => redirect(v.route)}>
+      <ListItemButton sx={{ pl: 4 }} onClick={() => router.push(v.route)}>
         <ListItemText primary={v.label} />
       </ListItemButton>
     </List>
@@ -44,7 +45,7 @@ const SidebarItem: FC<sidebarItemProps> = ({ item }) => {
       <ListItem disablePadding>
         <ListItemButton
           onClick={() => {
-            item.subitem ? setOpen(!open) : redirect(item.route);
+            item.subitem ? setOpen(!open) : router.push(item.route);
           }}
         >
           <ListItemText primary={item.label} />
@@ -80,13 +81,9 @@ const Sidebar: FC<SidebarProps> = ({ sideBarOpen, setSideBarOpen }) => {
         },
         {
           label: "我的比賽",
-          route: "my_competitions",
+          route: "/my_competitions",
         },
       ],
-    },
-    {
-      label: "關於",
-      route: "/about",
     },
   ];
 
@@ -120,7 +117,13 @@ const Sidebar: FC<SidebarProps> = ({ sideBarOpen, setSideBarOpen }) => {
       </Box>
     </Collapse>
   );
-  return <Box sx={{ position: "fixed", zIndex: 10 }}>{list()}</Box>;
+  return (
+    <ClickAwayListener onClickAway={handleClose}>
+      <>
+        <Box sx={{ position: "fixed", zIndex: 10 }}>{list()}</Box>;
+      </>
+    </ClickAwayListener>
+  );
 };
 
 export default Sidebar;

@@ -334,11 +334,11 @@ export class Api<
      * @tags Competition
      * @name CompetitionCreate
      * @summary Create one Competition and related data
-     * @request POST:/api/competition
+     * @request POST:/competition
      */
     competitionCreate: (Competition: string, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/competition`,
+        path: `/competition`,
         method: "POST",
         body: Competition,
         type: ContentType.Json,
@@ -352,14 +352,14 @@ export class Api<
      * @tags Competition
      * @name CompetitionGroupsPlayersPlayertotalUpdate
      * @summary update competition recount player total score
-     * @request PUT:/api/competition//groups/players/playertotal/{id}
+     * @request PUT:/competition//groups/players/playertotal/{id}
      */
     competitionGroupsPlayersPlayertotalUpdate: (
       id: string,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/competition//groups/players/playertotal/${id}`,
+        path: `/competition//groups/players/playertotal/${id}`,
         method: "PUT",
         format: "json",
         ...params,
@@ -371,7 +371,7 @@ export class Api<
      * @tags Competition
      * @name CompetitionCurrentDetail
      * @summary Show current Competitions
-     * @request GET:/api/competition/current/{head}/{tail}
+     * @request GET:/competition/current/{head}/{tail}
      */
     competitionCurrentDetail: (
       head: string,
@@ -385,7 +385,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/competition/current/${head}/${tail}`,
+        path: `/competition/current/${head}/${tail}`,
         method: "GET",
         query: query,
         format: "json",
@@ -398,14 +398,14 @@ export class Api<
      * @tags Competition
      * @name CompetitionCurrentphaseminusUpdate
      * @summary update one Competition currentPhase --
-     * @request PUT:/api/competition/currentphaseminus/{id}
+     * @request PUT:/competition/currentphaseminus/{id}
      */
     competitionCurrentphaseminusUpdate: (
       id: string,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/competition/currentphaseminus/${id}`,
+        path: `/competition/currentphaseminus/${id}`,
         method: "PUT",
         ...params,
       }),
@@ -416,14 +416,14 @@ export class Api<
      * @tags Competition
      * @name CompetitionCurrentphaseplusUpdate
      * @summary update one Competition currentPhase ++
-     * @request PUT:/api/competition/currentphaseplus/{id}
+     * @request PUT:/competition/currentphaseplus/{id}
      */
     competitionCurrentphaseplusUpdate: (
       id: string,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/competition/currentphaseplus/${id}`,
+        path: `/competition/currentphaseplus/${id}`,
         method: "PUT",
         ...params,
       }),
@@ -434,14 +434,14 @@ export class Api<
      * @tags Competition
      * @name CompetitionEliminationisactiveUpdate
      * @summary update one Competition Elimination Active to be true
-     * @request PUT:/api/competition/eliminationisactive/{id}
+     * @request PUT:/competition/eliminationisactive/{id}
      */
     competitionEliminationisactiveUpdate: (
       id: string,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/competition/eliminationisactive/${id}`,
+        path: `/competition/eliminationisactive/${id}`,
         method: "PUT",
         ...params,
       }),
@@ -452,14 +452,14 @@ export class Api<
      * @tags Competition
      * @name CompetitionGroupsPlayersRankUpdate
      * @summary update one Competition Ranking
-     * @request PUT:/api/competition/groups/players/rank/{id}
+     * @request PUT:/competition/groups/players/rank/{id}
      */
     competitionGroupsPlayersRankUpdate: (
       id: string,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/competition/groups/players/rank/${id}`,
+        path: `/competition/groups/players/rank/${id}`,
         method: "PUT",
         type: ContentType.Json,
         format: "json",
@@ -472,11 +472,11 @@ export class Api<
      * @tags Competition
      * @name CompetitionGroupsQualieliDetail
      * @summary Show one Competition with Groups Qualification Elimination
-     * @request GET:/api/competition/groups/qualieli/{id}
+     * @request GET:/competition/groups/qualieli/{id}
      */
     competitionGroupsQualieliDetail: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/competition/groups/qualieli/${id}`,
+        path: `/competition/groups/qualieli/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -488,11 +488,11 @@ export class Api<
      * @tags Competition
      * @name CompetitionGroupsDetail
      * @summary Show one Competition with GroupInfos
-     * @request GET:/api/competition/groups/{id}
+     * @request GET:/competition/groups/{id}
      */
     competitionGroupsDetail: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/competition/groups/${id}`,
+        path: `/competition/groups/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -504,14 +504,14 @@ export class Api<
      * @tags Competition
      * @name CompetitionMixedeliminationisactiveUpdate
      * @summary update one Competition Mixed Elimination Active to be true and create all mixed elimination for groups
-     * @request PUT:/api/competition/mixedeliminationisactive/{id}
+     * @request PUT:/competition/mixedeliminationisactive/{id}
      */
     competitionMixedeliminationisactiveUpdate: (
       id: string,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/competition/mixedeliminationisactive/${id}`,
+        path: `/competition/mixedeliminationisactive/${id}`,
         method: "PUT",
         ...params,
       }),
@@ -522,11 +522,11 @@ export class Api<
      * @tags Competition
      * @name CompetitionParticipantsDetail
      * @summary Show one Competition with Participants
-     * @request GET:/api/competition/participants/{id}
+     * @request GET:/competition/participants/{id}
      */
     competitionParticipantsDetail: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/competition/participants/${id}`,
+        path: `/competition/participants/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -538,14 +538,14 @@ export class Api<
      * @tags Competition
      * @name CompetitionQualificationcurrentendminusUpdate
      * @summary update one Competition Qualification currentEnd --
-     * @request PUT:/api/competition/qualificationcurrentendminus/{id}
+     * @request PUT:/competition/qualificationcurrentendminus/{id}
      */
     competitionQualificationcurrentendminusUpdate: (
       id: string,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/competition/qualificationcurrentendminus/${id}`,
+        path: `/competition/qualificationcurrentendminus/${id}`,
         method: "PUT",
         ...params,
       }),
@@ -556,14 +556,14 @@ export class Api<
      * @tags Competition
      * @name CompetitionQualificationcurrentendplusUpdate
      * @summary update one Competition Qualification currentEnd ++
-     * @request PUT:/api/competition/qualificationcurrentendplus/{id}
+     * @request PUT:/competition/qualificationcurrentendplus/{id}
      */
     competitionQualificationcurrentendplusUpdate: (
       id: string,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/competition/qualificationcurrentendplus/${id}`,
+        path: `/competition/qualificationcurrentendplus/${id}`,
         method: "PUT",
         ...params,
       }),
@@ -574,14 +574,14 @@ export class Api<
      * @tags Competition
      * @name CompetitionQualificationisactiveUpdate
      * @summary update one Competition Qualification Active to be true
-     * @request PUT:/api/competition/qualificationisactive/{id}
+     * @request PUT:/competition/qualificationisactive/{id}
      */
     competitionQualificationisactiveUpdate: (
       id: string,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/competition/qualificationisactive/${id}`,
+        path: `/competition/qualificationisactive/${id}`,
         method: "PUT",
         ...params,
       }),
@@ -592,7 +592,7 @@ export class Api<
      * @tags Competition
      * @name CompetitionRecentDetail
      * @summary Show recent Competitions dealing with User
-     * @request GET:/api/competition/recent/{userid}/{head}/{tail}
+     * @request GET:/competition/recent/{userid}/{head}/{tail}
      */
     competitionRecentDetail: (
       userid: string,
@@ -609,7 +609,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/competition/recent/${userid}/${head}/${tail}`,
+        path: `/competition/recent/${userid}/${head}/${tail}`,
         method: "GET",
         query: query,
         format: "json",
@@ -622,14 +622,14 @@ export class Api<
      * @tags Competition
      * @name CompetitionTeameliminationisactiveUpdate
      * @summary update one Competition Team Elimination Active to be true and create all team elimination for groups
-     * @request PUT:/api/competition/teameliminationisactive/{id}
+     * @request PUT:/competition/teameliminationisactive/{id}
      */
     competitionTeameliminationisactiveUpdate: (
       id: string,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/competition/teameliminationisactive/${id}`,
+        path: `/competition/teameliminationisactive/${id}`,
         method: "PUT",
         ...params,
       }),
@@ -640,7 +640,7 @@ export class Api<
      * @tags Competition
      * @name CompetitionWholeUpdate
      * @summary update one Competition without GroupInfo
-     * @request PUT:/api/competition/whole/{id}
+     * @request PUT:/competition/whole/{id}
      */
     competitionWholeUpdate: (
       id: string,
@@ -648,7 +648,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/competition/whole/${id}`,
+        path: `/competition/whole/${id}`,
         method: "PUT",
         body: Competition,
         type: ContentType.Json,
@@ -662,11 +662,11 @@ export class Api<
      * @tags Competition
      * @name CompetitionDetail
      * @summary Show one Competition without GroupInfo
-     * @request GET:/api/competition/{id}
+     * @request GET:/competition/{id}
      */
     competitionDetail: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/competition/${id}`,
+        path: `/competition/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -678,11 +678,11 @@ export class Api<
      * @tags Competition
      * @name CompetitionDelete
      * @summary delete one Competition
-     * @request DELETE:/api/competition/{id}
+     * @request DELETE:/competition/{id}
      */
     competitionDelete: (id: string, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/competition/${id}`,
+        path: `/competition/${id}`,
         method: "DELETE",
         type: ContentType.Json,
         format: "json",
@@ -711,11 +711,11 @@ export class Api<
      *
      * @name CompetitionGroupsPlayersDetail
      * @summary Show one Competition with GroupInfos and Players
-     * @request GET:/api/competition/groups/players/{id}
+     * @request GET:/competition/groups/players/{id}
      */
     competitionGroupsPlayersDetail: (id: string, params: RequestParams = {}) =>
       this.request<any, any>({
-        path: `/api/competition/groups/players/${id}`,
+        path: `/competition/groups/players/${id}`,
         method: "GET",
         ...params,
       }),
@@ -727,11 +727,11 @@ export class Api<
      * @tags Elimination
      * @name EliminationCreate
      * @summary Create one Elimination
-     * @request POST:/api/elimination
+     * @request POST:/elimination
      */
     eliminationCreate: (Elimination: string, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/elimination`,
+        path: `/elimination`,
         method: "POST",
         body: Elimination,
         type: ContentType.Json,
@@ -745,14 +745,14 @@ export class Api<
      * @tags Elimination
      * @name EliminationCurrentendMinusUpdate
      * @summary Update one Elimination current end minus one
-     * @request PUT:/api/elimination/currentend/minus/{id}
+     * @request PUT:/elimination/currentend/minus/{id}
      */
     eliminationCurrentendMinusUpdate: (
       id: number,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/elimination/currentend/minus/${id}`,
+        path: `/elimination/currentend/minus/${id}`,
         method: "PUT",
         ...params,
       }),
@@ -763,11 +763,11 @@ export class Api<
      * @tags Elimination
      * @name EliminationCurrentendPlusUpdate
      * @summary Update one Elimination current end plus one
-     * @request PUT:/api/elimination/currentend/plus/{id}
+     * @request PUT:/elimination/currentend/plus/{id}
      */
     eliminationCurrentendPlusUpdate: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/elimination/currentend/plus/${id}`,
+        path: `/elimination/currentend/plus/${id}`,
         method: "PUT",
         ...params,
       }),
@@ -778,14 +778,14 @@ export class Api<
      * @tags Elimination
      * @name EliminationCurrentstageMinusUpdate
      * @summary Update one Elimination current stage minus one
-     * @request PUT:/api/elimination/currentstage/minus/{id}
+     * @request PUT:/elimination/currentstage/minus/{id}
      */
     eliminationCurrentstageMinusUpdate: (
       id: number,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/elimination/currentstage/minus/${id}`,
+        path: `/elimination/currentstage/minus/${id}`,
         method: "PUT",
         ...params,
       }),
@@ -796,14 +796,14 @@ export class Api<
      * @tags Elimination
      * @name EliminationCurrentstagePlusUpdate
      * @summary Update one Elimination current stage plus one
-     * @request PUT:/api/elimination/currentstage/plus/{id}
+     * @request PUT:/elimination/currentstage/plus/{id}
      */
     eliminationCurrentstagePlusUpdate: (
       id: number,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/elimination/currentstage/plus/${id}`,
+        path: `/elimination/currentstage/plus/${id}`,
         method: "PUT",
         ...params,
       }),
@@ -814,11 +814,11 @@ export class Api<
      * @tags Elimination
      * @name EliminationMatchCreate
      * @summary Create one Match
-     * @request POST:/api/elimination/match
+     * @request POST:/elimination/match
      */
     eliminationMatchCreate: (Match: string, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/elimination/match`,
+        path: `/elimination/match`,
         method: "POST",
         body: Match,
         type: ContentType.Json,
@@ -832,14 +832,14 @@ export class Api<
      * @tags Elimination
      * @name EliminationMatchScoresDetail
      * @summary Show one Match with all related data
-     * @request GET:/api/elimination/match/scores/{matchid}
+     * @request GET:/elimination/match/scores/{matchid}
      */
     eliminationMatchScoresDetail: (
       matchid: number,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/elimination/match/scores/${matchid}`,
+        path: `/elimination/match/scores/${matchid}`,
         method: "GET",
         format: "json",
         ...params,
@@ -851,11 +851,11 @@ export class Api<
      * @tags Elimination
      * @name EliminationPlayersetsDetail
      * @summary Show one Elimination with player sets
-     * @request GET:/api/elimination/playersets/{id}
+     * @request GET:/elimination/playersets/{id}
      */
     eliminationPlayersetsDetail: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/elimination/playersets/${id}`,
+        path: `/elimination/playersets/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -867,11 +867,11 @@ export class Api<
      * @tags Elimination
      * @name EliminationScoresDetail
      * @summary Show one Elimination with all scores
-     * @request GET:/api/elimination/scores/{id}
+     * @request GET:/elimination/scores/{id}
      */
     eliminationScoresDetail: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/elimination/scores/${id}`,
+        path: `/elimination/scores/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -883,11 +883,11 @@ export class Api<
      * @tags Elimination
      * @name EliminationStageCreate
      * @summary Create one Stage
-     * @request POST:/api/elimination/stage
+     * @request POST:/elimination/stage
      */
     eliminationStageCreate: (Stage: string, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/elimination/stage`,
+        path: `/elimination/stage`,
         method: "POST",
         body: Stage,
         type: ContentType.Json,
@@ -901,14 +901,14 @@ export class Api<
      * @tags Elimination
      * @name EliminationStagesScoresMedalsDetail
      * @summary Show one Elimination with all related data
-     * @request GET:/api/elimination/stages/scores/medals/{id}
+     * @request GET:/elimination/stages/scores/medals/{id}
      */
     eliminationStagesScoresMedalsDetail: (
       id: number,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/elimination/stages/scores/medals/${id}`,
+        path: `/elimination/stages/scores/medals/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -920,11 +920,11 @@ export class Api<
      * @tags Elimination
      * @name EliminationStagesDetail
      * @summary Show one Elimination with stages, matches
-     * @request GET:/api/elimination/stages/{id}
+     * @request GET:/elimination/stages/{id}
      */
     eliminationStagesDetail: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/elimination/stages/${id}`,
+        path: `/elimination/stages/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -936,11 +936,11 @@ export class Api<
      * @tags Elimination
      * @name EliminationDetail
      * @summary Show one Elimination
-     * @request GET:/api/elimination/{id}
+     * @request GET:/elimination/{id}
      */
     eliminationDetail: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/elimination/${id}`,
+        path: `/elimination/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -952,11 +952,11 @@ export class Api<
      * @tags Elimination
      * @name EliminationDelete
      * @summary Delete one Elimination, and related stages and matches
-     * @request DELETE:/api/elimination/{id}
+     * @request DELETE:/elimination/{id}
      */
     eliminationDelete: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/elimination/${id}`,
+        path: `/elimination/${id}`,
         method: "DELETE",
         type: ContentType.Json,
         format: "json",
@@ -970,11 +970,11 @@ export class Api<
      * @tags GroupInfo
      * @name GroupinfoCreate
      * @summary Create one GroupInfo
-     * @request POST:/api/groupinfo
+     * @request POST:/groupinfo
      */
     groupinfoCreate: (GroupInfo: string, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/groupinfo`,
+        path: `/groupinfo`,
         method: "POST",
         body: GroupInfo,
         type: ContentType.Json,
@@ -988,11 +988,11 @@ export class Api<
      * @tags GroupInfo
      * @name GroupinfoPlayersDetail
      * @summary Show one GroupInfo with players
-     * @request GET:/api/groupinfo/players/{id}
+     * @request GET:/groupinfo/players/{id}
      */
     groupinfoPlayersDetail: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/groupinfo/players/${id}`,
+        path: `/groupinfo/players/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -1004,14 +1004,14 @@ export class Api<
      * @tags GroupInfo
      * @name GroupinfoReorderUpdate
      * @summary update GroupInfos Indexes under the same Competition
-     * @request PUT:/api/groupinfo/reorder
+     * @request PUT:/groupinfo/reorder
      */
     groupinfoReorderUpdate: (
       groupIdsForReorder: string,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/groupinfo/reorder`,
+        path: `/groupinfo/reorder`,
         method: "PUT",
         body: groupIdsForReorder,
         type: ContentType.Json,
@@ -1025,7 +1025,7 @@ export class Api<
      * @tags GroupInfo
      * @name GroupinfoWholeUpdate
      * @summary update one GroupInfo
-     * @request PUT:/api/groupinfo/whole/{id}
+     * @request PUT:/groupinfo/whole/{id}
      */
     groupinfoWholeUpdate: (
       id: string,
@@ -1033,7 +1033,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/groupinfo/whole/${id}`,
+        path: `/groupinfo/whole/${id}`,
         method: "PUT",
         body: GroupInfo,
         type: ContentType.Json,
@@ -1047,11 +1047,11 @@ export class Api<
      * @tags GroupInfo
      * @name GroupinfoDetail
      * @summary Show one GroupInfo
-     * @request GET:/api/groupinfo/{id}
+     * @request GET:/groupinfo/{id}
      */
     groupinfoDetail: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/groupinfo/${id}`,
+        path: `/groupinfo/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -1063,11 +1063,11 @@ export class Api<
      * @tags GroupInfo
      * @name GroupinfoDelete
      * @summary delete one GroupInfo
-     * @request DELETE:/api/groupinfo/{id}
+     * @request DELETE:/groupinfo/{id}
      */
     groupinfoDelete: (id: string, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/groupinfo/${id}`,
+        path: `/groupinfo/${id}`,
         method: "DELETE",
         type: ContentType.Json,
         format: "json",
@@ -1081,11 +1081,11 @@ export class Api<
      * @tags Lane
      * @name LaneAllDetail
      * @summary Show all Lane of a competition
-     * @request GET:/api/lane/all/{id}
+     * @request GET:/lane/all/{id}
      */
     laneAllDetail: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/lane/all/${id}`,
+        path: `/lane/all/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -1097,11 +1097,11 @@ export class Api<
      * @tags Lane
      * @name LaneScoresDetail
      * @summary Show one Lane with players, rounds, roundends, roundscores
-     * @request GET:/api/lane/scores/{id}
+     * @request GET:/lane/scores/{id}
      */
     laneScoresDetail: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/lane/scores/${id}`,
+        path: `/lane/scores/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -1113,11 +1113,11 @@ export class Api<
      * @tags Lane
      * @name LaneDetail
      * @summary Show one Lane
-     * @request GET:/api/lane/{id}
+     * @request GET:/lane/{id}
      */
     laneDetail: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/lane/${id}`,
+        path: `/lane/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -1130,7 +1130,7 @@ export class Api<
      * @tags MatchEnd
      * @name MatchendIsconfirmedUpdate
      * @summary Update one MatchEnd isConfirmed
-     * @request PUT:/api/matchend/isconfirmed/{id}
+     * @request PUT:/matchend/isconfirmed/{id}
      */
     matchendIsconfirmedUpdate: (
       id: number,
@@ -1138,7 +1138,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/matchend/isconfirmed/${id}`,
+        path: `/matchend/isconfirmed/${id}`,
         method: "PUT",
         body: MatchEnd,
         type: ContentType.Json,
@@ -1151,7 +1151,7 @@ export class Api<
      * @tags MatchEnd
      * @name MatchendScoresUpdate
      * @summary Update one MatchEnd scores
-     * @request PUT:/api/matchend/scores/{id}
+     * @request PUT:/matchend/scores/{id}
      */
     matchendScoresUpdate: (
       id: number,
@@ -1159,7 +1159,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/matchend/scores/${id}`,
+        path: `/matchend/scores/${id}`,
         method: "PUT",
         body: matchEndScoresData,
         type: ContentType.Json,
@@ -1172,7 +1172,7 @@ export class Api<
      * @tags MatchEnd
      * @name MatchendTotalscoresUpdate
      * @summary Update one MatchEnd totalScores
-     * @request PUT:/api/matchend/totalscores/{id}
+     * @request PUT:/matchend/totalscores/{id}
      */
     matchendTotalscoresUpdate: (
       id: number,
@@ -1180,7 +1180,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/matchend/totalscores/${id}`,
+        path: `/matchend/totalscores/${id}`,
         method: "PUT",
         body: MatchEnd,
         type: ContentType.Json,
@@ -1193,14 +1193,14 @@ export class Api<
      * @tags MatchEnd
      * @name MatchresultMatchendCreate
      * @summary Create one MatchEnd
-     * @request POST:/api/matchresult/matchend
+     * @request POST:/matchresult/matchend
      */
     matchresultMatchendCreate: (
       matchEndData: string,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/matchresult/matchend`,
+        path: `/matchresult/matchend`,
         method: "POST",
         body: matchEndData,
         type: ContentType.Json,
@@ -1215,7 +1215,7 @@ export class Api<
      * @tags MatchResult
      * @name MatchresultIswinnerUpdate
      * @summary Update one MatchResult isWinner
-     * @request PUT:/api/matchresult/iswinner/{id}
+     * @request PUT:/matchresult/iswinner/{id}
      */
     matchresultIswinnerUpdate: (
       id: number,
@@ -1223,7 +1223,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/matchresult/iswinner/${id}`,
+        path: `/matchresult/iswinner/${id}`,
         method: "PUT",
         body: MatchResult,
         type: ContentType.Json,
@@ -1236,7 +1236,7 @@ export class Api<
      * @tags MatchResult
      * @name MatchresultLanenumberUpdate
      * @summary Update one MatchResult laneNumber
-     * @request PUT:/api/matchresult/lanenumber/{id}
+     * @request PUT:/matchresult/lanenumber/{id}
      */
     matchresultLanenumberUpdate: (
       id: number,
@@ -1244,7 +1244,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/matchresult/lanenumber/${id}`,
+        path: `/matchresult/lanenumber/${id}`,
         method: "PUT",
         body: MatchResult,
         type: ContentType.Json,
@@ -1257,11 +1257,11 @@ export class Api<
      * @tags MatchResult
      * @name MatchresultScoresDetail
      * @summary Show one MatchResult with match_ends, match_scores, player set
-     * @request GET:/api/matchresult/scores/{id}
+     * @request GET:/matchresult/scores/{id}
      */
     matchresultScoresDetail: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/matchresult/scores/${id}`,
+        path: `/matchresult/scores/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -1273,7 +1273,7 @@ export class Api<
      * @tags MatchResult
      * @name MatchresultShootoffscoreUpdate
      * @summary Update one MatchResult shootOffScore
-     * @request PUT:/api/matchresult/shootoffscore/{id}
+     * @request PUT:/matchresult/shootoffscore/{id}
      */
     matchresultShootoffscoreUpdate: (
       id: number,
@@ -1281,7 +1281,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/matchresult/shootoffscore/${id}`,
+        path: `/matchresult/shootoffscore/${id}`,
         method: "PUT",
         body: MatchResult,
         type: ContentType.Json,
@@ -1294,7 +1294,7 @@ export class Api<
      * @tags MatchResult
      * @name MatchresultTotalpointsUpdate
      * @summary Update one MatchResult totalPoints
-     * @request PUT:/api/matchresult/totalpoints/{id}
+     * @request PUT:/matchresult/totalpoints/{id}
      */
     matchresultTotalpointsUpdate: (
       id: number,
@@ -1302,7 +1302,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/matchresult/totalpoints/${id}`,
+        path: `/matchresult/totalpoints/${id}`,
         method: "PUT",
         body: MatchResult,
         type: ContentType.Json,
@@ -1315,11 +1315,11 @@ export class Api<
      * @tags MatchResult
      * @name MatchresultDetail
      * @summary Show one MatchResult with player set
-     * @request GET:/api/matchresult/{id}
+     * @request GET:/matchresult/{id}
      */
     matchresultDetail: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/matchresult/${id}`,
+        path: `/matchresult/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -1331,11 +1331,11 @@ export class Api<
      * @tags MatchResult
      * @name MatchresultDelete
      * @summary Delete one MatchResult
-     * @request DELETE:/api/matchresult/{id}
+     * @request DELETE:/matchresult/{id}
      */
     matchresultDelete: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/matchresult/${id}`,
+        path: `/matchresult/${id}`,
         method: "DELETE",
         ...params,
       }),
@@ -1347,7 +1347,7 @@ export class Api<
      * @tags MatchScore
      * @name MatchscoreScoreUpdate
      * @summary Update one MatchScore score
-     * @request PUT:/api/matchscore/score/{id}
+     * @request PUT:/matchscore/score/{id}
      */
     matchscoreScoreUpdate: (
       id: number,
@@ -1355,7 +1355,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/matchscore/score/${id}`,
+        path: `/matchscore/score/${id}`,
         method: "PUT",
         body: MatchScore,
         type: ContentType.Json,
@@ -1369,11 +1369,11 @@ export class Api<
      * @tags Medal
      * @name MedalEliminationDetail
      * @summary Show medals of elimination by elimination id
-     * @request GET:/api/medal/elimination/{id}
+     * @request GET:/medal/elimination/{id}
      */
     medalEliminationDetail: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/medal/elimination/${id}`,
+        path: `/medal/elimination/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -1385,7 +1385,7 @@ export class Api<
      * @tags Medal
      * @name MedalPlayersetidUpdate
      * @summary Update medal's player set id by id
-     * @request PUT:/api/medal/playersetid/{id}
+     * @request PUT:/medal/playersetid/{id}
      */
     medalPlayersetidUpdate: (
       id: number,
@@ -1393,7 +1393,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/medal/playersetid/${id}`,
+        path: `/medal/playersetid/${id}`,
         method: "PUT",
         body: PlayerSetId,
         type: ContentType.Json,
@@ -1407,11 +1407,11 @@ export class Api<
      * @tags Medal
      * @name MedalDetail
      * @summary Show one medal by id
-     * @request GET:/api/medal/{id}
+     * @request GET:/medal/{id}
      */
     medalDetail: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/medal/${id}`,
+        path: `/medal/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -1424,11 +1424,11 @@ export class Api<
      * @tags OldLaneInfo
      * @name OldlaneinfoCreate
      * @summary Create one OldLaneInfo
-     * @request POST:/api/oldlaneinfo
+     * @request POST:/oldlaneinfo
      */
     oldlaneinfoCreate: (LaneData: string, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/oldlaneinfo`,
+        path: `/oldlaneinfo`,
         method: "POST",
         body: LaneData,
         type: ContentType.Json,
@@ -1442,7 +1442,7 @@ export class Api<
      * @tags OldLaneInfo
      * @name OldlaneinfoConfirmUpdate
      * @summary update one OldLaneInfo confirmation
-     * @request PUT:/api/oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm}
+     * @request PUT:/oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm}
      */
     oldlaneinfoConfirmUpdate: (
       id: string,
@@ -1452,7 +1452,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/oldlaneinfo/confirm/${id}/${stageindex}/${userindex}/${confirm}`,
+        path: `/oldlaneinfo/confirm/${id}/${stageindex}/${userindex}/${confirm}`,
         method: "PUT",
         type: ContentType.Json,
         format: "json",
@@ -1465,7 +1465,7 @@ export class Api<
      * @tags OldLaneInfo
      * @name OldlaneinfoScoreUpdate
      * @summary update one OldLaneInfo Score
-     * @request PUT:/api/oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score}
+     * @request PUT:/oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score}
      */
     oldlaneinfoScoreUpdate: (
       id: string,
@@ -1476,7 +1476,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/oldlaneinfo/score/${id}/${stageindex}/${userindex}/${arrowindex}/${score}`,
+        path: `/oldlaneinfo/score/${id}/${stageindex}/${userindex}/${arrowindex}/${score}`,
         method: "PUT",
         type: ContentType.Json,
         format: "json",
@@ -1489,7 +1489,7 @@ export class Api<
      * @tags OldLaneInfo
      * @name OldlaneinfoWholeUpdate
      * @summary update one OldLaneInfo
-     * @request PUT:/api/oldlaneinfo/whole/{id}
+     * @request PUT:/oldlaneinfo/whole/{id}
      */
     oldlaneinfoWholeUpdate: (
       id: string,
@@ -1497,7 +1497,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/oldlaneinfo/whole/${id}`,
+        path: `/oldlaneinfo/whole/${id}`,
         method: "PUT",
         body: LaneData,
         type: ContentType.Json,
@@ -1511,11 +1511,11 @@ export class Api<
      * @tags OldLaneInfo
      * @name OldlaneinfoDetail
      * @summary Show one OldLaneInfo
-     * @request GET:/api/oldlaneinfo/{id}
+     * @request GET:/oldlaneinfo/{id}
      */
     oldlaneinfoDetail: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/oldlaneinfo/${id}`,
+        path: `/oldlaneinfo/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -1527,11 +1527,11 @@ export class Api<
      * @tags OldLaneInfo
      * @name OldlaneinfoDelete
      * @summary delete one OldLaneInfo
-     * @request DELETE:/api/oldlaneinfo/{id}
+     * @request DELETE:/oldlaneinfo/{id}
      */
     oldlaneinfoDelete: (id: string, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/oldlaneinfo/${id}`,
+        path: `/oldlaneinfo/${id}`,
         method: "DELETE",
         type: ContentType.Json,
         format: "json",
@@ -1545,14 +1545,14 @@ export class Api<
      * @tags Participant
      * @name ParticipantCreate
      * @summary post a particpant to the competition
-     * @request POST:/api/participant/
+     * @request POST:/participant/
      */
     participantCreate: (
       NewParticipantInfo: EndpointNewParticipantInfo,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/participant/`,
+        path: `/participant/`,
         method: "POST",
         body: NewParticipantInfo,
         type: ContentType.Json,
@@ -1566,14 +1566,14 @@ export class Api<
      * @tags Participant
      * @name ParticipantCompetitionList
      * @summary Show Participants By competition ID
-     * @request GET:/api/participant/competition
+     * @request GET:/participant/competition
      */
     participantCompetitionList: (
       competition_id: number,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/participant/competition`,
+        path: `/participant/competition`,
         method: "GET",
         body: competition_id,
         type: ContentType.Json,
@@ -1587,14 +1587,14 @@ export class Api<
      * @tags Participant
      * @name ParticipantCompetitionUserList
      * @summary Show Participants By competition ID and user ID
-     * @request GET:/api/participant/competition/user
+     * @request GET:/participant/competition/user
      */
     participantCompetitionUserList: (
       user_id: number,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/participant/competition/user`,
+        path: `/participant/competition/user`,
         method: "GET",
         body: user_id,
         type: ContentType.Json,
@@ -1608,11 +1608,11 @@ export class Api<
      * @tags Participant
      * @name ParticipantUserList
      * @summary Show Participants By user ID
-     * @request GET:/api/participant/user
+     * @request GET:/participant/user
      */
     participantUserList: (user_id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/participant/user`,
+        path: `/participant/user`,
         method: "GET",
         body: user_id,
         type: ContentType.Json,
@@ -1626,7 +1626,7 @@ export class Api<
      * @tags Participant
      * @name ParticipantWholeUpdate
      * @summary update one Participant
-     * @request PUT:/api/participant/whole/{id}
+     * @request PUT:/participant/whole/{id}
      */
     participantWholeUpdate: (
       id: string,
@@ -1634,7 +1634,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/participant/whole/${id}`,
+        path: `/participant/whole/${id}`,
         method: "PUT",
         body: Participant,
         type: ContentType.Json,
@@ -1648,11 +1648,11 @@ export class Api<
      * @tags Participant
      * @name ParticipantDetail
      * @summary Show One Participant By ID
-     * @request GET:/api/participant/{id}
+     * @request GET:/participant/{id}
      */
     participantDetail: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/participant/${id}`,
+        path: `/participant/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -1664,11 +1664,11 @@ export class Api<
      * @tags Participant
      * @name ParticipantDelete
      * @summary delete one Participant
-     * @request DELETE:/api/participant/{id}
+     * @request DELETE:/participant/{id}
      */
     participantDelete: (id: string, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/participant/${id}`,
+        path: `/participant/${id}`,
         method: "DELETE",
         type: ContentType.Json,
         format: "json",
@@ -1682,11 +1682,11 @@ export class Api<
      * @tags Player
      * @name PlayerDummyDetail
      * @summary Show dummy players
-     * @request GET:/api/player/dummy/{participantid}
+     * @request GET:/player/dummy/{participantid}
      */
     playerDummyDetail: (participantid: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/player/dummy/${participantid}`,
+        path: `/player/dummy/${participantid}`,
         method: "GET",
         format: "json",
         ...params,
@@ -1698,11 +1698,11 @@ export class Api<
      * @tags Player
      * @name PlayerDummyCreate
      * @summary Create dummy player
-     * @request POST:/api/player/dummy/{playerid}
+     * @request POST:/player/dummy/{playerid}
      */
     playerDummyCreate: (playerid: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/player/dummy/${playerid}`,
+        path: `/player/dummy/${playerid}`,
         method: "POST",
         format: "json",
         ...params,
@@ -1714,7 +1714,7 @@ export class Api<
      * @tags Player
      * @name PlayerGroupidUpdate
      * @summary Update one Player groupId by id
-     * @request PUT:/api/player/groupid/{playerid}/{groupid}
+     * @request PUT:/player/groupid/{playerid}/{groupid}
      */
     playerGroupidUpdate: (
       playerid: number,
@@ -1722,7 +1722,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/player/groupid/${playerid}/${groupid}`,
+        path: `/player/groupid/${playerid}/${groupid}`,
         method: "PUT",
         type: ContentType.Json,
         format: "json",
@@ -1735,11 +1735,11 @@ export class Api<
      * @tags Player
      * @name PlayerIsconfirmedUpdate
      * @summary Update one Player isConfirmed by id
-     * @request PUT:/api/player/isconfirmed/{roundendid}
+     * @request PUT:/player/isconfirmed/{roundendid}
      */
     playerIsconfirmedUpdate: (roundendid: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/player/isconfirmed/${roundendid}`,
+        path: `/player/isconfirmed/${roundendid}`,
         method: "PUT",
         type: ContentType.Json,
         format: "json",
@@ -1752,11 +1752,11 @@ export class Api<
      * @tags Player
      * @name PlayerLaneidUpdate
      * @summary Update one Player laneId by id
-     * @request PUT:/api/player/laneid/{playerid}
+     * @request PUT:/player/laneid/{playerid}
      */
     playerLaneidUpdate: (playerid: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/player/laneid/${playerid}`,
+        path: `/player/laneid/${playerid}`,
         method: "PUT",
         type: ContentType.Json,
         format: "json",
@@ -1769,11 +1769,11 @@ export class Api<
      * @tags Player
      * @name PlayerOrderUpdate
      * @summary Update one Player order by id
-     * @request PUT:/api/player/order/{id}
+     * @request PUT:/player/order/{id}
      */
     playerOrderUpdate: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/player/order/${id}`,
+        path: `/player/order/${id}`,
         method: "PUT",
         type: ContentType.Json,
         format: "json",
@@ -1786,7 +1786,7 @@ export class Api<
      * @tags Player
      * @name PlayerPlayersetsDetail
      * @summary Show one Player with player sets
-     * @request GET:/api/player/playersets/{id}/{eliminationid}
+     * @request GET:/player/playersets/{id}/{eliminationid}
      */
     playerPlayersetsDetail: (
       id: number,
@@ -1794,7 +1794,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/player/playersets/${id}/${eliminationid}`,
+        path: `/player/playersets/${id}/${eliminationid}`,
         method: "GET",
         format: "json",
         ...params,
@@ -1806,11 +1806,11 @@ export class Api<
      * @tags Player
      * @name PlayerRoundendCreate
      * @summary Create one RoundEnd by Round ID
-     * @request POST:/api/player/roundend
+     * @request POST:/player/roundend
      */
     playerRoundendCreate: (params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/player/roundend`,
+        path: `/player/roundend`,
         method: "POST",
         type: ContentType.Json,
         format: "json",
@@ -1823,11 +1823,11 @@ export class Api<
      * @tags Player
      * @name PlayerRoundscoreCreate
      * @summary Create one RoundScore by RoundEnd ID
-     * @request POST:/api/player/roundscore
+     * @request POST:/player/roundscore
      */
     playerRoundscoreCreate: (params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/player/roundscore`,
+        path: `/player/roundscore`,
         method: "POST",
         type: ContentType.Json,
         format: "json",
@@ -1840,11 +1840,11 @@ export class Api<
      * @tags Player
      * @name PlayerScoreUpdate
      * @summary Update one Player score by id
-     * @request PUT:/api/player/score/{roundscoreid}
+     * @request PUT:/player/score/{roundscoreid}
      */
     playerScoreUpdate: (roundscoreid: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/player/score/${roundscoreid}`,
+        path: `/player/score/${roundscoreid}`,
         method: "PUT",
         type: ContentType.Json,
         format: "json",
@@ -1857,11 +1857,11 @@ export class Api<
      * @tags Player
      * @name PlayerScoresDetail
      * @summary Show one Player with scores
-     * @request GET:/api/player/scores/{id}
+     * @request GET:/player/scores/{id}
      */
     playerScoresDetail: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/player/scores/${id}`,
+        path: `/player/scores/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -1873,11 +1873,11 @@ export class Api<
      * @tags Player
      * @name PlayerShootoffscoreUpdate
      * @summary Update one Player shootoffScore by id
-     * @request PUT:/api/player/shootoffscore/{id}
+     * @request PUT:/player/shootoffscore/{id}
      */
     playerShootoffscoreUpdate: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/player/shootoffscore/${id}`,
+        path: `/player/shootoffscore/${id}`,
         method: "PUT",
         type: ContentType.Json,
         format: "json",
@@ -1890,11 +1890,11 @@ export class Api<
      * @tags Player
      * @name PlayerTotalscoreUpdate
      * @summary Update one Player total score by id
-     * @request PUT:/api/player/totalscore/{id}
+     * @request PUT:/player/totalscore/{id}
      */
     playerTotalscoreUpdate: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/player/totalscore/${id}`,
+        path: `/player/totalscore/${id}`,
         method: "PUT",
         type: ContentType.Json,
         format: "json",
@@ -1907,11 +1907,11 @@ export class Api<
      * @tags Player
      * @name PlayerDetail
      * @summary Show one Player without other data
-     * @request GET:/api/player/{id}
+     * @request GET:/player/{id}
      */
     playerDetail: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/player/${id}`,
+        path: `/player/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -1923,11 +1923,11 @@ export class Api<
      * @tags Player
      * @name PlayerDelete
      * @summary Delete one Player by id
-     * @request DELETE:/api/player/{id}
+     * @request DELETE:/player/{id}
      */
     playerDelete: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/player/${id}`,
+        path: `/player/${id}`,
         method: "DELETE",
         format: "json",
         ...params,
@@ -1939,11 +1939,11 @@ export class Api<
      * @tags Player
      * @name PlayerCreate
      * @summary Create one Player by Participant ID
-     * @request POST:/api/player/{participantid}
+     * @request POST:/player/{participantid}
      */
     playerCreate: (participantid: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/player/${participantid}`,
+        path: `/player/${participantid}`,
         method: "POST",
         format: "json",
         ...params,
@@ -1956,11 +1956,11 @@ export class Api<
      * @tags Qualification
      * @name QualificationLanesDetail
      * @summary Show one Qualification
-     * @request GET:/api/qualification/lanes/{id}
+     * @request GET:/qualification/lanes/{id}
      */
     qualificationLanesDetail: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/qualification/lanes/${id}`,
+        path: `/qualification/lanes/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -1972,7 +1972,7 @@ export class Api<
      * @tags Qualification
      * @name QualificationWholeUpdate
      * @summary update one Qualification
-     * @request PUT:/api/qualification/whole/{id}
+     * @request PUT:/qualification/whole/{id}
      */
     qualificationWholeUpdate: (
       id: string,
@@ -1980,7 +1980,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/api/qualification/whole/${id}`,
+        path: `/qualification/whole/${id}`,
         method: "PUT",
         body: Qualification,
         type: ContentType.Json,
@@ -1994,11 +1994,11 @@ export class Api<
      * @tags Qualification
      * @name QualificationDetail
      * @summary Show one Qualification
-     * @request GET:/api/qualification/{id}
+     * @request GET:/qualification/{id}
      */
     qualificationDetail: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/api/qualification/${id}`,
+        path: `/qualification/${id}`,
         method: "GET",
         format: "json",
         ...params,
