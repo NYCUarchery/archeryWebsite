@@ -13,4 +13,3 @@ views
 dist/
 pkg/mod/
 node_modules/
-FakeLaneInfo.json
