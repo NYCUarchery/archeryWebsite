@@ -4,7 +4,7 @@ import App from "./App.tsx";
 import { Provider } from "react-redux";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
-import store from "./app/store.ts";
+import store from "./store/store.ts";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { ThemeProvider } from "@mui/material";
 import { scoringTheme } from "./style/themes.ts";

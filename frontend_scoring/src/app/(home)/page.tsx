@@ -1,4 +1,5 @@
-import Grid from "@mui/material/Grid";
+"use client";
+import Grid from "@mui/material/Grid2";
 
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -12,20 +13,32 @@ import Paper from "@mui/material/Paper";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import { useRouter } from "next/navigation";
+import { useGetUserId } from "@/utils/QueryHooks/useGetUserID";
 
 const Homepage = () => {
   const rows: any = [];
+  const router = useRouter();
+  const { isError: isUserError, isSuccess: isUserSuccess } = useGetUserId();
+
+  if (isUserError) {
+    router.push("/login");
+  }
 
   return (
-    <Card sx={{ p: 2, mb: 2 }}>
+    <Card sx={{ p: 2, mt: 2, width: "600px" }}>
       <CardContent>
         <Box>
-          <Grid container justifyContent="center">
-            <Grid item>
-              <Typography variant="h6" component="div">
-                公告欄
-              </Typography>
+          <Grid container direction="column">
+            <Grid>
+              <Box justifyContent={"center"} display={"flex"}>
+                <Typography variant="h6" component="div">
+                  公告欄
+                </Typography>
+              </Box>
             </Grid>
+
+            {isUserSuccess ? <Grid>看到這個就是成功登入了呦～</Grid> : <></>}
           </Grid>
         </Box>
         <Box sx={{ mt: 2 }}>

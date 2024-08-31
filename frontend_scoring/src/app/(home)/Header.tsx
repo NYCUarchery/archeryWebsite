@@ -1,3 +1,4 @@
+"use client";
 import { useState, MouseEvent, Dispatch, SetStateAction, FC } from "react";
 import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
@@ -18,12 +19,18 @@ import Grow from "@mui/material/Grow";
 
 import Avatar from "@mui/material/Avatar";
 
+import { useGetCurrentUserDetail } from "@/utils/QueryHooks/useGetCurrentUserDetail";
+import { useRouter } from "next/navigation";
+import { useGetUserId } from "@/utils/QueryHooks/useGetUserID";
+
 interface HeaderProps {
   setSideBarOpen: Dispatch<SetStateAction<boolean>>;
 }
 
 const Header: FC<HeaderProps> = ({ setSideBarOpen }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const { data: user, isError: isUserError } = useGetCurrentUserDetail();
+  const router = useRouter();
 
   const handleMenu = (event: MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -35,101 +42,98 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen }) => {
   };
 
   return (
-    <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="fixed" sx={{ zIndex: 99 }}>
-        <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
-            color="inherit"
-            aria-label="menu"
-            sx={{ mr: 2 }}
-            onClick={(e) => {
-              setSideBarOpen((prev) => !prev);
-              e.stopPropagation(); // the sidebar has a ClickAwayListener, we prevent the click-away event to propogate
-            }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Button variant="text" sx={{ color: "white" }}>
-            <Typography variant="h6" component="div">
-              Archery
-            </Typography>
-          </Button>
-          {true && (
-            <div>
-              <ClickAwayListener onClickAway={handleClose}>
-                <div>
-                  <IconButton
-                    size="large"
-                    aria-label="account of current user"
-                    aria-controls="menu-appbar"
-                    aria-haspopup="true"
-                    onClick={handleMenu}
-                    color="inherit"
-                    sx={{ mr: "20px" }}
+    <AppBar position="relative">
+      <Toolbar>
+        <IconButton
+          size="large"
+          edge="start"
+          color="inherit"
+          aria-label="menu"
+          sx={{ mr: 2 }}
+          onClick={(e) => {
+            e.stopPropagation(); // the sidebar has a ClickAwayListener, we prevent the click-away event to propogate
+            setSideBarOpen((prev) => !prev);
+          }}
+        >
+          <MenuIcon />
+        </IconButton>
+        <Button variant="text" sx={{ color: "white" }}>
+          <Typography variant="h6" component="div">
+            Archery
+          </Typography>
+        </Button>
+        <ClickAwayListener onClickAway={handleClose}>
+          <>
+            <IconButton
+              size="large"
+              aria-label="account of current user"
+              aria-controls="menu-appbar"
+              aria-haspopup="true"
+              onClick={handleMenu}
+              color="inherit"
+              sx={{ ml: "auto" }}
+            >
+              <Avatar alt="Remy Sharp" sx={{ width: 24, height: 24 }} />
+            </IconButton>
+            <Popper
+              open={Boolean(anchorEl)}
+              anchorEl={anchorEl}
+              placement="bottom-end"
+            >
+              <Grow
+                in={Boolean(anchorEl)}
+                style={{ transformOrigin: "0 0 0" }}
+                {...(Boolean(anchorEl) ? { timeout: 400 } : {})}
+              >
+                <Card>
+                  <CardContent
+                    sx={{
+                      display: "flex",
+                      flexFlow: "column",
+                      alignItems: "center",
+                    }}
                   >
-                    {/* <AccountCircle /> */}
-                    <Avatar alt="Remy Sharp" sx={{ width: 24, height: 24 }} />
-                  </IconButton>
-                  <Popper
-                    open={Boolean(anchorEl)}
-                    anchorEl={anchorEl}
-                    placement="bottom-end"
-                  >
-                    <Grow
-                      in={Boolean(anchorEl)}
-                      style={{ transformOrigin: "0 0 0" }}
-                      {...(Boolean(anchorEl) ? { timeout: 400 } : {})}
+                    <Typography variant="h6" component="div">
+                      {user?.data?.real_name ?? "訪客"}
+                    </Typography>
+                    <Box
+                      component="div"
+                      sx={{
+                        display: "flex",
+                        flexFlow: "column",
+                        mt: "10px",
+                      }}
                     >
-                      <Card>
-                        <CardContent
-                          sx={{
-                            display: "flex",
-                            flexFlow: "column",
-                            alignItems: "center",
+                      <MenuList>
+                        <MenuItem
+                          aria-label="personal page"
+                          onClick={() => {
+                            handleClose();
                           }}
                         >
-                          <img
-                            alt="My Avatar"
-                            width="100px"
-                            style={{ cursor: "pointer" }}
-                          />
-                          <Box
-                            component="div"
-                            sx={{
-                              display: "flex",
-                              flexFlow: "column",
-                              mt: "10px",
-                            }}
-                          >
-                            <MenuList>
-                              <MenuItem
-                                aria-label="personal page"
-                                onClick={() => {
-                                  handleClose();
-                                }}
-                              >
-                                個人頁面
-                              </MenuItem>
-                              <MenuItem
-                                onClick={() => {
-                                  handleClose();
-                                }}
-                              ></MenuItem>
-                            </MenuList>
-                          </Box>
-                        </CardContent>
-                      </Card>
-                    </Grow>
-                  </Popper>
-                </div>
-              </ClickAwayListener>
-            </div>
-          )}
-        </Toolbar>
-      </AppBar>
-    </Box>
+                          個人頁面
+                        </MenuItem>
+                        <MenuItem
+                          onClick={() => {
+                            handleClose();
+                            if (isUserError) {
+                              router.push("/login");
+                              return;
+                            } else router.push("/logout");
+                          }}
+                        >
+                          {isUserError ? "登入" : "登出"}
+                        </MenuItem>
+                      </MenuList>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grow>
+            </Popper>
+          </>
+        </ClickAwayListener>
+      </Toolbar>
+    </AppBar>
   );
 };
 
