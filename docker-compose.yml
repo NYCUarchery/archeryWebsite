@@ -1,13 +1,9 @@
 name: nycu-archery-system
 
 services:
-  frontend-scoring:
+  frontend:
     build:
-      context: ./frontend_scoring
-    restart: always
-  frontend-profile:
-    build:
-      context: ./frontend_profile
+      context: ./frontend
     restart: always
   mysql:
     image: mysql:8
@@ -31,8 +27,7 @@ services:
       - 80:80
       - 443:443
     depends_on:
-      - frontend-scoring
-      - frontend-profile
+      - frontend
       - backend
 volumes:
   db_data:

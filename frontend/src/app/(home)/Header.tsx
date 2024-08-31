@@ -21,7 +21,6 @@ import Avatar from "@mui/material/Avatar";
 
 import { useGetCurrentUserDetail } from "@/utils/QueryHooks/useGetCurrentUserDetail";
 import { useRouter } from "next/navigation";
-import { useGetUserId } from "@/utils/QueryHooks/useGetUserID";
 
 interface HeaderProps {
   setSideBarOpen: Dispatch<SetStateAction<boolean>>;
@@ -83,7 +82,7 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen }) => {
               <Grow
                 in={Boolean(anchorEl)}
                 style={{ transformOrigin: "0 0 0" }}
-                {...(Boolean(anchorEl) ? { timeout: 400 } : {})}
+                {...(anchorEl ? { timeout: 400 } : {})}
               >
                 <Card>
                   <CardContent

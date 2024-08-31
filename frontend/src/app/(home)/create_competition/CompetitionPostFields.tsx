@@ -9,8 +9,8 @@ import { Signal, signal } from "@preact/signals-react";
 import { useRouter } from "next/navigation";
 import { useGetUserId } from "@/utils/QueryHooks/useGetUserID";
 
-let startTime = signal<Dayjs>(dayjs());
-let endTime = signal<Dayjs>(dayjs());
+const startTime = signal<Dayjs>(dayjs());
+const endTime = signal<Dayjs>(dayjs());
 
 type Props = {
   postBody: Signal<PostCompetitionBody>;

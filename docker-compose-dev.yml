@@ -3,13 +3,13 @@ name: nycu-archery-system
 services:
   frontend:
     build:
-      context: ./frontend_scoring
+      context: ./frontend
       dockerfile: Dockerfile.dev
     restart: always
     develop:
       watch:
         - action: sync
-          path: ./frontend_scoring
+          path: ./frontend
           target: /app
           ignore:
             - .git

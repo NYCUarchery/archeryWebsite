@@ -8,7 +8,7 @@ import { PostCompetitionBody } from "./types/PostCompetitionBody";
 import { signal } from "@preact/signals-react";
 import CreateButton from "./CreateButton";
 
-let postBody = signal<PostCompetitionBody>({} as PostCompetitionBody);
+const postBody = signal<PostCompetitionBody>({} as PostCompetitionBody);
 const CreateContestPage = () => {
   return (
     <Card sx={{ p: 2, mb: 2 }}>

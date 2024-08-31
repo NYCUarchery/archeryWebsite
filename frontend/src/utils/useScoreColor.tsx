@@ -2,8 +2,8 @@ import { useTheme } from "@mui/material";
 
 export const useScoreColor = (score: number) => {
   const palette: any = useTheme().palette;
-  let backgroundColor: string = "";
-  let textColor: string = "";
+  let backgroundColor = "";
+  let textColor = "";
 
   switch (score) {
     case 0:
