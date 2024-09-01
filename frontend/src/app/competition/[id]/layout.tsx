@@ -1,6 +1,7 @@
 "use client";
 import GameTitleBar from "@/components/GameTitleBar/GameTitleBar";
-import { Competition } from "@/types/oldRef/Competition";
+import SubGamesBar from "@/components/SubGameBar/SubGamesBar";
+import { Competition, Group } from "@/types/oldRef/Competition";
 import { apiClient } from "@/utils/ApiClient";
 import { useQuery, useQueryClient } from "react-query";
 
@@ -19,7 +20,7 @@ export default function Layout({
     isLoading,
   } = useQuery(
     ["competition", params.id],
-    () => apiClient.competition.competitionDetail(Number(params.id)),
+    () => apiClient.competition.competitionGroupsDetail(Number(params.id)),
     {
       select: (data) => data.data as unknown as Competition,
     }
@@ -33,6 +34,10 @@ export default function Layout({
         subtitle={competition?.sub_title}
         isLoading={isLoading}
         isError={isError}
+      />
+      <SubGamesBar
+        groups={competition?.groups as Group[]}
+        isLoading={isLoading}
       />
       {children}
     </>
