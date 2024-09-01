@@ -28,7 +28,8 @@
       "@/context/*": ["context/*"],
       "@/services/*": ["services/*"],
       "@/types/*": ["types/*"],
-      "@/public/*": ["public/*"]
+      "@/public/*": ["public/*"],
+      "@/enums/*": ["enums/*"]
     },
     "allowJs": true,
     "incremental": true,

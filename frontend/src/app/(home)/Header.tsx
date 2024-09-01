@@ -56,7 +56,11 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen }) => {
         >
           <MenuIcon />
         </IconButton>
-        <Button variant="text" sx={{ color: "white" }}>
+        <Button
+          variant="text"
+          sx={{ color: "white" }}
+          onClick={() => router.push("/")}
+        >
           <Typography variant="h6" component="div">
             Archery
           </Typography>
