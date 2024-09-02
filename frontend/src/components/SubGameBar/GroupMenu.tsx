@@ -77,7 +77,11 @@ export default function GroupMenu({ groups }: Props) {
                   key={group.id}
                   onClick={() => {
                     router.push(
-                      subtituteSegment(currentPath, 4, group.id.toString())
+                      subtituteSegment(
+                        currentPath,
+                        4,
+                        group.group_index.toString()
+                      )
                     );
                     setOpen(false);
                   }}

@@ -24,7 +24,7 @@ export function RankingInfoBar({
         container
         columns={90}
         className={className}
-        sx={{ alignItems: "center", textAlign: "center", height: "23px" }}
+        sx={{ alignItems: "center", textAlign: "center", minHeight: "23px" }}
         onClick={onClick}
       >
         <Grid size={10}>{player.rank}</Grid>

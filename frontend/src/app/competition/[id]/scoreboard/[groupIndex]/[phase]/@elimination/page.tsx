@@ -1,3 +1,5 @@
+import { Typography } from "@mui/material";
+
 export default function Page() {
-  return <div>EEE</div>;
+  return <Typography variant="h1">施工中UwU</Typography>;
 }
