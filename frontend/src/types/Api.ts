@@ -2010,14 +2010,14 @@ export class Api<
      * @tags Qualification
      * @name QualificationLanesUnassignedDetail
      * @summary Show one Qualification
-     * @request GET:/data/qualification/lanes/Unassigned/{id}
+     * @request GET:/qualification/lanes/Unassigned/{id}
      */
     qualificationLanesUnassignedDetail: (
       id: number,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/data/qualification/lanes/Unassigned/${id}`,
+        path: `/qualification/lanes/Unassigned/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -2029,11 +2029,11 @@ export class Api<
      * @tags Qualification
      * @name QualificationLanesPlayersDetail
      * @summary Show one Qualification
-     * @request GET:/data/qualification/lanes/players/{id}
+     * @request GET:/qualification/lanes/players/{id}
      */
     qualificationLanesPlayersDetail: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
-        path: `/data/qualification/lanes/players/${id}`,
+        path: `/qualification/lanes/players/${id}`,
         method: "GET",
         format: "json",
         ...params,

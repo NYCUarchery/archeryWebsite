@@ -19,10 +19,11 @@ export default function Layout({
     isError,
     isLoading,
   } = useQuery(
-    ["competition", params.id],
+    ["competitionWithGroups", params.id],
     () => apiClient.competition.competitionGroupsDetail(Number(params.id)),
     {
       select: (data) => data.data as unknown as Competition,
+      staleTime: 5000,
     }
   );
 
@@ -39,7 +40,7 @@ export default function Layout({
         groups={competition?.groups as Group[]}
         isLoading={isLoading}
       />
-      {children}
+      {isLoading ? <div>Loading...</div> : children}
     </>
   );
 }
