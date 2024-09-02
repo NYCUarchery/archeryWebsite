@@ -3,7 +3,8 @@ import GameTitleBar from "@/components/GameTitleBar/GameTitleBar";
 import SubGamesBar from "@/components/SubGameBar/SubGamesBar";
 import { Competition, Group } from "@/types/oldRef/Competition";
 import { apiClient } from "@/utils/ApiClient";
-import { useQuery, useQueryClient } from "react-query";
+import { useGetCurrentUserDetail } from "@/utils/QueryHooks/useGetCurrentUserDetail";
+import { useQuery } from "react-query";
 
 export default function Layout({
   children,
@@ -12,8 +13,7 @@ export default function Layout({
   children: React.ReactNode;
   params: { id: string };
 }) {
-  const queryClient = useQueryClient();
-  const user: any = queryClient.getQueryData("currentUser");
+  const { data: user } = useGetCurrentUserDetail();
   const {
     data: competition,
     isError,

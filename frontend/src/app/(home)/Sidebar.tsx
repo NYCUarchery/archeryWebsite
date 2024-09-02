@@ -120,7 +120,7 @@ const Sidebar: FC<SidebarProps> = ({ sideBarOpen, setSideBarOpen }) => {
   return (
     <ClickAwayListener onClickAway={handleClose}>
       <>
-        <Box sx={{ position: "fixed", zIndex: 10 }}>{list()}</Box>;
+        <Box sx={{ position: "fixed", zIndex: 10 }}>{list()}</Box>
       </>
     </ClickAwayListener>
   );

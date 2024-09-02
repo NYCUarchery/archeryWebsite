@@ -37,7 +37,6 @@ const Homepage = () => {
                 </Typography>
               </Box>
             </Grid>
-
             {isUserSuccess ? <Grid>看到這個就是成功登入了呦～</Grid> : <></>}
           </Grid>
         </Box>
