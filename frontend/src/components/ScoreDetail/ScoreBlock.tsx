@@ -1,5 +1,5 @@
 import { Avatar } from "@mui/material";
-import { useScoreColor } from "../../../../../util/useScoreColor";
+import { useScoreColor } from "@/utils/useScoreColor";
 
 interface Props {
   score: number;

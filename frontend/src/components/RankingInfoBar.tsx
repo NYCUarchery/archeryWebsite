@@ -3,14 +3,19 @@ import Grid from "@mui/material/Grid2";
 import { DatabasePlayer } from "@/types/Api";
 export interface Props {
   player: DatabasePlayer;
-  laneNumber: number;
+  target: string;
   isQudalified: boolean;
+  onClick?: (e: any) => void;
 }
 
-export function RankingInfoBar({ player, laneNumber, isQudalified }: Props) {
+export function RankingInfoBar({
+  player,
+  target,
+  isQudalified,
+  onClick,
+}: Props) {
   let className: string = "scoreboard_row ranking_info_bar";
 
-  const target = laneNumber + numberToAlphabet(player.order as number);
   isQudalified ? (className += " qualified") : (className += " unqualified");
 
   return (
@@ -20,6 +25,7 @@ export function RankingInfoBar({ player, laneNumber, isQudalified }: Props) {
         columns={90}
         className={className}
         sx={{ alignItems: "center", textAlign: "center", height: "23px" }}
+        onClick={onClick}
       >
         <Grid size={10}>{player.rank}</Grid>
         <Grid size={10}>{target}</Grid>
@@ -41,8 +47,3 @@ export function RankingInfoBar({ player, laneNumber, isQudalified }: Props) {
     </>
   );
 }
-const numberToAlphabet = (num: number) => {
-  num--;
-  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  return alphabet[num];
-};

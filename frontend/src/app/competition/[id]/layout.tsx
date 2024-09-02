@@ -23,7 +23,7 @@ export default function Layout({
     () => apiClient.competition.competitionGroupsDetail(Number(params.id)),
     {
       select: (data) => data.data as unknown as Competition,
-      staleTime: 5000,
+      staleTime: 60000 * 30,
     }
   );
 

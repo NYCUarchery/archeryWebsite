@@ -25,8 +25,6 @@ export default function GroupMenu({ groups }: Props) {
   const currentPath = usePathname();
   const router = useRouter();
   const groupShown = parseInt(currentPath.split("/")[4]);
-  console.log(groupShown);
-  console.table(groups);
   const selectedGroup = groups.find(
     (group) => group.group_index === groupShown
   ) as Group;
