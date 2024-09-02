@@ -20,7 +20,7 @@ export type EndStats = {
 };
 
 export function calculatePlayerStats(player: Player): PlayerStats | undefined {
-  let playerStats: PlayerStats = {
+  const playerStats: PlayerStats = {
     totalXs: 0,
     totalTens: 0,
     totalScore: 0,

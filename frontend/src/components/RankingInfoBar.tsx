@@ -14,7 +14,7 @@ export function RankingInfoBar({
   isQudalified,
   onClick,
 }: Props) {
-  let className: string = "scoreboard_row ranking_info_bar";
+  let className = "scoreboard_row ranking_info_bar";
 
   isQudalified ? (className += " qualified") : (className += " unqualified");
 
