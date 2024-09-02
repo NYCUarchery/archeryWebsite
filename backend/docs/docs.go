@@ -2824,6 +2824,56 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/player/allendscores/{id}": {
+            "put": {
+                "description": "Update all scores of one end by end id\nWill auto update player total score\nShould have a 6 element array scores array",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Update all scores of one end by end id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "End ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Scores",
+                        "name": "scores",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.UpdatePlayerAllEndScoresByEndId.EndScores"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.UpdatePlayerAllEndScoresByEndId.EndScores"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/player/dummy/{participantid}": {
             "get": {
                 "description": "Get dummy players by participant id",
@@ -4786,6 +4836,17 @@ const docTemplate = `{
                 }
             }
         },
+        "endpoint.UpdatePlayerAllEndScoresByEndId.EndScores": {
+            "type": "object",
+            "properties": {
+                "scores": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
         "response.Response": {
             "type": "object",
             "properties": {
@@ -4802,7 +4863,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
-	BasePath:         "/api/",
+	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "Gin swagger",
 	Description:      "Gin swagger",

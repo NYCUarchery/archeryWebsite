@@ -1,4 +1,4 @@
-basePath: /api/
+basePath: /
 definitions:
   database.Competition:
     properties:
@@ -224,6 +224,13 @@ definitions:
         type: string
       user_id:
         type: integer
+    type: object
+  endpoint.UpdatePlayerAllEndScoresByEndId.EndScores:
+    properties:
+      scores:
+        items:
+          type: integer
+        type: array
     type: object
   response.Response:
     properties:
@@ -2195,6 +2202,42 @@ paths:
           schema:
             type: string
       summary: Create one Player by Participant ID
+      tags:
+      - Player
+  /api/player/allendscores/{id}:
+    put:
+      consumes:
+      - application/json
+      description: |-
+        Update all scores of one end by end id
+        Will auto update player total score
+        Should have a 6 element array scores array
+      parameters:
+      - description: End ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Scores
+        in: body
+        name: scores
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.UpdatePlayerAllEndScoresByEndId.EndScores'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/endpoint.UpdatePlayerAllEndScoresByEndId.EndScores'
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Update all scores of one end by end id
       tags:
       - Player
   /api/player/dummy/{participantid}:

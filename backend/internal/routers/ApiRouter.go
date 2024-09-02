@@ -31,21 +31,22 @@ func AddApiRouter(api *gin.RouterGroup) {
 
 func playerRouter(api *gin.RouterGroup) {
 	api.GET("/:id", endpoint.GetOnlyPlayerByID)
-	api.GET("/scores/:id", endpoint.GetPlayerWScoresByID) //
+	api.GET("/scores/:id", endpoint.GetPlayerWScoresByID)
 	api.GET("/playersets/:id/:eliminationid", endpoint.GetPlayerWPlayerSetsByIDEliminationID)
 
 	api.POST("/:participantid", endpoint.PostPlayer)
-	api.POST("/roundend", endpoint.PostRoundEnd)     //
-	api.POST("/roundscore", endpoint.PostRoundScore) //
+	api.POST("/roundend", endpoint.PostRoundEnd)
+	api.POST("/roundscore", endpoint.PostRoundScore)
 	api.PUT("/lane/:id", endpoint.UpdatePlayerLaneId)
 	api.PUT("/group/:id", endpoint.UpdataPlayerGroupId)
 	api.PUT("/order/:id", endpoint.UpdatePlayerOrder)
 	api.PUT("/isconfirmed/:id", endpoint.UpdatePlayerIsConfirmed)
 
-	api.PUT("/totalscore/:id", endpoint.UpdatePlayerTotalScoreByplayerId) //
-	api.PUT("/roundscore/:id", endpoint.UpdatePlayerScore)                //
+	api.PUT("/totalscore/:id", endpoint.UpdatePlayerTotalScoreByplayerId)
+	api.PUT("/roundscore/:id", endpoint.UpdatePlayerScore)
 
 	api.PUT("/shootoffscore/:id", endpoint.UpdatePlayerShootoffScore)
+	api.PUT("/allendscores/:id", endpoint.UpdatePlayerAllEndScoresByEndId)
 	api.DELETE("/:id", endpoint.DeletePlayer)
 
 	api.GET("/dummy/:participantid", endpoint.GetDummyPlayerByParticipantId)
@@ -63,6 +64,7 @@ func playerSetRouter(api *gin.RouterGroup) {
 }
 
 func competitionRouter(api *gin.RouterGroup) {
+	api.GET("/", endpoint.GetAllCompetition)
 	api.GET("/:id", endpoint.GetOnlyCompetitionByID)
 	api.GET("/participants/:id", endpoint.GetCompetitionWParticipantsByID)
 	api.GET("/groups/:id", endpoint.GetCompetitionWGroupsByID)

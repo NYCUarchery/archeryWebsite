@@ -585,6 +585,81 @@ func UpdatePlayerShootoffScore(context *gin.Context) {
 	context.IndentedJSON(200, data)
 }
 
+func UpdatePlayerTotalScore(context *gin.Context, playerId uint) {
+	if response.ErrorIdTest(context, playerId, database.GetPlayerIsExist(playerId), "Player when updating total score") {
+		return
+	}
+	player, err := database.GetPlayerWScores(playerId)
+	if response.ErrorInternalErrorTest(context, playerId, "Get Player with scores", err) {
+		return
+	}
+	playerTotalScore := 0
+	for _, round := range player.Rounds {
+		totalScore := 0
+		for _, roundEnd := range round.RoundEnds {
+			for _, roundScore := range roundEnd.RoundScores {
+				totalScore += Scorefmt(roundScore.Score)
+			}
+		}
+		err, _ := database.UpdatePlayerRoundTotalScore(round.ID, totalScore)
+		if response.ErrorInternalErrorTest(context, round.ID, "Update Round total score", err) {
+			return
+		}
+		playerTotalScore += totalScore
+	}
+	err, _ = database.UpdatePlayerTotalScore(playerId, playerTotalScore)
+	if response.ErrorInternalErrorTest(context, playerId, "Update Player total score", err) {
+		return
+	}
+}
+
+// Update all scores of one end by end id godoc
+//
+//	@Summary		Update all scores of one end by end id
+//	@Description	Update all scores of one end by end id
+//	@Description	Will auto update player total score
+//	@Description	Should have a 6 element array scores array
+//	@Tags			Player
+//	@Accept			json
+//	@Param			id		path		int													true	"End ID"
+//	@Param			scores	body		endpoint.UpdatePlayerAllEndScoresByEndId.EndScores	true	"Scores"
+//	@Success		200		{object}	endpoint.UpdatePlayerAllEndScoresByEndId.EndScores
+//	@Failure		400		{object}	string
+//	@Failure		500		{object}	string
+//	@Router			/api/player/allendscores/{id} [put]
+func UpdatePlayerAllEndScoresByEndId(context *gin.Context) {
+	type EndScores struct {
+		Scores []int `json:"scores"`
+	}
+	var data EndScores
+	endId := Convert2uint(context, "id")
+	err := context.BindJSON(&data)
+	if response.ErrorReceiveDataTest(context, endId, "Update player end scores", err) {
+		return
+	}
+	if response.ErrorIdTest(context, endId, database.GetRoundEndIsExist(endId), "End Id when update player end scores") {
+		return
+	}
+
+	roundScoreIds, err := database.GetRoundScoreIdByRoundEndId(endId)
+	if response.ErrorInternalErrorTest(context, endId, "Get round score ids by round end id", err) {
+		return
+	}
+	if len(roundScoreIds) != len(data.Scores) {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Length of scores not equal to length of round scores" + fmt.Sprint(len(roundScoreIds)) + fmt.Sprint(len(data.Scores))})
+		return
+	}
+	for i, roundScoreId := range roundScoreIds {
+		err, _ := database.UpdatePlayerScore(roundScoreId, data.Scores[i])
+		if response.ErrorInternalErrorTest(context, roundScoreId, "Update player score by round score id", err) {
+			return
+		}
+	}
+	playerId, _ := database.GetPlayerIdByRoundEndId(endId)
+	UpdatePlayerTotalScore(context, playerId)
+	context.IndentedJSON(200, nil)
+}
+
 // Delete one Player By ID godoc
 //
 //	@Summary		Delete one Player by id
