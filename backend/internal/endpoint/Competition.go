@@ -187,6 +187,11 @@ func GetCompetitionWGroupsQuaEliByID(context *gin.Context) {
 //
 //	@Summary		Show one Competition with GroupInfos and Players
 //	@Description	Get one Competition by id with GroupInfos and Players
+//	@Tags			Competition
+//	@Produce		json
+//	@Param			id	path	int	true	"Competition ID"
+//	@Success		200	string	string
+//	@Failure		400	string	string
 //	@Router			/competition/groups/players/{id} [get]
 func GetCompetitionWGroupsPlayersByID(context *gin.Context) {
 	id := Convert2uint(context, "id")
