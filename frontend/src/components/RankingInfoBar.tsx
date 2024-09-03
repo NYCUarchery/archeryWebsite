@@ -24,7 +24,12 @@ export function RankingInfoBar({
         container
         columns={90}
         className={className}
-        sx={{ alignItems: "center", textAlign: "center", minHeight: "23px" }}
+        sx={{
+          alignItems: "center",
+          textAlign: "center",
+          minHeight: "23px",
+          cursor: "pointer",
+        }}
         onClick={onClick}
       >
         <Grid size={10}>{player.rank}</Grid>
@@ -32,18 +37,6 @@ export function RankingInfoBar({
         <Grid size={20}>{player.name}</Grid>
         <Grid size={50}>{player.total_score}</Grid>
       </Grid>
-      {/* <Dialog
-        open={open}
-        keepMounted
-        fullWidth={true}
-        maxWidth="xs"
-        onClose={handleClose}
-      >
-        <DialogTitle>
-          排名{player.rank} {target} {player.name}
-        </DialogTitle>
-        <ScoreDetail playerStats={playerStats}></ScoreDetail>
-      </Dialog> */}
     </>
   );
 }
