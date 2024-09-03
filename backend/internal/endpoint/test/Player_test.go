@@ -67,7 +67,7 @@ func (suite *PlayerTestSuite) TestUpdatePlayerScore() {
 
 	*/
 	r := SetUpRouter()
-	r.PUT("/api/player/roundscore/:id", UpdatePlayerScore)
+	r.PUT("/api/player/roundscore/:id", PutPlayerScore)
 
 	Convey("Test UpdatePlayerScore using BCC", suite.T(), func() {
 		testcases := []struct {
