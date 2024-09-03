@@ -95,7 +95,6 @@ func IsGetCompetitionWParticipants(context *gin.Context, id uint) (bool, databas
 //	@Router			/competition/{id} [get]
 func GetOnlyCompetitionByID(context *gin.Context) {
 	id := Convert2uint(context, "id")
-	id := Convert2uint(context, "id")
 	isExist, data := IsGetOnlyCompetition(context, id)
 	if !isExist {
 		return
@@ -117,7 +116,6 @@ func GetOnlyCompetitionByID(context *gin.Context) {
 func GetCompetitionWParticipantsByID(context *gin.Context) {
 	var data database.Competition
 	id := Convert2uint(context, "id")
-	id := Convert2uint(context, "id")
 	isExist, data := IsGetCompetitionWParticipants(context, id)
 	if !isExist {
 		return
@@ -137,7 +135,6 @@ func GetCompetitionWParticipantsByID(context *gin.Context) {
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse										"internal db error"
 //	@Router			/competition/groups/{id} [get]
 func GetCompetitionWGroupsByID(context *gin.Context) {
-	id := Convert2uint(context, "id")
 	id := Convert2uint(context, "id")
 	isExist, data := IsGetCompetitionWGroup(context, id)
 	if !isExist {
@@ -159,7 +156,6 @@ func GetCompetitionWGroupsByID(context *gin.Context) {
 //	@Router			/competition/groups/qualieli/{id} [get]
 func GetCompetitionWGroupsQuaEliByID(context *gin.Context) {
 	var data CompetitionWGroupsQuaEliData
-	id := Convert2uint(context, "id")
 	id := Convert2uint(context, "id")
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
@@ -210,7 +206,6 @@ func GetCompetitionWGroupsQuaEliByID(context *gin.Context) {
 //	@Router			/competition/groups/players/{id} [get]
 func GetCompetitionWGroupsPlayersByID(context *gin.Context) {
 	id := Convert2uint(context, "id")
-	id := Convert2uint(context, "id")
 	isExist, data := IsGetCompetitionWGroupsPlayers(context, id)
 	if !isExist {
 		return
@@ -233,8 +228,6 @@ func GetCompetitionWGroupsPlayersByID(context *gin.Context) {
 //	@Failure		500		{object}	response.ErrorInternalErrorResponse		"internal db error / Get Current Competitions"
 //	@Router			/competition/current/{head}/{tail} [get]
 func GetCurrentCompetitions(context *gin.Context) {
-	head := Convert2int(context, "head")
-	tail := Convert2int(context, "tail")
 	head := Convert2int(context, "head")
 	tail := Convert2int(context, "tail")
 	if head < 0 || tail < 0 {
@@ -268,9 +261,6 @@ func GetCurrentCompetitions(context *gin.Context) {
 //	@Failure		500		{object}	response.ErrorInternalErrorResponse		"internal db error / Get User Is Exist / Get Competitions Of User"
 //	@Router			/competition/recent/{userid}/{head}/{tail} [get]
 func GetCompetitionsOfUser(context *gin.Context) {
-	head := Convert2int(context, "head")
-	tail := Convert2int(context, "tail")
-	userId := Convert2uint(context, "userid")
 	head := Convert2int(context, "head")
 	tail := Convert2int(context, "tail")
 	userId := Convert2uint(context, "userid")
@@ -411,9 +401,8 @@ func PostCompetition(context *gin.Context) {
 //	@Failure		400			{object}	response.ErrorReceiveDataResponse										"invalid competition id parameter / bad request data ID(1): sth error / bad request data is nil ID(1): sth error / When creating Competition, startTime must <= endTime"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse										"internal db error / Get Competition / Update Competition"
 //	@Router			/competition/whole/{id} [put]
-func UpdateCompetition(context *gin.Context) {
+func PutCompetition(context *gin.Context) {
 	var data database.Competition
-	id := Convert2uint(context, "id")
 	id := Convert2uint(context, "id")
 	/*write id for update success*/
 	data.ID = id
@@ -485,7 +474,7 @@ func UpdateCompetition(context *gin.Context) {
 //	@Failure		400	{object}	response.ErrorIdResponse			"invalid competition id parameter"
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error / Get Competition GroupIds when update ranking / Get player ids when update ranking / Update player rank when update ranking by competition id"
 //	@Router			/competition/groups/players/rank/{id} [put]
-func UpdateCompetitionRank(context *gin.Context) {
+func PutCompetitionRank(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
@@ -528,7 +517,6 @@ func UpdateCompetitionRank(context *gin.Context) {
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error / Delete Competition with Groups / Delete GroupInfo By Id Through Competition / Delete Player Through Competition / Delete Participaint / Delete Lane By Competition Id"
 //	@Router			/competition/{id} [delete]
 func DeleteCompetition(context *gin.Context) {
-	id := Convert2uint(context, "id")
 	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, data := IsGetCompetitionWGroupsPlayers(context, id)
@@ -606,7 +594,6 @@ func GetAllCompetition(c *gin.Context) {
 //	@Router			/competition/currentphaseplus/{id} [put]
 func PutCompetitionCurrentPhasePlus(context *gin.Context) {
 	id := Convert2uint(context, "id")
-	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
@@ -632,7 +619,6 @@ func PutCompetitionCurrentPhasePlus(context *gin.Context) {
 //	@Router			/competition/currentphaseminus/{id} [put]
 func PutCompetitionCurrentPhaseMinus(context *gin.Context) {
 	id := Convert2uint(context, "id")
-	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
@@ -657,7 +643,6 @@ func PutCompetitionCurrentPhaseMinus(context *gin.Context) {
 //	@Failure		500	{ojbect}	response.ErrorInternalErrorResponse	"Update Competition Qualification CurrentEnd Plus"
 //	@Router			/competition/qualificationcurrentendplus/{id} [put]
 func PutCompetitionQualificationCurrentEndPlus(context *gin.Context) {
-	id := Convert2uint(context, "id")
 	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
@@ -685,7 +670,6 @@ func PutCompetitionQualificationCurrentEndPlus(context *gin.Context) {
 //	@Router			/competition/qualificationcurrentendminus/{id} [put]
 func PutCompetitionQualificationCurrentEndMinus(context *gin.Context) {
 	id := Convert2uint(context, "id")
-	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
@@ -711,7 +695,6 @@ func PutCompetitionQualificationCurrentEndMinus(context *gin.Context) {
 //	@Failure		500	{ojbect}	response.ErrorInternalErrorResponse	"Update Competition Qualification Active"
 //	@Router			/competition/qualificationisactive/{id} [put]
 func PutCompetitionQualificationActive(context *gin.Context) {
-	id := Convert2uint(context, "id")
 	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
@@ -743,7 +726,6 @@ func PutCompetitionQualificationActive(context *gin.Context) {
 //	@Router			/competition/eliminationisactive/{id} [put]
 func PutCompetitionEliminationActive(context *gin.Context) {
 	id := Convert2uint(context, "id")
-	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
@@ -774,7 +756,6 @@ func PutCompetitionEliminationActive(context *gin.Context) {
 //	@Failure		500	{ojbect}	response.ErrorInternalErrorResponse	"Update Competition Team Elimination Active / Get Competition Group Ids / Post Elimination By Id"
 //	@Router			/competition/teameliminationisactive/{id} [put]
 func PutCompetitionTeamEliminationActive(context *gin.Context) {
-	id := Convert2uint(context, "id")
 	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
@@ -824,7 +805,6 @@ func PutCompetitionTeamEliminationActive(context *gin.Context) {
 //	@Router			/competition/mixedeliminationisactive/{id} [put]
 func PutCompetitionMixedEliminationActive(context *gin.Context) {
 	id := Convert2uint(context, "id")
-	id := Convert2uint(context, "id")
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
@@ -869,7 +849,7 @@ func PutCompetitionMixedEliminationActive(context *gin.Context) {
 //	@Failure		400	{ojbect}	response.ErrorIdResponse			"invalid competition id parameter"
 //	@Failure		500	{ojbect}	response.ErrorInternalErrorResponse	"Get Competition with Groups Players Scores / Update Round Total Score / Update Player Total Score"
 //	@Router			/competition/groups/players/playertotal/{id} [put]
-func UpdateCompetitionRecountPlayerTotalScore(context *gin.Context) {
+func PutCompetitionRecountPlayerTotalScore(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	/*check data exist*/
 	if response.ErrorIdTest(context, id, database.GetCompetitionIsExist(id), "Competition") {
@@ -889,13 +869,11 @@ func UpdateCompetitionRecountPlayerTotalScore(context *gin.Context) {
 				for _, end := range round.RoundEnds {
 					for _, arrow := range end.RoundScores {
 						fmtScore := Scorefmt(arrow.Score)
-						fmtScore := Scorefmt(arrow.Score)
 						newRoundTotalScore += fmtScore
 					}
 				}
 				newPlayerTotalScore += newRoundTotalScore
 				/*update round total score*/
-				err, isChanged := database.UpdatePlayerRoundTotalScore(round.ID, newRoundTotalScore)
 				err, isChanged := database.UpdatePlayerRoundTotalScore(round.ID, newRoundTotalScore)
 				if response.ErrorInternalErrorTest(context, id, "Update Round Total Score", err) {
 					return
@@ -910,9 +888,6 @@ func UpdateCompetitionRecountPlayerTotalScore(context *gin.Context) {
 			/*update player total score*/
 			err, _ := database.UpdatePlayerTotalScore(player.ID, newPlayerTotalScore)
 			if response.ErrorInternalErrorTest(context, id, "Update Player Total Score", err) {
-				return
-			}
-			if !response.AcceptNotChange(context, id, isChanged) {
 				return
 			}
 		}
