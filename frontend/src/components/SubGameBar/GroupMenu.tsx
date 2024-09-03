@@ -75,6 +75,7 @@ export default function GroupMenu({ groups }: Props) {
                 ) : null}
                 <ListItem
                   key={group.id}
+                  sx={{ justifyContent: "center", cursor: "pointer" }}
                   onClick={() => {
                     router.push(
                       subtituteSegment(

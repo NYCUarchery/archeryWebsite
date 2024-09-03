@@ -64,7 +64,7 @@ export default function PhaseMenu() {
                 ) : null}
                 <ListItem
                   key={item}
-                  sx={{ justifyContent: "center" }}
+                  sx={{ justifyContent: "center", cursor: "pointer" }}
                   onClick={() => {
                     router.push(
                       subtituteSegment(currentPath, 5, item.toLowerCase())
