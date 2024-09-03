@@ -177,6 +177,28 @@ func GetPlayerIdByRoundScoreId(roundScoreId uint) (uint, error) {
 	return playerId.PlayerId, result.Error
 }
 
+func GetPlayerIdByRoundEndId(roundEndId uint) (uint, error) {
+	type PlayerId struct {
+		PlayerId uint
+	}
+	var playerId PlayerId
+	result := DB.Table("rounds").
+		Select("rounds.player_id").
+		Joins("JOIN round_ends ON rounds.id = round_ends.round_id").
+		Where("round_ends.id = ?", roundEndId).
+		First(&playerId)
+	return playerId.PlayerId, result.Error
+}
+
+func GetRoundScoreIdByRoundEndId(roundEndId uint) ([]uint, error) {
+	var roundScoreIds []uint
+	result := DB.Table("round_scores").
+		Select("round_scores.id").
+		Where("round_scores.round_end_id = ?", roundEndId).
+		Find(&roundScoreIds)
+	return roundScoreIds, result.Error
+}
+
 func CreatePlayer(data Player) (Player, error) {
 	result := DB.Table("players").Create(&data)
 	return data, result.Error

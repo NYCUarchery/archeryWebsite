@@ -40,7 +40,7 @@ func loadOldLaneInfo(data *database.LaneData) {
 //	@Param			id	path	int	true	"OldLaneInfo ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/api/oldlaneinfo/{id} [get]
+//	@Router			/oldlaneinfo/{id} [get]
 func GetOldLaneInfoByID(context *gin.Context) {
 	data := database.GetOldLaneInfoByID(Convert2uint(context, "id"))
 	if data.ID == 0 {
@@ -62,7 +62,7 @@ func GetOldLaneInfoByID(context *gin.Context) {
 //	@Param			LaneData	body	string	true	"LaneData"
 //	@Success		200			string	string
 //	@Failure		400			string	string
-//	@Router			/api/oldlaneinfo [post]
+//	@Router			/oldlaneinfo [post]
 func PostOldLaneInfo(context *gin.Context) {
 	data := database.LaneData{}
 	err := context.BindJSON(&data)
@@ -88,8 +88,8 @@ func PostOldLaneInfo(context *gin.Context) {
 //	@Failure		400			string	string
 //	@Failure		404			string	string
 //	@Failure		500			string	string
-//	@Router			/api/oldlaneinfo/whole/{id} [put]
-func UpdateOldLaneInfo(context *gin.Context) {
+//	@Router			/oldlaneinfo/whole/{id} [put]
+func PutOldLaneInfo(context *gin.Context) {
 	data := database.LaneData{}
 	err := context.BindJSON(&data)
 	if err != nil {
@@ -121,8 +121,8 @@ func UpdateOldLaneInfo(context *gin.Context) {
 //	@Failure		400			string	string
 //	@Failure		404			string	string
 //	@Failure		500			string	string
-//	@Router			/api/oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score} [put]
-func UpdataOldLaneScore(context *gin.Context) {
+//	@Router			/oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score} [put]
+func PutOldLaneScore(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	stageindex := Convert2int(context, "stageindex")
 	userindex := Convert2int(context, "userindex")
@@ -158,8 +158,8 @@ func UpdataOldLaneScore(context *gin.Context) {
 //	@Failure		400			string	string
 //	@Failure		404			string	string
 //	@Failure		500			string	string
-//	@Router			/api/oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm} [put]
-func UpdataOldLaneConfirm(context *gin.Context) {
+//	@Router			/oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm} [put]
+func PutOldLaneConfirm(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	stageindex := Convert2int(context, "stageindex")
 	userindex := Convert2int(context, "userindex")
@@ -189,7 +189,7 @@ func UpdataOldLaneConfirm(context *gin.Context) {
 //	@Success		200	string	string
 //	@Failure		400	string	string
 //	@Failure		404	string	string
-//	@Router			/api/oldlaneinfo/{id} [delete]
+//	@Router			/oldlaneinfo/{id} [delete]
 func DeleteOldLaneInfoByID(context *gin.Context) {
 	if !database.DeleteOldLaneInfoByID(Convert2uint(context, "id")) {
 		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "無效的用戶 ID 或 格式錯誤 "})

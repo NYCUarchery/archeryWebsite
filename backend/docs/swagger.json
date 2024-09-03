@@ -15,7 +15,34 @@
     "host": "localhost:8080",
     "basePath": "/api/",
     "paths": {
-        "/api/competition": {
+        "/competition": {
+            "get": {
+                "description": "get information of all the competitions",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "get information of all the competitions",
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/database.Competition"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
             "post": {
                 "description": "Post one new Competition data with new id, create UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup, add host as admin of competition, and return the new Competition data\nzeroTime 0001-01-01T00:00:00+00:01",
                 "consumes": [
@@ -55,16 +82,13 @@
                 }
             }
         },
-        "/api/competition//groups/players/playertotal/{id}": {
+        "/competition/current-phase/plus/{id}": {
             "put": {
-                "description": "update competition recount player total score",
-                "produces": [
-                    "application/json"
-                ],
+                "description": "update one Competition currentPhase --",
                 "tags": [
                     "Competition"
                 ],
-                "summary": "update competition recount player total score",
+                "summary": "update one Competition currentPhase --",
                 "parameters": [
                     {
                         "type": "string",
@@ -86,17 +110,11 @@
                         "schema": {
                             "type": "string"
                         }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
                     }
                 }
             }
         },
-        "/api/competition/current/{head}/{tail}": {
+        "/competition/current/{head}/{tail}": {
             "get": {
                 "description": "Get current Competitions, head and tail are the range of most recent competitions\nFor example, head = 0, tail = 10, then return the most recent 10 competitions\nhead \u003e= 0, tail \u003e= 0, head \u003c= tail",
                 "produces": [
@@ -138,71 +156,7 @@
                 }
             }
         },
-        "/api/competition/currentphaseminus/{id}": {
-            "put": {
-                "description": "update one Competition currentPhase --",
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "update one Competition currentPhase --",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/competition/currentphaseplus/{id}": {
-            "put": {
-                "description": "update one Competition currentPhase ++",
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "update one Competition currentPhase ++",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/competition/eliminationisactive/{id}": {
+        "/competition/elimination-isactive/{id}": {
             "put": {
                 "description": "update one Competition Elimination Active to be true",
                 "tags": [
@@ -225,7 +179,48 @@
                 }
             }
         },
-        "/api/competition/groups/players/rank/{id}": {
+        "/competition/groups/players/playertotal/{id}": {
+            "put": {
+                "description": "update competition recount player total score",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "update competition recount player total score",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/competition/groups/players/rank/{id}": {
             "put": {
                 "description": "Update update all  player ranking of different groups in one Competition",
                 "consumes": [
@@ -275,14 +270,42 @@
                 }
             }
         },
-        "/api/competition/groups/players/{id}": {
+        "/competition/groups/players/{id}": {
             "get": {
                 "description": "Get one Competition by id with GroupInfos and Players",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
                 "summary": "Show one Competition with GroupInfos and Players",
-                "responses": {}
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
             }
         },
-        "/api/competition/groups/qualieli/{id}": {
+        "/competition/groups/qualieli/{id}": {
             "get": {
                 "description": "Get one Competition by id with related Groups which have related one Qualification id and many Elimination ids",
                 "produces": [
@@ -317,7 +340,7 @@
                 }
             }
         },
-        "/api/competition/groups/{id}": {
+        "/competition/groups/{id}": {
             "get": {
                 "description": "Get one Competition by id with GroupInfos",
                 "produces": [
@@ -352,7 +375,7 @@
                 }
             }
         },
-        "/api/competition/mixedeliminationisactive/{id}": {
+        "/competition/mixed-elimination-isactive/{id}": {
             "put": {
                 "description": "update one Competition Mixed Elimination Active to be true and create all mixed elimination for groups",
                 "tags": [
@@ -381,7 +404,7 @@
                 }
             }
         },
-        "/api/competition/participants/{id}": {
+        "/competition/participants/{id}": {
             "get": {
                 "description": "Get one Competition by id with Participants",
                 "produces": [
@@ -416,7 +439,7 @@
                 }
             }
         },
-        "/api/competition/qualificationcurrentendminus/{id}": {
+        "/competition/qualification-current-end/minus/{id}": {
             "put": {
                 "description": "update one Competition Qualification currentEnd --",
                 "tags": [
@@ -448,7 +471,7 @@
                 }
             }
         },
-        "/api/competition/qualificationcurrentendplus/{id}": {
+        "/competition/qualification-current-end/plus/{id}": {
             "put": {
                 "description": "update one Competition Qualification currentEnd ++",
                 "tags": [
@@ -480,7 +503,7 @@
                 }
             }
         },
-        "/api/competition/qualificationisactive/{id}": {
+        "/competition/qualification-isactive/{id}": {
             "put": {
                 "description": "update one Competition Qualification Active to be true",
                 "tags": [
@@ -503,7 +526,7 @@
                 }
             }
         },
-        "/api/competition/recent/{userid}/{head}/{tail}": {
+        "/competition/recent/{userid}/{head}/{tail}": {
             "get": {
                 "description": "Get recent Competitions by User id, head and tail are the range of most recent competitions\nFor example, head = 0, tail = 10, then return the most recent 10 competitions\nhead \u003e= 0, tail \u003e= 0, head \u003c= tail",
                 "produces": [
@@ -552,7 +575,7 @@
                 }
             }
         },
-        "/api/competition/teameliminationisactive/{id}": {
+        "/competition/team-elimination-isactive/{id}": {
             "put": {
                 "description": "update one Competition Team Elimination Active to be true and create all team elimination for groups",
                 "tags": [
@@ -581,7 +604,7 @@
                 }
             }
         },
-        "/api/competition/whole/{id}": {
+        "/competition/whole/{id}": {
             "put": {
                 "description": "Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId\nzeroTime 0001-01-01T00:00:00+00:01",
                 "consumes": [
@@ -640,7 +663,7 @@
                 }
             }
         },
-        "/api/competition/{id}": {
+        "/competition/{id}": {
             "get": {
                 "description": "Get one Competition by id without GroupInfo\nzeroTime 0001-01-01T00:00:00+00:01",
                 "produces": [
@@ -717,7 +740,77 @@
                 }
             }
         },
-        "/api/elimination": {
+        "/data/qualification/lanes/Unassigned/{id}": {
+            "get": {
+                "description": "Get one Qualification with Unassigned Lanes by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Qualification"
+                ],
+                "summary": "Show one Qualification",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Qualification ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/data/qualification/lanes/players/{id}": {
+            "get": {
+                "description": "Get one Qualification with Lanes and Players by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Qualification"
+                ],
+                "summary": "Show one Qualification",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Qualification ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/elimination": {
             "post": {
                 "description": "Post one new Elimination data, and three medals",
                 "consumes": [
@@ -757,7 +850,7 @@
                 }
             }
         },
-        "/api/elimination/currentend/minus/{id}": {
+        "/elimination/currentend/minus/{id}": {
             "put": {
                 "description": "Update one Elimination current end minus one by id",
                 "tags": [
@@ -789,7 +882,7 @@
                 }
             }
         },
-        "/api/elimination/currentend/plus/{id}": {
+        "/elimination/currentend/plus/{id}": {
             "put": {
                 "description": "Update one Elimination current end plus one by id",
                 "tags": [
@@ -821,7 +914,7 @@
                 }
             }
         },
-        "/api/elimination/currentstage/minus/{id}": {
+        "/elimination/currentstage/minus/{id}": {
             "put": {
                 "description": "Update one Elimination current stage minus one by id",
                 "tags": [
@@ -853,7 +946,7 @@
                 }
             }
         },
-        "/api/elimination/currentstage/plus/{id}": {
+        "/elimination/currentstage/plus/{id}": {
             "put": {
                 "description": "Update one Elimination current stage plus one by id",
                 "tags": [
@@ -885,7 +978,7 @@
                 }
             }
         },
-        "/api/elimination/match": {
+        "/elimination/match": {
             "post": {
                 "description": "Post one new Match data with 2 matchResults\nEach matchResults with 4 or 5 matchEnds\nEach matchEnds with 3, 4, 6 matchScores",
                 "consumes": [
@@ -925,7 +1018,7 @@
                 }
             }
         },
-        "/api/elimination/match/scores/{matchid}": {
+        "/elimination/match/scores/{matchid}": {
             "get": {
                 "description": "Get one Match with matchResults, matchEnds, scores, playerSets, players by id",
                 "produces": [
@@ -960,7 +1053,7 @@
                 }
             }
         },
-        "/api/elimination/playersets/{id}": {
+        "/elimination/playersets/{id}": {
             "get": {
                 "description": "Get one Elimination with player sets by id",
                 "produces": [
@@ -995,7 +1088,7 @@
                 }
             }
         },
-        "/api/elimination/scores/{id}": {
+        "/elimination/scores/{id}": {
             "get": {
                 "description": "Get one Elimination with stages, matches, matchResults, matchEnds, scores by id",
                 "produces": [
@@ -1030,7 +1123,7 @@
                 }
             }
         },
-        "/api/elimination/stage": {
+        "/elimination/stage": {
             "post": {
                 "description": "Post one new Stage data with new id",
                 "consumes": [
@@ -1070,7 +1163,7 @@
                 }
             }
         },
-        "/api/elimination/stages/scores/medals/{id}": {
+        "/elimination/stages/scores/medals/{id}": {
             "get": {
                 "description": "Get one Elimination with stages, matches, matchResults, matchEnds, scores, playerSets, players, medals by id",
                 "produces": [
@@ -1105,7 +1198,7 @@
                 }
             }
         },
-        "/api/elimination/stages/{id}": {
+        "/elimination/stages/{id}": {
             "get": {
                 "description": "Get one Elimination with stages, matches by id",
                 "produces": [
@@ -1140,7 +1233,7 @@
                 }
             }
         },
-        "/api/elimination/{id}": {
+        "/elimination/{id}": {
             "get": {
                 "description": "Get one Elimination by id",
                 "produces": [
@@ -1217,7 +1310,7 @@
                 }
             }
         },
-        "/api/groupinfo": {
+        "/groupinfo": {
             "post": {
                 "description": "Post one new GroupInfo data with new id, create qualification with same id, auto write GroupIndex, and auto create elimination",
                 "consumes": [
@@ -1257,42 +1350,7 @@
                 }
             }
         },
-        "/api/groupinfo/players/{id}": {
-            "get": {
-                "description": "Get one GroupInfo with players by id, usually ordered by rank",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "GroupInfo"
-                ],
-                "summary": "Show one GroupInfo with players",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "GroupInfo ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/groupinfo/reorder": {
+        "/groupinfo/ordering": {
             "put": {
                 "description": "Put competition_id and group_ids to update GroupInfos Indexes under the same Competition",
                 "consumes": [
@@ -1344,7 +1402,42 @@
                 }
             }
         },
-        "/api/groupinfo/whole/{id}": {
+        "/groupinfo/players/{id}": {
+            "get": {
+                "description": "Get one GroupInfo with players by id, usually ordered by rank",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GroupInfo"
+                ],
+                "summary": "Show one GroupInfo with players",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "GroupInfo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/groupinfo/whole/{id}": {
             "put": {
                 "description": "Put whole new GroupInfo and overwrite with the id, cannot overwrite CompetitionId",
                 "consumes": [
@@ -1403,7 +1496,7 @@
                 }
             }
         },
-        "/api/groupinfo/{id}": {
+        "/groupinfo/{id}": {
             "get": {
                 "description": "Get one GroupInfo by id",
                 "produces": [
@@ -1473,2146 +1566,6 @@
                     },
                     "404": {
                         "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/lane/all/{id}": {
-            "get": {
-                "description": "Get all Lane by competition id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Lane"
-                ],
-                "summary": "Show all Lane of a competition",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/lane/scores/{id}": {
-            "get": {
-                "description": "Get one Lane with players, rounds, roundends, roundscores by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Lane"
-                ],
-                "summary": "Show one Lane with players, rounds, roundends, roundscores",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Lane ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/lane/{id}": {
-            "get": {
-                "description": "Get one Lane by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Lane"
-                ],
-                "summary": "Show one Lane",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Lane ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/matchend/isconfirmed/{id}": {
-            "put": {
-                "description": "Update one MatchEnd isConfirmed by id",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "MatchEnd"
-                ],
-                "summary": "Update one MatchEnd isConfirmed",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "MatchEnd ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "MatchEnd",
-                        "name": "MatchEnd",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/matchend/scores/{id}": {
-            "put": {
-                "description": "Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids\nMatchScore ids and scores must be the same length",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "MatchEnd"
-                ],
-                "summary": "Update one MatchEnd scores",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "MatchEnd ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "matchEndScoresData",
-                        "name": "matchEndScoresData",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/matchend/totalscores/{id}": {
-            "put": {
-                "description": "Update one MatchEnd totalScores by id",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "MatchEnd"
-                ],
-                "summary": "Update one MatchEnd totalScores",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "MatchEnd ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "MatchEnd",
-                        "name": "MatchEnd",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/matchresult/iswinner/{id}": {
-            "put": {
-                "description": "Update one MatchResult isWinner by id",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "MatchResult"
-                ],
-                "summary": "Update one MatchResult isWinner",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "MatchResult ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "MatchResult",
-                        "name": "MatchResult",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/matchresult/lanenumber/{id}": {
-            "put": {
-                "description": "Update one MatchResult laneNumber by id",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "MatchResult"
-                ],
-                "summary": "Update one MatchResult laneNumber",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "MatchResult ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "MatchResult",
-                        "name": "MatchResult",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/matchresult/matchend": {
-            "post": {
-                "description": "Post one new MatchEnd data, and auto write totalScores IsConfirmed, and auto create matchScores by teamSize",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "MatchEnd"
-                ],
-                "summary": "Create one MatchEnd",
-                "parameters": [
-                    {
-                        "description": "matchEndData",
-                        "name": "matchEndData",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/matchresult/scores/{id}": {
-            "get": {
-                "description": "Get one MatchResult with match_ends, match_scores, player set by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "MatchResult"
-                ],
-                "summary": "Show one MatchResult with match_ends, match_scores, player set",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "MatchResult ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/matchresult/shootoffscore/{id}": {
-            "put": {
-                "description": "Update one MatchResult shootOffScore by id",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "MatchResult"
-                ],
-                "summary": "Update one MatchResult shootOffScore",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "MatchResult ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "MatchResult",
-                        "name": "MatchResult",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/matchresult/totalpoints/{id}": {
-            "put": {
-                "description": "Update one MatchResult totalPoints by id",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "MatchResult"
-                ],
-                "summary": "Update one MatchResult totalPoints",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "MatchResult ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "MatchResult",
-                        "name": "MatchResult",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/matchresult/{id}": {
-            "get": {
-                "description": "Get one MatchResult with player set by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "MatchResult"
-                ],
-                "summary": "Show one MatchResult with player set",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "MatchResult ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete one MatchResult with matchEnds and matchScores by id",
-                "tags": [
-                    "MatchResult"
-                ],
-                "summary": "Delete one MatchResult",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "MatchResult ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/matchscore/score/{id}": {
-            "put": {
-                "description": "Update one MatchScore score by id",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "MatchScore"
-                ],
-                "summary": "Update one MatchScore score",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "MatchScore ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "MatchScore",
-                        "name": "MatchScore",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/medal/elimination/{id}": {
-            "get": {
-                "description": "get medals of elimination by elimination id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Medal"
-                ],
-                "summary": "Show medals of elimination by elimination id",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "elimination ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/medal/playersetid/{id}": {
-            "put": {
-                "description": "update medal's player set id by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Medal"
-                ],
-                "summary": "Update medal's player set id by id",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Medal ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "PlayerSetId",
-                        "name": "PlayerSetId",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/medal/{id}": {
-            "get": {
-                "description": "get one medal by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Medal"
-                ],
-                "summary": "Show one medal by id",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Medal ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/oldlaneinfo": {
-            "post": {
-                "description": "Post one new OldLaneInfo data with new id, and return the new OldLaneInfo data",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "OldLaneInfo"
-                ],
-                "summary": "Create one OldLaneInfo",
-                "parameters": [
-                    {
-                        "description": "LaneData",
-                        "name": "LaneData",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm}": {
-            "put": {
-                "description": "Put one OldLaneInfo confirm by index and id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "OldLaneInfo"
-                ],
-                "summary": "update one OldLaneInfo confirmation",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "OldLaneInfo ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "OldLaneInfo stage index",
-                        "name": "stageindex",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "OldLaneInfo user index of the stage",
-                        "name": "userindex",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "confirmation of the user",
-                        "name": "confirm",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score}": {
-            "put": {
-                "description": "Put one OldLaneInfo score by index and id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "OldLaneInfo"
-                ],
-                "summary": "update one OldLaneInfo Score",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "OldLaneInfo ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "OldLaneInfo stage index",
-                        "name": "stageindex",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "OldLaneInfo user index of the stage",
-                        "name": "userindex",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "OldLaneInfo arrow index of the user",
-                        "name": "arrowindex",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "score of the arrow",
-                        "name": "score",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/oldlaneinfo/whole/{id}": {
-            "put": {
-                "description": "Put whole new OldLaneInfo and overwrite with the id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "OldLaneInfo"
-                ],
-                "summary": "update one OldLaneInfo",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "OldLaneInfo ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "LaneData",
-                        "name": "LaneData",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/oldlaneinfo/{id}": {
-            "get": {
-                "description": "Get one OldLaneInfo by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "OldLaneInfo"
-                ],
-                "summary": "Show one OldLaneInfo",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "OldLaneInfo ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "delete one OldLaneInfo by id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "OldLaneInfo"
-                ],
-                "summary": "delete one OldLaneInfo",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "OldLaneInfo ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/participant/": {
-            "post": {
-                "description": "post a particpant to the competition\ncannot repeat participant\nrole cannot be empty\nstatus is always \"pending\"",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Participant"
-                ],
-                "summary": "post a particpant to the competition",
-                "parameters": [
-                    {
-                        "description": "role",
-                        "name": "NewParticipantInfo",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/endpoint.NewParticipantInfo"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "success",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "competition ID is not exist",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "db error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/participant/competition": {
-            "get": {
-                "description": "Get Participants By competition ID, including realname",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Participant"
-                ],
-                "summary": "Show Participants By competition ID",
-                "parameters": [
-                    {
-                        "description": "competition ID",
-                        "name": "competition_id",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/participant/competition/user": {
-            "get": {
-                "description": "Get Participants By competition ID and user ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Participant"
-                ],
-                "summary": "Show Participants By competition ID and user ID",
-                "parameters": [
-                    {
-                        "description": "competition ID",
-                        "name": "competition_id",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
-                        "description": "user ID",
-                        "name": "user_id",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/participant/user": {
-            "get": {
-                "description": "Get Participants By user ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Participant"
-                ],
-                "summary": "Show Participants By user ID",
-                "parameters": [
-                    {
-                        "description": "user ID",
-                        "name": "user_id",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/participant/whole/{id}": {
-            "put": {
-                "description": "Put whole new Participant and overwrite with the id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Participant"
-                ],
-                "summary": "update one Participant",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Participant ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Participant",
-                        "name": "Participant",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/participant/{id}": {
-            "get": {
-                "description": "Get One Participant By ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Participant"
-                ],
-                "summary": "Show One Participant By ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Participant ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "delete one Participant by id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Participant"
-                ],
-                "summary": "delete one Participant",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Participant ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/player/dummy/{participantid}": {
-            "get": {
-                "description": "Get dummy players by participant id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Player"
-                ],
-                "summary": "Show dummy players",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Participant ID",
-                        "name": "participantid",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/player/dummy/{playerid}": {
-            "post": {
-                "description": "Create dummy player by player id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Player"
-                ],
-                "summary": "Create dummy player",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Player ID",
-                        "name": "playerid",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/player/groupid/{playerid}/{groupid}": {
-            "put": {
-                "description": "Update one Player groupId by id, and change player laneid to Unassigned lane",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Player"
-                ],
-                "summary": "Update one Player groupId by id",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Player ID",
-                        "name": "playerid",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/player/isconfirmed/{roundendid}": {
-            "put": {
-                "description": "Update one Player isConfirmed by id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Player"
-                ],
-                "summary": "Update one Player isConfirmed by id",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "RoundEnd ID",
-                        "name": "roundendid",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/player/laneid/{playerid}": {
-            "put": {
-                "description": "Update one Player laneId by id, update lane playernum",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Player"
-                ],
-                "summary": "Update one Player laneId by id",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Player ID",
-                        "name": "playerid",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/player/order/{id}": {
-            "put": {
-                "description": "Update one Player order by id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Player"
-                ],
-                "summary": "Update one Player order by id",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Player ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/player/playersets/{id}/{eliminationid}": {
-            "get": {
-                "description": "Get one Player with player sets by id and elimination id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Player"
-                ],
-                "summary": "Show one Player with player sets",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Player ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Elimination ID",
-                        "name": "eliminationid",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/player/roundend": {
-            "post": {
-                "description": "Create one RoundEnd by round id, IsComfirmed is false",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Player"
-                ],
-                "summary": "Create one RoundEnd by Round ID",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/player/roundscore": {
-            "post": {
-                "description": "Create one RoundScore by roundend id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Player"
-                ],
-                "summary": "Create one RoundScore by RoundEnd ID",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/player/score/{roundscoreid}": {
-            "put": {
-                "description": "Update one Player score by id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Player"
-                ],
-                "summary": "Update one Player score by id",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "RoundScore ID",
-                        "name": "roundscoreid",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/player/scores/{id}": {
-            "get": {
-                "description": "Get one Player with rounds, roundends, roundscores by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Player"
-                ],
-                "summary": "Show one Player with scores",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Player ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/player/shootoffscore/{id}": {
-            "put": {
-                "description": "Update one Player shootoffScore by id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Player"
-                ],
-                "summary": "Update one Player shootoffScore by id",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Player ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/player/totalscore/{id}": {
-            "put": {
-                "description": "Update one Player total score by id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Player"
-                ],
-                "summary": "Update one Player total score by id",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Player ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/player/{id}": {
-            "get": {
-                "description": "Get one Player without other data by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Player"
-                ],
-                "summary": "Show one Player without other data",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Player ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete one Player by id, delete related round, roundend, roundscore data, and playerNum minus one in lane",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Player"
-                ],
-                "summary": "Delete one Player by id",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Player ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/player/{participantid}": {
-            "post": {
-                "description": "Create one Player by participant id, create realeted rounds by laneNum of competition, create 6 roundscores for each 6 roundends, UnassignedLane playerNum ++",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Player"
-                ],
-                "summary": "Create one Player by Participant ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Participant ID",
-                        "name": "participantid",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/qualification/lanes/{id}": {
-            "get": {
-                "description": "Get one Qualification with Lanes by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Qualification"
-                ],
-                "summary": "Show one Qualification",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Qualification ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/qualification/whole/{id}": {
-            "put": {
-                "description": "Put whole new Qualification and overwrite with the id, and update lanes below it ,but cannot replace groupid",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Qualification"
-                ],
-                "summary": "update one Qualification",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Qualification ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Qualification",
-                        "name": "Qualification",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/api/qualification/{id}": {
-            "get": {
-                "description": "Get one Qualification by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Qualification"
-                ],
-                "summary": "Show one Qualification",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Qualification ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/competition": {
-            "get": {
-                "description": "get information of all the competitions",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "get information of all the competitions",
-                "responses": {
-                    "200": {
-                        "description": "success",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/database.Competition"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "internal db error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/data/qualification/lanes/Unassigned/{id}": {
-            "get": {
-                "description": "Get one Qualification with Unassigned Lanes by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Qualification"
-                ],
-                "summary": "Show one Qualification",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Qualification ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/data/qualification/lanes/players/{id}": {
-            "get": {
-                "description": "Get one Qualification with Lanes and Players by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Qualification"
-                ],
-                "summary": "Show one Qualification",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Qualification ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
                         "schema": {
                             "type": "string"
                         }
@@ -3801,6 +1754,1968 @@
                         "description": "institution not found",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
+                        }
+                    }
+                }
+            }
+        },
+        "/lane/all/{id}": {
+            "get": {
+                "description": "Get all Lane by competition id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Lane"
+                ],
+                "summary": "Show all Lane of a competition",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/lane/scores/{id}": {
+            "get": {
+                "description": "Get one Lane with players, rounds, roundends, roundscores by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Lane"
+                ],
+                "summary": "Show one Lane with players, rounds, roundends, roundscores",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Lane ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/lane/{id}": {
+            "get": {
+                "description": "Get one Lane by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Lane"
+                ],
+                "summary": "Show one Lane",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Lane ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/matchend/isconfirmed/{id}": {
+            "put": {
+                "description": "Update one MatchEnd isConfirmed by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MatchEnd"
+                ],
+                "summary": "Update one MatchEnd isConfirmed",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MatchEnd ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "MatchEnd",
+                        "name": "MatchEnd",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/matchend/scores/{id}": {
+            "put": {
+                "description": "Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids\nMatchScore ids and scores must be the same length",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MatchEnd"
+                ],
+                "summary": "Update one MatchEnd scores",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MatchEnd ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "matchEndScoresData",
+                        "name": "matchEndScoresData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/matchend/totalscores/{id}": {
+            "put": {
+                "description": "Update one MatchEnd totalScores by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MatchEnd"
+                ],
+                "summary": "Update one MatchEnd totalScores",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MatchEnd ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "MatchEnd",
+                        "name": "MatchEnd",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/matchresult/iswinner/{id}": {
+            "put": {
+                "description": "Update one MatchResult isWinner by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MatchResult"
+                ],
+                "summary": "Update one MatchResult isWinner",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MatchResult ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "MatchResult",
+                        "name": "MatchResult",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/matchresult/lanenumber/{id}": {
+            "put": {
+                "description": "Update one MatchResult laneNumber by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MatchResult"
+                ],
+                "summary": "Update one MatchResult laneNumber",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MatchResult ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "MatchResult",
+                        "name": "MatchResult",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/matchresult/matchend": {
+            "post": {
+                "description": "Post one new MatchEnd data, and auto write totalScores IsConfirmed, and auto create matchScores by teamSize",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MatchEnd"
+                ],
+                "summary": "Create one MatchEnd",
+                "parameters": [
+                    {
+                        "description": "matchEndData",
+                        "name": "matchEndData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/matchresult/scores/{id}": {
+            "get": {
+                "description": "Get one MatchResult with match_ends, match_scores, player set by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MatchResult"
+                ],
+                "summary": "Show one MatchResult with match_ends, match_scores, player set",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MatchResult ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/matchresult/shootoffscore/{id}": {
+            "put": {
+                "description": "Update one MatchResult shootOffScore by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MatchResult"
+                ],
+                "summary": "Update one MatchResult shootOffScore",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MatchResult ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "MatchResult",
+                        "name": "MatchResult",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/matchresult/totalpoints/{id}": {
+            "put": {
+                "description": "Update one MatchResult totalPoints by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MatchResult"
+                ],
+                "summary": "Update one MatchResult totalPoints",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MatchResult ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "MatchResult",
+                        "name": "MatchResult",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/matchresult/{id}": {
+            "get": {
+                "description": "Get one MatchResult with player set by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MatchResult"
+                ],
+                "summary": "Show one MatchResult with player set",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MatchResult ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete one MatchResult with matchEnds and matchScores by id",
+                "tags": [
+                    "MatchResult"
+                ],
+                "summary": "Delete one MatchResult",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MatchResult ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/matchscore/score/{id}": {
+            "put": {
+                "description": "Update one MatchScore score by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MatchScore"
+                ],
+                "summary": "Update one MatchScore score",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MatchScore ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "MatchScore",
+                        "name": "MatchScore",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/medal/elimination/{id}": {
+            "get": {
+                "description": "get medals of elimination by elimination id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Medal"
+                ],
+                "summary": "Show medals of elimination by elimination id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "elimination ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/medal/playersetid/{id}": {
+            "put": {
+                "description": "update medal's player set id by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Medal"
+                ],
+                "summary": "Update medal's player set id by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Medal ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "PlayerSetId",
+                        "name": "PlayerSetId",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/medal/{id}": {
+            "get": {
+                "description": "get one medal by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Medal"
+                ],
+                "summary": "Show one medal by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Medal ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/oldlaneinfo": {
+            "post": {
+                "description": "Post one new OldLaneInfo data with new id, and return the new OldLaneInfo data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OldLaneInfo"
+                ],
+                "summary": "Create one OldLaneInfo",
+                "parameters": [
+                    {
+                        "description": "LaneData",
+                        "name": "LaneData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm}": {
+            "put": {
+                "description": "Put one OldLaneInfo confirm by index and id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OldLaneInfo"
+                ],
+                "summary": "update one OldLaneInfo confirmation",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "OldLaneInfo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "OldLaneInfo stage index",
+                        "name": "stageindex",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "OldLaneInfo user index of the stage",
+                        "name": "userindex",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "confirmation of the user",
+                        "name": "confirm",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score}": {
+            "put": {
+                "description": "Put one OldLaneInfo score by index and id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OldLaneInfo"
+                ],
+                "summary": "update one OldLaneInfo Score",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "OldLaneInfo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "OldLaneInfo stage index",
+                        "name": "stageindex",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "OldLaneInfo user index of the stage",
+                        "name": "userindex",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "OldLaneInfo arrow index of the user",
+                        "name": "arrowindex",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "score of the arrow",
+                        "name": "score",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/oldlaneinfo/whole/{id}": {
+            "put": {
+                "description": "Put whole new OldLaneInfo and overwrite with the id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OldLaneInfo"
+                ],
+                "summary": "update one OldLaneInfo",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "OldLaneInfo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "LaneData",
+                        "name": "LaneData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/oldlaneinfo/{id}": {
+            "get": {
+                "description": "Get one OldLaneInfo by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OldLaneInfo"
+                ],
+                "summary": "Show one OldLaneInfo",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "OldLaneInfo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "delete one OldLaneInfo by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OldLaneInfo"
+                ],
+                "summary": "delete one OldLaneInfo",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "OldLaneInfo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/participant/": {
+            "post": {
+                "description": "post a particpant to the competition\ncannot repeat participant\nrole cannot be empty\nstatus is always \"pending\"",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Participant"
+                ],
+                "summary": "post a particpant to the competition",
+                "parameters": [
+                    {
+                        "description": "role",
+                        "name": "NewParticipantInfo",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.NewParticipantInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "competition ID is not exist",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "db error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/participant/competition": {
+            "get": {
+                "description": "Get Participants By competition ID, including realname",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Participant"
+                ],
+                "summary": "Show Participants By competition ID",
+                "parameters": [
+                    {
+                        "description": "competition ID",
+                        "name": "competition_id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/participant/competition/user": {
+            "get": {
+                "description": "Get Participants By competition ID and user ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Participant"
+                ],
+                "summary": "Show Participants By competition ID and user ID",
+                "parameters": [
+                    {
+                        "description": "competition ID",
+                        "name": "competition_id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "description": "user ID",
+                        "name": "user_id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/participant/user": {
+            "get": {
+                "description": "Get Participants By user ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Participant"
+                ],
+                "summary": "Show Participants By user ID",
+                "parameters": [
+                    {
+                        "description": "user ID",
+                        "name": "user_id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/participant/whole/{id}": {
+            "put": {
+                "description": "Put whole new Participant and overwrite with the id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Participant"
+                ],
+                "summary": "update one Participant",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Participant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Participant",
+                        "name": "Participant",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/participant/{id}": {
+            "get": {
+                "description": "Get One Participant By ID",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Participant"
+                ],
+                "summary": "Show One Participant By ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Participant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "delete one Participant by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Participant"
+                ],
+                "summary": "delete one Participant",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Participant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/player/all-endscores/{id}": {
+            "put": {
+                "description": "Update all scores of one end by end id\nWill auto update player total score\nShould have a 6 element array scores array",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Update all scores of one end by end id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "End ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Scores",
+                        "name": "scores",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.PutPlayerAllEndScoresByEndId.EndScores"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.PutPlayerAllEndScoresByEndId.EndScores"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/player/dummy/{participantid}": {
+            "get": {
+                "description": "Get dummy players by participant id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Show dummy players",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Participant ID",
+                        "name": "participantid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/player/dummy/{playerid}": {
+            "post": {
+                "description": "Create dummy player by player id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Create dummy player",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "playerid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/player/groupid/{playerid}/{groupid}": {
+            "put": {
+                "description": "Update one Player groupId by id, and change player laneid to Unassigned lane",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Update one Player groupId by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "playerid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/player/isconfirmed/{roundendid}": {
+            "put": {
+                "description": "Update one Player isConfirmed by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Update one Player isConfirmed by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "RoundEnd ID",
+                        "name": "roundendid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/player/laneid/{playerid}": {
+            "put": {
+                "description": "Update one Player laneId by id, update lane playernum",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Update one Player laneId by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "playerid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/player/order/{id}": {
+            "put": {
+                "description": "Update one Player order by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Update one Player order by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/player/playersets/{id}/{eliminationid}": {
+            "get": {
+                "description": "Get one Player with player sets by id and elimination id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Show one Player with player sets",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Elimination ID",
+                        "name": "eliminationid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/player/roundend": {
+            "post": {
+                "description": "Create one RoundEnd by round id, IsComfirmed is false",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Create one RoundEnd by Round ID",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/player/roundscore": {
+            "post": {
+                "description": "Create one RoundScore by roundend id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Create one RoundScore by RoundEnd ID",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/player/score/{roundscoreid}": {
+            "put": {
+                "description": "Update one Player score by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Update one Player score by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "RoundScore ID",
+                        "name": "roundscoreid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/player/scores/{id}": {
+            "get": {
+                "description": "Get one Player with rounds, roundends, roundscores by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Show one Player with scores",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/player/shootoffscore/{id}": {
+            "put": {
+                "description": "Update one Player shootoffScore by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Update one Player shootoffScore by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/player/totalscore/{id}": {
+            "put": {
+                "description": "Update one Player total score by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Update one Player total score by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/player/{id}": {
+            "get": {
+                "description": "Get one Player without other data by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Show one Player without other data",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete one Player by id, delete related round, roundend, roundscore data, and playerNum minus one in lane",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Delete one Player by id",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/player/{participantid}": {
+            "post": {
+                "description": "Create one Player by participant id, create realeted rounds by laneNum of competition, create 6 roundscores for each 6 roundends, UnassignedLane playerNum ++",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Create one Player by Participant ID",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Participant ID",
+                        "name": "participantid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
                         }
                     }
                 }
@@ -4098,6 +4013,135 @@
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/qualification/lanes/{id}": {
+            "get": {
+                "description": "Get one Qualification with Lanes by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Qualification"
+                ],
+                "summary": "Show one Qualification",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Qualification ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/qualification/whole/{id}": {
+            "put": {
+                "description": "Put whole new Qualification and overwrite with the id, and update lanes below it ,but cannot replace groupid",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Qualification"
+                ],
+                "summary": "update one Qualification",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Qualification ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Qualification",
+                        "name": "Qualification",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/qualification/{id}": {
+            "get": {
+                "description": "Get one Qualification by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Qualification"
+                ],
+                "summary": "Show one Qualification",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Qualification ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
                         "schema": {
                             "type": "string"
                         }
@@ -4777,6 +4821,17 @@
                 },
                 "user_id": {
                     "type": "integer"
+                }
+            }
+        },
+        "endpoint.PutPlayerAllEndScoresByEndId.EndScores": {
+            "type": "object",
+            "properties": {
+                "scores": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 }
             }
         },
