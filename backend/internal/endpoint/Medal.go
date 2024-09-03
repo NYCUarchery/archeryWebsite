@@ -48,7 +48,7 @@ func IsGetMedalsByEliminationId(context *gin.Context, id uint) (bool, []database
 //	@Param			id	path	int	true	"Medal ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/api/medal/{id} [get]
+//	@Router			/medal/{id} [get]
 func GetMedalById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	isExist, data := IsGetMedalById(context, id)
@@ -67,7 +67,7 @@ func GetMedalById(context *gin.Context) {
 //	@Param			id	path	int	true	"elimination ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/api/medal/elimination/{id} [get]
+//	@Router			/medal/elimination/{id} [get]
 func GetMedalInfoByEliminationId(context *gin.Context) {
 	eliminationId := Convert2uint(context, "eliminationid")
 	isExist, data := IsGetMedalsByEliminationId(context, eliminationId)
@@ -87,7 +87,7 @@ func GetMedalInfoByEliminationId(context *gin.Context) {
 //	@Param			PlayerSetId	body	string	true	"PlayerSetId"
 //	@Success		200			string	string
 //	@Failure		400			string	string
-//	@Router			/api/medal/playersetid/{id} [put]
+//	@Router			/medal/playersetid/{id} [put]
 func PutMedalPlayerSetIdById(context *gin.Context) {
 	type RequestBody struct {
 		PlayerSetId uint `json:"player_set_id"`

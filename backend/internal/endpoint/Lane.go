@@ -41,7 +41,7 @@ func IsGetLaneWPlayers(context *gin.Context, id uint) (bool, database.Lane) {
 //	@Param			id	path	int	true	"Lane ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/api/lane/{id} [get]
+//	@Router			/lane/{id} [get]
 func GetLaneByID(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	isExist, data := IsGetLane(context, id)
@@ -60,7 +60,7 @@ func GetLaneByID(context *gin.Context) {
 //	@Param			id	path	int	true	"Lane ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/api/lane/scores/{id} [get]
+//	@Router			/lane/scores/{id} [get]
 func GetLaneWScoresByID(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	isExist, data := IsGetLaneWPlayers(context, id)
@@ -79,7 +79,7 @@ func GetLaneWScoresByID(context *gin.Context) {
 //	@Param			id	path	int	true	"competition ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/api/lane/all/{id} [get]
+//	@Router			/lane/all/{id} [get]
 func GetAllLaneByCompetitionId(context *gin.Context) {
 	competitionId := Convert2uint(context, "competitionid")
 	var data []database.Lane
