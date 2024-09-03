@@ -5,7 +5,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
-    restart: always
+    restart: unless-stopped
     develop:
       watch:
         - action: sync
@@ -22,15 +22,15 @@ services:
       MYSQL_DATABASE: testdb
       MYSQL_USER: user
       MYSQL_PASSWORD: password
-    restart: always
+    restart: unless-stopped
   backend:
     build: ./backend
-    restart: always
+    restart: unless-stopped
     depends_on:
       - mysql
   reverse-proxy:
     build: ./reverse-proxy
-    restart: always
+    restart: unless-stopped
     ports:
       - 80:80
     depends_on:
