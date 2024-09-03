@@ -39,6 +39,7 @@ import (
 //	@tag.name	OldLaneInfo
 //	@tag.name	docs
 
+// Set the test data into container(server) with FTP clis.
 // schemes http
 func main() {
 	server := gin.Default() // initialize a Gin router

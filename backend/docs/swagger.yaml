@@ -275,23 +275,6 @@ definitions:
       title:
         type: string
     type: object
-  endpoint.UpdateCompetition.CompetitionUpdateData:
-    properties:
-      current_phase:
-        type: integer
-      end_time:
-        type: string
-      qualification_current_end:
-        type: integer
-      script:
-        type: string
-      start_time:
-        type: string
-      sub_title:
-        type: string
-      title:
-        type: string
-    type: object
   response.DeleteSuccessResponse:
     properties:
       message:
@@ -2214,7 +2197,7 @@ paths:
       - Qualification
   /competition:
     get:
-      description: get information of all the competitions
+      description: Get the information of all competitions.
       produces:
       - application/json
       responses:
@@ -2235,7 +2218,7 @@ paths:
           description: internal db error
           schema:
             type: string
-      summary: get information of all the competitions
+      summary: Get the information of all competitions.
       tags:
       - Competition
     post:
@@ -2871,7 +2854,7 @@ paths:
         name: Competition
         required: true
         schema:
-          $ref: '#/definitions/endpoint.UpdateCompetition.CompetitionUpdateData'
+          $ref: '#/definitions/database.Competition'
       produces:
       - application/json
       responses:
@@ -3325,9 +3308,9 @@ paths:
       description: |-
         add a user to db
         no need to post id
-        username cannot be empty, repeated
+        username cannot be empty or repeated
         password cannot be empty
-        email cannot be empty, repeated
+        email cannot be empty or repeated
       parameters:
       - description: nessary information for register
         in: body

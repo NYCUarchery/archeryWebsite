@@ -365,13 +365,13 @@ func PostCompetition(context *gin.Context) {
 	newData.UnassignedLaneId = database.GetUnassignedLaneId(newId)
 	fmt.Printf("UnassignedLaneId: %d\n", newData.UnassignedLaneId)
 	ischanged := database.UpdateCompetitionUnassignedLaneId(newId, newData.UnassignedLaneId)
-	if response.AcceptNotChange(context, id, ischanged) {
+	if response.AcceptNotChange(context, newId, ischanged) {
 		return
 	}
 	/*auto write UnassignedGroupId*/
 	newData.UnassignedGroupId = UnassignedGroupId
 	ischanged = database.UpdateCompetitionUnassignedGroupId(newId, newData.UnassignedGroupId)
-	if response.AcceptNotChange(context, id, ischanged) {
+	if response.AcceptNotChange(context, newId, ischanged) {
 		return
 	}
 	/*add host as admin of participant*/
@@ -395,7 +395,7 @@ func PostCompetition(context *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id			path		string																	true	"Competition ID"
-//	@Param			Competition	body		endpoint.UpdateCompetition.CompetitionUpdateData						true	"Competition"
+//	@Param			Competition	body		database.Competition													true	"Competition"
 //	@Success		200			{object}	database.Competition{groups=response.Nill,participants=response.Nill}	"success"
 //	@Success		204			{object}	response.Nill															"success, but no change"
 //	@Failure		400			{object}	response.ErrorReceiveDataResponse										"invalid competition id parameter / bad request data ID(1): sth error / bad request data is nil ID(1): sth error / When creating Competition, startTime must <= endTime"
@@ -564,8 +564,8 @@ func DeleteCompetition(context *gin.Context) {
 
 // AllCompetitionInfo godoc
 //
-//	@Summary		get information of all the competitions
-//	@Description	get information of all the competitions
+//	@Summary		Get the information of all competitions.
+//	@Description	Get the information of all competitions.
 //	@Tags			Competition
 //	@Produce		json
 //	@Success		200	{object}	[]database.Competition{groups=response.Nill,participants=response.Nill}	"success"
@@ -878,11 +878,11 @@ func UpdateCompetitionRecountPlayerTotalScore(context *gin.Context) {
 				}
 			}
 			/*update player total score*/
-			err, isChanged := database.UpdatePlayerTotalScore(player.ID, newPlayerTotalScore)
+			err, _ := database.UpdatePlayerTotalScore(player.ID, newPlayerTotalScore)
 			if response.ErrorInternalErrorTest(context, id, "Update Player Total Score", err) {
 				return
 			}
 		}
 	}
-	context.IndentedJSON(http.StatusOK, nil)
+	context.IndentedJSON(http.StatusOK, gin.H{"message": "Update Competition Recount Player Total Score Success"})
 }

@@ -2827,14 +2827,14 @@ const docTemplate = `{
         },
         "/competition": {
             "get": {
-                "description": "get information of all the competitions",
+                "description": "Get the information of all competitions.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Competition"
                 ],
-                "summary": "get information of all the competitions",
+                "summary": "Get the information of all competitions.",
                 "responses": {
                     "200": {
                         "description": "success",
@@ -3710,7 +3710,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/endpoint.UpdateCompetition.CompetitionUpdateData"
+                            "$ref": "#/definitions/database.Competition"
                         }
                     }
                 ],
@@ -4487,7 +4487,7 @@ const docTemplate = `{
         },
         "/user": {
             "post": {
-                "description": "add a user to db\nno need to post id\nusername cannot be empty, repeated\npassword cannot be empty\nemail cannot be empty, repeated",
+                "description": "add a user to db\nno need to post id\nusername cannot be empty or repeated\npassword cannot be empty\nemail cannot be empty or repeated",
                 "consumes": [
                     "application/json"
                 ],
@@ -5143,32 +5143,6 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "rounds_num": {
-                    "type": "integer"
-                },
-                "script": {
-                    "type": "string"
-                },
-                "start_time": {
-                    "type": "string"
-                },
-                "sub_title": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                }
-            }
-        },
-        "endpoint.UpdateCompetition.CompetitionUpdateData": {
-            "type": "object",
-            "properties": {
-                "current_phase": {
-                    "type": "integer"
-                },
-                "end_time": {
-                    "type": "string"
-                },
-                "qualification_current_end": {
                     "type": "integer"
                 },
                 "script": {

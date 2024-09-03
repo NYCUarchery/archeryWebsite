@@ -135,5 +135,3 @@ func DeleteInstitution(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{"result": "success"})
 }
-
-// response.Response{data=[]database.Institution}

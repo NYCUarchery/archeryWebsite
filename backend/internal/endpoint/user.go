@@ -32,9 +32,9 @@ type ModifyAccountPasswordInfo struct {
 //	@Summary		register a user
 //	@Description	add a user to db
 //	@Description	no need to post id
-//	@Description	username cannot be empty, repeated
+//	@Description	username cannot be empty or repeated
 //	@Description	password cannot be empty
-//	@Description	email cannot be empty, repeated
+//	@Description	email cannot be empty or repeated
 //	@Tags			User
 //	@Accept			json
 //	@Produce		json
