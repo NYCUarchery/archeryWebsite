@@ -43,7 +43,7 @@ func IsGetEliminationWStagesMatchesById(context *gin.Context) (bool, database.El
 //	@Param			id	path	int	true	"Elimination ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/api/elimination/{id} [get]
+//	@Router			/elimination/{id} [get]
 func GetOnlyEliminationById(context *gin.Context) {
 	isExist, data := IsGetEliminationById(context)
 	if !isExist {
@@ -61,7 +61,7 @@ func GetOnlyEliminationById(context *gin.Context) {
 //	@Param			id	path	int	true	"Elimination ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/api/elimination/playersets/{id} [get]
+//	@Router			/elimination/playersets/{id} [get]
 func GetEliminationWPlayerSetsById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
@@ -85,7 +85,7 @@ func GetEliminationWPlayerSetsById(context *gin.Context) {
 //	@Param			id	path	int	true	"Elimination ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/api/elimination/stages/{id} [get]
+//	@Router			/elimination/stages/{id} [get]
 func GetEliminationWStagesMatchesById(context *gin.Context) {
 	isExist, data := IsGetEliminationWStagesMatchesById(context)
 	if !isExist {
@@ -103,7 +103,7 @@ func GetEliminationWStagesMatchesById(context *gin.Context) {
 //	@Param			id	path	int	true	"Elimination ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/api/elimination/scores/{id} [get]
+//	@Router			/elimination/scores/{id} [get]
 func GetEliminationWScoresById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
@@ -127,7 +127,7 @@ func GetEliminationWScoresById(context *gin.Context) {
 //	@Param			id	path	int	true	"Elimination ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/api/elimination/stages/scores/medals/{id} [get]
+//	@Router			/elimination/stages/scores/medals/{id} [get]
 func GetEliminationById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
@@ -151,7 +151,7 @@ func GetEliminationById(context *gin.Context) {
 //	@Param			matchid	path	int	true	"Match ID"
 //	@Success		200		string	string
 //	@Failure		400		string	string
-//	@Router			/api/elimination/match/scores/{matchid} [get]
+//	@Router			/elimination/match/scores/{matchid} [get]
 func GetMatchWScoresById(context *gin.Context) {
 	id := Convert2uint(context, "matchid")
 	if response.ErrorIdTest(context, id, database.GetMatchIsExist(id), "Match") {
@@ -195,7 +195,7 @@ func PostEliminationById(context *gin.Context, data database.Elimination) (bool,
 //	@Param			Elimination	body	string	true	"Elimination"
 //	@Success		200			string	string
 //	@Failure		400			string	string
-//	@Router			/api/elimination [post]
+//	@Router			/elimination [post]
 func PostElimination(context *gin.Context) {
 	var data database.Elimination
 	err := context.BindJSON(&data)
@@ -223,7 +223,7 @@ func PostElimination(context *gin.Context) {
 //	@Param			Stage	body	string	true	"Stage"
 //	@Success		200		string	string
 //	@Failure		400		string	string
-//	@Router			/api/elimination/stage [post]
+//	@Router			/elimination/stage [post]
 func PostStage(context *gin.Context) {
 	var data database.Stage
 	err := context.BindJSON(&data)
@@ -253,7 +253,7 @@ func PostStage(context *gin.Context) {
 //	@Param			Match	body	string	true	"Match"
 //	@Success		200		string	string
 //	@Failure		400		string	string
-//	@Router			/api/elimination/match [post]
+//	@Router			/elimination/match [post]
 func PostMatch(context *gin.Context) {
 	type MatchData struct {
 		StageId      uint   `json:"stage_id"`
@@ -343,7 +343,7 @@ func PostMatch(context *gin.Context) {
 //	@Param			id	path	int	true	"Elimination ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/api/elimination/currentstage/plus/{id} [put]
+//	@Router			/elimination/currentstage/plus/{id} [put]
 func PutEliminationCurrentStagePlusById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
@@ -365,7 +365,7 @@ func PutEliminationCurrentStagePlusById(context *gin.Context) {
 //	@Param			id	path	int	true	"Elimination ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/api/elimination/currentstage/minus/{id} [put]
+//	@Router			/elimination/currentstage/minus/{id} [put]
 func PutEliminationCurrentStageMinusById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
@@ -387,7 +387,7 @@ func PutEliminationCurrentStageMinusById(context *gin.Context) {
 //	@Param			id	path	int	true	"Elimination ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/api/elimination/currentend/plus/{id} [put]
+//	@Router			/elimination/currentend/plus/{id} [put]
 func PutEliminationCurrentEndPlusById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
@@ -409,7 +409,7 @@ func PutEliminationCurrentEndPlusById(context *gin.Context) {
 //	@Param			id	path	int	true	"Elimination ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/api/elimination/currentend/minus/{id} [put]
+//	@Router			/elimination/currentend/minus/{id} [put]
 func PutEliminationCurrentEndMinusById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
@@ -434,7 +434,7 @@ func PutEliminationCurrentEndMinusById(context *gin.Context) {
 //	@Success		200	string	string
 //	@Success		204	string	string
 //	@Failure		400	string	string
-//	@Router			/api/elimination/{id} [delete]
+//	@Router			/elimination/{id} [delete]
 func DeleteElimination(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	isChanged, err := database.DeleteElimination(id)

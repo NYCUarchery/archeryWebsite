@@ -42,7 +42,7 @@ func IsGetMatchResultWScoresById(context *gin.Context, id uint) (bool, database.
 //	@Param			id	path	int	true	"MatchResult ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/api/matchresult/{id} [get]
+//	@Router			/matchresult/{id} [get]
 func GetMatchResultById(context *gin.Context) {
 	uid := Convert2uint(context, "id")
 	isExist, data := IsGetMatchResult(context, uid)
@@ -61,7 +61,7 @@ func GetMatchResultById(context *gin.Context) {
 //	@Param			id	path	int	true	"MatchResult ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/api/matchresult/scores/{id} [get]
+//	@Router			/matchresult/scores/{id} [get]
 func GetMatchResultWScoresById(context *gin.Context) {
 	uid := Convert2uint(context, "id")
 	isExist, data := IsGetMatchResultWScoresById(context, uid)
@@ -113,7 +113,7 @@ func PostMatchEndByMatchResultId(context *gin.Context, matchResultId uint, teams
 //	@Param			matchEndData	body	string	true	"matchEndData"
 //	@Success		200				string	string
 //	@Failure		400				string	string
-//	@Router			/api/matchresult/matchend [post]
+//	@Router			/matchresult/matchend [post]
 func PostMatchEnd(context *gin.Context) {
 	type matchEndData struct {
 		MatchResultId uint `json:"match_result_id"`
@@ -158,7 +158,7 @@ func PostMatchScore(context *gin.Context, matchEndId uint) bool {
 //	@Param			MatchResult	body	string	true	"MatchResult"
 //	@Success		200			string	string
 //	@Failure		400			string	string
-//	@Router			/api/matchresult/totalpoints/{id} [put]
+//	@Router			/matchresult/totalpoints/{id} [put]
 func PutMatchResultTotalPointsById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	var data database.MatchResult
@@ -186,7 +186,7 @@ func PutMatchResultTotalPointsById(context *gin.Context) {
 //	@Param			MatchResult	body	string	true	"MatchResult"
 //	@Success		200			string	string
 //	@Failure		400			string	string
-//	@Router			/api/matchresult/shootoffscore/{id} [put]
+//	@Router			/matchresult/shootoffscore/{id} [put]
 func PutMatchResultShootOffScoreById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	var data database.MatchResult
@@ -214,7 +214,7 @@ func PutMatchResultShootOffScoreById(context *gin.Context) {
 //	@Param			MatchResult	body	string	true	"MatchResult"
 //	@Success		200			string	string
 //	@Failure		400			string	string
-//	@Router			/api/matchresult/iswinner/{id} [put]
+//	@Router			/matchresult/iswinner/{id} [put]
 func PutMatchResultIsWinnerById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	var data database.MatchResult
@@ -242,7 +242,7 @@ func PutMatchResultIsWinnerById(context *gin.Context) {
 //	@Param			MatchResult	body	string	true	"MatchResult"
 //	@Success		200			string	string
 //	@Failure		400			string	string
-//	@Router			/api/matchresult/lanenumber/{id} [put]
+//	@Router			/matchresult/lanenumber/{id} [put]
 func PutMatchResultLaneNumberById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	var data database.MatchResult
@@ -270,7 +270,7 @@ func PutMatchResultLaneNumberById(context *gin.Context) {
 //	@Param			MatchEnd	body	string	true	"MatchEnd"
 //	@Success		200			string	string
 //	@Failure		400			string	string
-//	@Router			/api/matchend/totalscores/{id} [put]
+//	@Router			/matchend/totalscores/{id} [put]
 func PutMatchEndsTotalScoresById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	var data database.MatchEnd
@@ -299,7 +299,7 @@ func PutMatchEndsTotalScoresById(context *gin.Context) {
 //	@Param			matchEndScoresData	body	string	true	"matchEndScoresData"
 //	@Success		200					string	string
 //	@Failure		400					string	string
-//	@Router			/api/matchend/scores/{id} [put]
+//	@Router			/matchend/scores/{id} [put]
 func PutMatchEndsScoresById(context *gin.Context) {
 	type matchEndScoresData struct {
 		TotalScore    int    `json:"total_scores"`
@@ -347,7 +347,7 @@ func PutMatchEndsScoresById(context *gin.Context) {
 //	@Param			MatchEnd	body	string	true	"MatchEnd"
 //	@Success		200			string	string
 //	@Failure		400			string	string
-//	@Router			/api/matchend/isconfirmed/{id} [put]
+//	@Router			/matchend/isconfirmed/{id} [put]
 func PutMatchEndsIsConfirmedById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	var data database.MatchEnd
@@ -375,7 +375,7 @@ func PutMatchEndsIsConfirmedById(context *gin.Context) {
 //	@Param			MatchScore	body	string	true	"MatchScore"
 //	@Success		200			string	string
 //	@Failure		400			string	string
-//	@Router			/api/matchscore/score/{id} [put]
+//	@Router			/matchscore/score/{id} [put]
 func PutMatchScoreScoreById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	var data database.MatchScore
@@ -416,7 +416,7 @@ func PutMatchScoreScoreById(context *gin.Context) {
 //	@Param			id	path	int	true	"MatchResult ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/api/matchresult/{id} [delete]
+//	@Router			/matchresult/{id} [delete]
 func DeleteMatchResultById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	if response.ErrorIdTest(context, id, database.GetMatchResultIsExist(id), "MatchResult") {

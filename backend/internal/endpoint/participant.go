@@ -46,7 +46,7 @@ type NewParticipantInfo struct {
 //	@Failure		400					string	string						"user ID is not exist"
 //	@Failure		400					string	string						"competition ID is not exist"
 //	@Failure		500					string	string						"db error"
-//	@Router			/api/participant/ [post]
+//	@Router			/participant/ [post]
 func PostParticipant(c *gin.Context) {
 	var newParticipantInfo NewParticipantInfo
 	if err := c.ShouldBindJSON(&newParticipantInfo); err != nil {
@@ -102,7 +102,7 @@ func IsGetParticipant(context *gin.Context, id uint) (bool, database.Participant
 //	@Param			id	path	int	true	"Participant ID"
 //	@Success		200	string	string
 //	@Failure		400	string	string
-//	@Router			/api/participant/{id} [get]
+//	@Router			/participant/{id} [get]
 func GetParticipantById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	isExist, data := IsGetParticipant(context, id)
@@ -121,7 +121,7 @@ func GetParticipantById(context *gin.Context) {
 //	@Param			user_id	body	int	true	"user ID"
 //	@Success		200		string	string
 //	@Failure		400		string	string
-//	@Router			/api/participant/user [get]
+//	@Router			/participant/user [get]
 func GetParticipantByUserId(context *gin.Context) {
 	userId := Convert2uint(context, "userid")
 	var newData []database.Participant
@@ -144,7 +144,7 @@ func GetParticipantByUserId(context *gin.Context) {
 //	@Param			competition_id	body	int	true	"competition ID"
 //	@Success		200				string	string
 //	@Failure		400				string	string
-//	@Router			/api/participant/competition [get]
+//	@Router			/participant/competition [get]
 func GetParticipantByCompetitionId(context *gin.Context) {
 	competitionId := Convert2uint(context, "competitionid")
 	var newData []ParticipantWName
@@ -182,7 +182,7 @@ func GetParticipantByCompetitionId(context *gin.Context) {
 //	@Param			user_id			body	int	true	"user ID"
 //	@Success		200				string	string
 //	@Failure		400				string	string
-//	@Router			/api/participant/competition/user [get]
+//	@Router			/participant/competition/user [get]
 func GetParticipantByCompetitionIdUserId(context *gin.Context) {
 	competitionId := Convert2uint(context, "competitionid")
 	userId := Convert2uint(context, "userid")
@@ -212,8 +212,8 @@ func GetParticipantByCompetitionIdUserId(context *gin.Context) {
 //	@Failure		400			string	string
 //	@Failure		404			string	string
 //	@Failure		500			string	string
-//	@Router			/api/participant/whole/{id} [put]
-func UpdateParticipant(context *gin.Context) {
+//	@Router			/participant/whole/{id} [put]
+func PutParticipant(context *gin.Context) {
 	var data database.Participant
 	err := context.BindJSON(&data)
 	id := Convert2uint(context, "id")
@@ -250,7 +250,7 @@ func UpdateParticipant(context *gin.Context) {
 //	@Success		200	string	string
 //	@Failure		400	string	string
 //	@Failure		404	string	string
-//	@Router			/api/participant/{id} [delete]
+//	@Router			/participant/{id} [delete]
 func DeleteParticipantById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	DeleteParticipaint(context, id)
