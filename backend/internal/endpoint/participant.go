@@ -141,10 +141,10 @@ func GetParticipantByUserId(context *gin.Context) {
 //	@Description	Get Participants By competition ID, including realname
 //	@Tags			Participant
 //	@Produce		json
-//	@Param			competition_id	body	int	true	"competition ID"
+//	@Param			competitionid	path	int	true	"competition ID"
 //	@Success		200				string	string
 //	@Failure		400				string	string
-//	@Router			/participant/competition [get]
+//	@Router			/participant/competition/{competitionid} [get]
 func GetParticipantByCompetitionId(context *gin.Context) {
 	competitionId := Convert2uint(context, "competitionid")
 	var newData []ParticipantWName

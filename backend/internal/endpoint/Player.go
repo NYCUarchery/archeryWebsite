@@ -43,13 +43,14 @@ func IsGetPlayerWScores(context *gin.Context, id uint) (bool, database.Player) {
 
 // Get One Player By ID godoc
 //
-//	@Summary		Show one Player without other data
+//	@Summary		Show one Player info without other data
 //	@Description	Get one Player without other data by id
 //	@Tags			Player
 //	@Produce		json
-//	@Param			id	path	int	true	"Player ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			id	path		int																true	"Player ID"
+//	@Success		200	{object}	database.Player{rounds=response.Nill,player_sets=response.Nill}	"success, but no rounds, player sets"
+//	@Failure		400	{object}	response.ErrorIdResponse										"invalid player id parameter, may not exist"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse								"internal db error"
 //	@Router			/player/{id} [get]
 func GetOnlyPlayerByID(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -66,9 +67,10 @@ func GetOnlyPlayerByID(context *gin.Context) {
 //	@Description	Get one Player with rounds, roundends, roundscores by id
 //	@Tags			Player
 //	@Produce		json
-//	@Param			id	path	int	true	"Player ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			id	path		int																																	true	"Player ID"
+//	@Success		200	{object}	database.Player{player_sets=response.Nill,rounds=database.Round{round_ends=database.RoundEnd{round_scores=database.RoundScore}}}	"success, show rounds, roundends, roundscores, but no player sets"
+//	@Failure		400	{object}	response.ErrorIdResponse																											"invalid player id parameter, may not exist"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse																									"internal db error"
 //	@Router			/player/scores/{id} [get]
 func GetPlayerWScoresByID(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -85,10 +87,12 @@ func GetPlayerWScoresByID(context *gin.Context) {
 //	@Description	Get one Player with player sets by id and elimination id
 //	@Tags			Player
 //	@Produce		json
-//	@Param			id				path	int	true	"Player ID"
-//	@Param			eliminationid	path	int	true	"Elimination ID"
-//	@Success		200				string	string
-//	@Failure		400				string	string
+//	@Param			id				path		int										true	"Player ID"
+//	@Param			eliminationid	path		int										true	"Elimination ID"
+//	@Success		200				{object}	database.Player{rounds=response.Nill}	"success, show player sets, but no rounds"
+//	@Failure		400				{object}	response.ErrorIdResponse				"invalid player id parameter, may not exist"
+//	@Failure		400				{object}	response.ErrorIdResponse				"invalid elimination id parameter, may not exist"
+//	@Failure		500				{object}	response.ErrorInternalErrorResponse		"internal db error"
 //	@Router			/player/playersets/{id}/{eliminationid} [get]
 func GetPlayerWPlayerSetsByIDEliminationID(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -109,12 +113,14 @@ func GetPlayerWPlayerSetsByIDEliminationID(context *gin.Context) {
 // Post one Player By Participant ID godoc
 //
 //	@Summary		Create one Player by Participant ID
-//	@Description	Create one Player by participant id, create realeted rounds by laneNum of competition, create 6 roundscores for each 6 roundends, UnassignedLane playerNum ++
+//	@Description	Create one Player by participant id
+//	@Description	Create related rounds by laneNum of competition, create 6 roundscores for each 6 roundends, UnassignedLane playerNum ++
 //	@Tags			Player
 //	@Produce		json
-//	@Param			participantid	path	int	true	"Participant ID"
-//	@Success		200				string	string
-//	@Failure		400				string	string
+//	@Param			participantid	path		int																true	"Participant ID"
+//	@Success		200				{object}	database.Player{rounds=response.Nill,player_sets=response.Nill}	"success, show player info"
+//	@Failure		400				{object}	response.ErrorIdResponse										"invalid participant id parameter, may not exist"
+//	@Failure		500				{object}	response.ErrorInternalErrorResponse								"internal db error to create player, round, roundend, roundscore"
 //	@Router			/player/{participantid} [post]
 func PostPlayer(context *gin.Context) {
 	var data database.Player
@@ -187,10 +193,16 @@ func PostPlayer(context *gin.Context) {
 //	@Tags			Player
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			RoundEnd	body		endpoint.PostRoundEnd.RoundEndData	true	"RoundEnd"
+//	@Success		200			{object}	database.RoundEnd					"success, show roundend info"
+//	@Failure		400			{object}	response.ErrorIdResponse			"invalid round id parameter, may not exist"
+//	@Failure		500			{object}	response.ErrorInternalErrorResponse	"internal db error for creating roundend"
 //	@Router			/player/roundend [post]
 func PostRoundEnd(context *gin.Context) {
+	type RoundEndData struct {
+		RoundId uint `json:"round_id"`
+	}
+	_ = RoundEndData{}
 	var data database.RoundEnd
 	err := context.BindJSON(&data)
 	if response.ErrorReceiveDataTest(context, 0, "Create RoundEnd", err) {
@@ -210,12 +222,14 @@ func PostRoundEnd(context *gin.Context) {
 // Post one RoundScore By RoundEnd ID godoc
 //
 //	@Summary		Create one RoundScore by RoundEnd ID
-//	@Description	Create one RoundScore by roundend id
+//	@Description	Create one RoundScore by roundend id, and update total score in rounds
 //	@Tags			Player
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			RoundScore	body		endpoint.UpdateTotalScoreData		true	"RoundScore"
+//	@Success		200			{object}	database.RoundScore					"success, show roundscore info"
+//	@Failure		400			{object}	response.ErrorIdResponse			"invalid roundend id, player id, round id parameter, may not exist"
+//	@Failure		500			{object}	response.ErrorInternalErrorResponse	"internal db error for creating roundscore, get old score, update total score"
 //	@Router			/player/roundscore [post]
 func PostRoundScore(context *gin.Context) {
 	var data UpdateTotalScoreData
@@ -231,9 +245,9 @@ func PostRoundScore(context *gin.Context) {
 		return
 	} else if response.ErrorIdTest(context, roundEndId, database.GetRoundEndIsExist(roundEndId), "RoundEnd when creating RoundScore") {
 		return
-	}
-	if err != nil {
-		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	} else if response.ErrorIdTest(context, playerId, database.GetPlayerIsExist(playerId), "Player when creating RoundScore") {
+		return
+	} else if response.ErrorIdTest(context, roundId, database.GetRoundIsExist(roundId), "Round when creating RoundScore") {
 		return
 	}
 	newRoundScore, err := database.CreateRoundScore(roundScore)
@@ -245,7 +259,6 @@ func PostRoundScore(context *gin.Context) {
 	if !UpdatePlayerTotalScoreWithOneScore(context, playerId, roundId, score) {
 		return
 	}
-	response.AcceptPrint(newRoundScore.ID, fmt.Sprint(newRoundScore.ID), "Create RoundScore")
 	context.IndentedJSON(200, newRoundScore)
 }
 
@@ -279,11 +292,17 @@ func IsUpdatePlayerLaneId(context *gin.Context, playerId uint, laneId uint) bool
 //	@Tags			Player
 //	@Accept			json
 //	@Produce		json
-//	@Param			playerid	path	int	true	"Player ID"
-//	@Success		200			string	string
-//	@Failure		400			string	string
-//	@Router			/player/groupid/{playerid}/{groupid} [put]
+//	@Param			playerid	path		int																true	"Player ID"
+//	@Param			groupid		body		endpoint.PutPlayerGroupId.UpdateGroupIdData						true	"UpdateGroupIdData"
+//	@Success		200			{object}	database.Player{rounds=response.Nill,player_sets=response.Nill}	"success, show player info"
+//	@Failure		400			{object}	response.ErrorIdResponse										"invalid player id, group id parameter, may not exist"
+//	@Failure		500			{object}	response.ErrorInternalErrorResponse								"internal db error for updating player groupId, or get player info, or get unassigned lane id"
+//	@Router			/player/group/{playerid} [put]
 func PutPlayerGroupId(context *gin.Context) {
+	type UpdateGroupIdData struct {
+		GroupId uint `json:"group_id"`
+	}
+	_ = UpdateGroupIdData{}
 	var data database.Player
 	playerId := Convert2uint(context, "id")
 	err := context.BindJSON(&data)
@@ -322,11 +341,17 @@ func PutPlayerGroupId(context *gin.Context) {
 //	@Tags			Player
 //	@Accept			json
 //	@Produce		json
-//	@Param			playerid	path	int	true	"Player ID"
-//	@Success		200			string	string
-//	@Failure		400			string	string
-//	@Router			/player/laneid/{playerid} [put]
+//	@Param			id		path		int																true	"Player ID"
+//	@Param			data	body		endpoint.PutPlayerLaneId.UpdateLaneIdData						true	"UpdateLaneIdData"
+//	@Success		200		{object}	database.Player{rounds=response.Nill,player_sets=response.Nill}	"success, show player info"
+//	@Failure		400		{object}	response.ErrorIdResponse										"invalid player id, lane id parameter, may not exist"
+//	@Failure		500		{object}	response.ErrorInternalErrorResponse								"internal db error for updating player laneid, or get player info"
+//	@Router			/player/lane/{id} [put]
 func PutPlayerLaneId(context *gin.Context) {
+	type UpdateLaneIdData struct {
+		LaneId uint `json:"lane_id"`
+	}
+	_ = UpdateLaneIdData{}
 	var data database.Player
 	playerId := Convert2uint(context, "id")
 	err := context.BindJSON(&data)
@@ -334,11 +359,9 @@ func PutPlayerLaneId(context *gin.Context) {
 	if response.ErrorReceiveDataTest(context, playerId, "Update Player laneId", err) {
 		return
 	}
-
 	if !IsUpdatePlayerLaneId(context, playerId, laneId) {
 		return
 	}
-
 	isExist, data := IsGetOnlyPlayer(context, playerId)
 	if !isExist {
 		return
@@ -353,11 +376,17 @@ func PutPlayerLaneId(context *gin.Context) {
 //	@Tags			Player
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path	int	true	"Player ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			id		path		int																true	"Player ID"
+//	@Param			data	body		endpoint.PutPlayerOrder.UpdateOrderData							true	"UpdateOrderData"
+//	@Success		200		{object}	database.Player{rounds=response.Nill,player_sets=response.Nill}	"success, show player info"
+//	@Failure		400		{object}	response.ErrorIdResponse										"invalid player id parameter, may not exist"
+//	@Failure		500		{object}	response.ErrorInternalErrorResponse								"internal db error for updating player order, or get player info"
 //	@Router			/player/order/{id} [put]
 func PutPlayerOrder(context *gin.Context) {
+	type UpdateOrderData struct {
+		Order int `json:"order"`
+	}
+	_ = UpdateOrderData{}
 	var data database.Player
 	playerId := Convert2uint(context, "id")
 	err := context.BindJSON(&data)
@@ -388,13 +417,19 @@ func PutPlayerOrder(context *gin.Context) {
 //	@Tags			Player
 //	@Accept			json
 //	@Produce		json
-//	@Param			roundendid	path	int	true	"RoundEnd ID"
-//	@Success		200			string	string
-//	@Failure		400			string	string
+//	@Param			roundendid	path		int													true	"RoundEnd ID"
+//	@Param			data		body		endpoint.PutPlayerIsConfirmed.UpdateIsConfirmedData	true	"UpdateIsConfirmedData"
+//	@Success		200			{object}	response.Nill										"success"
+//	@Failure		400			{object}	response.ErrorIdResponse							"invalid roundend id parameter, may not exist"
+//	@Failure		500			{object}	response.ErrorInternalErrorResponse					"internal db error for updating player isConfirmed"
 //	@Router			/player/isconfirmed/{roundendid} [put]
 func PutPlayerIsConfirmed(context *gin.Context) {
+	type UpdateIsConfirmedData struct {
+		IsConfirmed bool `json:"is_confirmed"`
+	}
+	_ = UpdateIsConfirmedData{}
 	var newRoundEnd database.RoundEnd
-	roundEndId := Convert2uint(context, "id")
+	roundEndId := Convert2uint(context, "roundendid")
 	err := context.BindJSON(&newRoundEnd)
 	if response.ErrorReceiveDataTest(context, roundEndId, "Update Player isConfirmed", err) {
 		return
@@ -407,7 +442,6 @@ func PutPlayerIsConfirmed(context *gin.Context) {
 	if response.ErrorInternalErrorTest(context, roundEndId, "Update Player isConfirmed", err) {
 		return
 	}
-
 	context.IndentedJSON(200, nil)
 }
 
@@ -420,33 +454,21 @@ func UpdatePlayerTotalScoreWithOneScore(context *gin.Context, playerId uint, rou
 		return false
 	}
 	/*get old total score*/
-	fmt.Printf("score: %d\n", score)
 	oldPlayerTotalScore, err := database.GetPlayerTotalScoreByPlayerId(playerId)
-	fmt.Printf("oldPlayerTotalScore: %d\n", oldPlayerTotalScore)
 	if response.ErrorInternalErrorTest(context, playerId, "Get Player total score", err) {
 		return false
 	}
 	oldPlayerRoundTotalScore, err := database.GetPlayerRoundTotalScoreByRoundId(roundId)
-	fmt.Printf("oldPlayerRoundTotalScore: %d\n", oldPlayerRoundTotalScore)
 	if response.ErrorInternalErrorTest(context, roundId, "Get Player round total score", err) {
 		return false
 	}
 	/*update total score*/
-	err, isChanged := database.UpdatePlayerTotalScore(playerId, score+oldPlayerTotalScore)
+	err, _ = database.UpdatePlayerTotalScore(playerId, score+oldPlayerTotalScore)
 	if response.ErrorInternalErrorTest(context, playerId, "Update Player total score", err) {
 		return false
 	}
-	if !response.AcceptNotChange(context, playerId, isChanged) {
-		return false
-	}
-	err, isChanged = database.UpdatePlayerRoundTotalScore(roundId, score+oldPlayerRoundTotalScore)
-	if response.ErrorInternalErrorTest(context, roundId, "Update Player round total score", err) {
-		return false
-	}
-	if !response.AcceptNotChange(context, roundId, isChanged) {
-		return false
-	}
-	return true
+	err, _ = database.UpdatePlayerRoundTotalScore(roundId, score+oldPlayerRoundTotalScore)
+	return !response.ErrorInternalErrorTest(context, roundId, "Update Player round total score", err)
 }
 
 // Update one Player TotalScore By ID godoc
@@ -456,9 +478,12 @@ func UpdatePlayerTotalScoreWithOneScore(context *gin.Context, playerId uint, rou
 //	@Tags			Player
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path	int	true	"Player ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			id		path		int															true	"Player ID"
+//	@Param			data	body		endpoint.PutPlayerTotalScoreByplayerId.UpdateTotalScoreData	true	"UpdateTotalScoreData"
+//	@Success		200		{object}	response.Nill												"success"
+//	@Success		204		{object}	response.Nill												"no change"
+//	@Failure		400		{object}	response.ErrorIdResponse									"invalid player id parameter, may not exist"
+//	@Failure		500		{object}	response.ErrorInternalErrorResponse							"internal db error for updating player total score"
 //	@Router			/player/totalscore/{id} [put]
 func PutPlayerTotalScoreByplayerId(context *gin.Context) {
 	type UpdateTotalScoreData struct {
@@ -490,16 +515,19 @@ func PutPlayerTotalScoreByplayerId(context *gin.Context) {
 //
 //	@Summary		Update one Player score by id
 //	@Description	Update one Player score by id
+//	@Description	Update doesn't change total score in player, round, roundend
 //	@Tags			Player
 //	@Accept			json
 //	@Produce		json
-//	@Param			roundscoreid	path	int	true	"RoundScore ID"
-//	@Success		200				string	string
-//	@Failure		400				string	string
-//	@Router			/player/score/{roundscoreid} [put]
+//	@Param			roundscoreid	path		int									true	"RoundScore ID"
+//	@Param			data			body		endpoint.UpdateTotalScoreData		true	"UpdateTotalScoreData"
+//	@Success		200				{object}	response.Nill						"success"
+//	@Failure		400				{object}	response.ErrorIdResponse			"invalid roundscore id, player id, round id, roundend id parameter, may not exist"
+//	@Failure		500				{object}	response.ErrorInternalErrorResponse	"internal db error for updating player score, get old score, update total score"
+//	@Router			/player/roundscore/{roundscoreid} [put]
 func PutPlayerScore(context *gin.Context) {
 	var data UpdateTotalScoreData
-	roundScoreId := Convert2uint(context, "id")
+	roundScoreId := Convert2uint(context, "roundscoreid")
 	err := context.BindJSON(&data)
 	/*check data validity*/
 	if response.ErrorReceiveDataTest(context, roundScoreId, "Update Player score", err) {
@@ -557,11 +585,17 @@ func PutPlayerScore(context *gin.Context) {
 //	@Tags			Player
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path	int	true	"Player ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			id		path		int																true	"Player ID"
+//	@Param			data	body		endpoint.PutPlayerShootoffScore.UpdateShootoffScoreData			true	"UpdateShootoffScoreData"
+//	@Success		200		{object}	database.Player{rounds=response.Nill,player_sets=response.Nill}	"success, show player info"
+//	@Failure		400		{object}	response.ErrorIdResponse										"invalid player id parameter, may not exist"
+//	@Failure		500		{object}	response.ErrorInternalErrorResponse								"internal db error for updating player shootoffScore, or get player info"
 //	@Router			/player/shootoffscore/{id} [put]
 func PutPlayerShootoffScore(context *gin.Context) {
+	type UpdateShootoffScoreData struct {
+		ShootOffScore int `json:"shoot_off_score"`
+	}
+	_ = UpdateShootoffScoreData{}
 	var data database.Player
 	playerId := Convert2uint(context, "id")
 	err := context.BindJSON(&data)
@@ -621,18 +655,19 @@ func RefreshPlayerTotalScore(context *gin.Context, playerId uint) {
 //	@Description	Should have a 6 element array scores array
 //	@Tags			Player
 //	@Accept			json
-//	@Param			id		path		int												true	"End ID"
+//	@Produce		json
+//	@Param			endid	path		int												true	"End ID"
 //	@Param			scores	body		endpoint.PutPlayerAllEndScoresByEndId.EndScores	true	"Scores"
-//	@Success		200		{object}	endpoint.PutPlayerAllEndScoresByEndId.EndScores
-//	@Failure		400		{object}	string
-//	@Failure		500		{object}	string
-//	@Router			/player/all-endscores/{id} [put]
+//	@Success		200		{object}	response.Nill									"success"
+//	@Failure		400		{object}	response.ErrorIdResponse						"invalid end id parameter, may not exist, or length of scores not equal to 6"
+//	@Failure		500		{object}	response.ErrorInternalErrorResponse				"internal db error for updating player end scores, get round score ids"
+//	@Router			/player/all-endscores/{endid} [put]
 func PutPlayerAllEndScoresByEndId(context *gin.Context) {
 	type EndScores struct {
 		Scores []int `json:"scores"`
 	}
 	var data EndScores
-	endId := Convert2uint(context, "id")
+	endId := Convert2uint(context, "endid")
 	err := context.BindJSON(&data)
 	if response.ErrorReceiveDataTest(context, endId, "Update player end scores", err) {
 		return
@@ -666,9 +701,10 @@ func PutPlayerAllEndScoresByEndId(context *gin.Context) {
 //	@Description	Delete one Player by id, delete related round, roundend, roundscore data, and playerNum minus one in lane
 //	@Tags			Player
 //	@Produce		json
-//	@Param			id	path	int	true	"Player ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			id	path		int									true	"Player ID"
+//	@Success		200	{object}	response.DeleteSuccessResponse		"successfully delete player"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid player id parameter, may not exist"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error for deleting player"
 //	@Router			/player/{id} [delete]
 func DeletePlayer(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -694,9 +730,10 @@ func DeletePlayerThroughCompetition(context *gin.Context, id uint) bool {
 //	@Description	Get dummy players by participant id
 //	@Tags			Player
 //	@Produce		json
-//	@Param			participantid	path	int	true	"Participant ID"
-//	@Success		200				string	string
-//	@Failure		400				string	string
+//	@Param			participantid	path		int																	true	"Participant ID"
+//	@Success		200				{object}	[]database.Player{rounds=response.Nill,player_sets=response.Nill}	"success, show dummy players info"
+//	@Failure		400				{object}	response.ErrorIdResponse											"invalid participant id parameter, may not exist"
+//	@Failure		500				{object}	response.ErrorInternalErrorResponse									"internal db error for getting dummy players"
 //	@Router			/player/dummy/{participantid} [get]
 func GetDummyPlayerByParticipantId(context *gin.Context) {
 	var data []database.Player
@@ -718,9 +755,10 @@ func GetDummyPlayerByParticipantId(context *gin.Context) {
 //	@Description	Create dummy player by player id
 //	@Tags			Player
 //	@Produce		json
-//	@Param			playerid	path	int	true	"Player ID"
-//	@Success		200			string	string
-//	@Failure		400			string	string
+//	@Param			playerid	path		int																true	"Player ID"
+//	@Success		200			{object}	database.Player{rounds=response.Nill,player_sets=response.Nill}	"success, show dummy player info"
+//	@Failure		400			{object}	response.ErrorIdResponse										"invalid player id parameter, may not exist"
+//	@Failure		500			{object}	response.ErrorInternalErrorResponse								"internal db error for creating dummy player"
 //	@Router			/player/dummy/{playerid} [post]
 func PostDummyPlayerByPlayerId(context *gin.Context) {
 	id := Convert2uint(context, "playerid")

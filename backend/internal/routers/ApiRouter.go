@@ -34,7 +34,7 @@ func playerRouter(api *gin.RouterGroup) {
 	{
 		playerssr.GET("/:id", endpoint.GetOnlyPlayerByID)
 		playerssr.GET("/scores/:id", endpoint.GetPlayerWScoresByID)
-		playerssr.GET("/playersets/:id/:eliminationid", endpoint.GetPlayerWPlayerSetsByIDEliminationID)
+		playerssr.GET("/playersets/:id/:eliminationid", endpoint.GetPlayerWPlayerSetsByIDEliminationID) //
 
 		playerssr.POST("/:participantid", endpoint.PostPlayer)
 		playerssr.POST("/roundend", endpoint.PostRoundEnd)
@@ -42,11 +42,11 @@ func playerRouter(api *gin.RouterGroup) {
 		playerssr.PUT("/lane/:id", endpoint.PutPlayerLaneId)
 		playerssr.PUT("/group/:id", endpoint.PutPlayerGroupId)
 		playerssr.PUT("/order/:id", endpoint.PutPlayerOrder)
-		playerssr.PUT("/isconfirmed/:id", endpoint.PutPlayerIsConfirmed)
+		playerssr.PUT("/isconfirmed/:roundendid", endpoint.PutPlayerIsConfirmed)
 		playerssr.PUT("/totalscore/:id", endpoint.PutPlayerTotalScoreByplayerId)
-		playerssr.PUT("/roundscore/:id", endpoint.PutPlayerScore)
+		playerssr.PUT("/roundscore/:roundscoreid", endpoint.PutPlayerScore)
 		playerssr.PUT("/shootoffscore/:id", endpoint.PutPlayerShootoffScore)
-		playerssr.PUT("/all-endscores/:id", endpoint.PutPlayerAllEndScoresByEndId)
+		playerssr.PUT("/all-endscores/:endid", endpoint.PutPlayerAllEndScoresByEndId)
 		playerssr.DELETE("/:id", endpoint.DeletePlayer)
 
 		playerssr.GET("/dummy/:participantid", endpoint.GetDummyPlayerByParticipantId)
