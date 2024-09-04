@@ -38,14 +38,14 @@ type NewParticipantInfo struct {
 //	@Tags			Participant
 //	@Accept			json
 //	@Produce		json
-//	@Param			NewParticipantInfo	body	endpoint.NewParticipantInfo	true	"role"
-//	@Success		200					string	string						"success"
-//	@Failure		400					string	string						"invalid info"
-//	@Failure		400					string	string						"role is empty"
-//	@Failure		400					string	string						"participant exists"
-//	@Failure		400					string	string						"user ID is not exist"
-//	@Failure		400					string	string						"competition ID is not exist"
-//	@Failure		500					string	string						"db error"
+//	@Param			NewParticipantInfo	body		endpoint.NewParticipantInfo				true	"role"
+//	@Success		200					{object}	database.Participant					"success"
+//	@Failure		400					{object}	response.ErrorReceiveDataFormatResponse	"invalid info"
+//	@Failure		400					{object}	response.ErrorReceiveDataNilResponse	"role is empty"
+//	@Failure		400					{object}	response.ErrorReceiveDataResponse		"participant exists"
+//	@Failure		400					{object}	response.ErrorIdResponse				"user ID does not exist"
+//	@Failure		400					{object}	response.ErrorIdResponse				"competition ID is not exist"
+//	@Failure		500					{object}	response.ErrorInternalErrorResponse		"db error"
 //	@Router			/participant/ [post]
 func PostParticipant(c *gin.Context) {
 	var newParticipantInfo NewParticipantInfo
@@ -99,9 +99,10 @@ func IsGetParticipant(context *gin.Context, id uint) (bool, database.Participant
 //	@Description	Get One Participant By ID
 //	@Tags			Participant
 //	@Produce		json
-//	@Param			id	path	int	true	"Participant ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			id	path		int									true	"Participant ID"
+//	@Success		200	{object}	database.Participant				"success"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid participant id"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"db error"
 //	@Router			/participant/{id} [get]
 func GetParticipantById(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -118,9 +119,10 @@ func GetParticipantById(context *gin.Context) {
 //	@Description	Get Participants By user ID
 //	@Tags			Participant
 //	@Produce		json
-//	@Param			user_id	body	int	true	"user ID"
-//	@Success		200		string	string
-//	@Failure		400		string	string
+//	@Param			user_id	body		int									true	"user ID"
+//	@Success		200		{object}	[]database.Participant				"success"
+//	@Failure		400		{object}	response.ErrorIdResponse			"invalid user id"
+//	@Failure		500		{object}	response.ErrorInternalErrorResponse	"db error"
 //	@Router			/participant/user [get]
 func GetParticipantByUserId(context *gin.Context) {
 	userId := Convert2uint(context, "userid")
@@ -141,9 +143,10 @@ func GetParticipantByUserId(context *gin.Context) {
 //	@Description	Get Participants By competition ID, including realname
 //	@Tags			Participant
 //	@Produce		json
-//	@Param			competition_id	body	int	true	"competition ID"
-//	@Success		200				string	string
-//	@Failure		400				string	string
+//	@Param			competition_id	body		int									true	"competition ID"
+//	@Success		200				{object}	[]ParticipantWName					"success"
+//	@Failure		400				{object}	response.ErrorIdResponse			"invalid competition id"
+//	@Failure		500				{object}	response.ErrorInternalErrorResponse	"internal db error / Get participants by competition id / Get user by id"
 //	@Router			/participant/competition [get]
 func GetParticipantByCompetitionId(context *gin.Context) {
 	competitionId := Convert2uint(context, "competitionid")
@@ -158,7 +161,7 @@ func GetParticipantByCompetitionId(context *gin.Context) {
 	for _, participant := range participants {
 		var tempData ParticipantWName
 		user, err := database.FindByUserID(participant.UserID)
-		if response.ErrorInternalErrorTest(context, competitionId, "Get Participants by competition id", err) {
+		if response.ErrorInternalErrorTest(context, participant.UserID, "Get user by id", err) {
 			return
 		}
 		tempData.ID = participant.ID
@@ -178,10 +181,12 @@ func GetParticipantByCompetitionId(context *gin.Context) {
 //	@Description	Get Participants By competition ID and user ID
 //	@Tags			Participant
 //	@Produce		json
-//	@Param			competition_id	body	int	true	"competition ID"
-//	@Param			user_id			body	int	true	"user ID"
-//	@Success		200				string	string
-//	@Failure		400				string	string
+//	@Param			competition_id	body		int									true	"competition ID"
+//	@Param			user_id			body		int									true	"user ID"
+//	@Success		200				{object}	[]database.Participant				"success"
+//	@Failure		400				{object}	response.ErrorIdResponse			"invalid user id"
+//	@Failure		400				{object}	response.ErrorIdResponse			"invalid competition id"
+//	@Failure		500				{object}	response.ErrorInternalErrorResponse	"internal db error / Get participants by competition id and user id"
 //	@Router			/participant/competition/user [get]
 func GetParticipantByCompetitionIdUserId(context *gin.Context) {
 	competitionId := Convert2uint(context, "competitionid")
@@ -206,12 +211,12 @@ func GetParticipantByCompetitionIdUserId(context *gin.Context) {
 //	@Tags			Participant
 //	@Accept			json
 //	@Produce		json
-//	@Param			id			path	string	true	"Participant ID"
-//	@Param			Participant	body	string	true	"Participant"
-//	@Success		200			string	string
-//	@Failure		400			string	string
-//	@Failure		404			string	string
-//	@Failure		500			string	string
+//	@Param			id			path		string								true	"Participant ID"
+//	@Param			Participant	body		string								true	"Participant"
+//	@Success		200			{object}	database.Participant				"success"
+//	@Failure		400			{object}	response.ErrorReceiveDataResponse	"invalid participant"
+//	@Failure		400			{object}	response.ErrorIdResponse			"invalid participant id"
+//	@Failure		500			{object}	response.ErrorInternalErrorResponse	"internal db error / Update Participant"
 //	@Router			/participant/whole/{id} [put]
 func PutParticipant(context *gin.Context) {
 	var data database.Participant
@@ -246,10 +251,10 @@ func PutParticipant(context *gin.Context) {
 //	@Tags			Participant
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path	string	true	"Participant ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
-//	@Failure		404	string	string
+//	@Param			id	path		string								true	"Participant ID"
+//	@Success		200	{object}	response.DeleteSuccessResponse		"success"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid participant id"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error / Delete Participant"
 //	@Router			/participant/{id} [delete]
 func DeleteParticipantById(context *gin.Context) {
 	id := Convert2uint(context, "id")
