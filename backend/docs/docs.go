@@ -2706,15 +2706,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/database.Medal"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid elimination id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error / Get Medal Info By Elimination Id",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -2785,15 +2791,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/database.Medal"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid medal id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error / Get Medal By Id",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -4965,6 +4977,23 @@ const docTemplate = `{
                     }
                 },
                 "qualification_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "database.Medal": {
+            "type": "object",
+            "properties": {
+                "elimination_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "player_set_id": {
+                    "type": "integer"
+                },
+                "type": {
                     "type": "integer"
                 }
             }
