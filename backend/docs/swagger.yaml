@@ -359,6 +359,12 @@ definitions:
         example: 'bad request data ID(1): sth error'
         type: string
     type: object
+  response.ErrorResponse:
+    properties:
+      error:
+        example: error description
+        type: string
+    type: object
   response.Nill:
     type: object
   response.Response:
@@ -2229,13 +2235,16 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
-          schema:
-            type: string
+          description: success
         "400":
-          description: Bad Request
+          description: elimination id of medal and playerset is not same
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorReceiveDataFormatResponse'
+        "500":
+          description: internal db error / Get Medal By Id / Get Player Set By Id
+            / Update Medal PLayer Set Id
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Update medal's player set id by id
       tags:
       - Medal
@@ -3410,13 +3419,17 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: already loginned
           schema:
-            type: string
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: invalid login info
+          schema:
+            $ref: '#/definitions/response.ErrorReceiveDataFormatResponse'
         "401":
-          description: Unauthorized
+          description: incorrect password
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorResponse'
       summary: login
       tags:
       - Session

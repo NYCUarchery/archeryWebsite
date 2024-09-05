@@ -2756,15 +2756,18 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
+                        "description": "success"
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "elimination id of medal and playerset is not same",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorReceiveDataFormatResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error / Get Medal By Id / Get Player Set By Id / Update Medal PLayer Set Id",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -4543,15 +4546,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "already loginned",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid login info",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorReceiveDataFormatResponse"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "incorrect password",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -5394,6 +5403,15 @@ const docTemplate = `{
                 "error": {
                     "type": "string",
                     "example": "bad request data ID(1): sth error"
+                }
+            }
+        },
+        "response.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "error description"
                 }
             }
         },

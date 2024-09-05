@@ -45,10 +45,10 @@ func IsGetMedalsByEliminationId(context *gin.Context, id uint) (bool, []database
 //	@Description	get one medal by id
 //	@Tags			Medal
 //	@Produce		json
-//	@Param			id	path	int	true	"Medal ID"
-//	@Success		200	{object}	database.Medal							"success"
-//	@Failure		400	{object}	response.ErrorIdResponse				"invalid medal id"
-//	@Failure		500	{object}	response.ErrorInternalErrorResponse		"internal db error / Get Medal By Id"
+//	@Param			id	path		int									true	"Medal ID"
+//	@Success		200	{object}	database.Medal						"success"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid medal id"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error / Get Medal By Id"
 //	@Router			/medal/{id} [get]
 func GetMedalById(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -65,10 +65,10 @@ func GetMedalById(context *gin.Context) {
 //	@Description	get medals of elimination by elimination id
 //	@Tags			Medal
 //	@Produce		json
-//	@Param			id	path	int	true	"elimination ID"
-//	@Success		200	{object}	database.Medal							"success"
-//	@Failure		400	{object}	response.ErrorIdResponse				"invalid elimination id"
-//	@Failure		500	{object}	response.ErrorInternalErrorResponse		"internal db error / Get Medal Info By Elimination Id"
+//	@Param			id	path		int									true	"elimination ID"
+//	@Success		200	{object}	database.Medal						"success"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid elimination id"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error / Get Medal Info By Elimination Id"
 //	@Router			/medal/elimination/{id} [get]
 func GetMedalInfoByEliminationId(context *gin.Context) {
 	eliminationId := Convert2uint(context, "eliminationid")
@@ -85,13 +85,13 @@ func GetMedalInfoByEliminationId(context *gin.Context) {
 //	@Description	update medal's player set id by id
 //	@Tags			Medal
 //	@Produce		json
-//	@Param			id			path	int		true	"Medal ID"
-//	@Param			PlayerSetId	body	string	true	"PlayerSetId"
-//	@Success		200	{object}	nil							"success"
-//	@Failure		400	{object}	response.ErrorIdResponse				"invalid medal id"
-//	@Failure		400	{object}	response.ErrorIdResponse				"invalid playerset id"
-//	@Failure		400	{object}	response.ErrorReceiveDataFromatResponse	"elimination id of medal and playerset is not same"
-//	@Failure		500	{object}	response.ErrorInternalErrorResponse		"internal db error / Get Medal By Id / Get Player Set By Id / Update Medal PLayer Set Id"
+//	@Param			id			path		int										true	"Medal ID"
+//	@Param			PlayerSetId	body		string									true	"PlayerSetId"
+//	@Success		200			{object}	nil										"success"
+//	@Failure		400			{object}	response.ErrorIdResponse				"invalid medal id"
+//	@Failure		400			{object}	response.ErrorIdResponse				"invalid playerset id"
+//	@Failure		400			{object}	response.ErrorReceiveDataFormatResponse	"elimination id of medal and playerset is not same"
+//	@Failure		500			{object}	response.ErrorInternalErrorResponse		"internal db error / Get Medal By Id / Get Player Set By Id / Update Medal PLayer Set Id"
 //	@Router			/medal/playersetid/{id} [put]
 func PutMedalPlayerSetIdById(context *gin.Context) {
 	type RequestBody struct {
