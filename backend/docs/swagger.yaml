@@ -73,6 +73,21 @@ definitions:
       name:
         type: string
     type: object
+  database.Lane:
+    properties:
+      competition_id:
+        type: integer
+      id:
+        type: integer
+      lane_number:
+        type: integer
+      players:
+        items:
+          $ref: '#/definitions/database.Player'
+        type: array
+      qualification_id:
+        type: integer
+    type: object
   database.Participant:
     properties:
       competitionID:
@@ -1732,13 +1747,17 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/database.Lane'
         "400":
-          description: Bad Request
+          description: invalid lane id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Get Lane By Id
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Lane
       tags:
       - Lane
@@ -1755,13 +1774,19 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: succsess
           schema:
-            type: string
+            items:
+              $ref: '#/definitions/database.Lane'
+            type: array
         "400":
-          description: Bad Request
+          description: invalid competition id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Get All Lane By Competition ID
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show all Lane of a competition
       tags:
       - Lane
@@ -1778,13 +1803,17 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/database.Lane'
         "400":
-          description: Bad Request
+          description: invalid lane id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Get Lane With Scores By Id
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Lane with players, rounds, roundends, roundscores
       tags:
       - Lane

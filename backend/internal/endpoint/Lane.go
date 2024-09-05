@@ -38,9 +38,10 @@ func IsGetLaneWPlayers(context *gin.Context, id uint) (bool, database.Lane) {
 //	@Description	Get one Lane by id
 //	@Tags			Lane
 //	@Produce		json
-//	@Param			id	path	int	true	"Lane ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			id	path		int									true	"Lane ID"
+//	@Success		200	{object}	database.Lane						"success"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid lane id"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error / Get Lane By Id"
 //	@Router			/lane/{id} [get]
 func GetLaneByID(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -57,9 +58,10 @@ func GetLaneByID(context *gin.Context) {
 //	@Description	Get one Lane with players, rounds, roundends, roundscores by id
 //	@Tags			Lane
 //	@Produce		json
-//	@Param			id	path	int	true	"Lane ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			id	path		int									true	"Lane ID"
+//	@Success		200	{object}	database.Lane						"success"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid lane id"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error / Get Lane With Scores By Id"
 //	@Router			/lane/scores/{id} [get]
 func GetLaneWScoresByID(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -76,9 +78,10 @@ func GetLaneWScoresByID(context *gin.Context) {
 //	@Description	Get all Lane by competition id
 //	@Tags			Lane
 //	@Produce		json
-//	@Param			id	path	int	true	"competition ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			id	path		int									true	"competition ID"
+//	@Success		200	{object}	[]database.Lane						"succsess"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid competition id"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error / Get All Lane By Competition ID"
 //	@Router			/lane/all/{id} [get]
 func GetAllLaneByCompetitionId(context *gin.Context) {
 	competitionId := Convert2uint(context, "competitionid")
