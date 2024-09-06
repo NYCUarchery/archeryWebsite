@@ -1138,21 +1138,45 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/endpoint.PostElimination.PostEliminationData"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, return one Elimination with new id",
                         "schema": {
-                            "type": "string"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Elimination"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "medals": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        },
+                                        "player_sets": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        },
+                                        "stages": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid group ID, maybe not exist",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error for Create Elimination",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -1176,15 +1200,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, return one Elimination with new current end",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.Nill"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid Elimination ID, maybe not exist",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error for Update Elimination CurrentStage",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -1208,15 +1238,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, return one Elimination with new current end",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.Nill"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid Elimination ID, maybe not exist",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error for Update Elimination CurrentStage",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -1240,15 +1276,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, return one Elimination with new current stage",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.Nill"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid Elimination ID, maybe not exist",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error for Update Elimination CurrentStage",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -1272,15 +1314,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, return one Elimination with new current stage",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.Nill"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid Elimination ID, maybe not exist",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error for Update Elimination CurrentStage",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -1288,7 +1336,7 @@ const docTemplate = `{
         },
         "/elimination/match": {
             "post": {
-                "description": "Post one new Match data with 2 matchResults\nEach matchResults with 4 or 5 matchEnds\nEach matchEnds with 3, 4, 6 matchScores",
+                "description": "Post one new Match data with 2 matchResults\nEach matchResults with 4 or 5 matchEnds with different teamSize\nEach matchEnds with 3, 4, 6 matchScores with different teamSize\ninput PlayerSetIds should have 2 playerSets in the same elimination\ninput LaneNumbers should have 2 laneNumbers for each playerset",
                 "consumes": [
                     "application/json"
                 ],
@@ -1306,21 +1354,27 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/endpoint.PostMatch.MatchData"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, return one Match with new id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/database.Match"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid stage ID, maybe not exist, or player set id should be 2, lane numbers should be 2",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error for Create Match, MatchResult, MatchEnd, MatchScore, or get Stage",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -1382,15 +1436,51 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, return one Elimination with player sets",
                         "schema": {
-                            "type": "string"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Elimination"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "medals": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        },
+                                        "player_sets": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/database.PlayerSet"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "players": {
+                                                            "$ref": "#/definitions/response.Nill"
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "stages": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid Elimination ID, maybe not exist",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error for Get Elimination",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -1417,15 +1507,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, return one Elimination with all scores",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/database.Elimination"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid Elimination ID, maybe not exist",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error for Get Elimination",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -1451,21 +1547,122 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/endpoint.PostStage.PostStageData"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, return one Stage with new id",
                         "schema": {
-                            "type": "string"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Stage"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "matchs": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid elimination ID, maybe not exist",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error for Create Stage",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/elimination/stages/matches/{id}": {
+            "get": {
+                "description": "Get one Elimination with stages, matches by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Elimination"
+                ],
+                "summary": "Show one Elimination with stages, matches",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Elimination ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success, return one Elimination with stages, matches",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Elimination"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "medals": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        },
+                                        "player_sets": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        },
+                                        "stages": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/database.Stage"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "matches": {
+                                                            "allOf": [
+                                                                {
+                                                                    "$ref": "#/definitions/database.Match"
+                                                                },
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "MatchResult": {
+                                                                            "$ref": "#/definitions/response.Nill"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            ]
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "invalid Elimination ID, maybe not exist",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error for Get Elimination",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -1492,50 +1689,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, return one Elimination with all related data",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/database.Elimination"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid Elimination ID, maybe not exist",
                         "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/elimination/stages/{id}": {
-            "get": {
-                "description": "Get one Elimination with stages, matches by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Elimination"
-                ],
-                "summary": "Show one Elimination with stages, matches",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Elimination ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "500": {
+                        "description": "internal db error for Get Elimination",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -1543,14 +1711,14 @@ const docTemplate = `{
         },
         "/elimination/{id}": {
             "get": {
-                "description": "Get one Elimination by id",
+                "description": "Get only one Elimination by id",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Elimination"
                 ],
-                "summary": "Show one Elimination",
+                "summary": "Show only one Elimination",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1562,15 +1730,39 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, return one Elimination without related data",
                         "schema": {
-                            "type": "string"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Elimination"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "medals": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        },
+                                        "player_sets": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        },
+                                        "stages": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid Elimination ID, maybe not exist",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error for Get Elimination",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -1598,21 +1790,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, return delete success message",
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "204": {
-                        "description": "No Content",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.DeleteSuccessResponse"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid Elimination ID, maybe not exist, or already deleted",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error for Delete Elimination",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -3865,6 +4057,21 @@ const docTemplate = `{
                                 {
                                     "type": "object",
                                     "properties": {
+                                        "player_sets": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/database.PlayerSet"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "players": {
+                                                            "$ref": "#/definitions/response.Nill"
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        },
                                         "rounds": {
                                             "$ref": "#/definitions/response.Nill"
                                         }
@@ -3874,7 +4081,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "invalid elimination id parameter, may not exist",
+                        "description": "invalid player id parameter, elimination id parameter, may not exist",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
@@ -4411,27 +4618,39 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/endpoint.PostPlayerSet.playerSetData"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, return player set without players",
                         "schema": {
-                            "type": "string"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.PlayerSet"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "players": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid elimination id, player id, maybe not exist",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal error for create player set, get player, create player set match table, get elimination",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -4634,21 +4853,48 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, return player set with players",
                         "schema": {
-                            "type": "string"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.PlayerSet"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "players": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/database.Player"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "player_sets": {
+                                                            "$ref": "#/definitions/response.Nill"
+                                                        },
+                                                        "rounds": {
+                                                            "$ref": "#/definitions/response.Nill"
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid player set id, maybe not exist",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal error for get player set by id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -5220,6 +5466,44 @@ const docTemplate = `{
                 }
             }
         },
+        "database.Elimination": {
+            "type": "object",
+            "properties": {
+                "current_end": {
+                    "type": "integer"
+                },
+                "current_stage": {
+                    "type": "integer"
+                },
+                "group_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "medals": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.Medal"
+                    }
+                },
+                "player_sets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.PlayerSet"
+                    }
+                },
+                "stages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.Stage"
+                    }
+                },
+                "team_size": {
+                    "type": "integer"
+                }
+            }
+        },
         "database.Group": {
             "type": "object",
             "properties": {
@@ -5257,6 +5541,112 @@ const docTemplate = `{
                 },
                 "name": {
                     "type": "string"
+                }
+            }
+        },
+        "database.Match": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "match_results": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.MatchResult"
+                    }
+                },
+                "stage_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "database.MatchEnd": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "is_confirmed": {
+                    "type": "boolean"
+                },
+                "match_result_id": {
+                    "type": "integer"
+                },
+                "match_scores": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.MatchScore"
+                    }
+                },
+                "total_scores": {
+                    "type": "integer"
+                }
+            }
+        },
+        "database.MatchResult": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "is_winner": {
+                    "type": "boolean"
+                },
+                "lane_number": {
+                    "type": "integer"
+                },
+                "match_ends": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.MatchEnd"
+                    }
+                },
+                "match_id": {
+                    "type": "integer"
+                },
+                "player_set": {
+                    "$ref": "#/definitions/database.PlayerSet"
+                },
+                "player_set_id": {
+                    "type": "integer"
+                },
+                "shoot_off_score": {
+                    "type": "integer"
+                },
+                "total_points": {
+                    "type": "integer"
+                }
+            }
+        },
+        "database.MatchScore": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "match_end_id": {
+                    "type": "integer"
+                },
+                "score": {
+                    "type": "integer"
+                }
+            }
+        },
+        "database.Medal": {
+            "type": "object",
+            "properties": {
+                "elimination_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "player_set_id": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "integer"
                 }
             }
         },
@@ -5401,6 +5791,23 @@ const docTemplate = `{
                 },
                 "score": {
                     "type": "integer"
+                }
+            }
+        },
+        "database.Stage": {
+            "type": "object",
+            "properties": {
+                "elimination_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "matchs": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.Match"
+                    }
                 }
             }
         },
@@ -5571,10 +5978,66 @@ const docTemplate = `{
                 }
             }
         },
+        "endpoint.PostElimination.PostEliminationData": {
+            "type": "object",
+            "properties": {
+                "group_id": {
+                    "type": "integer"
+                },
+                "team_size": {
+                    "type": "integer"
+                }
+            }
+        },
+        "endpoint.PostMatch.MatchData": {
+            "type": "object",
+            "properties": {
+                "lane_numbers": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "player_set_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "stage_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "endpoint.PostPlayerSet.playerSetData": {
+            "type": "object",
+            "properties": {
+                "elimination_id": {
+                    "type": "integer"
+                },
+                "player_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "set_name": {
+                    "type": "string"
+                }
+            }
+        },
         "endpoint.PostRoundEnd.RoundEndData": {
             "type": "object",
             "properties": {
                 "round_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "endpoint.PostStage.PostStageData": {
+            "type": "object",
+            "properties": {
+                "elimination_id": {
                     "type": "integer"
                 }
             }

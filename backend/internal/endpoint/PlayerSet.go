@@ -30,10 +30,10 @@ func IsGetPlayerSetById(context *gin.Context, id uint) (bool, database.PlayerSet
 //	@Description	Get player set with players by id
 //	@Tags			PlayerSet
 //	@Produce		json
-//	@Param			id	path	uint	true	"Player Set ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
-//	@Failure		500	string	string
+//	@Param			id	path		uint																						true	"Player Set ID"
+//	@Success		200	{object}	database.PlayerSet{players=database.Player{rounds=response.Nill,player_sets=response.Nill}}	"success, return player set with players"
+//	@Failure		400	{object}	response.ErrorIdResponse																	"invalid player set id, maybe not exist"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse															"internal error for get player set by id"
 //	@Router			/playerset/{id} [get]
 func GetPlayerSetWPlayerById(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -112,10 +112,10 @@ func GetPlayerSetsByMedalByEliminationId(context *gin.Context) {
 //	@Tags			PlayerSet
 //	@Accept			json
 //	@Produce		json
-//	@Param			data	body	string	true	"Player Set Data"
-//	@Success		200		string	string
-//	@Failure		400		string	string
-//	@Failure		500		string	string
+//	@Param			data	body		endpoint.PostPlayerSet.playerSetData		true	"Player Set Data"
+//	@Success		200		{object}	database.PlayerSet{players=response.Nill}	"success, return player set without players"
+//	@Failure		400		{object}	response.ErrorIdResponse					"invalid elimination id, player id, maybe not exist"
+//	@Failure		500		{object}	response.ErrorInternalErrorResponse			"internal error for create player set, get player, create player set match table, get elimination"
 //	@Router			/playerset [post]
 func PostPlayerSet(context *gin.Context) {
 	type playerSetData struct {

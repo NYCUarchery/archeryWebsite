@@ -47,6 +47,31 @@ definitions:
       unassigned_lane_id:
         type: integer
     type: object
+  database.Elimination:
+    properties:
+      current_end:
+        type: integer
+      current_stage:
+        type: integer
+      group_id:
+        type: integer
+      id:
+        type: integer
+      medals:
+        items:
+          $ref: '#/definitions/database.Medal'
+        type: array
+      player_sets:
+        items:
+          $ref: '#/definitions/database.PlayerSet'
+        type: array
+      stages:
+        items:
+          $ref: '#/definitions/database.Stage'
+        type: array
+      team_size:
+        type: integer
+    type: object
   database.Group:
     properties:
       bow_type:
@@ -72,6 +97,75 @@ definitions:
         type: integer
       name:
         type: string
+    type: object
+  database.Match:
+    properties:
+      id:
+        type: integer
+      match_results:
+        items:
+          $ref: '#/definitions/database.MatchResult'
+        type: array
+      stage_id:
+        type: integer
+    type: object
+  database.MatchEnd:
+    properties:
+      id:
+        type: integer
+      is_confirmed:
+        type: boolean
+      match_result_id:
+        type: integer
+      match_scores:
+        items:
+          $ref: '#/definitions/database.MatchScore'
+        type: array
+      total_scores:
+        type: integer
+    type: object
+  database.MatchResult:
+    properties:
+      id:
+        type: integer
+      is_winner:
+        type: boolean
+      lane_number:
+        type: integer
+      match_ends:
+        items:
+          $ref: '#/definitions/database.MatchEnd'
+        type: array
+      match_id:
+        type: integer
+      player_set:
+        $ref: '#/definitions/database.PlayerSet'
+      player_set_id:
+        type: integer
+      shoot_off_score:
+        type: integer
+      total_points:
+        type: integer
+    type: object
+  database.MatchScore:
+    properties:
+      id:
+        type: integer
+      match_end_id:
+        type: integer
+      score:
+        type: integer
+    type: object
+  database.Medal:
+    properties:
+      elimination_id:
+        type: integer
+      id:
+        type: integer
+      player_set_id:
+        type: integer
+      type:
+        type: integer
     type: object
   database.Participant:
     properties:
@@ -166,6 +260,17 @@ definitions:
         type: integer
       score:
         type: integer
+    type: object
+  database.Stage:
+    properties:
+      elimination_id:
+        type: integer
+      id:
+        type: integer
+      matchs:
+        items:
+          $ref: '#/definitions/database.Match'
+        type: array
     type: object
   database.User:
     properties:
@@ -275,9 +380,45 @@ definitions:
       title:
         type: string
     type: object
+  endpoint.PostElimination.PostEliminationData:
+    properties:
+      group_id:
+        type: integer
+      team_size:
+        type: integer
+    type: object
+  endpoint.PostMatch.MatchData:
+    properties:
+      lane_numbers:
+        items:
+          type: integer
+        type: array
+      player_set_ids:
+        items:
+          type: integer
+        type: array
+      stage_id:
+        type: integer
+    type: object
+  endpoint.PostPlayerSet.playerSetData:
+    properties:
+      elimination_id:
+        type: integer
+      player_ids:
+        items:
+          type: integer
+        type: array
+      set_name:
+        type: string
+    type: object
   endpoint.PostRoundEnd.RoundEndData:
     properties:
       round_id:
+        type: integer
+    type: object
+  endpoint.PostStage.PostStageData:
+    properties:
+      elimination_id:
         type: integer
     type: object
   endpoint.PutPlayerAllEndScoresByEndId.EndScores:
@@ -1125,18 +1266,31 @@ paths:
         name: Elimination
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PostElimination.PostEliminationData'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return one Elimination with new id
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Elimination'
+            - properties:
+                medals:
+                  $ref: '#/definitions/response.Nill'
+                player_sets:
+                  $ref: '#/definitions/response.Nill'
+                stages:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid group ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Create Elimination
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Create one Elimination
       tags:
       - Elimination
@@ -1155,22 +1309,22 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return delete success message
           schema:
-            type: string
-        "204":
-          description: No Content
-          schema:
-            type: string
+            $ref: '#/definitions/response.DeleteSuccessResponse'
         "400":
-          description: Bad Request
+          description: invalid Elimination ID, maybe not exist, or already deleted
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Delete Elimination
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Delete one Elimination, and related stages and matches
       tags:
       - Elimination
     get:
-      description: Get one Elimination by id
+      description: Get only one Elimination by id
       parameters:
       - description: Elimination ID
         in: path
@@ -1181,14 +1335,27 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return one Elimination without related data
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Elimination'
+            - properties:
+                medals:
+                  $ref: '#/definitions/response.Nill'
+                player_sets:
+                  $ref: '#/definitions/response.Nill'
+                stages:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid Elimination ID, maybe not exist
           schema:
-            type: string
-      summary: Show one Elimination
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Get Elimination
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show only one Elimination
       tags:
       - Elimination
   /elimination/currentend/minus/{id}:
@@ -1202,13 +1369,17 @@ paths:
         type: integer
       responses:
         "200":
-          description: OK
+          description: success, return one Elimination with new current end
           schema:
-            type: string
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid Elimination ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Update Elimination CurrentStage
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Update one Elimination current end minus one
       tags:
       - Elimination
@@ -1223,13 +1394,17 @@ paths:
         type: integer
       responses:
         "200":
-          description: OK
+          description: success, return one Elimination with new current end
           schema:
-            type: string
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid Elimination ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Update Elimination CurrentStage
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Update one Elimination current end plus one
       tags:
       - Elimination
@@ -1244,13 +1419,17 @@ paths:
         type: integer
       responses:
         "200":
-          description: OK
+          description: success, return one Elimination with new current stage
           schema:
-            type: string
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid Elimination ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Update Elimination CurrentStage
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Update one Elimination current stage minus one
       tags:
       - Elimination
@@ -1265,13 +1444,17 @@ paths:
         type: integer
       responses:
         "200":
-          description: OK
+          description: success, return one Elimination with new current stage
           schema:
-            type: string
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid Elimination ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Update Elimination CurrentStage
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Update one Elimination current stage plus one
       tags:
       - Elimination
@@ -1281,26 +1464,34 @@ paths:
       - application/json
       description: |-
         Post one new Match data with 2 matchResults
-        Each matchResults with 4 or 5 matchEnds
-        Each matchEnds with 3, 4, 6 matchScores
+        Each matchResults with 4 or 5 matchEnds with different teamSize
+        Each matchEnds with 3, 4, 6 matchScores with different teamSize
+        input PlayerSetIds should have 2 playerSets in the same elimination
+        input LaneNumbers should have 2 laneNumbers for each playerset
       parameters:
       - description: Match
         in: body
         name: Match
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PostMatch.MatchData'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return one Match with new id
           schema:
-            type: string
+            $ref: '#/definitions/database.Match'
         "400":
-          description: Bad Request
+          description: invalid stage ID, maybe not exist, or player set id should
+            be 2, lane numbers should be 2
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Create Match, MatchResult, MatchEnd,
+            MatchScore, or get Stage
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Create one Match
       tags:
       - Elimination
@@ -1341,13 +1532,31 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return one Elimination with player sets
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Elimination'
+            - properties:
+                medals:
+                  $ref: '#/definitions/response.Nill'
+                player_sets:
+                  allOf:
+                  - $ref: '#/definitions/database.PlayerSet'
+                  - properties:
+                      players:
+                        $ref: '#/definitions/response.Nill'
+                    type: object
+                stages:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid Elimination ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Get Elimination
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Elimination with player sets
       tags:
       - Elimination
@@ -1365,13 +1574,17 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return one Elimination with all scores
           schema:
-            type: string
+            $ref: '#/definitions/database.Elimination'
         "400":
-          description: Bad Request
+          description: invalid Elimination ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Get Elimination
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Elimination with all scores
       tags:
       - Elimination
@@ -1386,22 +1599,31 @@ paths:
         name: Stage
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PostStage.PostStageData'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return one Stage with new id
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Stage'
+            - properties:
+                matchs:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid elimination ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Create Stage
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Create one Stage
       tags:
       - Elimination
-  /elimination/stages/{id}:
+  /elimination/stages/matches/{id}:
     get:
       description: Get one Elimination with stages, matches by id
       parameters:
@@ -1414,13 +1636,36 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return one Elimination with stages, matches
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Elimination'
+            - properties:
+                medals:
+                  $ref: '#/definitions/response.Nill'
+                player_sets:
+                  $ref: '#/definitions/response.Nill'
+                stages:
+                  allOf:
+                  - $ref: '#/definitions/database.Stage'
+                  - properties:
+                      matches:
+                        allOf:
+                        - $ref: '#/definitions/database.Match'
+                        - properties:
+                            MatchResult:
+                              $ref: '#/definitions/response.Nill'
+                          type: object
+                    type: object
+              type: object
         "400":
-          description: Bad Request
+          description: invalid Elimination ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Get Elimination
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Elimination with stages, matches
       tags:
       - Elimination
@@ -1438,13 +1683,17 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return one Elimination with all related data
           schema:
-            type: string
+            $ref: '#/definitions/database.Elimination'
         "400":
-          description: Bad Request
+          description: invalid Elimination ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Get Elimination
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Elimination with all related data
       tags:
       - Elimination
@@ -3030,11 +3279,19 @@ paths:
             allOf:
             - $ref: '#/definitions/database.Player'
             - properties:
+                player_sets:
+                  allOf:
+                  - $ref: '#/definitions/database.PlayerSet'
+                  - properties:
+                      players:
+                        $ref: '#/definitions/response.Nill'
+                    type: object
                 rounds:
                   $ref: '#/definitions/response.Nill'
               type: object
         "400":
-          description: invalid elimination id parameter, may not exist
+          description: invalid player id parameter, elimination id parameter, may
+            not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
         "500":
@@ -3286,22 +3543,28 @@ paths:
         name: data
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PostPlayerSet.playerSetData'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return player set without players
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.PlayerSet'
+            - properties:
+                players:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid elimination id, player id, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: Internal Server Error
+          description: internal error for create player set, get player, create player
+            set match table, get elimination
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Post player set
       tags:
       - PlayerSet
@@ -3342,17 +3605,29 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return player set with players
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.PlayerSet'
+            - properties:
+                players:
+                  allOf:
+                  - $ref: '#/definitions/database.Player'
+                  - properties:
+                      player_sets:
+                        $ref: '#/definitions/response.Nill'
+                      rounds:
+                        $ref: '#/definitions/response.Nill'
+                    type: object
+              type: object
         "400":
-          description: Bad Request
+          description: invalid player set id, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: Internal Server Error
+          description: internal error for get player set by id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Get player set with players by id
       tags:
       - PlayerSet

@@ -87,12 +87,11 @@ func GetPlayerWScoresByID(context *gin.Context) {
 //	@Description	Get one Player with player sets by id and elimination id
 //	@Tags			Player
 //	@Produce		json
-//	@Param			id				path		int										true	"Player ID"
-//	@Param			eliminationid	path		int										true	"Elimination ID"
-//	@Success		200				{object}	database.Player{rounds=response.Nill}	"success, show player sets, but no rounds"
-//	@Failure		400				{object}	response.ErrorIdResponse				"invalid player id parameter, may not exist"
-//	@Failure		400				{object}	response.ErrorIdResponse				"invalid elimination id parameter, may not exist"
-//	@Failure		500				{object}	response.ErrorInternalErrorResponse		"internal db error"
+//	@Param			id				path		int																							true	"Player ID"
+//	@Param			eliminationid	path		int																							true	"Elimination ID"
+//	@Success		200				{object}	database.Player{rounds=response.Nill,player_sets=database.PlayerSet{players=response.Nill}}	"success, show player sets, but no rounds"
+//	@Failure		400				{object}	response.ErrorIdResponse																	"invalid player id parameter, elimination id parameter, may not exist"
+//	@Failure		500				{object}	response.ErrorInternalErrorResponse															"internal db error"
 //	@Router			/player/playersets/{id}/{eliminationid} [get]
 func GetPlayerWPlayerSetsByIDEliminationID(context *gin.Context) {
 	id := Convert2uint(context, "id")
