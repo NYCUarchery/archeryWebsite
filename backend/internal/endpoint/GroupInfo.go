@@ -33,13 +33,14 @@ func IsGetGroupInfo(context *gin.Context, id uint) (bool, database.Group) {
 
 // Get GroupInfo By ID godoc
 //
-//	@Summary		Show one GroupInfo
-//	@Description	Get one GroupInfo by id
+//	@Summary		Show only one GroupInfo
+//	@Description	Get only one GroupInfo by id
 //	@Tags			GroupInfo
 //	@Produce		json
-//	@Param			id	path	int	true	"LaneInfo ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			id	path		int										true	"LaneInfo ID"
+//	@Success		200	{object}	database.Group{players=response.Nill}	"success, get GroupInfo by id without related data"
+//	@Failure		400	{object}	response.ErrorIdResponse				"invalid GroupInfo ID, may not exist"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse		"database error for Get GroupInfo"
 //	@Router			/groupinfo/{id} [get]
 func GetGroupInfoByID(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -56,9 +57,10 @@ func GetGroupInfoByID(context *gin.Context) {
 //	@Description	Get one GroupInfo with players by id, usually ordered by rank
 //	@Tags			GroupInfo
 //	@Produce		json
-//	@Param			id	path	int	true	"GroupInfo ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			id	path		int																						true	"GroupInfo ID"
+//	@Success		200	{object}	database.Group{players=database.Player{player_sets=response.Nill,rounds=response.Nill}}	"success, get GroupInfo with players by id"
+//	@Failure		400	{object}	response.ErrorIdResponse																"invalid GroupInfo ID, may not exist"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse														"database error for Get GroupInfo with players"
 //	@Router			/groupinfo/players/{id} [get]
 func GetGroupInfoWPlayersByID(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -81,15 +83,27 @@ func GetGroupInfoWPlayersByID(context *gin.Context) {
 // Post GroupInfo godoc
 //
 //	@Summary		Create one GroupInfo
-//	@Description	Post one new GroupInfo data with new id, create qualification with same id, auto write GroupIndex, and auto create elimination
+//	@Description	Post one new GroupInfo data with new id
+//	@Description	Create qualification with same id
+//	@Description	Auto write GroupIndex
+//	@Description	Auto create elimination
 //	@Tags			GroupInfo
 //	@Accept			json
 //	@Produce		json
-//	@Param			GroupInfo	body	string	true	"LaneData"
-//	@Success		200			string	string
-//	@Failure		400			string	string
+//	@Param			GroupInfo	body		endpoint.PostGroupInfo.GroupData		true	"LaneData"
+//	@Success		200			{object}	database.Group{players=response.Nill}	"success, return new GroupInfo data"
+//	@Failure		400			{object}	response.ErrorIdResponse				"invalid Competition ID, may not exist"
+//	@Failure		500			{object}	response.ErrorInternalErrorResponse		"database error for Create GroupInfo, Create Qualification, Create Elimination, get Competition"
 //	@Router			/groupinfo [post]
 func PostGroupInfo(context *gin.Context) {
+	type GroupData struct {
+		CompetitionId uint   `json:"competition_id" `
+		GroupName     string `json:"group_name"`
+		GroupRange    string `json:"group_range"`
+		BowType       string `json:"bow_type"`
+		GroupIndex    int    `json:"group_index"`
+	}
+	_ = GroupData{}
 	var data database.Group
 	err := context.BindJSON(&data)
 	/*parse data check*/
@@ -155,18 +169,26 @@ func PostUnassignedGroupInfo(context *gin.Context, competitionId uint) (bool, ui
 // Update GroupInfo godoc
 //
 //	@Summary		update one GroupInfo
-//	@Description	Put whole new GroupInfo and overwrite with the id, cannot overwrite CompetitionId
+//	@Description	Put whole new GroupInfo and overwrite with the id
+//	@Description	Cannot overwrite CompetitionId
+//	@Description	Cannot overwrite UnassignedGroup
 //	@Tags			GroupInfo
 //	@Accept			json
 //	@Produce		json
-//	@Param			id			path	string	true	"GroupInfo ID"
-//	@Param			GroupInfo	body	string	true	"GroupInfo"
-//	@Success		200			string	string
-//	@Failure		400			string	string
-//	@Failure		404			string	string
-//	@Failure		500			string	string
+//	@Param			id			path		int										true	"GroupInfo ID"
+//	@Param			GroupInfo	body		endpoint.PutGroupInfo.GroupData			true	"GroupInfo"
+//	@Success		200			{object}	database.Group{players=response.Nill}	"success, return new updated GroupInfo data"
+//	@Failure		400			{object}	response.ErrorIdResponse				"invalid GroupInfo ID, may not exist"
+//	@Failure		500			{object}	response.ErrorInternalErrorResponse		"database error for Update GroupInfo, Get GroupInfo"
 //	@Router			/groupinfo/whole/{id} [put]
 func PutGroupInfo(context *gin.Context) {
+	type GroupData struct {
+		GroupName  string `json:"group_name"`
+		GroupRange string `json:"group_range"`
+		BowType    string `json:"bow_type"`
+		GroupIndex int    `json:"group_index"`
+	}
+	_ = GroupData{}
 	var data database.Group
 	id := Convert2uint(context, "id")
 	/*write id for update success*/
@@ -207,16 +229,17 @@ func PutGroupInfo(context *gin.Context) {
 
 // Update GroupInfos Index godoc
 //
-//	@Summary		update GroupInfos Indexes under the same Competition
-//	@Description	Put competition_id and group_ids to update GroupInfos Indexes under the same Competition
+//	@Summary		update all GroupInfos Indices under the same Competition
+//	@Description	Put competition_id and group_ids to update GroupInfos Indices under the same Competition
+//	@Description	GroupIds cannot include UnassignedGroupId
+//	@Description	GroupIds length must be equal to Competition group_num
 //	@Tags			GroupInfo
 //	@Accept			json
 //	@Produce		json
-//	@Param			groupIdsForReorder	body	string	true	"GroupInfo IDs for reorder"
-//	@Success		200					string	string
-//	@Failure		400					string	string
-//	@Failure		404					string	string
-//	@Failure		500					string	string
+//	@Param			groupIdsForReorder	body		endpoint.groupIdsForReorder																		true	"GroupInfo IDs for reorder"
+//	@Success		200					{object}	database.Competition{groups=database.Group{players=response.Nill},participants=response.Nill}	"success, return new updated Competition data"
+//	@Failure		400					{object}	response.ErrorIdResponse																		"invalid Competition ID, group id, may not exist"
+//	@Failure		500					{object}	response.ErrorInternalErrorResponse																"database error for Update GroupInfo Index, Get Competition"
 //	@Router			/groupinfo/ordering [put]
 func PutGroupInfoOrdering(context *gin.Context) {
 	var idArray groupIdsForReorder
@@ -273,14 +296,17 @@ func PutGroupInfoOrdering(context *gin.Context) {
 // Delete GroupInfo by id godoc
 //
 //	@Summary		delete one GroupInfo
-//	@Description	delete one GroupInfo by id, delete qualification, and change player to UnassignedGroup and UnassignedLane
+//	@Description	Delete one GroupInfo by id, delete qualification,
+//	@Description	Change player to UnassignedGroup and UnassignedLane
+//	@Description	Update competition group_num
+//	@Description	Cannot delete UnassignedGroup
 //	@Tags			GroupInfo
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path	string	true	"GroupInfo ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
-//	@Failure		404	string	string
+//	@Param			id	path		int									true	"GroupInfo ID"
+//	@Success		200	{object}	response.DeleteSuccessResponse		"success, delete GroupInfo by id"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid GroupInfo ID, may not exist, or already deleted, or cannot delete UnassignedGroup"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"database error for Delete GroupInfo, Get PlayerIds, Update PlayerGroupId, Update PlayerLaneId, Delete Qualification, Delete GroupInfo, MinusOneCompetitionGroupNum"
 //	@Router			/groupinfo/{id} [delete]
 func DeleteGroupInfo(context *gin.Context) {
 	id := Convert2uint(context, "id")

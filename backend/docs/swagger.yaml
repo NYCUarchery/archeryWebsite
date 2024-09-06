@@ -387,6 +387,19 @@ definitions:
       team_size:
         type: integer
     type: object
+  endpoint.PostGroupInfo.GroupData:
+    properties:
+      bow_type:
+        type: string
+      competition_id:
+        type: integer
+      group_index:
+        type: integer
+      group_name:
+        type: string
+      group_range:
+        type: string
+    type: object
   endpoint.PostMatch.MatchData:
     properties:
       lane_numbers:
@@ -420,6 +433,17 @@ definitions:
     properties:
       elimination_id:
         type: integer
+    type: object
+  endpoint.PutGroupInfo.GroupData:
+    properties:
+      bow_type:
+        type: string
+      group_index:
+        type: integer
+      group_name:
+        type: string
+      group_range:
+        type: string
     type: object
   endpoint.PutPlayerAllEndScoresByEndId.EndScores:
     properties:
@@ -468,6 +492,15 @@ definitions:
         type: integer
       score:
         type: integer
+    type: object
+  endpoint.groupIdsForReorder:
+    properties:
+      competition_id:
+        type: integer
+      group_ids:
+        items:
+          type: integer
+        type: array
     type: object
   response.DeleteSuccessResponse:
     properties:
@@ -906,7 +939,7 @@ paths:
       summary: update one Competition Ranking
       tags:
       - Competition
-  /competition/groups/qualieli/{id}:
+  /competition/groups/quaeli/{id}:
     get:
       description: Get one Competition by id with related Groups which have related
         one Qualification id and many Elimination ids
@@ -1701,26 +1734,39 @@ paths:
     post:
       consumes:
       - application/json
-      description: Post one new GroupInfo data with new id, create qualification with
-        same id, auto write GroupIndex, and auto create elimination
+      description: |-
+        Post one new GroupInfo data with new id
+        Create qualification with same id
+        Auto write GroupIndex
+        Auto create elimination
       parameters:
       - description: LaneData
         in: body
         name: GroupInfo
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PostGroupInfo.GroupData'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return new GroupInfo data
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Group'
+            - properties:
+                players:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid Competition ID, may not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: database error for Create GroupInfo, Create Qualification,
+            Create Elimination, get Competition
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Create one GroupInfo
       tags:
       - GroupInfo
@@ -1728,34 +1774,40 @@ paths:
     delete:
       consumes:
       - application/json
-      description: delete one GroupInfo by id, delete qualification, and change player
-        to UnassignedGroup and UnassignedLane
+      description: |-
+        Delete one GroupInfo by id, delete qualification,
+        Change player to UnassignedGroup and UnassignedLane
+        Update competition group_num
+        Cannot delete UnassignedGroup
       parameters:
       - description: GroupInfo ID
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, delete GroupInfo by id
           schema:
-            type: string
+            $ref: '#/definitions/response.DeleteSuccessResponse'
         "400":
-          description: Bad Request
+          description: invalid GroupInfo ID, may not exist, or already deleted, or
+            cannot delete UnassignedGroup
           schema:
-            type: string
-        "404":
-          description: Not Found
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: database error for Delete GroupInfo, Get PlayerIds, Update
+            PlayerGroupId, Update PlayerLaneId, Delete Qualification, Delete GroupInfo,
+            MinusOneCompetitionGroupNum
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: delete one GroupInfo
       tags:
       - GroupInfo
     get:
-      description: Get one GroupInfo by id
+      description: Get only one GroupInfo by id
       parameters:
       - description: LaneInfo ID
         in: path
@@ -1766,49 +1818,68 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, get GroupInfo by id without related data
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Group'
+            - properties:
+                players:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid GroupInfo ID, may not exist
           schema:
-            type: string
-      summary: Show one GroupInfo
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: database error for Get GroupInfo
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show only one GroupInfo
       tags:
       - GroupInfo
   /groupinfo/ordering:
     put:
       consumes:
       - application/json
-      description: Put competition_id and group_ids to update GroupInfos Indexes under
-        the same Competition
+      description: |-
+        Put competition_id and group_ids to update GroupInfos Indices under the same Competition
+        GroupIds cannot include UnassignedGroupId
+        GroupIds length must be equal to Competition group_num
       parameters:
       - description: GroupInfo IDs for reorder
         in: body
         name: groupIdsForReorder
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.groupIdsForReorder'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return new updated Competition data
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Competition'
+            - properties:
+                groups:
+                  allOf:
+                  - $ref: '#/definitions/database.Group'
+                  - properties:
+                      players:
+                        $ref: '#/definitions/response.Nill'
+                    type: object
+                participants:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid Competition ID, group id, may not exist
           schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: Internal Server Error
+          description: database error for Update GroupInfo Index, Get Competition
           schema:
-            type: string
-      summary: update GroupInfos Indexes under the same Competition
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: update all GroupInfos Indices under the same Competition
       tags:
       - GroupInfo
   /groupinfo/players/{id}:
@@ -1824,13 +1895,29 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, get GroupInfo with players by id
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Group'
+            - properties:
+                players:
+                  allOf:
+                  - $ref: '#/definitions/database.Player'
+                  - properties:
+                      player_sets:
+                        $ref: '#/definitions/response.Nill'
+                      rounds:
+                        $ref: '#/definitions/response.Nill'
+                    type: object
+              type: object
         "400":
-          description: Bad Request
+          description: invalid GroupInfo ID, may not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: database error for Get GroupInfo with players
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one GroupInfo with players
       tags:
       - GroupInfo
@@ -1838,39 +1925,42 @@ paths:
     put:
       consumes:
       - application/json
-      description: Put whole new GroupInfo and overwrite with the id, cannot overwrite
-        CompetitionId
+      description: |-
+        Put whole new GroupInfo and overwrite with the id
+        Cannot overwrite CompetitionId
+        Cannot overwrite UnassignedGroup
       parameters:
       - description: GroupInfo ID
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       - description: GroupInfo
         in: body
         name: GroupInfo
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PutGroupInfo.GroupData'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return new updated GroupInfo data
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Group'
+            - properties:
+                players:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid GroupInfo ID, may not exist
           schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: Internal Server Error
+          description: database error for Update GroupInfo, Get GroupInfo
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: update one GroupInfo
       tags:
       - GroupInfo
@@ -4068,7 +4158,7 @@ tags:
 - name: Institution
 - name: Competition
 - name: Participant
-- name: Group
+- name: GroupInfo
 - name: Qualification
 - name: Lane
 - name: Player

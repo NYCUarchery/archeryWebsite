@@ -460,7 +460,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/competition/groups/qualieli/{id}": {
+        "/competition/groups/quaeli/{id}": {
             "get": {
                 "description": "Get one Competition by id with related Groups which have related one Qualification id and many Elimination ids",
                 "produces": [
@@ -1812,7 +1812,7 @@ const docTemplate = `{
         },
         "/groupinfo": {
             "post": {
-                "description": "Post one new GroupInfo data with new id, create qualification with same id, auto write GroupIndex, and auto create elimination",
+                "description": "Post one new GroupInfo data with new id\nCreate qualification with same id\nAuto write GroupIndex\nAuto create elimination",
                 "consumes": [
                     "application/json"
                 ],
@@ -1830,21 +1830,39 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/endpoint.PostGroupInfo.GroupData"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, return new GroupInfo data",
                         "schema": {
-                            "type": "string"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Group"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "players": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid Competition ID, may not exist",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "database error for Create GroupInfo, Create Qualification, Create Elimination, get Competition",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -1852,7 +1870,7 @@ const docTemplate = `{
         },
         "/groupinfo/ordering": {
             "put": {
-                "description": "Put competition_id and group_ids to update GroupInfos Indexes under the same Competition",
+                "description": "Put competition_id and group_ids to update GroupInfos Indices under the same Competition\nGroupIds cannot include UnassignedGroupId\nGroupIds length must be equal to Competition group_num",
                 "consumes": [
                     "application/json"
                 ],
@@ -1862,7 +1880,7 @@ const docTemplate = `{
                 "tags": [
                     "GroupInfo"
                 ],
-                "summary": "update GroupInfos Indexes under the same Competition",
+                "summary": "update all GroupInfos Indices under the same Competition",
                 "parameters": [
                     {
                         "description": "GroupInfo IDs for reorder",
@@ -1870,33 +1888,54 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/endpoint.groupIdsForReorder"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, return new updated Competition data",
                         "schema": {
-                            "type": "string"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Competition"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "groups": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/database.Group"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "players": {
+                                                            "$ref": "#/definitions/response.Nill"
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        },
+                                        "participants": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid Competition ID, group id, may not exist",
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "database error for Update GroupInfo Index, Get Competition",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -1923,15 +1962,48 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, get GroupInfo with players by id",
                         "schema": {
-                            "type": "string"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Group"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "players": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/database.Player"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "player_sets": {
+                                                            "$ref": "#/definitions/response.Nill"
+                                                        },
+                                                        "rounds": {
+                                                            "$ref": "#/definitions/response.Nill"
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid GroupInfo ID, may not exist",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "database error for Get GroupInfo with players",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -1939,7 +2011,7 @@ const docTemplate = `{
         },
         "/groupinfo/whole/{id}": {
             "put": {
-                "description": "Put whole new GroupInfo and overwrite with the id, cannot overwrite CompetitionId",
+                "description": "Put whole new GroupInfo and overwrite with the id\nCannot overwrite CompetitionId\nCannot overwrite UnassignedGroup",
                 "consumes": [
                     "application/json"
                 ],
@@ -1952,7 +2024,7 @@ const docTemplate = `{
                 "summary": "update one GroupInfo",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "GroupInfo ID",
                         "name": "id",
                         "in": "path",
@@ -1964,33 +2036,39 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/endpoint.PutGroupInfo.GroupData"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, return new updated GroupInfo data",
                         "schema": {
-                            "type": "string"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Group"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "players": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid GroupInfo ID, may not exist",
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "database error for Update GroupInfo, Get GroupInfo",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -1998,14 +2076,14 @@ const docTemplate = `{
         },
         "/groupinfo/{id}": {
             "get": {
-                "description": "Get one GroupInfo by id",
+                "description": "Get only one GroupInfo by id",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "GroupInfo"
                 ],
-                "summary": "Show one GroupInfo",
+                "summary": "Show only one GroupInfo",
                 "parameters": [
                     {
                         "type": "integer",
@@ -2017,21 +2095,39 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, get GroupInfo by id without related data",
                         "schema": {
-                            "type": "string"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Group"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "players": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid GroupInfo ID, may not exist",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "database error for Get GroupInfo",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
             },
             "delete": {
-                "description": "delete one GroupInfo by id, delete qualification, and change player to UnassignedGroup and UnassignedLane",
+                "description": "Delete one GroupInfo by id, delete qualification,\nChange player to UnassignedGroup and UnassignedLane\nUpdate competition group_num\nCannot delete UnassignedGroup",
                 "consumes": [
                     "application/json"
                 ],
@@ -2044,7 +2140,7 @@ const docTemplate = `{
                 "summary": "delete one GroupInfo",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "GroupInfo ID",
                         "name": "id",
                         "in": "path",
@@ -2053,21 +2149,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, delete GroupInfo by id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.DeleteSuccessResponse"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid GroupInfo ID, may not exist, or already deleted, or cannot delete UnassignedGroup",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "500": {
+                        "description": "database error for Delete GroupInfo, Get PlayerIds, Update PlayerGroupId, Update PlayerLaneId, Delete Qualification, Delete GroupInfo, MinusOneCompetitionGroupNum",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -5989,6 +6085,26 @@ const docTemplate = `{
                 }
             }
         },
+        "endpoint.PostGroupInfo.GroupData": {
+            "type": "object",
+            "properties": {
+                "bow_type": {
+                    "type": "string"
+                },
+                "competition_id": {
+                    "type": "integer"
+                },
+                "group_index": {
+                    "type": "integer"
+                },
+                "group_name": {
+                    "type": "string"
+                },
+                "group_range": {
+                    "type": "string"
+                }
+            }
+        },
         "endpoint.PostMatch.MatchData": {
             "type": "object",
             "properties": {
@@ -6039,6 +6155,23 @@ const docTemplate = `{
             "properties": {
                 "elimination_id": {
                     "type": "integer"
+                }
+            }
+        },
+        "endpoint.PutGroupInfo.GroupData": {
+            "type": "object",
+            "properties": {
+                "bow_type": {
+                    "type": "string"
+                },
+                "group_index": {
+                    "type": "integer"
+                },
+                "group_name": {
+                    "type": "string"
+                },
+                "group_range": {
+                    "type": "string"
                 }
             }
         },
@@ -6118,6 +6251,20 @@ const docTemplate = `{
                 }
             }
         },
+        "endpoint.groupIdsForReorder": {
+            "type": "object",
+            "properties": {
+                "competition_id": {
+                    "type": "integer"
+                },
+                "group_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
         "response.DeleteSuccessResponse": {
             "type": "object",
             "properties": {
@@ -6193,7 +6340,7 @@ const docTemplate = `{
             "name": "Participant"
         },
         {
-            "name": "Group"
+            "name": "GroupInfo"
         },
         {
             "name": "Qualification"

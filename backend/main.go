@@ -26,7 +26,7 @@ import (
 //	@tag.name	Institution
 //	@tag.name	Competition
 //	@tag.name	Participant
-//	@tag.name	Group
+//	@tag.name	GroupInfo
 //	@tag.name	Qualification
 //	@tag.name	Lane
 //	@tag.name	Player

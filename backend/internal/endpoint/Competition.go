@@ -153,7 +153,7 @@ func GetCompetitionWGroupsByID(context *gin.Context) {
 //	@Success		200	{object}	endpoint.CompetitionWGroupsQuaEliData	"success"
 //	@Failure		400	{object}	response.ErrorIdResponse				"invalid comepetition id parameter"
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse		"internal db error / Get Competition Group Ids when get Competition with Groups Qualification Elimination / Get Elimination By Group Id when get Competition with Groups Qualification Elimination"
-//	@Router			/competition/groups/qualieli/{id} [get]
+//	@Router			/competition/groups/quaeli/{id} [get]
 func GetCompetitionWGroupsQuaEliByID(context *gin.Context) {
 	var data CompetitionWGroupsQuaEliData
 	id := Convert2uint(context, "id")
