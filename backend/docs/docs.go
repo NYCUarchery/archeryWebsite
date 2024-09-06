@@ -4118,21 +4118,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/database.PlayerSet"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid player id when posting player set",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal db error / Create Player Set / Create Player Set Match Table",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -4159,21 +4159,24 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/endpoint.GetPlayerSetsByMedalByEliminationId.playerSetData"
+                            }
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid elimination id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal db error / Get Medal Info By Elimination Id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -4200,21 +4203,24 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/database.PlayerSet"
+                            }
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid player set id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal db error / Get Player Sets By Elimination Id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -4253,21 +4259,18 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
+                        "description": "success"
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "teamsize of elimination should not be 1",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorReceiveDataFormatResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal db error / Get Player Set By Id / Update Player Set Name",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -4294,21 +4297,12 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
+                        "description": "success"
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal db error / Get Elimination Player Set Id Rank Order By Id / Update Player Set Rank",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -4335,21 +4329,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/database.PlayerSet"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid player set id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal db error / Get Player Set By Id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -4371,21 +4365,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.DeleteSuccessResponse"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid plyer set id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal db error / Get Player Set By Id / Delete Player Set Match Table By Player Set Id / Delete Player Set By Id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -5218,6 +5212,20 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "team_size": {
+                    "type": "integer"
+                }
+            }
+        },
+        "endpoint.GetPlayerSetsByMedalByEliminationId.playerSetData": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "set_name": {
+                    "type": "string"
+                },
+                "type": {
                     "type": "integer"
                 }
             }
