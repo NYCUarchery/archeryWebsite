@@ -1069,15 +1069,24 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/database.Qualification"
+                            }
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid qualification id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internall db error / Get Qualification With Lanes and Players / Get Qualification With Unassigned Lanes By ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -1104,15 +1113,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/database.Qualification"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid qualification id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internall db error / Get Qualification With Lanes and Players",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -4406,15 +4421,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/database.Qualification"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid qualification id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internall db error / Get Qualification With Lanes",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -4453,27 +4474,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/database.Qualification"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid lane id",
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal db error / Update Lane Qualification Id / Update Qualification / Get Only Qualification",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -4500,15 +4515,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/database.Qualification"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid qualification id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internall db error / Get Only Qualification",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -5087,6 +5108,29 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "total_score": {
+                    "type": "integer"
+                }
+            }
+        },
+        "database.Qualification": {
+            "type": "object",
+            "properties": {
+                "advancing_num": {
+                    "type": "integer"
+                },
+                "end_lane": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "lanes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.Lane"
+                    }
+                },
+                "start_lane": {
                     "type": "integer"
                 }
             }

@@ -158,6 +158,21 @@ definitions:
       total_score:
         type: integer
     type: object
+  database.Qualification:
+    properties:
+      advancing_num:
+        type: integer
+      end_lane:
+        type: integer
+      id:
+        type: integer
+      lanes:
+        items:
+          $ref: '#/definitions/database.Lane'
+        type: array
+      start_lane:
+        type: integer
+    type: object
   database.Round:
     properties:
       id:
@@ -1097,13 +1112,20 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            items:
+              $ref: '#/definitions/database.Qualification'
+            type: array
         "400":
-          description: Bad Request
+          description: invalid qualification id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internall db error / Get Qualification With Lanes and Players
+            / Get Qualification With Unassigned Lanes By ID
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Qualification
       tags:
       - Qualification
@@ -1120,13 +1142,17 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/database.Qualification'
         "400":
-          description: Bad Request
+          description: invalid qualification id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internall db error / Get Qualification With Lanes and Players
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Qualification
       tags:
       - Qualification
@@ -3327,13 +3353,17 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/database.Qualification'
         "400":
-          description: Bad Request
+          description: invalid qualification id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internall db error / Get Only Qualification
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Qualification
       tags:
       - Qualification
@@ -3350,13 +3380,17 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/database.Qualification'
         "400":
-          description: Bad Request
+          description: invalid qualification id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internall db error / Get Qualification With Lanes
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Qualification
       tags:
       - Qualification
@@ -3382,21 +3416,18 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/database.Qualification'
         "400":
-          description: Bad Request
+          description: invalid lane id
           schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: Internal Server Error
+          description: internal db error / Update Lane Qualification Id / Update Qualification
+            / Get Only Qualification
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: update one Qualification
       tags:
       - Qualification
