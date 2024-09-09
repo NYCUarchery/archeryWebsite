@@ -2,10 +2,6 @@ username: root
 password: Kar98Pro?
 host: mysql
 port: 3306
-database: db
-mode : test # dev or test or unit_test
-TestUsername: root
-TestPassword: password_for_testdb
-TestHost: mysqlTest
-TestPort: 3307
-TestDatabase: testdb
+database: test
+mode : dev # dev or test
+

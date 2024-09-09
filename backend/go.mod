@@ -1,8 +1,6 @@
 module backend
 
-go 1.21
-
-toolchain go1.22.3
+go 1.20
 
 require (
 	github.com/gin-contrib/sessions v1.0.1
@@ -15,7 +13,6 @@ require (
 	golang.org/x/crypto v0.25.0
 	gopkg.in/yaml.v2 v2.4.0
 	gorm.io/driver/mysql v1.5.7
-	gorm.io/driver/sqlite v1.5.6
 	gorm.io/gorm v1.25.11
 )
 
@@ -51,7 +48,6 @@ require (
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/mattn/go-sqlite3 v2.0.3+incompatible // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
