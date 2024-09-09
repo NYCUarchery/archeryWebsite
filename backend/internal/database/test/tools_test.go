@@ -24,24 +24,14 @@ password: password
 host: mysql
 port: 3306
 database: db
-mode: test
-TestUsername: testuser
-TestPassword: testpassword
-TestHost: testmysql
-TestPort: 3307
-TestDatabase: testdb`
+mode: test`
 			configAnswer := Conf{
-				Username:     "user",
-				Password:     "password",
-				Host:         "mysql",
-				Port:         3306,
-				Database:     "db",
-				Mode:         "test",
-				TestUsername: "testuser",
-				TestPassword: "testpassword",
-				TestHost:     "testmysql",
-				TestPort:     3307,
-				TestDatabase: "testdb",
+				Username: "user",
+				Password: "password",
+				Host:     "mysql",
+				Port:     3306,
+				Database: "db",
+				Mode:     "test",
 			}
 			err := os.WriteFile(tempFile, []byte(configMockContent), 0644)
 			if err != nil {
