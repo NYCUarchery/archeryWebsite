@@ -588,9 +588,9 @@ func GetAllCompetition(c *gin.Context) {
 //	@Description	update one Competition currentPhase ++ by id
 //	@Tags			Competition
 //	@Param			id	path		int									true	"Competition ID"
-//	@Success		200	{ojbect}	response.Response					"success"
-//	@Failure		400	{ojbect}	response.ErrorIdResponse			"invalid competition id parameter"
-//	@Failure		500	{ojbect}	response.ErrorInternalErrorResponse	"Update Competition CurrentPhase Plus"
+//	@Success		200	{}			response.Response					"success"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid competition id parameter"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"Update Competition CurrentPhase Plus"
 //	@Router			/competition/currentphaseplus/{id} [put]
 func PutCompetitionCurrentPhasePlus(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -613,9 +613,9 @@ func PutCompetitionCurrentPhasePlus(context *gin.Context) {
 //	@Description	update one Competition currentPhase -- by id
 //	@Tags			Competition
 //	@Param			id	path		int									true	"Competition ID"
-//	@Success		200	{ojbect}	response.Response					"success"
-//	@Failure		400	{ojbect}	response.ErrorIdResponse			"invalid competition id parameter"
-//	@Failure		500	{ojbect}	response.ErrorInternalErrorResponse	"Update Competition CurrentPhase Minus"
+//	@Success		200	{object}	response.Response					"success"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid competition id parameter"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"Update Competition CurrentPhase Minus"
 //	@Router			/competition/currentphaseminus/{id} [put]
 func PutCompetitionCurrentPhaseMinus(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -638,9 +638,9 @@ func PutCompetitionCurrentPhaseMinus(context *gin.Context) {
 //	@Description	update one Competition Qualification currentEnd ++ by id
 //	@Tags			Competition
 //	@Param			id	path		int									true	"Competition ID"
-//	@Success		200	{ojbect}	response.Response					"success"
-//	@Failure		400	{ojbect}	response.ErrorIdResponse			"invalid competition id parameter"
-//	@Failure		500	{ojbect}	response.ErrorInternalErrorResponse	"Update Competition Qualification CurrentEnd Plus"
+//	@Success		200	{object}	response.Response					"success"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid competition id parameter"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"Update Competition Qualification CurrentEnd Plus"
 //	@Router			/competition/qualificationcurrentendplus/{id} [put]
 func PutCompetitionQualificationCurrentEndPlus(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -664,9 +664,9 @@ func PutCompetitionQualificationCurrentEndPlus(context *gin.Context) {
 //	@Description	update one Competition Qualification currentEnd -- by id
 //	@Tags			Competition
 //	@Param			id	path		int									true	"Competition ID"
-//	@Success		200	{ojbect}	response.Response					"success"
-//	@Failure		400	{ojbect}	response.ErrorIdResponse			"invalid competition id parameter"
-//	@Failure		500	{ojbect}	response.ErrorInternalErrorResponse	"Update Competition Qualification CurrentEnd Minus"
+//	@Success		200	{object}	response.Response					"success"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid competition id parameter"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"Update Competition Qualification CurrentEnd Minus"
 //	@Router			/competition/qualificationcurrentendminus/{id} [put]
 func PutCompetitionQualificationCurrentEndMinus(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -689,10 +689,10 @@ func PutCompetitionQualificationCurrentEndMinus(context *gin.Context) {
 //	@Description	update one Competition Qualification Active to be true by id
 //	@Tags			Competition
 //	@Param			id	path		int									true	"Competition ID"
-//	@Success		200	{ojbect}	response.Response					"success"
-//	@Success		204	{ojbect}	response.Nill						"success, but no change"
-//	@Failure		400	{ojbect}	response.ErrorIdResponse			"invalid competition id parameter"
-//	@Failure		500	{ojbect}	response.ErrorInternalErrorResponse	"Update Competition Qualification Active"
+//	@Success		200	{object}	response.Response					"success"
+//	@Success		204	{object}	response.Nill						"success, but no change"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid competition id parameter"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"Update Competition Qualification Active"
 //	@Router			/competition/qualificationisactive/{id} [put]
 func PutCompetitionQualificationActive(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -719,10 +719,10 @@ func PutCompetitionQualificationActive(context *gin.Context) {
 //	@Description	update one Competition Elimination Active to be true by id
 //	@Tags			Competition
 //	@Param			id	path		int									true	"Competition ID"
-//	@Success		200	{ojbect}	response.Response					"success"
-//	@Success		204	{ojbect}	response.Nill						"success, but no change"
-//	@Failure		400	{ojbect}	response.ErrorIdResponse			"invalid competition id parameter"
-//	@Failure		500	{ojbect}	response.ErrorInternalErrorResponse	"Update Competition Elimination Active"
+//	@Success		200	{object}	response.Response					"success"
+//	@Success		204	{object}	response.Nill						"success, but no change"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid competition id parameter"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"Update Competition Elimination Active"
 //	@Router			/competition/eliminationisactive/{id} [put]
 func PutCompetitionEliminationActive(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -750,10 +750,10 @@ func PutCompetitionEliminationActive(context *gin.Context) {
 //	@Description	create all team elimination for groups
 //	@Tags			Competition
 //	@Param			id	path		int									true	"Competition ID"
-//	@Success		200	{ojbect}	response.Response					"success"
-//	@Success		204	{ojbect}	response.Nill						"success, but no change"
-//	@Failure		400	{ojbect}	response.ErrorIdResponse			"invalid competition id parameter"
-//	@Failure		500	{ojbect}	response.ErrorInternalErrorResponse	"Update Competition Team Elimination Active / Get Competition Group Ids / Post Elimination By Id"
+//	@Success		200	{object}	response.Response					"success"
+//	@Success		204	{object}	response.Nill						"success, but no change"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid competition id parameter"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"Update Competition Team Elimination Active / Get Competition Group Ids / Post Elimination By Id"
 //	@Router			/competition/teameliminationisactive/{id} [put]
 func PutCompetitionTeamEliminationActive(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -798,10 +798,10 @@ func PutCompetitionTeamEliminationActive(context *gin.Context) {
 //	@Description	create all mixed elimination for groups
 //	@Tags			Competition
 //	@Param			id	path		int									true	"Competition ID"
-//	@Success		200	{ojbect}	response.Response					"success"
-//	@Success		204	{ojbect}	response.Nill						"success, but no change"
-//	@Failure		400	{ojbect}	response.ErrorIdResponse			"invalid competition id parameter"
-//	@Failure		500	{ojbect}	response.ErrorInternalErrorResponse	"Update Competition Mixed Elimination Active / Get Competition Group Ids / Post Elimination By Id"
+//	@Success		200	{object}	response.Response					"success"
+//	@Success		204	{object}	response.Nill						"success, but no change"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid competition id parameter"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"Update Competition Mixed Elimination Active / Get Competition Group Ids / Post Elimination By Id"
 //	@Router			/competition/mixedeliminationisactive/{id} [put]
 func PutCompetitionMixedEliminationActive(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -845,9 +845,9 @@ func PutCompetitionMixedEliminationActive(context *gin.Context) {
 //	@Description	update competition recount player total score by id
 //	@Tags			Competition
 //	@Param			id	path		string								true	"Competition ID"
-//	@Success		200	{ojbect}	response.Response					"success"
-//	@Failure		400	{ojbect}	response.ErrorIdResponse			"invalid competition id parameter"
-//	@Failure		500	{ojbect}	response.ErrorInternalErrorResponse	"Get Competition with Groups Players Scores / Update Round Total Score / Update Player Total Score"
+//	@Success		200	{object}	response.Response					"success"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid competition id parameter"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"Get Competition with Groups Players Scores / Update Round Total Score / Update Player Total Score"
 //	@Router			/competition/groups/players/playertotal/{id} [put]
 func PutCompetitionRecountPlayerTotalScore(context *gin.Context) {
 	id := Convert2uint(context, "id")

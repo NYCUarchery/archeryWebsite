@@ -195,19 +195,19 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "400": {
                         "description": "invalid competition id parameter",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
                         "description": "Update Competition CurrentPhase Minus",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -233,19 +233,19 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "ojbect"
+                            "type": ""
                         }
                     },
                     "400": {
                         "description": "invalid competition id parameter",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
                         "description": "Update Competition CurrentPhase Plus",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -271,25 +271,25 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "204": {
                         "description": "success, but no change",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.Nill"
                         }
                     },
                     "400": {
                         "description": "invalid competition id parameter",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
                         "description": "Update Competition Elimination Active",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -315,19 +315,19 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "400": {
                         "description": "invalid competition id parameter",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
                         "description": "Get Competition with Groups Players Scores / Update Round Total Score / Update Player Total Score",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -577,25 +577,25 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "204": {
                         "description": "success, but no change",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.Nill"
                         }
                     },
                     "400": {
                         "description": "invalid competition id parameter",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
                         "description": "Update Competition Mixed Elimination Active / Get Competition Group Ids / Post Elimination By Id",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -677,19 +677,19 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "400": {
                         "description": "invalid competition id parameter",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
                         "description": "Update Competition Qualification CurrentEnd Minus",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -715,19 +715,19 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "400": {
                         "description": "invalid competition id parameter",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
                         "description": "Update Competition Qualification CurrentEnd Plus",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -753,25 +753,25 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "204": {
                         "description": "success, but no change",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.Nill"
                         }
                     },
                     "400": {
                         "description": "invalid competition id parameter",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
                         "description": "Update Competition Qualification Active",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -855,25 +855,25 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "204": {
                         "description": "success, but no change",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.Nill"
                         }
                     },
                     "400": {
                         "description": "invalid competition id parameter",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
                         "description": "Update Competition Team Elimination Active / Get Competition Group Ids / Post Elimination By Id",
                         "schema": {
-                            "type": "ojbect"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
