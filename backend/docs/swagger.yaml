@@ -413,6 +413,13 @@ definitions:
       stage_id:
         type: integer
     type: object
+  endpoint.PostMatchEnd.matchEndData:
+    properties:
+      match_result_id:
+        type: integer
+      team_size:
+        type: integer
+    type: object
   endpoint.PostPlayerSet.playerSetData:
     properties:
       elimination_id:
@@ -444,6 +451,54 @@ definitions:
         type: string
       group_range:
         type: string
+    type: object
+  endpoint.PutMatchEndsIsConfirmedById.matchEndIsConfirmedData:
+    properties:
+      is_confirmed:
+        type: boolean
+    type: object
+  endpoint.PutMatchEndsScoresById.matchEndScoresData:
+    properties:
+      match_score_ids:
+        items:
+          type: integer
+        type: array
+      scores:
+        items:
+          type: integer
+        type: array
+      total_scores:
+        type: integer
+    type: object
+  endpoint.PutMatchEndsTotalScoresById.matchEndTotalScoresData:
+    properties:
+      total_scores:
+        type: integer
+    type: object
+  endpoint.PutMatchResultIsWinnerById.matchResultIsWinnerData:
+    properties:
+      is_winner:
+        type: boolean
+    type: object
+  endpoint.PutMatchResultLaneNumberById.matchResultLaneNumberData:
+    properties:
+      lane_number:
+        type: integer
+    type: object
+  endpoint.PutMatchResultShootOffScoreById.matchResultShootOffScoreData:
+    properties:
+      shoot_off_score:
+        type: integer
+    type: object
+  endpoint.PutMatchResultTotalPointsById.matchResultTotalPointsData:
+    properties:
+      total_points:
+        type: integer
+    type: object
+  endpoint.PutMatchScoreScoreById.matchScoreData:
+    properties:
+      score:
+        type: integer
     type: object
   endpoint.PutPlayerAllEndScoresByEndId.EndScores:
     properties:
@@ -1542,13 +1597,17 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return one Match with all related data
           schema:
-            type: string
+            $ref: '#/definitions/database.Match'
         "400":
-          description: Bad Request
+          description: invalid Match ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Get Match
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Match with all related data
       tags:
       - Elimination
@@ -1609,7 +1668,14 @@ paths:
         "200":
           description: success, return one Elimination with all scores
           schema:
-            $ref: '#/definitions/database.Elimination'
+            allOf:
+            - $ref: '#/definitions/database.Elimination'
+            - properties:
+                medals:
+                  $ref: '#/definitions/response.Nill'
+                player_sets:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
           description: invalid Elimination ID, maybe not exist
           schema:
@@ -1809,7 +1875,7 @@ paths:
     get:
       description: Get only one GroupInfo by id
       parameters:
-      - description: LaneInfo ID
+      - description: GroupInfo ID
         in: path
         name: id
         required: true
@@ -1954,7 +2020,7 @@ paths:
                   $ref: '#/definitions/response.Nill'
               type: object
         "400":
-          description: invalid GroupInfo ID, may not exist
+          description: invalid GroupInfo ID, may not exist, cannot update UnassignedGroup
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
         "500":
@@ -2152,95 +2218,6 @@ paths:
       summary: Show one Lane with players, rounds, roundends, roundscores
       tags:
       - Lane
-  /matchend/isconfirmed/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Update one MatchEnd isConfirmed by id
-      parameters:
-      - description: MatchEnd ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: MatchEnd
-        in: body
-        name: MatchEnd
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Update one MatchEnd isConfirmed
-      tags:
-      - MatchEnd
-  /matchend/scores/{id}:
-    put:
-      consumes:
-      - application/json
-      description: |-
-        Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids
-        MatchScore ids and scores must be the same length
-      parameters:
-      - description: MatchEnd ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: matchEndScoresData
-        in: body
-        name: matchEndScoresData
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Update one MatchEnd scores
-      tags:
-      - MatchEnd
-  /matchend/totalscores/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Update one MatchEnd totalScores by id
-      parameters:
-      - description: MatchEnd ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: MatchEnd
-        in: body
-        name: MatchEnd
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Update one MatchEnd totalScores
-      tags:
-      - MatchEnd
   /matchresult/{id}:
     delete:
       description: Delete one MatchResult with matchEnds and matchScores by id
@@ -2252,13 +2229,17 @@ paths:
         type: integer
       responses:
         "200":
-          description: OK
+          description: success, return nil
           schema:
-            type: string
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid match result ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db failed for deleting match result
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Delete one MatchResult
       tags:
       - MatchResult
@@ -2274,13 +2255,29 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return MatchResult with player set
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.MatchResult'
+            - properties:
+                match_ends:
+                  $ref: '#/definitions/response.Nill'
+                player_set:
+                  allOf:
+                  - $ref: '#/definitions/database.PlayerSet'
+                  - properties:
+                      players:
+                        $ref: '#/definitions/response.Nill'
+                    type: object
+              type: object
         "400":
-          description: Bad Request
+          description: invalid match result ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db failed for getting match result
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one MatchResult with player set
       tags:
       - MatchResult
@@ -2300,16 +2297,20 @@ paths:
         name: MatchResult
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PutMatchResultIsWinnerById.matchResultIsWinnerData'
       responses:
         "200":
-          description: OK
+          description: success, return nil
           schema:
-            type: string
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid match result ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db failed for updating isWinner
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Update one MatchResult isWinner
       tags:
       - MatchResult
@@ -2329,16 +2330,20 @@ paths:
         name: MatchResult
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PutMatchResultLaneNumberById.matchResultLaneNumberData'
       responses:
         "200":
-          description: OK
+          description: success, return nil
           schema:
-            type: string
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid match result ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db failed for updating laneNumber
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Update one MatchResult laneNumber
       tags:
       - MatchResult
@@ -2346,29 +2351,173 @@ paths:
     post:
       consumes:
       - application/json
-      description: Post one new MatchEnd data, and auto write totalScores IsConfirmed,
-        and auto create matchScores by teamSize
+      description: |-
+        Post one new MatchEnd data,
+        Auto write totalScores IsConfirmed, and auto create matchScores by teamSize
+        teamSize: 1, 2, 3
       parameters:
       - description: matchEndData
         in: body
         name: matchEndData
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PostMatchEnd.matchEndData'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return nil
           schema:
-            type: string
+            $ref: '#/definitions/response.Response'
         "400":
-          description: Bad Request
+          description: invalid match result ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorReceiveDataResponse'
+        "500":
+          description: internal db failed for creating matchEnd, creating matchScores
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Create one MatchEnd
       tags:
       - MatchEnd
+  /matchresult/matchend/isconfirmed/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Update one MatchEnd isConfirmed by id
+      parameters:
+      - description: MatchEnd ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: MatchEnd
+        in: body
+        name: MatchEnd
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.PutMatchEndsIsConfirmedById.matchEndIsConfirmedData'
+      responses:
+        "200":
+          description: success, return nil
+          schema:
+            $ref: '#/definitions/response.Nill'
+        "400":
+          description: invalid match end ID, maybe not exist
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db failed for updating isConfirmed
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one MatchEnd isConfirmed
+      tags:
+      - MatchEnd
+  /matchresult/matchend/scores/{id}:
+    put:
+      consumes:
+      - application/json
+      description: |-
+        Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids
+        MatchScore ids and scores must be the same length
+      parameters:
+      - description: MatchEnd ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: matchEndScoresData
+        in: body
+        name: matchEndScoresData
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.PutMatchEndsScoresById.matchEndScoresData'
+      responses:
+        "200":
+          description: success, return nil
+          schema:
+            $ref: '#/definitions/response.Nill'
+        "400":
+          description: invalid match end ID, maybe not exist, or matchScore ids not
+            exist, or matchScore ids and scores length not match
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db failed for updating scores
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one MatchEnd scores
+      tags:
+      - MatchEnd
+  /matchresult/matchend/totalscore/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Update one MatchEnd totalScores by id
+      parameters:
+      - description: MatchEnd ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: MatchEnd
+        in: body
+        name: MatchEnd
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.PutMatchEndsTotalScoresById.matchEndTotalScoresData'
+      responses:
+        "200":
+          description: success, return nil
+          schema:
+            $ref: '#/definitions/response.Nill'
+        "400":
+          description: invalid match end ID, maybe not exist
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db failed for updating totalScores
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one MatchEnd totalScores
+      tags:
+      - MatchEnd
+  /matchresult/matchscore/score/{id}:
+    put:
+      consumes:
+      - application/json
+      description: |-
+        Update one MatchScore score by id
+        Also update related MatchEnd totalScores
+      parameters:
+      - description: MatchScore ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: MatchScore
+        in: body
+        name: MatchScore
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.PutMatchScoreScoreById.matchScoreData'
+      responses:
+        "200":
+          description: success, return nil
+          schema:
+            $ref: '#/definitions/response.Nill'
+        "400":
+          description: invalid match score ID, maybe not exist
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db failed for updating score, get matchEnd by id,
+            get matchScore, update matchEnd totalScores
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one MatchScore score
+      tags:
+      - MatchScore
   /matchresult/scores/{id}:
     get:
       description: Get one MatchResult with match_ends, match_scores, player set by
@@ -2383,13 +2532,27 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return MatchResult with scores
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.MatchResult'
+            - properties:
+                player_set:
+                  allOf:
+                  - $ref: '#/definitions/database.PlayerSet'
+                  - properties:
+                      players:
+                        $ref: '#/definitions/response.Nill'
+                    type: object
+              type: object
         "400":
-          description: Bad Request
+          description: invalid match result ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db failed for getting match result with scores
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one MatchResult with match_ends, match_scores, player set
       tags:
       - MatchResult
@@ -2409,16 +2572,20 @@ paths:
         name: MatchResult
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PutMatchResultShootOffScoreById.matchResultShootOffScoreData'
       responses:
         "200":
-          description: OK
+          description: success, return nil
           schema:
-            type: string
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid match result ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db failed for updating shootOffScore
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Update one MatchResult shootOffScore
       tags:
       - MatchResult
@@ -2438,48 +2605,23 @@ paths:
         name: MatchResult
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PutMatchResultTotalPointsById.matchResultTotalPointsData'
       responses:
         "200":
-          description: OK
+          description: success, return nil
           schema:
-            type: string
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid match result ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db failed for updating totalPoints
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Update one MatchResult totalPoints
       tags:
       - MatchResult
-  /matchscore/score/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Update one MatchScore score by id
-      parameters:
-      - description: MatchScore ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: MatchScore
-        in: body
-        name: MatchScore
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Update one MatchScore score
-      tags:
-      - MatchScore
   /medal/{id}:
     get:
       description: get one medal by id

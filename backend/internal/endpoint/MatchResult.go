@@ -39,9 +39,10 @@ func IsGetMatchResultWScoresById(context *gin.Context, id uint) (bool, database.
 //	@Description	Get one MatchResult with player set by id
 //	@Tags			MatchResult
 //	@Produce		json
-//	@Param			id	path	int	true	"MatchResult ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			id	path		int																									true	"MatchResult ID"
+//	@Success		200	{object}	database.MatchResult{player_set=database.PlayerSet{players=response.Nill},match_ends=response.Nill}	"success, return MatchResult with player set"
+//	@Failure		400	{object}	response.ErrorIdResponse																			"invalid match result ID, maybe not exist"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse																	"internal db failed for getting match result"
 //	@Router			/matchresult/{id} [get]
 func GetMatchResultById(context *gin.Context) {
 	uid := Convert2uint(context, "id")
@@ -58,9 +59,10 @@ func GetMatchResultById(context *gin.Context) {
 //	@Description	Get one MatchResult with match_ends, match_scores, player set by id
 //	@Tags			MatchResult
 //	@Produce		json
-//	@Param			id	path	int	true	"MatchResult ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			id	path		int																			true	"MatchResult ID"
+//	@Success		200	{object}	database.MatchResult{player_set=database.PlayerSet{players=response.Nill}}	"success, return MatchResult with scores"
+//	@Failure		400	{object}	response.ErrorIdResponse													"invalid match result ID, maybe not exist"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse											"internal db failed for getting match result with scores"
 //	@Router			/matchresult/scores/{id} [get]
 func GetMatchResultWScoresById(context *gin.Context) {
 	uid := Convert2uint(context, "id")
@@ -106,13 +108,16 @@ func PostMatchEndByMatchResultId(context *gin.Context, matchResultId uint, teams
 // Post MatchEnd godoc
 //
 //	@Summary		Create one MatchEnd
-//	@Description	Post one new MatchEnd data, and auto write totalScores IsConfirmed, and auto create matchScores by teamSize
+//	@Description	Post one new MatchEnd data,
+//	@Description	Auto write totalScores IsConfirmed, and auto create matchScores by teamSize
+//	@Description	teamSize: 1, 2, 3
 //	@Tags			MatchEnd
 //	@Accept			json
 //	@Produce		json
-//	@Param			matchEndData	body	string	true	"matchEndData"
-//	@Success		200				string	string
-//	@Failure		400				string	string
+//	@Param			matchEndData	body		endpoint.PostMatchEnd.matchEndData	true	"matchEndData"
+//	@Success		200				{object}	response.Response					"success, return nil"
+//	@Failure		400				{object}	response.ErrorReceiveDataResponse	"invalid match result ID, maybe not exist"
+//	@Failure		500				{object}	response.ErrorInternalErrorResponse	"internal db failed for creating matchEnd, creating matchScores"
 //	@Router			/matchresult/matchend [post]
 func PostMatchEnd(context *gin.Context) {
 	type matchEndData struct {
@@ -154,12 +159,17 @@ func PostMatchScore(context *gin.Context, matchEndId uint) bool {
 //	@Description	Update one MatchResult totalPoints by id
 //	@Tags			MatchResult
 //	@Accept			json
-//	@Param			id			path	int		true	"MatchResult ID"
-//	@Param			MatchResult	body	string	true	"MatchResult"
-//	@Success		200			string	string
-//	@Failure		400			string	string
+//	@Param			id			path		int																	true	"MatchResult ID"
+//	@Param			MatchResult	body		endpoint.PutMatchResultTotalPointsById.matchResultTotalPointsData	true	"MatchResult"
+//	@Success		200			{object}	response.Nill														"success, return nil"
+//	@Failure		400			{object}	response.ErrorIdResponse											"invalid match result ID, maybe not exist"
+//	@Failure		500			{object}	response.ErrorInternalErrorResponse									"internal db failed for updating totalPoints"
 //	@Router			/matchresult/totalpoints/{id} [put]
 func PutMatchResultTotalPointsById(context *gin.Context) {
+	type matchResultTotalPointsData struct {
+		TotalPoints int `json:"total_points"`
+	}
+	_ = matchResultTotalPointsData{}
 	id := Convert2uint(context, "id")
 	var data database.MatchResult
 	err := context.BindJSON(&data)
@@ -182,12 +192,17 @@ func PutMatchResultTotalPointsById(context *gin.Context) {
 //	@Description	Update one MatchResult shootOffScore by id
 //	@Tags			MatchResult
 //	@Accept			json
-//	@Param			id			path	int		true	"MatchResult ID"
-//	@Param			MatchResult	body	string	true	"MatchResult"
-//	@Success		200			string	string
-//	@Failure		400			string	string
+//	@Param			id			path		int																		true	"MatchResult ID"
+//	@Param			MatchResult	body		endpoint.PutMatchResultShootOffScoreById.matchResultShootOffScoreData	true	"MatchResult"
+//	@Success		200			{object}	response.Nill															"success, return nil"
+//	@Failure		400			{object}	response.ErrorIdResponse												"invalid match result ID, maybe not exist"
+//	@Failure		500			{object}	response.ErrorInternalErrorResponse										"internal db failed for updating shootOffScore"
 //	@Router			/matchresult/shootoffscore/{id} [put]
 func PutMatchResultShootOffScoreById(context *gin.Context) {
+	type matchResultShootOffScoreData struct {
+		ShootOffScore int `json:"shoot_off_score"`
+	}
+	_ = matchResultShootOffScoreData{}
 	id := Convert2uint(context, "id")
 	var data database.MatchResult
 	err := context.BindJSON(&data)
@@ -210,12 +225,17 @@ func PutMatchResultShootOffScoreById(context *gin.Context) {
 //	@Description	Update one MatchResult isWinner by id
 //	@Tags			MatchResult
 //	@Accept			json
-//	@Param			id			path	int		true	"MatchResult ID"
-//	@Param			MatchResult	body	string	true	"MatchResult"
-//	@Success		200			string	string
-//	@Failure		400			string	string
+//	@Param			id			path		int															true	"MatchResult ID"
+//	@Param			MatchResult	body		endpoint.PutMatchResultIsWinnerById.matchResultIsWinnerData	true	"MatchResult"
+//	@Success		200			{object}	response.Nill												"success, return nil"
+//	@Failure		400			{object}	response.ErrorIdResponse									"invalid match result ID, maybe not exist"
+//	@Failure		500			{object}	response.ErrorInternalErrorResponse							"internal db failed for updating isWinner"
 //	@Router			/matchresult/iswinner/{id} [put]
 func PutMatchResultIsWinnerById(context *gin.Context) {
+	type matchResultIsWinnerData struct {
+		IsWinner bool `json:"is_winner"`
+	}
+	_ = matchResultIsWinnerData{}
 	id := Convert2uint(context, "id")
 	var data database.MatchResult
 	err := context.BindJSON(&data)
@@ -238,12 +258,17 @@ func PutMatchResultIsWinnerById(context *gin.Context) {
 //	@Description	Update one MatchResult laneNumber by id
 //	@Tags			MatchResult
 //	@Accept			json
-//	@Param			id			path	int		true	"MatchResult ID"
-//	@Param			MatchResult	body	string	true	"MatchResult"
-//	@Success		200			string	string
-//	@Failure		400			string	string
+//	@Param			id			path		int																true	"MatchResult ID"
+//	@Param			MatchResult	body		endpoint.PutMatchResultLaneNumberById.matchResultLaneNumberData	true	"MatchResult"
+//	@Success		200			{object}	response.Nill													"success, return nil"
+//	@Failure		400			{object}	response.ErrorIdResponse										"invalid match result ID, maybe not exist"
+//	@Failure		500			{object}	response.ErrorInternalErrorResponse								"internal db failed for updating laneNumber"
 //	@Router			/matchresult/lanenumber/{id} [put]
 func PutMatchResultLaneNumberById(context *gin.Context) {
+	type matchResultLaneNumberData struct {
+		LaneNumber int `json:"lane_number"`
+	}
+	_ = matchResultLaneNumberData{}
 	id := Convert2uint(context, "id")
 	var data database.MatchResult
 	err := context.BindJSON(&data)
@@ -266,12 +291,17 @@ func PutMatchResultLaneNumberById(context *gin.Context) {
 //	@Description	Update one MatchEnd totalScores by id
 //	@Tags			MatchEnd
 //	@Accept			json
-//	@Param			id			path	int		true	"MatchEnd ID"
-//	@Param			MatchEnd	body	string	true	"MatchEnd"
-//	@Success		200			string	string
-//	@Failure		400			string	string
-//	@Router			/matchend/totalscores/{id} [put]
+//	@Param			id			path		int																true	"MatchEnd ID"
+//	@Param			MatchEnd	body		endpoint.PutMatchEndsTotalScoresById.matchEndTotalScoresData	true	"MatchEnd"
+//	@Success		200			{object}	response.Nill													"success, return nil"
+//	@Failure		400			{object}	response.ErrorIdResponse										"invalid match end ID, maybe not exist"
+//	@Failure		500			{object}	response.ErrorInternalErrorResponse								"internal db failed for updating totalScores"
+//	@Router			/matchresult/matchend/totalscore/{id} [put]
 func PutMatchEndsTotalScoresById(context *gin.Context) {
+	type matchEndTotalScoresData struct {
+		TotalScore int `json:"total_scores"`
+	}
+	_ = matchEndTotalScoresData{}
 	id := Convert2uint(context, "id")
 	var data database.MatchEnd
 	err := context.BindJSON(&data)
@@ -295,11 +325,12 @@ func PutMatchEndsTotalScoresById(context *gin.Context) {
 //	@Description	MatchScore ids and scores must be the same length
 //	@Tags			MatchEnd
 //	@Accept			json
-//	@Param			id					path	int		true	"MatchEnd ID"
-//	@Param			matchEndScoresData	body	string	true	"matchEndScoresData"
-//	@Success		200					string	string
-//	@Failure		400					string	string
-//	@Router			/matchend/scores/{id} [put]
+//	@Param			id					path		int													true	"MatchEnd ID"
+//	@Param			matchEndScoresData	body		endpoint.PutMatchEndsScoresById.matchEndScoresData	true	"matchEndScoresData"
+//	@Success		200					{object}	response.Nill										"success, return nil"
+//	@Failure		400					{object}	response.ErrorIdResponse							"invalid match end ID, maybe not exist, or matchScore ids not exist, or matchScore ids and scores length not match"
+//	@Failure		500					{object}	response.ErrorInternalErrorResponse					"internal db failed for updating scores"
+//	@Router			/matchresult/matchend/scores/{id} [put]
 func PutMatchEndsScoresById(context *gin.Context) {
 	type matchEndScoresData struct {
 		TotalScore    int    `json:"total_scores"`
@@ -343,12 +374,17 @@ func PutMatchEndsScoresById(context *gin.Context) {
 //	@Description	Update one MatchEnd isConfirmed by id
 //	@Tags			MatchEnd
 //	@Accept			json
-//	@Param			id			path	int		true	"MatchEnd ID"
-//	@Param			MatchEnd	body	string	true	"MatchEnd"
-//	@Success		200			string	string
-//	@Failure		400			string	string
-//	@Router			/matchend/isconfirmed/{id} [put]
+//	@Param			id			path		int																true	"MatchEnd ID"
+//	@Param			MatchEnd	body		endpoint.PutMatchEndsIsConfirmedById.matchEndIsConfirmedData	true	"MatchEnd"
+//	@Success		200			{object}	response.Nill													"success, return nil"
+//	@Failure		400			{object}	response.ErrorIdResponse										"invalid match end ID, maybe not exist"
+//	@Failure		500			{object}	response.ErrorInternalErrorResponse								"internal db failed for updating isConfirmed"
+//	@Router			/matchresult/matchend/isconfirmed/{id} [put]
 func PutMatchEndsIsConfirmedById(context *gin.Context) {
+	type matchEndIsConfirmedData struct {
+		IsConfirmed bool `json:"is_confirmed"`
+	}
+	_ = matchEndIsConfirmedData{}
 	id := Convert2uint(context, "id")
 	var data database.MatchEnd
 	err := context.BindJSON(&data)
@@ -369,14 +405,20 @@ func PutMatchEndsIsConfirmedById(context *gin.Context) {
 //
 //	@Summary		Update one MatchScore score
 //	@Description	Update one MatchScore score by id
+//	@Description	Also update related MatchEnd totalScores
 //	@Tags			MatchScore
 //	@Accept			json
-//	@Param			id			path	int		true	"MatchScore ID"
-//	@Param			MatchScore	body	string	true	"MatchScore"
-//	@Success		200			string	string
-//	@Failure		400			string	string
-//	@Router			/matchscore/score/{id} [put]
+//	@Param			id			path		int												true	"MatchScore ID"
+//	@Param			MatchScore	body		endpoint.PutMatchScoreScoreById.matchScoreData	true	"MatchScore"
+//	@Success		200			{object}	response.Nill									"success, return nil"
+//	@Failure		400			{object}	response.ErrorIdResponse						"invalid match score ID, maybe not exist"
+//	@Failure		500			{object}	response.ErrorInternalErrorResponse				"internal db failed for updating score, get matchEnd by id, get matchScore, update matchEnd totalScores"
+//	@Router			/matchresult/matchscore/score/{id} [put]
 func PutMatchScoreScoreById(context *gin.Context) {
+	type matchScoreData struct {
+		Score int `json:"score"`
+	}
+	_ = matchScoreData{}
 	id := Convert2uint(context, "id")
 	var data database.MatchScore
 	err := context.BindJSON(&data)
@@ -413,9 +455,10 @@ func PutMatchScoreScoreById(context *gin.Context) {
 //	@Summary		Delete one MatchResult
 //	@Description	Delete one MatchResult with matchEnds and matchScores by id
 //	@Tags			MatchResult
-//	@Param			id	path	int	true	"MatchResult ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			id	path		int									true	"MatchResult ID"
+//	@Success		200	{object}	response.Nill						"success, return nil"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid match result ID, maybe not exist"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db failed for deleting match result"
 //	@Router			/matchresult/{id} [delete]
 func DeleteMatchResultById(context *gin.Context) {
 	id := Convert2uint(context, "id")

@@ -1401,15 +1401,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, return one Match with all related data",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/database.Match"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid Match ID, maybe not exist",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error for Get Match",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -1509,7 +1515,22 @@ const docTemplate = `{
                     "200": {
                         "description": "success, return one Elimination with all scores",
                         "schema": {
-                            "$ref": "#/definitions/database.Elimination"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Elimination"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "medals": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        },
+                                        "player_sets": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -2060,7 +2081,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "invalid GroupInfo ID, may not exist",
+                        "description": "invalid GroupInfo ID, may not exist, cannot update UnassignedGroup",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
@@ -2087,7 +2108,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "LaneInfo ID",
+                        "description": "GroupInfo ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -2460,138 +2481,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/matchend/isconfirmed/{id}": {
-            "put": {
-                "description": "Update one MatchEnd isConfirmed by id",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "MatchEnd"
-                ],
-                "summary": "Update one MatchEnd isConfirmed",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "MatchEnd ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "MatchEnd",
-                        "name": "MatchEnd",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/matchend/scores/{id}": {
-            "put": {
-                "description": "Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids\nMatchScore ids and scores must be the same length",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "MatchEnd"
-                ],
-                "summary": "Update one MatchEnd scores",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "MatchEnd ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "matchEndScoresData",
-                        "name": "matchEndScoresData",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/matchend/totalscores/{id}": {
-            "put": {
-                "description": "Update one MatchEnd totalScores by id",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "MatchEnd"
-                ],
-                "summary": "Update one MatchEnd totalScores",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "MatchEnd ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "MatchEnd",
-                        "name": "MatchEnd",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
         "/matchresult/iswinner/{id}": {
             "put": {
                 "description": "Update one MatchResult isWinner by id",
@@ -2616,21 +2505,27 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/endpoint.PutMatchResultIsWinnerById.matchResultIsWinnerData"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, return nil",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.Nill"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid match result ID, maybe not exist",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db failed for updating isWinner",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -2660,21 +2555,27 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/endpoint.PutMatchResultLaneNumberById.matchResultLaneNumberData"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, return nil",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.Nill"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid match result ID, maybe not exist",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db failed for updating laneNumber",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -2682,7 +2583,7 @@ const docTemplate = `{
         },
         "/matchresult/matchend": {
             "post": {
-                "description": "Post one new MatchEnd data, and auto write totalScores IsConfirmed, and auto create matchScores by teamSize",
+                "description": "Post one new MatchEnd data,\nAuto write totalScores IsConfirmed, and auto create matchScores by teamSize\nteamSize: 1, 2, 3",
                 "consumes": [
                     "application/json"
                 ],
@@ -2700,21 +2601,227 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/endpoint.PostMatchEnd.matchEndData"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, return nil",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.Response"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid match result ID, maybe not exist",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorReceiveDataResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db failed for creating matchEnd, creating matchScores",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/matchresult/matchend/isconfirmed/{id}": {
+            "put": {
+                "description": "Update one MatchEnd isConfirmed by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MatchEnd"
+                ],
+                "summary": "Update one MatchEnd isConfirmed",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MatchEnd ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "MatchEnd",
+                        "name": "MatchEnd",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.PutMatchEndsIsConfirmedById.matchEndIsConfirmedData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success, return nil",
+                        "schema": {
+                            "$ref": "#/definitions/response.Nill"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid match end ID, maybe not exist",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db failed for updating isConfirmed",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/matchresult/matchend/scores/{id}": {
+            "put": {
+                "description": "Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids\nMatchScore ids and scores must be the same length",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MatchEnd"
+                ],
+                "summary": "Update one MatchEnd scores",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MatchEnd ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "matchEndScoresData",
+                        "name": "matchEndScoresData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.PutMatchEndsScoresById.matchEndScoresData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success, return nil",
+                        "schema": {
+                            "$ref": "#/definitions/response.Nill"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid match end ID, maybe not exist, or matchScore ids not exist, or matchScore ids and scores length not match",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db failed for updating scores",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/matchresult/matchend/totalscore/{id}": {
+            "put": {
+                "description": "Update one MatchEnd totalScores by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MatchEnd"
+                ],
+                "summary": "Update one MatchEnd totalScores",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MatchEnd ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "MatchEnd",
+                        "name": "MatchEnd",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.PutMatchEndsTotalScoresById.matchEndTotalScoresData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success, return nil",
+                        "schema": {
+                            "$ref": "#/definitions/response.Nill"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid match end ID, maybe not exist",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db failed for updating totalScores",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/matchresult/matchscore/score/{id}": {
+            "put": {
+                "description": "Update one MatchScore score by id\nAlso update related MatchEnd totalScores",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MatchScore"
+                ],
+                "summary": "Update one MatchScore score",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "MatchScore ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "MatchScore",
+                        "name": "MatchScore",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.PutMatchScoreScoreById.matchScoreData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success, return nil",
+                        "schema": {
+                            "$ref": "#/definitions/response.Nill"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid match score ID, maybe not exist",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db failed for updating score, get matchEnd by id, get matchScore, update matchEnd totalScores",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -2741,15 +2848,45 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, return MatchResult with scores",
                         "schema": {
-                            "type": "string"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.MatchResult"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "player_set": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/database.PlayerSet"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "players": {
+                                                            "$ref": "#/definitions/response.Nill"
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid match result ID, maybe not exist",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db failed for getting match result with scores",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -2779,21 +2916,27 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/endpoint.PutMatchResultShootOffScoreById.matchResultShootOffScoreData"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, return nil",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.Nill"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid match result ID, maybe not exist",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db failed for updating shootOffScore",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -2823,21 +2966,27 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/endpoint.PutMatchResultTotalPointsById.matchResultTotalPointsData"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, return nil",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.Nill"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid match result ID, maybe not exist",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db failed for updating totalPoints",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -2864,15 +3013,48 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, return MatchResult with player set",
                         "schema": {
-                            "type": "string"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.MatchResult"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "match_ends": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        },
+                                        "player_set": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/database.PlayerSet"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "players": {
+                                                            "$ref": "#/definitions/response.Nill"
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid match result ID, maybe not exist",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db failed for getting match result",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -2894,59 +3076,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success, return nil",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.Nill"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid match result ID, maybe not exist",
                         "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/matchscore/score/{id}": {
-            "put": {
-                "description": "Update one MatchScore score by id",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "MatchScore"
-                ],
-                "summary": "Update one MatchScore score",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "MatchScore ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "MatchScore",
-                        "name": "MatchScore",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "500": {
+                        "description": "internal db failed for deleting match result",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -6125,6 +6269,17 @@ const docTemplate = `{
                 }
             }
         },
+        "endpoint.PostMatchEnd.matchEndData": {
+            "type": "object",
+            "properties": {
+                "match_result_id": {
+                    "type": "integer"
+                },
+                "team_size": {
+                    "type": "integer"
+                }
+            }
+        },
         "endpoint.PostPlayerSet.playerSetData": {
             "type": "object",
             "properties": {
@@ -6172,6 +6327,82 @@ const docTemplate = `{
                 },
                 "group_range": {
                     "type": "string"
+                }
+            }
+        },
+        "endpoint.PutMatchEndsIsConfirmedById.matchEndIsConfirmedData": {
+            "type": "object",
+            "properties": {
+                "is_confirmed": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "endpoint.PutMatchEndsScoresById.matchEndScoresData": {
+            "type": "object",
+            "properties": {
+                "match_score_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "scores": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "total_scores": {
+                    "type": "integer"
+                }
+            }
+        },
+        "endpoint.PutMatchEndsTotalScoresById.matchEndTotalScoresData": {
+            "type": "object",
+            "properties": {
+                "total_scores": {
+                    "type": "integer"
+                }
+            }
+        },
+        "endpoint.PutMatchResultIsWinnerById.matchResultIsWinnerData": {
+            "type": "object",
+            "properties": {
+                "is_winner": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "endpoint.PutMatchResultLaneNumberById.matchResultLaneNumberData": {
+            "type": "object",
+            "properties": {
+                "lane_number": {
+                    "type": "integer"
+                }
+            }
+        },
+        "endpoint.PutMatchResultShootOffScoreById.matchResultShootOffScoreData": {
+            "type": "object",
+            "properties": {
+                "shoot_off_score": {
+                    "type": "integer"
+                }
+            }
+        },
+        "endpoint.PutMatchResultTotalPointsById.matchResultTotalPointsData": {
+            "type": "object",
+            "properties": {
+                "total_points": {
+                    "type": "integer"
+                }
+            }
+        },
+        "endpoint.PutMatchScoreScoreById.matchScoreData": {
+            "type": "object",
+            "properties": {
+                "score": {
+                    "type": "integer"
                 }
             }
         },

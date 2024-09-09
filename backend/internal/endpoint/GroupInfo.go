@@ -37,7 +37,7 @@ func IsGetGroupInfo(context *gin.Context, id uint) (bool, database.Group) {
 //	@Description	Get only one GroupInfo by id
 //	@Tags			GroupInfo
 //	@Produce		json
-//	@Param			id	path		int										true	"LaneInfo ID"
+//	@Param			id	path		int										true	"GroupInfo ID"
 //	@Success		200	{object}	database.Group{players=response.Nill}	"success, get GroupInfo by id without related data"
 //	@Failure		400	{object}	response.ErrorIdResponse				"invalid GroupInfo ID, may not exist"
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse		"database error for Get GroupInfo"
@@ -178,7 +178,7 @@ func PostUnassignedGroupInfo(context *gin.Context, competitionId uint) (bool, ui
 //	@Param			id			path		int										true	"GroupInfo ID"
 //	@Param			GroupInfo	body		endpoint.PutGroupInfo.GroupData			true	"GroupInfo"
 //	@Success		200			{object}	database.Group{players=response.Nill}	"success, return new updated GroupInfo data"
-//	@Failure		400			{object}	response.ErrorIdResponse				"invalid GroupInfo ID, may not exist"
+//	@Failure		400			{object}	response.ErrorIdResponse				"invalid GroupInfo ID, may not exist, cannot update UnassignedGroup"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse		"database error for Update GroupInfo, Get GroupInfo"
 //	@Router			/groupinfo/whole/{id} [put]
 func PutGroupInfo(context *gin.Context) {
