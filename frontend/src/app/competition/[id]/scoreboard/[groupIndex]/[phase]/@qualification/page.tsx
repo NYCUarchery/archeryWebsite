@@ -10,6 +10,7 @@ import { useState } from "react";
 import { Player } from "@/types/oldRef/Player";
 import { calculatePlayerStats } from "@/utils/calculatePlayerStatistics";
 import ScoreDetail from "@/components/ScoreDetail/ScoreDetail";
+import numberToAlphabet from "@/utils/numberToAlphabet";
 
 export default function Page({
   params,
@@ -18,10 +19,11 @@ export default function Page({
 }) {
   const [open, setOpen] = useState(false);
   const [playerId, setPlayerId] = useState<number | null>(null);
+  const competitionId = parseInt(params.id);
   const queryClient = useQueryClient();
   const competition: any = queryClient.getQueryData([
     "competitionWithGroups",
-    params.id,
+    competitionId,
   ]);
   const groupShown: number = parseInt(params.groupIndex);
   const group = competition.data.groups!.find(
@@ -134,9 +136,3 @@ function ColumnTitle() {
     </Grid>
   );
 }
-
-const numberToAlphabet = (num: number) => {
-  num--;
-  const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  return alphabet[num];
-};
