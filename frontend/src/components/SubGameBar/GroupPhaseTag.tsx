@@ -1,4 +1,4 @@
-import { useSelector } from "react-redux/es/hooks/useSelector";
+import { useSelector } from "react-redux";
 
 export default function GroupPhaseTag() {
   const currentPhase = useSelector((state: any) => state.game.currentPhase);
