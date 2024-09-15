@@ -3,15 +3,18 @@ import Box from "@mui/material/Box";
 import GroupMenu from "./GroupMenu";
 import PhaseMenu from "./PhaseMenu";
 import GroupPhaseTag from "./GroupPhaseTag";
-import { Group } from "@/types/oldRef/Competition";
+import { Competition, Group } from "@/types/oldRef/Competition";
 import { useSelectedLayoutSegment } from "next/navigation";
+import { Player } from "@/types/oldRef/Player";
 
 interface Props {
-  groups: Group[];
+  competition?: Competition;
+  player?: Player;
+  groups?: Group[];
   isLoading: boolean;
 }
 
-function SubGamesBar({ groups, isLoading }: Props) {
+function SubGamesBar({ groups, isLoading, competition, player }: Props) {
   let content: any;
   const segment = useSelectedLayoutSegment();
 
@@ -34,7 +37,13 @@ function SubGamesBar({ groups, isLoading }: Props) {
       );
       break;
     case "scoring":
-      content = <GroupPhaseTag></GroupPhaseTag>;
+      content = (
+        <GroupPhaseTag
+          groups={groups}
+          currentPhase={competition?.current_phase}
+          playerGroup={player?.group_id}
+        />
+      );
       break;
     case "admin":
       return <></>;

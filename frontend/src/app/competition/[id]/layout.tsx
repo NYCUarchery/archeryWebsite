@@ -30,6 +30,7 @@ export default function Layout({
         isError={isError}
       />
       <SubGamesBar
+        competition={competition}
         groups={competition?.groups as Group[]}
         isLoading={isLoading}
       />
