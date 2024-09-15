@@ -5,5 +5,6 @@ export function useGetUserId() {
   return useQuery(["currentUser", "id"], apiClient.user.getUser, {
     select: (data) => data.data.id,
     retry: false,
+    staleTime: Infinity,
   });
 }

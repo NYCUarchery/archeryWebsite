@@ -9,5 +9,6 @@ export function useGetCurrentUserDetail() {
     select: (data) => data.data.data,
     retry: false,
     enabled: !isFetching,
+    staleTime: Infinity,
   });
 }

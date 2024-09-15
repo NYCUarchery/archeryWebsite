@@ -355,7 +355,7 @@ export class Api<
      * @request PUT:/competition//groups/players/playertotal/{id}
      */
     competitionGroupsPlayersPlayertotalUpdate: (
-      id: string,
+      id: number,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
@@ -401,7 +401,7 @@ export class Api<
      * @request PUT:/competition/currentphaseminus/{id}
      */
     competitionCurrentphaseminusUpdate: (
-      id: string,
+      id: number,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
@@ -419,7 +419,7 @@ export class Api<
      * @request PUT:/competition/currentphaseplus/{id}
      */
     competitionCurrentphaseplusUpdate: (
-      id: string,
+      id: number,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
@@ -437,7 +437,7 @@ export class Api<
      * @request PUT:/competition/eliminationisactive/{id}
      */
     competitionEliminationisactiveUpdate: (
-      id: string,
+      id: number,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
@@ -455,7 +455,7 @@ export class Api<
      * @request PUT:/competition/groups/players/rank/{id}
      */
     competitionGroupsPlayersRankUpdate: (
-      id: string,
+      id: number,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
@@ -474,9 +474,9 @@ export class Api<
      * @summary Show one Competition with Groups Qualification Elimination
      * @request GET:/competition/groups/qualieli/{id}
      */
-    competitionGroupsQualieliDetail: (id: number, params: RequestParams = {}) =>
-      this.request<string, string>({
-        path: `/competition/groups/qualieli/${id}`,
+    competitionGroupsQuaeliDetail: (id: number, params: RequestParams = {}) =>
+      this.request<any, string>({
+        path: `/competition/groups/quaeli/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -507,7 +507,7 @@ export class Api<
      * @request PUT:/competition/mixedeliminationisactive/{id}
      */
     competitionMixedeliminationisactiveUpdate: (
-      id: string,
+      id: number,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
@@ -541,11 +541,11 @@ export class Api<
      * @request PUT:/competition/qualificationcurrentendminus/{id}
      */
     competitionQualificationcurrentendminusUpdate: (
-      id: string,
+      id: number,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/competition/qualificationcurrentendminus/${id}`,
+        path: `/competition/qualificationcurrentend/minus/${id}`,
         method: "PUT",
         ...params,
       }),
@@ -559,11 +559,11 @@ export class Api<
      * @request PUT:/competition/qualificationcurrentendplus/{id}
      */
     competitionQualificationcurrentendplusUpdate: (
-      id: string,
+      id: number,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/competition/qualificationcurrentendplus/${id}`,
+        path: `/competition/qualificationcurrentend/plus/${id}`,
         method: "PUT",
         ...params,
       }),
@@ -577,7 +577,7 @@ export class Api<
      * @request PUT:/competition/qualificationisactive/{id}
      */
     competitionQualificationisactiveUpdate: (
-      id: string,
+      id: number,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
@@ -595,7 +595,7 @@ export class Api<
      * @request GET:/competition/recent/{userid}/{head}/{tail}
      */
     competitionRecentDetail: (
-      userid: string,
+      userid: number,
       head: string,
       tail: string,
       query: {
@@ -625,7 +625,7 @@ export class Api<
      * @request PUT:/competition/teameliminationisactive/{id}
      */
     competitionTeameliminationisactiveUpdate: (
-      id: string,
+      id: number,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
@@ -643,8 +643,8 @@ export class Api<
      * @request PUT:/competition/whole/{id}
      */
     competitionWholeUpdate: (
-      id: string,
-      Competition: string,
+      id: number,
+      Competition: any,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
@@ -680,7 +680,7 @@ export class Api<
      * @summary delete one Competition
      * @request DELETE:/competition/{id}
      */
-    competitionDelete: (id: string, params: RequestParams = {}) =>
+    competitionDelete: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
         path: `/competition/${id}`,
         method: "DELETE",
@@ -704,8 +704,7 @@ export class Api<
         format: "json",
         ...params,
       }),
-  };
-  api = {
+
     /**
      * @description Get one Competition by id with GroupInfos and Players
      *
@@ -713,7 +712,7 @@ export class Api<
      * @summary Show one Competition with GroupInfos and Players
      * @request GET:/competition/groups/players/{id}
      */
-    competitionGroupsPlayersDetail: (id: string, params: RequestParams = {}) =>
+    competitionGroupsPlayersDetail: (id: number, params: RequestParams = {}) =>
       this.request<any, any>({
         path: `/competition/groups/players/${id}`,
         method: "GET",
@@ -1028,7 +1027,7 @@ export class Api<
      * @request PUT:/groupinfo/whole/{id}
      */
     groupinfoWholeUpdate: (
-      id: string,
+      id: number,
       GroupInfo: string,
       params: RequestParams = {}
     ) =>
@@ -1065,7 +1064,7 @@ export class Api<
      * @summary delete one GroupInfo
      * @request DELETE:/groupinfo/{id}
      */
-    groupinfoDelete: (id: string, params: RequestParams = {}) =>
+    groupinfoDelete: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
         path: `/groupinfo/${id}`,
         method: "DELETE",
@@ -1084,7 +1083,7 @@ export class Api<
      * @request GET:/lane/all/{id}
      */
     laneAllDetail: (id: number, params: RequestParams = {}) =>
-      this.request<string, string>({
+      this.request<any, string>({
         path: `/lane/all/${id}`,
         method: "GET",
         format: "json",
@@ -1100,7 +1099,7 @@ export class Api<
      * @request GET:/lane/scores/{id}
      */
     laneScoresDetail: (id: number, params: RequestParams = {}) =>
-      this.request<string, string>({
+      this.request<any, string>({
         path: `/lane/scores/${id}`,
         method: "GET",
         format: "json",
@@ -1445,7 +1444,7 @@ export class Api<
      * @request PUT:/oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm}
      */
     oldlaneinfoConfirmUpdate: (
-      id: string,
+      id: number,
       stageindex: string,
       userindex: string,
       confirm: string,
@@ -1468,7 +1467,7 @@ export class Api<
      * @request PUT:/oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score}
      */
     oldlaneinfoScoreUpdate: (
-      id: string,
+      id: number,
       stageindex: string,
       userindex: string,
       arrowindex: string,
@@ -1492,7 +1491,7 @@ export class Api<
      * @request PUT:/oldlaneinfo/whole/{id}
      */
     oldlaneinfoWholeUpdate: (
-      id: string,
+      id: number,
       LaneData: string,
       params: RequestParams = {}
     ) =>
@@ -1529,7 +1528,7 @@ export class Api<
      * @summary delete one OldLaneInfo
      * @request DELETE:/oldlaneinfo/{id}
      */
-    oldlaneinfoDelete: (id: string, params: RequestParams = {}) =>
+    oldlaneinfoDelete: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
         path: `/oldlaneinfo/${id}`,
         method: "DELETE",
@@ -1573,7 +1572,7 @@ export class Api<
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/participant/competition`,
+        path: `/participant/competition/${competition_id}`,
         method: "GET",
         body: competition_id,
         type: ContentType.Json,
@@ -1629,12 +1628,12 @@ export class Api<
      * @request PUT:/participant/whole/{id}
      */
     participantWholeUpdate: (
-      id: string,
-      Participant: string,
+      id: number,
+      Participant: any,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/participant/whole/${id}`,
+        path: `/participant/${id}`,
         method: "PUT",
         body: Participant,
         type: ContentType.Json,
@@ -1666,7 +1665,7 @@ export class Api<
      * @summary delete one Participant
      * @request DELETE:/participant/{id}
      */
-    participantDelete: (id: string, params: RequestParams = {}) =>
+    participantDelete: (id: number, params: RequestParams = {}) =>
       this.request<string, string>({
         path: `/participant/${id}`,
         method: "DELETE",
@@ -1718,12 +1717,13 @@ export class Api<
      */
     playerGroupidUpdate: (
       playerid: number,
-      groupid: string,
+      groupid: number,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/player/groupid/${playerid}/${groupid}`,
+        path: `/player/group/${playerid}`,
         method: "PUT",
+        body: { group_id: groupid },
         type: ContentType.Json,
         format: "json",
         ...params,
@@ -1737,10 +1737,15 @@ export class Api<
      * @summary Update one Player isConfirmed by id
      * @request PUT:/player/isconfirmed/{roundendid}
      */
-    playerIsconfirmedUpdate: (roundendid: number, params: RequestParams = {}) =>
+    playerIsconfirmedUpdate: (
+      roundendid: number,
+      body: { is_confirmed: boolean },
+      params: RequestParams = {}
+    ) =>
       this.request<string, string>({
         path: `/player/isconfirmed/${roundendid}`,
         method: "PUT",
+        body: body,
         type: ContentType.Json,
         format: "json",
         ...params,
@@ -1754,10 +1759,15 @@ export class Api<
      * @summary Update one Player laneId by id
      * @request PUT:/player/laneid/{playerid}
      */
-    playerLaneidUpdate: (playerid: number, params: RequestParams = {}) =>
+    playerLaneidUpdate: (
+      playerid: number,
+      body: { lane_id: number },
+      params?: any
+    ) =>
       this.request<string, string>({
-        path: `/player/laneid/${playerid}`,
+        path: `/player/lane/${playerid}`,
         method: "PUT",
+        body: body,
         type: ContentType.Json,
         format: "json",
         ...params,
@@ -1771,10 +1781,11 @@ export class Api<
      * @summary Update one Player order by id
      * @request PUT:/player/order/{id}
      */
-    playerOrderUpdate: (id: number, params: RequestParams = {}) =>
+    playerOrderUpdate: (id: number, body: { order: number }, params?: any) =>
       this.request<string, string>({
         path: `/player/order/${id}`,
         method: "PUT",
+        body: body,
         type: ContentType.Json,
         format: "json",
         ...params,
@@ -1975,8 +1986,8 @@ export class Api<
      * @request PUT:/qualification/whole/{id}
      */
     qualificationWholeUpdate: (
-      id: string,
-      Qualification: string,
+      id: number,
+      Qualification: any,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
@@ -2016,8 +2027,8 @@ export class Api<
       id: number,
       params: RequestParams = {}
     ) =>
-      this.request<string, string>({
-        path: `/qualification/lanes/Unassigned/${id}`,
+      this.request<any, string>({
+        path: `/qualification/lanes/unassigned/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -2091,7 +2102,7 @@ export class Api<
      * @summary get institution info by id
      * @request GET:/institution/{id}
      */
-    institutionDetail: (id: string, params: RequestParams = {}) =>
+    institutionDetail: (id: number, params: RequestParams = {}) =>
       this.request<
         ResponseResponse & {
           data?: DatabaseInstitution;
@@ -2113,7 +2124,7 @@ export class Api<
      * @summary delete an institution
      * @request DELETE:/institution/{id}
      */
-    institutionDelete: (id: string, params: RequestParams = {}) =>
+    institutionDelete: (id: number, params: RequestParams = {}) =>
       this.request<ResponseResponse, ResponseResponse>({
         path: `/institution/${id}`,
         method: "DELETE",
@@ -2345,7 +2356,7 @@ export class Api<
      * @request PUT:/user/password/{id}
      */
     passwordUpdate: (
-      id: string,
+      id: number,
       ModifyInfo: EndpointModifyAccountPasswordInfo,
       params: RequestParams = {}
     ) =>
@@ -2366,7 +2377,7 @@ export class Api<
      * @summary get a user's information
      * @request GET:/user/{id}
      */
-    userDetail: (id: string, params: RequestParams = {}) =>
+    userDetail: (id: number, params: RequestParams = {}) =>
       this.request<
         ResponseResponse & {
           data?: DatabaseUser;
@@ -2389,7 +2400,7 @@ export class Api<
      * @request PUT:/user/{id}
      */
     userUpdate: (
-      id: string,
+      id: number,
       ModifyInfo: DatabaseUser,
       params: RequestParams = {}
     ) =>
