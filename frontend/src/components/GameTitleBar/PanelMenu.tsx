@@ -13,13 +13,13 @@ type BoardNameSet = {
 
 const boardAbbreviations = new Map<string, string>([
   ["scoreboard", "分"],
-  ["recording", "記"],
+  ["scoring", "記"],
   ["admin", "監"],
 ]);
 
 const boardNameSets: BoardNameSet[] = [
   { id: "scoreboard", name: "分數榜" },
-  { id: "recording", name: "紀錄分數" },
+  { id: "scoring", name: "紀錄分數" },
   { id: "admin", name: "監控" },
 ];
 
@@ -32,7 +32,7 @@ export default function PanelMenu({ panelName }: Props) {
   const router = useRouter();
   const currentPath = usePathname();
   const currentPenalRootPath = prunePath(currentPath, 3);
-  const avaliableBoards: string[] = ["scoreboard", "recording", "admin"];
+  const avaliableBoards: string[] = ["scoreboard", "scoring", "admin"];
 
   let indicatorCharacter: string = boardAbbreviations.get(panelName) as string;
 

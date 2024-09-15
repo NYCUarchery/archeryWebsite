@@ -33,7 +33,7 @@ function SubGamesBar({ groups, isLoading }: Props) {
         </Box>
       );
       break;
-    case "recording":
+    case "scoring":
       content = <GroupPhaseTag></GroupPhaseTag>;
       break;
     case "admin":
