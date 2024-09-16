@@ -1,5 +1,6 @@
 "use client";
 
+import { Participant } from "@/types/oldRef/Participant";
 import PanelMenu from "./PanelMenu";
 import { useSelectedLayoutSegment } from "next/navigation";
 
@@ -9,6 +10,7 @@ interface Props {
   subtitle: string | undefined;
   isLoading: boolean;
   isError: boolean;
+  participant: Participant | undefined;
 }
 
 export default function GameTitleBar({
@@ -17,6 +19,7 @@ export default function GameTitleBar({
   subtitle,
   isLoading,
   isError,
+  participant,
 }: Props) {
   if (isLoading) {
     title = "讓我看看";
@@ -37,7 +40,7 @@ export default function GameTitleBar({
       }}
     >
       <NamePrompt name={name} />
-      <PanelMenu panelName={panelName} />
+      <PanelMenu panelName={panelName} participant={participant} />
       <div className="game_title">
         <span
           className="game_main_title"

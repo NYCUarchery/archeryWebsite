@@ -5,6 +5,7 @@ import MenuItem from "@mui/material/MenuItem";
 import { useRouter } from "next/navigation";
 import { usePathname } from "next/navigation";
 import prunePath from "@/utils/prunePath";
+import { Participant } from "@/types/oldRef/Participant";
 
 type BoardNameSet = {
   id: string;
@@ -25,9 +26,10 @@ const boardNameSets: BoardNameSet[] = [
 
 interface Props {
   panelName: string;
+  participant: Participant | undefined;
 }
 
-export default function PanelMenu({ panelName }: Props) {
+export default function PanelMenu({ panelName, participant }: Props) {
   const [AnchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const router = useRouter();
   const currentPath = usePathname();
@@ -43,18 +45,28 @@ export default function PanelMenu({ panelName }: Props) {
     setAnchorEl(event.currentTarget);
   };
 
-  const items = boardNameSets.map((e) => {
-    if (avaliableBoards.includes(e.id)) {
+  const items = boardNameSets.map((set) => {
+    if (avaliableBoards.includes(set.id)) {
+      if (
+        (participant === undefined || participant?.status === "pending") &&
+        set.id !== "scoreboard"
+      ) {
+        return <></>;
+      } else if (participant?.role === "player" && set.id === "admin") {
+        return <></>;
+      } else if (participant?.role === "admin" && set.id === "scoring") {
+        return <></>;
+      }
       return (
         <MenuItem
-          key={e.id}
+          key={set.id}
           onClick={() => {
-            router.push(currentPenalRootPath + "/" + e.id);
-            indicatorCharacter = boardAbbreviations.get(e.id) as string;
+            router.push(currentPenalRootPath + "/" + set.id);
+            indicatorCharacter = boardAbbreviations.get(set.id) as string;
             handleClose();
           }}
         >
-          {e.name}
+          {set.name}
         </MenuItem>
       );
     }
