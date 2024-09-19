@@ -1,14 +1,10 @@
 name: nycu-archery-system
 
 services:
-  frontend-scoring:
+  frontend:
     build:
-      context: ./frontend_scoring
-    restart: always
-  frontend-profile:
-    build:
-      context: ./frontend_profile
-    restart: always
+      context: ./frontend
+    restart: unless-stopped
   mysql:
     image: mysql:8
     volumes:
@@ -18,21 +14,20 @@ services:
       MYSQL_DATABASE: db
       MYSQL_USER: user
       MYSQL_PASSWORD: password
-    restart: always
+    restart: unless-stopped
   backend:
     build:
       context: ./backend
-    restart: always
+    restart: unless-stopped
   reverse-proxy:
     build:
       context: ./reverse-proxy
-    restart: always
+    restart: unless-stopped
     ports:
       - 80:80
       - 443:443
     depends_on:
-      - frontend-scoring
-      - frontend-profile
+      - frontend
       - backend
 volumes:
   db_data:
