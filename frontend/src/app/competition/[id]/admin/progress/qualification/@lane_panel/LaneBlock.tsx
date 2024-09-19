@@ -30,7 +30,7 @@ export default function LaneBlock({
   currentEndIndex,
 }: Props) {
   const [signals, setSignals] = useState<JSX.Element[]>([]);
-  const { data: confirmations, isSuccess } = useGetLaneConfirmations(
+  const { data: confirmations } = useGetLaneConfirmations(
     laneId,
     currentEndIndex
   );
@@ -53,7 +53,7 @@ export default function LaneBlock({
   );
 
   useEffect(() => {
-    let tempSignals: JSX.Element[] = [];
+    const tempSignals: JSX.Element[] = [];
     for (let i = 0; i < 4; i++) {
       const confirmation =
         confirmations?.find((confirmation) => confirmation.order === i + 1) ??

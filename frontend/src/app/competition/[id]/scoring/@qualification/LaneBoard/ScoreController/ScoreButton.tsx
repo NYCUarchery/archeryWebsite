@@ -24,7 +24,7 @@ interface Props {
 }
 
 export default function ScoreButton({ end, score, onClick }: Props) {
-  let content: string = "";
+  let content = "";
   const buttonColor = buttonColors.get(score) as string;
 
   const lastScore = findLastScoreInEnd(end);

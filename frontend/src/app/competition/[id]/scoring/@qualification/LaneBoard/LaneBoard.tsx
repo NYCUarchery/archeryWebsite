@@ -22,9 +22,9 @@ export default function LaneBoard({ player, competitionId, lane }: Props) {
   const selectedOrder = useAppSelector(
     (state) => state.qualificationScoring.selectedOrder
   );
-  const selectedPlayerId = useComputed(() => {
-    return lane.players.find((p) => p.order === selectedOrder)?.id ?? -1;
-  });
+  // const selectedPlayerId = useComputed(() => {
+  //   return lane.players.find((p) => p.order === selectedOrder)?.id ?? -1;
+  // });
   const selectedEnd = useComputed(() => {
     const index = lane.players.findIndex((p) => p.order === selectedOrder);
     return lane.ends[index];
@@ -37,7 +37,7 @@ export default function LaneBoard({ player, competitionId, lane }: Props) {
     dispatch(setSelectedIndex(newOrder));
   };
 
-  let playerInfos = [];
+  const playerInfos = [];
   for (let i = 0; i < lane.players.length; i++) {
     const player = lane.players[i];
     const end = lane.ends[i];
@@ -70,7 +70,9 @@ export default function LaneBoard({ player, competitionId, lane }: Props) {
       <ScoreController
         selectedEnd={selectedEnd.value}
         possibleScores={[11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]} // TODO: get possible scores from "server"
-        onScoreChange={(score: number) => {}}
+        onScoreChange={(score: number) => {
+          score;
+        }}
       ></ScoreController>
     </Box>
   );

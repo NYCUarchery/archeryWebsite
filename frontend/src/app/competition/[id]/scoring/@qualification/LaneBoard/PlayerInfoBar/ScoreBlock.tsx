@@ -6,8 +6,8 @@ interface Props {
 }
 
 export default function ScoreBlock(props: Props) {
-  let content: string = "";
-  let scoreColor = useScoreColor(props.score);
+  let content = "";
+  const scoreColor = useScoreColor(props.score);
 
   switch (props.score) {
     case -1:

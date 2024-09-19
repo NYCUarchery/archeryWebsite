@@ -1,9 +1,8 @@
-import { QueryClient, useQueryClient } from "react-query";
 import { Button } from "@mui/material";
 import ButtonGroup from "@mui/material/ButtonGroup";
 import { Backspace } from "@mui/icons-material";
 
-import { Player, Round, RoundEnd } from "@/types/oldRef/Player";
+import { RoundEnd } from "@/types/oldRef/Player";
 
 interface Props {
   selectedEnd: RoundEnd;
@@ -14,9 +13,6 @@ export default function ControllButtonGroup({
   selectedEnd,
   isConfirmed,
 }: Props) {
-  const handleConfirmation = (_event: any) => {};
-  const handledelete = (_event: any) => {};
-
   return (
     <ButtonGroup
       className="controll_button_group"
@@ -28,7 +24,6 @@ export default function ControllButtonGroup({
         color={isConfirmed ? "success" : "error"}
         variant="contained"
         id={isConfirmed ? "confirmed" : "unconfirmed"}
-        onClick={handleConfirmation}
         disableRipple={isConfirmed}
         sx={{
           height: "3rem",
@@ -43,18 +38,17 @@ export default function ControllButtonGroup({
         disabled={selectedEnd === undefined || selectedEnd?.is_confirmed}
         color="error"
         variant="contained"
-        onClick={handledelete}
         sx={{ height: "3rem", fontSize: "1rem" }}
       ></Button>
     </ButtonGroup>
   );
 }
-function invalidateLaneWithPlayerScoresQuery(
-  queryClient: QueryClient,
-  selectedPlayer: Player
-) {
-  queryClient.invalidateQueries([
-    "laneWithPlayersScores",
-    selectedPlayer.lane_id,
-  ]);
-}
+// function invalidateLaneWithPlayerScoresQuery(
+//   queryClient: QueryClient,
+//   selectedPlayer: Player
+// ) {
+//   queryClient.invalidateQueries([
+//     "laneWithPlayersScores",
+//     selectedPlayer.lane_id,
+//   ]);
+// }

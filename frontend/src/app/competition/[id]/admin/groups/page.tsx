@@ -16,7 +16,7 @@ export default function Page({ params }: { params: { id: string } }) {
       staleTime: Infinity,
     }
   );
-  let grids: React.ReactNode = groups
+  const grids: React.ReactNode = groups
     ? groups.map((_, index) => (
         <GroupGrid
           key={index}

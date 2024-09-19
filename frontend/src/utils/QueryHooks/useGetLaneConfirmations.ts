@@ -19,7 +19,7 @@ export default function useGetLaneConfirmations(
       staleTime: Infinity,
       select: (data) => {
         const players = data.data.players as Player[];
-        let confirmations: Confirmation[] = [];
+        const confirmations: Confirmation[] = [];
         for (let i = 0; i < players.length; i++) {
           const endIndex = currentEndIndex - 1;
           const roundIndex = Math.floor(endIndex / 6);

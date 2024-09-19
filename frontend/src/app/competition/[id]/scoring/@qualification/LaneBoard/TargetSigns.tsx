@@ -3,7 +3,7 @@ interface Props {
 }
 
 export default function TargetSigns({ orders }: Props) {
-  let content = [];
+  const content = [];
   for (let i = 0; i < orders.length; i++) {
     content.push(
       <div className="target_sign" key={charAddInt("A", orders[i] - 1)}>

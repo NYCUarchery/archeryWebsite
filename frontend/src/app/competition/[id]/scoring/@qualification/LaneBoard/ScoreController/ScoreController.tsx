@@ -14,7 +14,7 @@ export default function ScoreController({
   possibleScores,
   onScoreChange,
 }: Props) {
-  let scoreButtons = [];
+  const scoreButtons = [];
 
   for (let i = 0; i < possibleScores.length; i++) {
     scoreButtons.push(

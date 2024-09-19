@@ -1,11 +1,11 @@
 import { Group } from "@/types/oldRef/Competition";
-import { Box, Container, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 
 const phases = ["資格賽", "對抗賽", "團體對抗賽", "混雙對抗賽"];
 interface Props {
-  currentPhase: number;
-  playerGroup: number;
-  groups: Group[];
+  currentPhase?: number;
+  playerGroup?: number;
+  groups?: Group[];
 }
 
 export default function GroupPhaseTag({

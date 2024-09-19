@@ -22,7 +22,7 @@ export const extractround = (
 };
 export const extractScores = (end: RoundEnd | undefined) => {
   if (end === undefined) return [];
-  let scores = [];
+  const scores = [];
   for (let i = 0; i < end.round_scores.length; i++) {
     scores.push(end.round_scores[i].score);
   }

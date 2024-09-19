@@ -39,9 +39,9 @@ function SubGamesBar({ groups, isLoading, competition, player }: Props) {
     case "scoring":
       content = (
         <GroupPhaseTag
-          groups={groups!}
-          currentPhase={competition?.current_phase!}
-          playerGroup={player?.group_id!}
+          groups={groups}
+          currentPhase={competition?.current_phase}
+          playerGroup={player?.group_id}
         />
       );
       break;
