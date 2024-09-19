@@ -65,7 +65,7 @@ func connectTestDB() {
 	DSN := GetConf(testDataPath)
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify",
-		DSN.TestUsername, DSN.TestPassword, DSN.TestHost, DSN.TestPort, DSN.TestDatabase)
+		DSN.Username, DSN.Password, DSN.Host, DSN.Port, DSN.Database)
 	var err error
 
 	for retry := 0; retry < 5; retry++ {

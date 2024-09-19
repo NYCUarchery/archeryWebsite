@@ -1,10 +1,11 @@
 import { Group } from "@/types/oldRef/Competition";
+import { Box, Container, Typography } from "@mui/material";
 
-const phases = ["", "資格賽", "對抗賽", "團體對抗賽", "混雙對抗賽"];
+const phases = ["資格賽", "對抗賽", "團體對抗賽", "混雙對抗賽"];
 interface Props {
-  currentPhase?: number;
-  playerGroup?: number;
-  groups?: Group[];
+  currentPhase: number;
+  playerGroup: number;
+  groups: Group[];
 }
 
 export default function GroupPhaseTag({
@@ -20,10 +21,23 @@ export default function GroupPhaseTag({
   if (groups === undefined || phases === undefined) {
     return <></>;
   }
+  console.log(phase, currentPhase);
 
   return (
-    <div className="group_phase_tag">
-      {groupName} {phase}
-    </div>
+    <Box
+      className="group_phase_tag"
+      sx={{
+        width: "400px",
+        height: "100%",
+        backgroundColor: "primary.dark",
+        color: "primary.contrastText",
+        display: "flex",
+        textAlign: "center",
+        alignItems: "center",
+      }}
+    >
+      <Typography sx={{ width: "200px" }}>{groupName}</Typography>
+      <Typography sx={{ width: "200px" }}>{phase}</Typography>
+    </Box>
   );
 }

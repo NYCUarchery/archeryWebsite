@@ -1590,12 +1590,12 @@ export class Api<
      */
     participantCompetitionUserList: (
       user_id: number,
+      competition_id: number,
       params: RequestParams = {}
     ) =>
       this.request<string, string>({
-        path: `/participant/competition/user`,
+        path: `/participant/competition/user/${competition_id}/${user_id}`,
         method: "GET",
-        body: user_id,
         type: ContentType.Json,
         format: "json",
         ...params,
