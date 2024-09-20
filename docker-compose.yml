@@ -1,4 +1,4 @@
-name: nycu-archery-system
+version: "3.8"
 
 services:
   frontend:
@@ -19,23 +19,37 @@ services:
     build:
       context: ./backend
     restart: unless-stopped
+    depends_on:
+      - mysql
   reverse-proxy:
     build:
       context: ./reverse-proxy
     restart: unless-stopped
+    volumes:
+      - /certbot/www:/var/www/certbot/:ro
+      - /certbot/conf/:/etc/nginx/ssl/:ro
     ports:
       - 80:80
       - 443:443
     depends_on:
       - frontend
       - backend
+      - certbot
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - /certbot/www/:/var/www/certbot/:rw
+      - /certbot/conf/:/etc/letsencrypt/:rw
+    entrypoint:
+    - /bin/sh
+    - -c
+    - |
+      trap exit TERM;
+      while :;
+      do
+        certbot renew;
+        sleep 12h;
+      done;
+
 volumes:
   db_data:
-#    volumes:
-#      - /certbot/www:/var/www/certbot/:ro
-#      - /certbot/conf/:/etc/nginx/ssl/:ro
-#  certbot:
-#    image: certbot/certbot:latest
-#    volumes:
-#      - /certbot/www/:/var/www/certbot/:rw
-#      - /certbot/conf/:/etc/letsencrypt/:rw
