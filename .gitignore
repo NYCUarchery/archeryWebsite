@@ -9,10 +9,6 @@ test_dsn_config.txt
 test.ts
 
 # unecessary files
-views
-dist/
 pkg/mod/
 node_modules/
-
-# ignore frontend_scoring it is only for reference
-frontend_scoring/
+frontend/.env
