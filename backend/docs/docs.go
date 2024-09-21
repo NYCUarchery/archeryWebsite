@@ -2359,14 +2359,14 @@ const docTemplate = `{
         },
         "/lane/all/{id}": {
             "get": {
-                "description": "Get all Lane by competition id",
+                "description": "Get all Lanes and related data by competition id.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Lane"
                 ],
-                "summary": "Show all Lane of a competition",
+                "summary": "Show all Lanes and related data of a competition.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -2378,11 +2378,23 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "succsess",
+                        "description": "succsess, return lanes",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/database.Lane"
+                                "allOf": [
+                                    {
+                                        "$ref": "#/definitions/database.Lane"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "players": {
+                                                "$ref": "#/definitions/response.Nill"
+                                            }
+                                        }
+                                    }
+                                ]
                             }
                         }
                     },
@@ -2403,14 +2415,14 @@ const docTemplate = `{
         },
         "/lane/scores/{id}": {
             "get": {
-                "description": "Get one Lane with players, rounds, roundends, roundscores by id",
+                "description": "Get one Lane with players, rounds, roundends, roundscores by id.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Lane"
                 ],
-                "summary": "Show one Lane with players, rounds, roundends, roundscores",
+                "summary": "Show one Lane with players, rounds, roundends, roundscores.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -2422,9 +2434,33 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "success",
+                        "description": "success, return lane",
                         "schema": {
-                            "$ref": "#/definitions/database.Lane"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Lane"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "players": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/database.Player"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "player_sets": {
+                                                            "$ref": "#/definitions/response.Nill"
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -2444,14 +2480,14 @@ const docTemplate = `{
         },
         "/lane/{id}": {
             "get": {
-                "description": "Get one Lane by id",
+                "description": "Get one Lane by id.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Lane"
                 ],
-                "summary": "Show one Lane",
+                "summary": "Show one Lane.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -2463,9 +2499,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "success",
+                        "description": "success, return lane",
                         "schema": {
-                            "$ref": "#/definitions/database.Lane"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Lane"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "players": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {

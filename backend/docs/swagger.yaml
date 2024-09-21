@@ -2228,7 +2228,7 @@ paths:
       - Institution
   /lane/{id}:
     get:
-      description: Get one Lane by id
+      description: Get one Lane by id.
       parameters:
       - description: Lane ID
         in: path
@@ -2239,9 +2239,14 @@ paths:
       - application/json
       responses:
         "200":
-          description: success
+          description: success, return lane
           schema:
-            $ref: '#/definitions/database.Lane'
+            allOf:
+            - $ref: '#/definitions/database.Lane'
+            - properties:
+                players:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
           description: invalid lane id
           schema:
@@ -2250,12 +2255,12 @@ paths:
           description: internal db error / Get Lane By Id
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Show one Lane
+      summary: Show one Lane.
       tags:
       - Lane
   /lane/all/{id}:
     get:
-      description: Get all Lane by competition id
+      description: Get all Lanes and related data by competition id.
       parameters:
       - description: competition ID
         in: path
@@ -2266,10 +2271,15 @@ paths:
       - application/json
       responses:
         "200":
-          description: succsess
+          description: succsess, return lanes
           schema:
             items:
-              $ref: '#/definitions/database.Lane'
+              allOf:
+              - $ref: '#/definitions/database.Lane'
+              - properties:
+                  players:
+                    $ref: '#/definitions/response.Nill'
+                type: object
             type: array
         "400":
           description: invalid competition id
@@ -2279,12 +2289,12 @@ paths:
           description: internal db error / Get All Lane By Competition ID
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Show all Lane of a competition
+      summary: Show all Lanes and related data of a competition.
       tags:
       - Lane
   /lane/scores/{id}:
     get:
-      description: Get one Lane with players, rounds, roundends, roundscores by id
+      description: Get one Lane with players, rounds, roundends, roundscores by id.
       parameters:
       - description: Lane ID
         in: path
@@ -2295,9 +2305,19 @@ paths:
       - application/json
       responses:
         "200":
-          description: success
+          description: success, return lane
           schema:
-            $ref: '#/definitions/database.Lane'
+            allOf:
+            - $ref: '#/definitions/database.Lane'
+            - properties:
+                players:
+                  allOf:
+                  - $ref: '#/definitions/database.Player'
+                  - properties:
+                      player_sets:
+                        $ref: '#/definitions/response.Nill'
+                    type: object
+              type: object
         "400":
           description: invalid lane id
           schema:
@@ -2306,7 +2326,7 @@ paths:
           description: internal db error / Get Lane With Scores By Id
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Show one Lane with players, rounds, roundends, roundscores
+      summary: Show one Lane with players, rounds, roundends, roundscores.
       tags:
       - Lane
   /matchresult/{id}:
