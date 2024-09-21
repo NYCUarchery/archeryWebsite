@@ -60,14 +60,14 @@ func IsGetQualificationWUnassignedLanes(context *gin.Context, id uint) (bool, da
 
 // Get One Qualification By ID godoc
 //
-//	@Summary		Show one Qualification
-//	@Description	Get one Qualification by id
+//	@Summary		Show one Qualification without Lanes.
+//	@Description	Get one Qualification without Lanes by id.
 //	@Tags			Qualification
 //	@Produce		json
-//	@Param			id	path		int									true	"Qualification ID"
-//	@Success		200	{object}	database.Qualification				"success"
-//	@Failure		400	{object}	response.ErrorIdResponse			"invalid qualification id"
-//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internall db error / Get Only Qualification"
+//	@Param			id	path		int											true	"Qualification ID"
+//	@Success		200	{object}	database.Qualification{lanes=response.Nill}	"success, return Qualification without lanes"
+//	@Failure		400	{object}	response.ErrorIdResponse					"invalid qualification id"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse			"internall db error / Get Only Qualification"
 //	@Router			/qualification/{id} [get]
 func GetOnlyQualificationByID(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -80,14 +80,14 @@ func GetOnlyQualificationByID(context *gin.Context) {
 
 // Get One Qualification with Lanes By ID godoc
 //
-//	@Summary		Show one Qualification
-//	@Description	Get one Qualification with Lanes by id
+//	@Summary		Show one Qualification with Lanes.
+//	@Description	Get one Qualification with Lanes by id.
 //	@Tags			Qualification
 //	@Produce		json
-//	@Param			id	path		int									true	"Qualification ID"
-//	@Success		200	{object}	database.Qualification				"success"
-//	@Failure		400	{object}	response.ErrorIdResponse			"invalid qualification id"
-//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internall db error / Get Qualification With Lanes"
+//	@Param			id	path		int																	true	"Qualification ID"
+//	@Success		200	{object}	database.Qualification{lanes=database.Lane{players=response.Nill}}	"success, return Qualification with lanes"
+//	@Failure		400	{object}	response.ErrorIdResponse											"invalid qualification id"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse									"internall db error / Get Qualification With Lanes"
 //	@Router			/qualification/lanes/{id} [get]
 func GetQualificationWLanesByID(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -100,27 +100,22 @@ func GetQualificationWLanesByID(context *gin.Context) {
 
 // Get One Qualification with Unassigned Lanes By ID godoc
 //
-//	@Summary		Show one Qualification
-//	@Description	Get one Qualification with Unassigned Lanes by id
+//	@Summary		Show one Qualification with Unassigned Lanes.
+//	@Description	Get one Qualification with Unassigned Lanes by id.
 //	@Tags			Qualification
 //	@Produce		json
-//	@Param			id	path		int									true	"Qualification ID"
-//	@Success		200	{object}	[]database.Qualification			"success"
-//	@Failure		400	{object}	response.ErrorIdResponse			"invalid qualification id"
-//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internall db error / Get Qualification With Lanes and Players / Get Qualification With Unassigned Lanes By ID"
-//	@Router			/data/qualification/lanes/Unassigned/{id} [get]
+//	@Param			id	path		int																														true	"Qualification ID"
+//	@Success		200	{object}	[]database.Qualification{lanes=database.Lane{players=database.Player{player_sets=response.Nill,rounds=response.Nill}}}	"success, return Qualification with Unassigned lanes"
+//	@Failure		400	{object}	response.ErrorIdResponse																								"invalid qualification id"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse																						"internall db error / Get Qualification With Lanes and Players / Get Qualification With Unassigned Lanes By ID"
+//	@Router			/qualification/lanes/unassigned/{id} [get]
 func GetQualificationWUnassignedLanesByID(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	data := []database.Qualification{}
-	isExist, wLaneData := IsGetQualificationWLanesPlayers(context, id)
-	if !isExist {
-		return
-	}
 	isExist, wUnassignedLaneData := IsGetQualificationWUnassignedLanes(context, id)
 	if !isExist {
 		return
 	}
-	data = append(data, wLaneData)
 	data = append(data, wUnassignedLaneData)
 	context.IndentedJSON(http.StatusOK, data)
 }
@@ -131,11 +126,11 @@ func GetQualificationWUnassignedLanesByID(context *gin.Context) {
 //	@Description	Get one Qualification with Lanes and Players by id
 //	@Tags			Qualification
 //	@Produce		json
-//	@Param			id	path		int									true	"Qualification ID"
-//	@Success		200	{object}	database.Qualification				"success"
-//	@Failure		400	{object}	response.ErrorIdResponse			"invalid qualification id"
-//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internall db error / Get Qualification With Lanes and Players"
-//	@Router			/data/qualification/lanes/players/{id} [get]
+//	@Param			id	path		int																														true	"Qualification ID"
+//	@Success		200	{object}	database.Qualification{lanes=database.Lane{players=database.Player{player_sets=response.Nill,rounds=response.Nill}}}	"success, return Qualification with lanes and players"
+//	@Failure		400	{object}	response.ErrorIdResponse																								"invalid qualification id"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse																						"internall db error / Get Qualification With Lanes and Players"
+//	@Router			/qualification/lanes/players/{id} [get]
 func GetQualificationWLanesPlayersByID(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	if response.ErrorIdTest(context, id, database.GetQualificationIsExist(id), "Qualification") {
@@ -164,23 +159,24 @@ func PostQualificationThroughGroup(context *gin.Context, id uint) bool {
 
 // Update Qualification godoc
 //
-//	@Summary		update one Qualification
-//	@Description	Put whole new Qualification and overwrite with the id, and update lanes below it ,but cannot replace groupid
+//	@Summary		Update one Qualification.
+//	@Description	Put whole new Qualification and overwrite with the id, and update lanes below it ,but cannot replace groupid.
 //	@Tags			Qualification
 //	@Accept			json
 //	@Produce		json
-//	@Param			id				path		string									true	"Qualification ID"
-//	@Param			Qualification	body		string									true	"Qualification"
-//	@Success		200				{object}	database.Qualification					"success"
-//	@Failure		400				{object}	response.ErrorReceiveDataFormatResponse	"invalid qualification data format"
-//	@Failure		400				{object}	response.ErrorIdResponse				"invalid qualification id"
-//	@Failure		400				{object}	response.ErrorIdResponse				"Qualification is belong to UnassignedGroup, when update Qualification"
-//	@Failure		400				{object}	response.ErrorReceiveDataResponse		"invalid start or end lane number"
-//	@Failure		400				{object}	response.ErrorReceiveDataResponse		"lane is s=already occupied"
-//	@Failure		400				{object}	response.ErrorIdResponse				"invalid lane id"
-//	@Failure		500				{object}	response.ErrorInternalErrorResponse		"internal db error / Update Lane Qualification Id / Update Qualification / Get Only Qualification"
+//	@Param			id				path		int													true	"Qualification ID"
+//	@Param			Qualification	body		endpoint.PutQualificationByID.QualificationPutData	true	"Qualification"
+//	@Success		200				{object}	database.Qualification								"success, return updated Qualification"
+//	@Failure		400				{object}	response.ErrorIdResponse							"invalid qualification id / invalid lane id / lane is already occupied / invalid start or end lane number / Qualification is belong to UnassignedGroup, when update Qualification"
+//	@Failure		500				{object}	response.ErrorInternalErrorResponse					"internal db error / Update Lane Qualification Id / Update Qualification / Get Only Qualification"
 //	@Router			/qualification/whole/{id} [put]
 func PutQualificationByID(context *gin.Context) {
+	type QualificationPutData struct {
+		AdvancingNum    int `json:"advancing_num"`
+		StartLaneNumber int `json:"start_lane"`
+		EndLaneNumber   int `json:"end_lane"`
+	}
+	_ = QualificationPutData{}
 	var data database.Qualification
 	err := context.BindJSON(&data)
 	id := Convert2uint(context, "id")

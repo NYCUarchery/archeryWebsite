@@ -1099,91 +1099,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/data/qualification/lanes/Unassigned/{id}": {
-            "get": {
-                "description": "Get one Qualification with Unassigned Lanes by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Qualification"
-                ],
-                "summary": "Show one Qualification",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Qualification ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "success",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/database.Qualification"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "invalid qualification id",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorIdResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "internall db error / Get Qualification With Lanes and Players / Get Qualification With Unassigned Lanes By ID",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/data/qualification/lanes/players/{id}": {
-            "get": {
-                "description": "Get one Qualification with Lanes and Players by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Qualification"
-                ],
-                "summary": "Show one Qualification",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Qualification ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "success",
-                        "schema": {
-                            "$ref": "#/definitions/database.Qualification"
-                        }
-                    },
-                    "400": {
-                        "description": "invalid qualification id",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorIdResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "internall db error / Get Qualification With Lanes and Players",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/elimination": {
             "post": {
                 "description": "Post one new Elimination data, and three medals",
@@ -5301,9 +5216,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/qualification/lanes/{id}": {
+        "/qualification/lanes/players/{id}": {
             "get": {
-                "description": "Get one Qualification with Lanes by id",
+                "description": "Get one Qualification with Lanes and Players by id",
                 "produces": [
                     "application/json"
                 ],
@@ -5322,9 +5237,196 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "success",
+                        "description": "success, return Qualification with lanes and players",
                         "schema": {
-                            "$ref": "#/definitions/database.Qualification"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Qualification"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "lanes": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/database.Lane"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "players": {
+                                                            "allOf": [
+                                                                {
+                                                                    "$ref": "#/definitions/database.Player"
+                                                                },
+                                                                {
+                                                                    "type": "object",
+                                                                    "properties": {
+                                                                        "player_sets": {
+                                                                            "$ref": "#/definitions/response.Nill"
+                                                                        },
+                                                                        "rounds": {
+                                                                            "$ref": "#/definitions/response.Nill"
+                                                                        }
+                                                                    }
+                                                                }
+                                                            ]
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "invalid qualification id",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internall db error / Get Qualification With Lanes and Players",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/qualification/lanes/unassigned/{id}": {
+            "get": {
+                "description": "Get one Qualification with Unassigned Lanes by id.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Qualification"
+                ],
+                "summary": "Show one Qualification with Unassigned Lanes.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Qualification ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success, return Qualification with Unassigned lanes",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "allOf": [
+                                    {
+                                        "$ref": "#/definitions/database.Qualification"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "lanes": {
+                                                "allOf": [
+                                                    {
+                                                        "$ref": "#/definitions/database.Lane"
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "players": {
+                                                                "allOf": [
+                                                                    {
+                                                                        "$ref": "#/definitions/database.Player"
+                                                                    },
+                                                                    {
+                                                                        "type": "object",
+                                                                        "properties": {
+                                                                            "player_sets": {
+                                                                                "$ref": "#/definitions/response.Nill"
+                                                                            },
+                                                                            "rounds": {
+                                                                                "$ref": "#/definitions/response.Nill"
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                ]
+                                                            }
+                                                        }
+                                                    }
+                                                ]
+                                            }
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "invalid qualification id",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internall db error / Get Qualification With Lanes and Players / Get Qualification With Unassigned Lanes By ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/qualification/lanes/{id}": {
+            "get": {
+                "description": "Get one Qualification with Lanes by id.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Qualification"
+                ],
+                "summary": "Show one Qualification with Lanes.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Qualification ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success, return Qualification with lanes",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Qualification"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "lanes": {
+                                            "allOf": [
+                                                {
+                                                    "$ref": "#/definitions/database.Lane"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "players": {
+                                                            "$ref": "#/definitions/response.Nill"
+                                                        }
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -5344,7 +5446,7 @@ const docTemplate = `{
         },
         "/qualification/whole/{id}": {
             "put": {
-                "description": "Put whole new Qualification and overwrite with the id, and update lanes below it ,but cannot replace groupid",
+                "description": "Put whole new Qualification and overwrite with the id, and update lanes below it ,but cannot replace groupid.",
                 "consumes": [
                     "application/json"
                 ],
@@ -5354,10 +5456,10 @@ const docTemplate = `{
                 "tags": [
                     "Qualification"
                 ],
-                "summary": "update one Qualification",
+                "summary": "Update one Qualification.",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "Qualification ID",
                         "name": "id",
                         "in": "path",
@@ -5369,19 +5471,19 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/endpoint.PutQualificationByID.QualificationPutData"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "success",
+                        "description": "success, return updated Qualification",
                         "schema": {
                             "$ref": "#/definitions/database.Qualification"
                         }
                     },
                     "400": {
-                        "description": "invalid lane id",
+                        "description": "invalid qualification id / invalid lane id / lane is already occupied / invalid start or end lane number / Qualification is belong to UnassignedGroup, when update Qualification",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
@@ -5397,14 +5499,14 @@ const docTemplate = `{
         },
         "/qualification/{id}": {
             "get": {
-                "description": "Get one Qualification by id",
+                "description": "Get one Qualification without Lanes by id.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Qualification"
                 ],
-                "summary": "Show one Qualification",
+                "summary": "Show one Qualification without Lanes.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -5416,9 +5518,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "success",
+                        "description": "success, return Qualification without lanes",
                         "schema": {
-                            "$ref": "#/definitions/database.Qualification"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Qualification"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "lanes": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -6707,6 +6821,20 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "new_score": {
+                    "type": "integer"
+                }
+            }
+        },
+        "endpoint.PutQualificationByID.QualificationPutData": {
+            "type": "object",
+            "properties": {
+                "advancing_num": {
+                    "type": "integer"
+                },
+                "end_lane": {
+                    "type": "integer"
+                },
+                "start_lane": {
                     "type": "integer"
                 }
             }
