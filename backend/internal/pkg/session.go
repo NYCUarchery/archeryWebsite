@@ -62,6 +62,7 @@ func SaveAuthSession(c *gin.Context, id uint, username string) {
 
 func ClearAuthSession(c *gin.Context) {
 	session := sessions.Default(c)
+	session.Options(sessions.Options{Path: "/"})
 	session.Clear()
 	session.Save()
 }
