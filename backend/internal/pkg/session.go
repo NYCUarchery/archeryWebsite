@@ -54,6 +54,7 @@ func IsAuthenticated(c *gin.Context) bool {
 
 func SaveAuthSession(c *gin.Context, id uint, username string) {
 	session := sessions.Default(c)
+	session.Options(sessions.Options{Path: "/"})
 	session.Set("username", username)
 	session.Set("id", id)
 	session.Save()
