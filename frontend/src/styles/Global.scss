@@ -1,0 +1,51 @@
+@import "./variables.scss";
+.single_score {
+  &[id="0"] {
+    background-color: $miss-score-background-color;
+    color: $miss-score-color;
+  }
+  &[id="1"] {
+    background-color: $white-score-background-color;
+    color: $white-score-color;
+  }
+  &[id="2"] {
+    background-color: $white-score-background-color;
+    color: $white-score-color;
+  }
+  &[id="3"] {
+    background-color: $black-score-background-color;
+    color: $black-score-color;
+  }
+  &[id="4"] {
+    background-color: $black-score-background-color;
+    color: $black-score-color;
+  }
+  &[id="5"] {
+    background-color: $blue-score-background-color;
+    color: $blue-score-color;
+  }
+  &[id="6"] {
+    background-color: $blue-score-background-color;
+    color: $blue-score-color;
+  }
+  &[id="7"] {
+    background-color: $red-score-background-color;
+    color: $red-score-color;
+  }
+  &[id="8"] {
+    background-color: $red-score-background-color;
+    color: $red-score-color;
+  }
+  &[id="9"] {
+    background-color: $yellow-score-background-color;
+    color: $yellow-score-color;
+  }
+  &[id="10"] {
+    background-color: $yellow-score-background-color;
+    color: $yellow-score-color;
+  }
+  &[id="11"] {
+    background-color: $yellow-score-background-color;
+    color: $yellow-score-color;
+  }
+}

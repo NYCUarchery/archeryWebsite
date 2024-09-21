@@ -1,0 +1,19 @@
+@import "variables";
+@import "./Screen/Screen.scss";
+@import "./ScoreBoard/ScoreBoard.scss";
+@import "RecordingBoard";
+@import "Global";
+@import "AdministrationBoard/AdministrationBoard";
+body {
+  margin: 0px;
+  font-family: "Roboto", '"Helvetica Neue"', "Arial";
+}
+
+.board {
+  padding-bottom: 50px;
+}
+
+.score_board {
+  max-width: $main_board_max_width;
+  margin: 50px auto 0px;
+}

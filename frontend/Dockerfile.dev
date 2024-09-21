@@ -1,0 +1,14 @@
+FROM node:20
+RUN useradd -ms /bin/sh -u 1001 app
+USER app
+
+WORKDIR /app
+
+COPY package.json .
+COPY package-lock.json .
+RUN npm ci
+COPY --chown=app:app . .
+
+EXPOSE 3000
+
+ENTRYPOINT npm run dev

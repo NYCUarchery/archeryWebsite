@@ -1,0 +1,6 @@
+username: root
+password: Kar98Pro?
+host: mysql
+port: 3306
+database: test
+mode : dev # dev or test

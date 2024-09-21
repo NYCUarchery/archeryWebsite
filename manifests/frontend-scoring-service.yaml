@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-scoring
+  labels:
+    io.kompose.service: frontend-scoring
+spec:
+  ports:
+    - port: 3000
+  selector:
+    io.kompose.service: frontend-scoring
