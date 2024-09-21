@@ -65,7 +65,6 @@ func playerSetRouter(api *gin.RouterGroup) {
 		playersetssr.PUT("/preranking/:eliminationid", endpoint.PutPlayerSetPreRankingByEliminationId)
 		playersetssr.DELETE("/:id", endpoint.DeletePlayerSet)
 	}
-
 }
 
 func competitionRouter(api *gin.RouterGroup) {
@@ -76,12 +75,12 @@ func competitionRouter(api *gin.RouterGroup) {
 		competitionssr.GET("/participants/:id", endpoint.GetCompetitionWParticipantsByID)
 		competitionssr.GET("/groups/:id", endpoint.GetCompetitionWGroupsByID)
 		competitionssr.GET("/groups/players/:id", endpoint.GetCompetitionWGroupsPlayersByID)
-		competitionssr.GET("/groups/quaeli/:id", endpoint.GetCompetitionWGroupsQuaEliByID)
+		competitionssr.GET("/groups/eliminations/:id", endpoint.GetCompetitionWGroupsElimintaionsByID)
 		competitionssr.GET("/current/:head/:tail", endpoint.GetCurrentCompetitions)
 		competitionssr.GET("/user/:userid/:head/:tail", endpoint.GetCompetitionsOfUser)
 		competitionssr.POST("/", endpoint.PostCompetition)
-		competitionssr.PUT("/groups/players/rank/:id", endpoint.PutCompetitionRank)
-		competitionssr.PUT("/groups/players/playertotal/:id", endpoint.PutCompetitionRecountPlayerTotalScore) //
+		competitionssr.PUT("/refresh/groups/players/rank/:id", endpoint.RefreshCompetitionRank)
+		competitionssr.PUT("/refresh/groups/players/playertotalscore/:id", endpoint.RefreshCompetitionPlayerTotalScore)
 		competitionssr.PUT("/whole/:id", endpoint.PutCompetition)
 		competitionssr.DELETE("/:id", endpoint.DeleteCompetition)
 		competitionssr.PUT("/current-phase/plus/:id", endpoint.PutCompetitionCurrentPhasePlus)

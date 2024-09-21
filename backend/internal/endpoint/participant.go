@@ -275,3 +275,17 @@ func DeleteParticipaint(context *gin.Context, id uint) bool {
 	response.AcceptDeleteSuccess(context, id, success, "Participant")
 	return true
 }
+
+func DeleteParticipaintThroughCompetition(context *gin.Context, id uint) bool {
+	if response.ErrorIdTest(context, id, database.GetParticipantIsExist(id), "Participant through competition") {
+		return false
+	}
+	success, err := database.DeleteParticipant(id)
+	if response.ErrorInternalErrorTest(context, id, "Delete Participant through competition", err) {
+		return false
+	} else if !success {
+		response.ErrorIdTest(context, id, success, "Participant through competition")
+		return false
+	}
+	return true
+}
