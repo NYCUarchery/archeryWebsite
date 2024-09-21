@@ -495,6 +495,23 @@ definitions:
       elimination_id:
         type: integer
     type: object
+  endpoint.PutCompetition.CompetitionPutData:
+    properties:
+      current_phase:
+        type: integer
+      end_time:
+        type: string
+      qualification_current_end:
+        type: integer
+      script:
+        type: string
+      start_time:
+        type: string
+      sub_title:
+        type: string
+      title:
+        type: string
+    type: object
   endpoint.PutGroupInfo.GroupData:
     properties:
       bow_type:
@@ -692,9 +709,9 @@ paths:
                 type: object
             type: array
         "500":
-          description: internal db error
+          description: internal db error for getting all competitions
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Get the information of all competitions.
       tags:
       - Competition
@@ -702,9 +719,9 @@ paths:
       consumes:
       - application/json
       description: |-
-        Post one new Competition data with new id
-        Create UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup
-        Add host as admin of competition, and return the new Competition data
+        Post one new Competition data with new id.
+        Create UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup.
+        Add host as admin of competition, and return the new Competition data.
         ZeroTime 0001-01-01T00:00:00+00:01
       parameters:
       - description: Competition
@@ -717,7 +734,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: success
+          description: success, return new competition data
           schema:
             allOf:
             - $ref: '#/definitions/database.Competition'
@@ -737,14 +754,14 @@ paths:
             / Update Competition UnassignedGroupId
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Create one Competition and related data
+      summary: Create one Competition and related data.
       tags:
       - Competition
   /competition/{id}:
     delete:
       description: |-
-        delete one Competition by id
-        delete all related groups, lanes, players, participants
+        Delete one Competition by id.
+        Delete all related groups, lanes, players, participants.
       parameters:
       - description: Competition ID
         in: path
@@ -755,7 +772,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: 'Delete ID(1) : sth delete success'
+          description: delete success
           schema:
             $ref: '#/definitions/response.DeleteSuccessResponse'
         "400":
@@ -768,12 +785,12 @@ paths:
             / Delete Participaint / Delete Lane By Competition Id
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: delete one Competition
+      summary: Delete one Competition.
       tags:
       - Competition
     get:
       description: |-
-        Get one Competition by id without groups and participants
+        Get one Competition by id without groups and participants.
         zeroTime 0001-01-01T00:00:00+00:01
       parameters:
       - description: Competition ID
@@ -800,53 +817,15 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: internal db error
+          description: internal db error for getting competition
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Show one Competition without groups and participants
+      summary: Show one Competition without groups and participants.
       tags:
       - Competition
-  /competition/current/{head}/{tail}:
-    get:
-      description: |-
-        Get current Competitions, head and tail are the range of most recent competitions
-        For example, head = 0, tail = 10, then return the most recent 10 competitions
-        head >= 0, tail >= 0, head <= tail
-      parameters:
-      - description: head
-        in: path
-        name: head
-        required: true
-        type: integer
-      - description: tail
-        in: path
-        name: tail
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: success
-          schema:
-            items:
-              $ref: '#/definitions/database.Competition'
-            type: array
-        "400":
-          description: head and tail must >= 0 / head must <= tail / invalid head
-            parameter / invalid tail parameter
-          schema:
-            $ref: '#/definitions/response.ErrorReceiveDataFormatResponse'
-        "500":
-          description: internal db error / Get Current Competitions
-          schema:
-            $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Show current Competitions
-      tags:
-      - Competition
-  /competition/currentphaseminus/{id}:
+  /competition/current-phase/minus/{id}:
     put:
-      description: update one Competition currentPhase -- by id
+      description: Update one Competition currentPhase -- by id.
       parameters:
       - description: Competition ID
         in: path
@@ -866,12 +845,12 @@ paths:
           description: Update Competition CurrentPhase Minus
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: update one Competition currentPhase -- by id
+      summary: Update one Competition currentPhase -- by id.
       tags:
       - Competition
-  /competition/currentphaseplus/{id}:
+  /competition/current-phase/plus/{id}:
     put:
-      description: update one Competition currentPhase ++ by id
+      description: Update one Competition currentPhase ++ by id.
       parameters:
       - description: Competition ID
         in: path
@@ -882,7 +861,7 @@ paths:
         "200":
           description: success
           schema:
-            type: ""
+            $ref: '#/definitions/response.Response'
         "400":
           description: invalid competition id parameter
           schema:
@@ -891,12 +870,59 @@ paths:
           description: Update Competition CurrentPhase Plus
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: update one Competition currentPhase ++ by id
+      summary: Update one Competition currentPhase ++ by id.
       tags:
       - Competition
-  /competition/eliminationisactive/{id}:
+  /competition/current/{head}/{tail}:
+    get:
+      description: |-
+        Get current Competitions, head and tail are the range of most recent competitions.
+        For example, head = 0, tail = 10, then return the most recent 10 competitions.
+        head >= 0, tail >= 0, head <= tail
+      parameters:
+      - description: head
+        in: path
+        name: head
+        required: true
+        type: integer
+      - description: tail
+        in: path
+        name: tail
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success, return most recent competitions
+          schema:
+            items:
+              allOf:
+              - $ref: '#/definitions/database.Competition'
+              - properties:
+                  groups:
+                    $ref: '#/definitions/response.Nill'
+                  participants:
+                    $ref: '#/definitions/response.Nill'
+                type: object
+            type: array
+        "400":
+          description: head and tail must >= 0 / head must <= tail / invalid head
+            parameter / invalid tail parameter
+          schema:
+            $ref: '#/definitions/response.ErrorReceiveDataFormatResponse'
+        "500":
+          description: internal db error / Get Current Competitions
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show current Competitions
+      tags:
+      - Competition
+  /competition/elimination-isactive/{id}:
     put:
-      description: update one Competition Elimination Active to be true by id
+      description: |-
+        Update one Competition Elimination Active to be true by id.
+        Cannot change to false, only can change to true.
       parameters:
       - description: Competition ID
         in: path
@@ -920,7 +946,7 @@ paths:
           description: Update Competition Elimination Active
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: update one Competition Elimination Active to be true by id
+      summary: Update one Competition Elimination Active to be true by id.
       tags:
       - Competition
   /competition/groups/{id}:
@@ -936,13 +962,20 @@ paths:
       - application/json
       responses:
         "200":
-          description: success, but participants is empty
+          description: success, return competition without participants
           schema:
             allOf:
             - $ref: '#/definitions/database.Competition'
             - properties:
                 groups:
-                  $ref: '#/definitions/database.Group'
+                  items:
+                    allOf:
+                    - $ref: '#/definitions/database.Group'
+                    - properties:
+                        players:
+                          $ref: '#/definitions/response.Nill'
+                      type: object
+                  type: array
                 participants:
                   $ref: '#/definitions/response.Nill'
               type: object
@@ -951,119 +984,16 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: internal db error
+          description: internal db error for getting competition
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Competition with GroupInfos
       tags:
       - Competition
-  /competition/groups/players/{id}:
-    get:
-      description: Get one Competition by id with GroupInfos and Players
-      parameters:
-      - description: Competition ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: success, but groups is empty
-          schema:
-            allOf:
-            - $ref: '#/definitions/database.Competition'
-            - properties:
-                groups:
-                  allOf:
-                  - $ref: '#/definitions/database.Group'
-                  - properties:
-                      players:
-                        allOf:
-                        - $ref: '#/definitions/database.Player'
-                        - properties:
-                            player_sets:
-                              $ref: '#/definitions/response.Nill'
-                            rounds:
-                              $ref: '#/definitions/response.Nill'
-                          type: object
-                    type: object
-                participants:
-                  $ref: '#/definitions/response.Nill'
-              type: object
-        "400":
-          description: invalid comepetition id parameter
-          schema:
-            $ref: '#/definitions/response.ErrorIdResponse'
-        "500":
-          description: internal db error
-          schema:
-            $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Show one Competition with GroupInfos and Players
-      tags:
-      - Competition
-  /competition/groups/players/playertotal/{id}:
-    put:
-      description: update competition recount player total score by id
-      parameters:
-      - description: Competition ID
-        in: path
-        name: id
-        required: true
-        type: string
-      responses:
-        "200":
-          description: success
-          schema:
-            $ref: '#/definitions/response.Response'
-        "400":
-          description: invalid competition id parameter
-          schema:
-            $ref: '#/definitions/response.ErrorIdResponse'
-        "500":
-          description: Get Competition with Groups Players Scores / Update Round Total
-            Score / Update Player Total Score
-          schema:
-            $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: update competition recount player total score by id
-      tags:
-      - Competition
-  /competition/groups/players/rank/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Update update all  player ranking of different groups in one Competition
-      parameters:
-      - description: Competition ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Update Competition Ranking Success
-          schema:
-            $ref: '#/definitions/response.Response'
-        "400":
-          description: invalid competition id parameter
-          schema:
-            $ref: '#/definitions/response.ErrorIdResponse'
-        "500":
-          description: internal db error / Get Competition GroupIds when update ranking
-            / Get player ids when update ranking / Update player rank when update
-            ranking by competition id
-          schema:
-            $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: update one Competition Ranking
-      tags:
-      - Competition
-  /competition/groups/quaeli/{id}:
+  /competition/groups/eliminations/{id}:
     get:
       description: Get one Competition by id with related Groups which have related
-        one Qualification id and many Elimination ids
+        one Qualification id and many Elimination ids.
       parameters:
       - description: Competition ID
         in: path
@@ -1074,7 +1004,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: success
+          description: success, return competition with groups and eliminations
           schema:
             $ref: '#/definitions/endpoint.CompetitionWGroupsQuaEliData'
         "400":
@@ -1087,13 +1017,64 @@ paths:
             get Competition with Groups Qualification Elimination
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Show Qualifications and Eliminations of one Competition
+      summary: Show Groups and Eliminations of one Competition.
       tags:
       - Competition
-  /competition/mixedeliminationisactive/{id}:
+  /competition/groups/players/{id}:
+    get:
+      description: Get one Competition by id with GroupInfos and Players.
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success, return competition with groups and players
+          schema:
+            allOf:
+            - $ref: '#/definitions/database.Competition'
+            - properties:
+                groups:
+                  items:
+                    allOf:
+                    - $ref: '#/definitions/database.Group'
+                    - properties:
+                        players:
+                          items:
+                            allOf:
+                            - $ref: '#/definitions/database.Player'
+                            - properties:
+                                player_sets:
+                                  $ref: '#/definitions/response.Nill'
+                                rounds:
+                                  $ref: '#/definitions/response.Nill'
+                              type: object
+                          type: array
+                      type: object
+                  type: array
+                participants:
+                  $ref: '#/definitions/response.Nill'
+              type: object
+        "400":
+          description: invalid comepetition id parameter
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for getting competition
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show one Competition with GroupInfos and Players.
+      tags:
+      - Competition
+  /competition/mixed-elimination-isactive/{id}:
     put:
       description: |-
-        update one Competition Mixed Elimination Active to be true by id
+        Update one Competition Mixed Elimination Active to be true by id.
+        Cannot change to false, only can change to true.
         create all mixed elimination for groups
       parameters:
       - description: Competition ID
@@ -1119,13 +1100,13 @@ paths:
             Group Ids / Post Elimination By Id
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: update one Competition Mixed Elimination Active to be true and create
-        mixed elimination
+      summary: Update one Competition Mixed Elimination Active to be true and create
+        mixed elimination.
       tags:
       - Competition
   /competition/participants/{id}:
     get:
-      description: Get one Competition by id with Participants
+      description: Get one Competition by id with Participants.
       parameters:
       - description: Competition ID
         in: path
@@ -1136,7 +1117,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: success, but groups is empty
+          description: success, return competition without groups
           schema:
             allOf:
             - $ref: '#/definitions/database.Competition'
@@ -1151,15 +1132,15 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: internal db error
+          description: internal db error for getting competition
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Show one Competition with Participants
+      summary: Show one Competition with Participants.
       tags:
       - Competition
-  /competition/qualificationcurrentendminus/{id}:
+  /competition/qualification-current-end/minus/{id}:
     put:
-      description: update one Competition Qualification currentEnd -- by id
+      description: Update one Competition Qualification currentEnd -- by id.
       parameters:
       - description: Competition ID
         in: path
@@ -1179,12 +1160,12 @@ paths:
           description: Update Competition Qualification CurrentEnd Minus
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: update one Competition Qualification currentEnd -- by id
+      summary: Update one Competition Qualification currentEnd -- by id.
       tags:
       - Competition
-  /competition/qualificationcurrentendplus/{id}:
+  /competition/qualification-current-end/plus/{id}:
     put:
-      description: update one Competition Qualification currentEnd ++ by id
+      description: Update one Competition Qualification currentEnd ++ by id.
       parameters:
       - description: Competition ID
         in: path
@@ -1204,12 +1185,14 @@ paths:
           description: Update Competition Qualification CurrentEnd Plus
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: update one Competition Qualification currentEnd ++ by id
+      summary: Update one Competition Qualification currentEnd ++ by id.
       tags:
       - Competition
-  /competition/qualificationisactive/{id}:
+  /competition/qualification-isactive/{id}:
     put:
-      description: update one Competition Qualification Active to be true by id
+      description: |-
+        Update one Competition Qualification Active to be true by id.
+        Cannot change to false, only can change to true.
       parameters:
       - description: Competition ID
         in: path
@@ -1233,58 +1216,72 @@ paths:
           description: Update Competition Qualification Active
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: update one Competition Qualification Active to be true by id
+      summary: Update one Competition Qualification Active to be true by id.
       tags:
       - Competition
-  /competition/recent/{userid}/{head}/{tail}:
-    get:
-      description: |-
-        Get recent Competitions by User id, head and tail are the range of most recent competitions
-        For example, head = 0, tail = 10, then return the most recent 10 competitions
-        head >= 0, tail >= 0, head <= tail
+  /competition/refresh/groups/players/playertotalscore/{id}:
+    put:
+      description: Refresh competition player total score by competition id.
       parameters:
-      - description: User ID
+      - description: Competition ID
         in: path
-        name: userid
+        name: id
         required: true
-        type: integer
-      - description: head
+        type: string
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: invalid competition id parameter
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: Get Competition with Groups Players Scores / Update Round Total
+            Score / Update Player Total Score
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Refresh competition player total score by competition id.
+      tags:
+      - Competition
+  /competition/refresh/groups/players/rank/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Refresh all player ranking of different groups in one Competition.
+      parameters:
+      - description: Competition ID
         in: path
-        name: head
-        required: true
-        type: integer
-      - description: tail
-        in: path
-        name: tail
+        name: id
         required: true
         type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: success
+          description: Update Competition Ranking Success
           schema:
-            items:
-              $ref: '#/definitions/database.Competition'
-            type: array
+            $ref: '#/definitions/response.Response'
         "400":
-          description: head and tail must >= 0 / head must <= tail / invalid head
-            parameter / invalid tail parameter / invalid userid parameter
+          description: invalid competition id parameter
           schema:
-            $ref: '#/definitions/response.ErrorReceiveDataFormatResponse'
+            $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: internal db error / Get User Is Exist / Get Competitions Of
-            User
+          description: internal db error / Get Competition GroupIds when update ranking
+            / Get player ids when update ranking / Update player rank when update
+            ranking by competition id
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Show recent Competitions dealing with User
+      summary: Refresh one Competition Ranking.
       tags:
       - Competition
-  /competition/teameliminationisactive/{id}:
+  /competition/team-elimination-isactive/{id}:
     put:
       description: |-
-        update one Competition Team Elimination Active to be true by id
-        create all team elimination for groups
+        Update one Competition Team Elimination Active to be true by id.
+        Cannot change to false, only can change to true.
+        Create all team elimination for groups.
       parameters:
       - description: Competition ID
         in: path
@@ -1309,8 +1306,58 @@ paths:
             Group Ids / Post Elimination By Id
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: update one Competition Team Elimination Active to be true and create
-        team elimination
+      summary: Update one Competition Team Elimination Active to be true and create
+        team elimination.
+      tags:
+      - Competition
+  /competition/user/{userid}/{head}/{tail}:
+    get:
+      description: |-
+        Get recent Competitions by User id, head and tail are the range of most recent competitions.
+        For example, head = 0, tail = 10, then return the most recent 10 competitions.
+        head >= 0, tail >= 0, head <= tail
+      parameters:
+      - description: User ID
+        in: path
+        name: userid
+        required: true
+        type: integer
+      - description: head
+        in: path
+        name: head
+        required: true
+        type: integer
+      - description: tail
+        in: path
+        name: tail
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success, return most recent competitions dealing with User
+          schema:
+            items:
+              allOf:
+              - $ref: '#/definitions/database.Competition'
+              - properties:
+                  groups:
+                    $ref: '#/definitions/response.Nill'
+                  participants:
+                    $ref: '#/definitions/response.Nill'
+                type: object
+            type: array
+        "400":
+          description: head and tail must >= 0 / head must <= tail / invalid head
+            parameter / invalid tail parameter / invalid userid parameter
+          schema:
+            $ref: '#/definitions/response.ErrorReceiveDataFormatResponse'
+        "500":
+          description: internal db error / Get User / Get Competitions Of User
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show recent Competitions dealing with User.
       tags:
       - Competition
   /competition/whole/{id}:
@@ -1318,7 +1365,9 @@ paths:
       consumes:
       - application/json
       description: |-
-        Put whole new Competition and overwrite by the id, cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId
+        Put whole new Competition and overwrite by the id.
+        Allow to change title, subtitle, startTime, endTime, script, currentPhase, qualificationCurrentEnd.
+        Cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId, hostId, currentPhase, qualificationCurrentEnd.
         zeroTime 0001-01-01T00:00:00+00:01
       parameters:
       - description: Competition ID
@@ -1331,12 +1380,12 @@ paths:
         name: Competition
         required: true
         schema:
-          $ref: '#/definitions/database.Competition'
+          $ref: '#/definitions/endpoint.PutCompetition.CompetitionPutData'
       produces:
       - application/json
       responses:
         "200":
-          description: success
+          description: success, return modified competition data
           schema:
             allOf:
             - $ref: '#/definitions/database.Competition'
@@ -1351,9 +1400,8 @@ paths:
           schema:
             $ref: '#/definitions/response.Nill'
         "400":
-          description: 'invalid competition id parameter / bad request data ID(1):
-            sth error / bad request data is nil ID(1): sth error / When creating Competition,
-            startTime must <= endTime'
+          description: invalid competition id parameter / When creating Competition,
+            startTime must <= endTime
           schema:
             $ref: '#/definitions/response.ErrorReceiveDataResponse'
         "500":
