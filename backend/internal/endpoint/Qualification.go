@@ -64,9 +64,10 @@ func IsGetQualificationWUnassignedLanes(context *gin.Context, id uint) (bool, da
 //	@Description	Get one Qualification by id
 //	@Tags			Qualification
 //	@Produce		json
-//	@Param			id	path	int	true	"Qualification ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			id	path		int									true	"Qualification ID"
+//	@Success		200	{object}	database.Qualification				"success"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid qualification id"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internall db error / Get Only Qualification"
 //	@Router			/qualification/{id} [get]
 func GetOnlyQualificationByID(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -83,9 +84,10 @@ func GetOnlyQualificationByID(context *gin.Context) {
 //	@Description	Get one Qualification with Lanes by id
 //	@Tags			Qualification
 //	@Produce		json
-//	@Param			id	path	int	true	"Qualification ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			id	path		int									true	"Qualification ID"
+//	@Success		200	{object}	database.Qualification				"success"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid qualification id"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internall db error / Get Qualification With Lanes"
 //	@Router			/qualification/lanes/{id} [get]
 func GetQualificationWLanesByID(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -102,9 +104,10 @@ func GetQualificationWLanesByID(context *gin.Context) {
 //	@Description	Get one Qualification with Unassigned Lanes by id
 //	@Tags			Qualification
 //	@Produce		json
-//	@Param			id	path	int	true	"Qualification ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			id	path		int									true	"Qualification ID"
+//	@Success		200	{object}	[]database.Qualification			"success"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid qualification id"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internall db error / Get Qualification With Lanes and Players / Get Qualification With Unassigned Lanes By ID"
 //	@Router			/data/qualification/lanes/Unassigned/{id} [get]
 func GetQualificationWUnassignedLanesByID(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -128,9 +131,10 @@ func GetQualificationWUnassignedLanesByID(context *gin.Context) {
 //	@Description	Get one Qualification with Lanes and Players by id
 //	@Tags			Qualification
 //	@Produce		json
-//	@Param			id	path	int	true	"Qualification ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			id	path		int									true	"Qualification ID"
+//	@Success		200	{object}	database.Qualification				"success"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid qualification id"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internall db error / Get Qualification With Lanes and Players"
 //	@Router			/data/qualification/lanes/players/{id} [get]
 func GetQualificationWLanesPlayersByID(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -165,12 +169,16 @@ func PostQualificationThroughGroup(context *gin.Context, id uint) bool {
 //	@Tags			Qualification
 //	@Accept			json
 //	@Produce		json
-//	@Param			id				path	string	true	"Qualification ID"
-//	@Param			Qualification	body	string	true	"Qualification"
-//	@Success		200				string	string
-//	@Failure		400				string	string
-//	@Failure		404				string	string
-//	@Failure		500				string	string
+//	@Param			id				path		string									true	"Qualification ID"
+//	@Param			Qualification	body		string									true	"Qualification"
+//	@Success		200				{object}	database.Qualification					"success"
+//	@Failure		400				{object}	response.ErrorReceiveDataFormatResponse	"invalid qualification data format"
+//	@Failure		400				{object}	response.ErrorIdResponse				"invalid qualification id"
+//	@Failure		400				{object}	response.ErrorIdResponse				"Qualification is belong to UnassignedGroup, when update Qualification"
+//	@Failure		400				{object}	response.ErrorReceiveDataResponse		"invalid start or end lane number"
+//	@Failure		400				{object}	response.ErrorReceiveDataResponse		"lane is s=already occupied"
+//	@Failure		400				{object}	response.ErrorIdResponse				"invalid lane id"
+//	@Failure		500				{object}	response.ErrorInternalErrorResponse		"internal db error / Update Lane Qualification Id / Update Qualification / Get Only Qualification"
 //	@Router			/qualification/whole/{id} [put]
 func PutQualificationByID(context *gin.Context) {
 	var data database.Qualification

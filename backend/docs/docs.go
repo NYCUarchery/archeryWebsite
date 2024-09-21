@@ -1069,15 +1069,24 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/database.Qualification"
+                            }
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid qualification id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internall db error / Get Qualification With Lanes and Players / Get Qualification With Unassigned Lanes By ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -1104,15 +1113,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/database.Qualification"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid qualification id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internall db error / Get Qualification With Lanes and Players",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -2397,15 +2412,24 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "succsess",
                         "schema": {
-                            "type": "string"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/database.Lane"
+                            }
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid competition id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error / Get All Lane By Competition ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -2432,15 +2456,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/database.Lane"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid lane id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error / Get Lane With Scores By Id",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -2467,15 +2497,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/database.Lane"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid lane id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error / Get Lane By Id",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -3117,15 +3153,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/database.Medal"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid elimination id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error / Get Medal Info By Elimination Id",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -3161,15 +3203,18 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
+                        "description": "success"
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "elimination id of medal and playerset is not same",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorReceiveDataFormatResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error / Get Medal By Id / Get Player Set By Id / Update Medal PLayer Set Id",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -3196,15 +3241,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/database.Medal"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid medal id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error / Get Medal By Id",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -3563,19 +3614,65 @@ const docTemplate = `{
                     "200": {
                         "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/database.Participant"
                         }
                     },
                     "400": {
                         "description": "competition ID is not exist",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
                         "description": "db error",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/participant/competition": {
+            "get": {
+                "description": "Get Participants By competition ID, including realname",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Participant"
+                ],
+                "summary": "Show Participants By competition ID",
+                "parameters": [
+                    {
+                        "description": "competition ID",
+                        "name": "competition_id",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/endpoint.ParticipantWName"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "invalid competition id",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error / Get participants by competition id / Get user by id",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -3613,50 +3710,24 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/database.Participant"
+                            }
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid competition id",
                         "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/participant/competition/{competitionid}": {
-            "get": {
-                "description": "Get Participants By competition ID, including realname",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Participant"
-                ],
-                "summary": "Show Participants By competition ID",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "competition ID",
-                        "name": "competitionid",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "500": {
+                        "description": "internal db error / Get participants by competition id and user id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -3685,15 +3756,24 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/database.Participant"
+                            }
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid user id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "db error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -3732,27 +3812,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/database.Participant"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid participant id",
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal db error / Update Participant",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -3779,15 +3853,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/database.Participant"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid participant id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "db error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -3815,21 +3895,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.DeleteSuccessResponse"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid participant id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
-                    "404": {
-                        "description": "Not Found",
+                    "500": {
+                        "description": "internal db error / Delete Participant",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -4882,13 +4962,13 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "invalid elimination id, player id, maybe not exist",
+                        "description": "invalid elimination id, player id maybe not exist / player set's length and teamsize does not match",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
-                        "description": "internal error for create player set, get player, create player set match table, get elimination",
+                        "description": "internal db error for create player set / get player / create player set match table / get elimination",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -4917,21 +4997,24 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/endpoint.GetPlayerSetsByMedalByEliminationId.playerSetData"
+                            }
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid elimination id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal db error / Get Medal Info By Elimination Id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -4958,21 +5041,24 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/database.PlayerSet"
+                            }
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid player set id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal db error / Get Player Sets By Elimination Id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -5011,21 +5097,18 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
+                        "description": "success"
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "teamsize of elimination should not be 1",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorReceiveDataFormatResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal db error / Get Player Set By Id / Update Player Set Name",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -5052,21 +5135,12 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "type": "string"
-                        }
+                        "description": "success"
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal db error / Get Elimination Player Set Id Rank Order By Id / Update Player Set Rank",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -5156,21 +5230,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.DeleteSuccessResponse"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid plyer set id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal db error / Get Player Set By Id / Delete Player Set Match Table By Player Set Id / Delete Player Set By Id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -5197,15 +5271,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/database.Qualification"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid qualification id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internall db error / Get Qualification With Lanes",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -5244,27 +5324,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/database.Qualification"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid lane id",
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
-                        "description": "Internal Server Error",
+                        "description": "internal db error / Update Lane Qualification Id / Update Qualification / Get Only Qualification",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -5291,15 +5365,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "success",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/database.Qualification"
                         }
                     },
                     "400": {
-                        "description": "Bad Request",
+                        "description": "invalid qualification id",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internall db error / Get Only Qualification",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
                     }
                 }
@@ -5331,15 +5411,21 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "already loginned",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid login info",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorReceiveDataFormatResponse"
                         }
                     },
                     "401": {
-                        "description": "Unauthorized",
+                        "description": "incorrect password",
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -5784,6 +5870,29 @@ const docTemplate = `{
                 }
             }
         },
+        "database.Lane": {
+            "type": "object",
+            "properties": {
+                "competition_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "lane_number": {
+                    "type": "integer"
+                },
+                "players": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.Player"
+                    }
+                },
+                "qualification_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "database.Match": {
             "type": "object",
             "properties": {
@@ -5980,6 +6089,29 @@ const docTemplate = `{
                 }
             }
         },
+        "database.Qualification": {
+            "type": "object",
+            "properties": {
+                "advancing_num": {
+                    "type": "integer"
+                },
+                "end_lane": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "lanes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.Lane"
+                    }
+                },
+                "start_lane": {
+                    "type": "integer"
+                }
+            }
+        },
         "database.Round": {
             "type": "object",
             "properties": {
@@ -6122,6 +6254,20 @@ const docTemplate = `{
                 }
             }
         },
+        "endpoint.GetPlayerSetsByMedalByEliminationId.playerSetData": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "set_name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "integer"
+                }
+            }
+        },
         "endpoint.GroupData": {
             "type": "object",
             "properties": {
@@ -6182,6 +6328,29 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "role": {
+                    "type": "string"
+                },
+                "user_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "endpoint.ParticipantWName": {
+            "type": "object",
+            "properties": {
+                "competition_id": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "role": {
+                    "type": "string"
+                },
+                "status": {
                     "type": "string"
                 },
                 "user_id": {
@@ -6532,12 +6701,30 @@ const docTemplate = `{
                 }
             }
         },
+        "response.ErrorReceiveDataNilResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "bad request data is nil ID(1): sth error"
+                }
+            }
+        },
         "response.ErrorReceiveDataResponse": {
             "type": "object",
             "properties": {
                 "error": {
                     "type": "string",
                     "example": "bad request data ID(1): sth error"
+                }
+            }
+        },
+        "response.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "error description"
                 }
             }
         },

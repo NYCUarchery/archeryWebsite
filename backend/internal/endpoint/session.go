@@ -21,9 +21,12 @@ type LoginInfo struct {
 //	@Tags			Session
 //	@Accept			json
 //	@Produce		json
-//	@Param			LoginInfo	body	endpoint.LoginInfo	true "user_name, password"
-//	@Success		200			string	string
-//	@Failure		401			string	string
+//	@Param			LoginInfo	body		endpoint.LoginInfo						true	"user_name, password"
+//	@Success		200			{object}	response.Response						"success"
+//	@Success		200			{object}	response.Response						"already loginned"
+//	@Failure		400			{object}	response.ErrorReceiveDataFormatResponse	"invalid login info"
+//	@Failure		401			{object}	response.ErrorResponse					"user not found"
+//	@Failure		401			{object}	response.ErrorResponse					"incorrect password"
 //	@Router			/session [post]
 func Login(c *gin.Context) {
 	var loginInfo LoginInfo

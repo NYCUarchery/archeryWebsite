@@ -98,6 +98,21 @@ definitions:
       name:
         type: string
     type: object
+  database.Lane:
+    properties:
+      competition_id:
+        type: integer
+      id:
+        type: integer
+      lane_number:
+        type: integer
+      players:
+        items:
+          $ref: '#/definitions/database.Player'
+        type: array
+      qualification_id:
+        type: integer
+    type: object
   database.Match:
     properties:
       id:
@@ -226,6 +241,21 @@ definitions:
       total_score:
         type: integer
     type: object
+  database.Qualification:
+    properties:
+      advancing_num:
+        type: integer
+      end_lane:
+        type: integer
+      id:
+        type: integer
+      lanes:
+        items:
+          $ref: '#/definitions/database.Lane'
+        type: array
+      start_lane:
+        type: integer
+    type: object
   database.Round:
     properties:
       id:
@@ -318,6 +348,15 @@ definitions:
       team_size:
         type: integer
     type: object
+  endpoint.GetPlayerSetsByMedalByEliminationId.playerSetData:
+    properties:
+      id:
+        type: integer
+      set_name:
+        type: string
+      type:
+        type: integer
+    type: object
   endpoint.GroupData:
     properties:
       bow_type:
@@ -357,6 +396,21 @@ definitions:
       competition_id:
         type: integer
       role:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  endpoint.ParticipantWName:
+    properties:
+      competition_id:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      role:
+        type: string
+      status:
         type: string
       user_id:
         type: integer
@@ -581,10 +635,22 @@ definitions:
         example: 'bad request data: sth error'
         type: string
     type: object
+  response.ErrorReceiveDataNilResponse:
+    properties:
+      error:
+        example: 'bad request data is nil ID(1): sth error'
+        type: string
+    type: object
   response.ErrorReceiveDataResponse:
     properties:
       error:
         example: 'bad request data ID(1): sth error'
+        type: string
+    type: object
+  response.ErrorResponse:
+    properties:
+      error:
+        example: error description
         type: string
     type: object
   response.Nill:
@@ -1310,13 +1376,20 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            items:
+              $ref: '#/definitions/database.Qualification'
+            type: array
         "400":
-          description: Bad Request
+          description: invalid qualification id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internall db error / Get Qualification With Lanes and Players
+            / Get Qualification With Unassigned Lanes By ID
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Qualification
       tags:
       - Qualification
@@ -1333,13 +1406,17 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/database.Qualification'
         "400":
-          description: Bad Request
+          description: invalid qualification id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internall db error / Get Qualification With Lanes and Players
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Qualification
       tags:
       - Qualification
@@ -2162,13 +2239,17 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/database.Lane'
         "400":
-          description: Bad Request
+          description: invalid lane id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Get Lane By Id
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Lane
       tags:
       - Lane
@@ -2185,13 +2266,19 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: succsess
           schema:
-            type: string
+            items:
+              $ref: '#/definitions/database.Lane'
+            type: array
         "400":
-          description: Bad Request
+          description: invalid competition id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Get All Lane By Competition ID
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show all Lane of a competition
       tags:
       - Lane
@@ -2208,13 +2295,17 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/database.Lane'
         "400":
-          description: Bad Request
+          description: invalid lane id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Get Lane With Scores By Id
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Lane with players, rounds, roundends, roundscores
       tags:
       - Lane
@@ -2635,13 +2726,17 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/database.Medal'
         "400":
-          description: Bad Request
+          description: invalid medal id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Get Medal By Id
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one medal by id
       tags:
       - Medal
@@ -2658,13 +2753,17 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/database.Medal'
         "400":
-          description: Bad Request
+          description: invalid elimination id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Get Medal Info By Elimination Id
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show medals of elimination by elimination id
       tags:
       - Medal
@@ -2687,13 +2786,16 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
-          schema:
-            type: string
+          description: success
         "400":
-          description: Bad Request
+          description: elimination id of medal and playerset is not same
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorReceiveDataFormatResponse'
+        "500":
+          description: internal db error / Get Medal By Id / Get Player Set By Id
+            / Update Medal PLayer Set Id
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Update medal's player set id by id
       tags:
       - Medal
@@ -2937,15 +3039,15 @@ paths:
         "200":
           description: success
           schema:
-            type: string
+            $ref: '#/definitions/database.Participant'
         "400":
           description: competition ID is not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
         "500":
           description: db error
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: post a particpant to the competition
       tags:
       - Participant
@@ -2964,17 +3066,17 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/response.DeleteSuccessResponse'
         "400":
-          description: Bad Request
+          description: invalid participant id
           schema:
-            type: string
-        "404":
-          description: Not Found
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Delete Participant
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: delete one Participant
       tags:
       - Participant
@@ -2990,36 +3092,48 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/database.Participant'
         "400":
-          description: Bad Request
+          description: invalid participant id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: db error
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show One Participant By ID
       tags:
       - Participant
-  /participant/competition/{competitionid}:
+  /participant/competition:
     get:
       description: Get Participants By competition ID, including realname
       parameters:
       - description: competition ID
-        in: path
-        name: competitionid
+        in: body
+        name: competition_id
         required: true
-        type: integer
+        schema:
+          type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            items:
+              $ref: '#/definitions/endpoint.ParticipantWName'
+            type: array
         "400":
-          description: Bad Request
+          description: invalid competition id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Get participants by competition id / Get
+            user by id
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show Participants By competition ID
       tags:
       - Participant
@@ -3043,13 +3157,20 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            items:
+              $ref: '#/definitions/database.Participant'
+            type: array
         "400":
-          description: Bad Request
+          description: invalid competition id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Get participants by competition id and
+            user id
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show Participants By competition ID and user ID
       tags:
       - Participant
@@ -3067,13 +3188,19 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            items:
+              $ref: '#/definitions/database.Participant'
+            type: array
         "400":
-          description: Bad Request
+          description: invalid user id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: db error
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show Participants By user ID
       tags:
       - Participant
@@ -3098,21 +3225,17 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/database.Participant'
         "400":
-          description: Bad Request
+          description: invalid participant id
           schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: Internal Server Error
+          description: internal db error / Update Participant
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: update one Participant
       tags:
       - Participant
@@ -3789,12 +3912,13 @@ paths:
                   $ref: '#/definitions/response.Nill'
               type: object
         "400":
-          description: invalid elimination id, player id, maybe not exist
+          description: invalid elimination id, player id maybe not exist / player
+            set's length and teamsize does not match
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: internal error for create player set, get player, create player
-            set match table, get elimination
+          description: internal db error for create player set / get player / create
+            player set match table / get elimination
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Post player set
@@ -3811,17 +3935,18 @@ paths:
         type: integer
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/response.DeleteSuccessResponse'
         "400":
-          description: Bad Request
+          description: invalid plyer set id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: Internal Server Error
+          description: internal db error / Get Player Set By Id / Delete Player Set
+            Match Table By Player Set Id / Delete Player Set By Id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Delete player set
       tags:
       - PlayerSet
@@ -3876,17 +4001,19 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            items:
+              $ref: '#/definitions/database.PlayerSet'
+            type: array
         "400":
-          description: Bad Request
+          description: invalid player set id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: Internal Server Error
+          description: internal db error / Get Player Sets By Elimination Id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Get all player sets by elimination id
       tags:
       - PlayerSet
@@ -3903,17 +4030,19 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            items:
+              $ref: '#/definitions/endpoint.GetPlayerSetsByMedalByEliminationId.playerSetData'
+            type: array
         "400":
-          description: Bad Request
+          description: invalid elimination id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: Internal Server Error
+          description: internal db error / Get Medal Info By Elimination Id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Get player sets which have medals by elimination id
       tags:
       - PlayerSet
@@ -3938,17 +4067,16 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
-          schema:
-            type: string
+          description: success
         "400":
-          description: Bad Request
+          description: teamsize of elimination should not be 1
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorReceiveDataFormatResponse'
         "500":
-          description: Internal Server Error
+          description: internal db error / Get Player Set By Id / Update Player Set
+            Name
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Put player set name
       tags:
       - PlayerSet
@@ -3965,17 +4093,12 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
+          description: success
         "500":
-          description: Internal Server Error
+          description: internal db error / Get Elimination Player Set Id Rank Order
+            By Id / Update Player Set Rank
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Put player set rank
       tags:
       - PlayerSet
@@ -3992,13 +4115,17 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/database.Qualification'
         "400":
-          description: Bad Request
+          description: invalid qualification id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internall db error / Get Only Qualification
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Qualification
       tags:
       - Qualification
@@ -4015,13 +4142,17 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/database.Qualification'
         "400":
-          description: Bad Request
+          description: invalid qualification id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internall db error / Get Qualification With Lanes
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Qualification
       tags:
       - Qualification
@@ -4047,21 +4178,18 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/database.Qualification'
         "400":
-          description: Bad Request
+          description: invalid lane id
           schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: Internal Server Error
+          description: internal db error / Update Lane Qualification Id / Update Qualification
+            / Get Only Qualification
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: update one Qualification
       tags:
       - Qualification
@@ -4093,13 +4221,17 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: already loginned
           schema:
-            type: string
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: invalid login info
+          schema:
+            $ref: '#/definitions/response.ErrorReceiveDataFormatResponse'
         "401":
-          description: Unauthorized
+          description: incorrect password
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorResponse'
       summary: login
       tags:
       - Session

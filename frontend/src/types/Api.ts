@@ -58,6 +58,14 @@ export interface DatabaseInstitution {
   name?: string;
 }
 
+export interface DatabaseLane {
+  competition_id?: number;
+  id?: number;
+  lane_number?: number;
+  players?: DatabasePlayer[];
+  qualification_id?: number;
+}
+
 export interface DatabaseMatch {
   id?: number;
   match_results?: DatabaseMatchResult[];
@@ -128,6 +136,14 @@ export interface DatabasePlayerSet {
   total_score?: number;
 }
 
+export interface DatabaseQualification {
+  advancing_num?: number;
+  end_lane?: number;
+  id?: number;
+  lanes?: DatabaseLane[];
+  start_lane?: number;
+}
+
 export interface DatabaseRound {
   id?: number;
   player_id?: number;
@@ -182,6 +198,12 @@ export interface EndpointEliminationData {
   team_size?: number;
 }
 
+export interface EndpointGetPlayerSetsByMedalByEliminationIdPlayerSetData {
+  id?: number;
+  set_name?: string;
+  type?: number;
+}
+
 export interface EndpointGroupData {
   bow_type?: string;
   elimination_data?: EndpointEliminationData[];
@@ -207,6 +229,15 @@ export interface EndpointNewInstitutionInfo {
 export interface EndpointNewParticipantInfo {
   competition_id?: number;
   role?: string;
+  user_id?: number;
+}
+
+export interface EndpointParticipantWName {
+  competition_id?: number;
+  id?: number;
+  name?: string;
+  role?: string;
+  status?: string;
   user_id?: number;
 }
 
@@ -360,8 +391,18 @@ export interface ResponseErrorReceiveDataFormatResponse {
   error?: string;
 }
 
+export interface ResponseErrorReceiveDataNilResponse {
+  /** @example "bad request data is nil ID(1): sth error" */
+  error?: string;
+}
+
 export interface ResponseErrorReceiveDataResponse {
   /** @example "bad request data ID(1): sth error" */
+  error?: string;
+}
+
+export interface ResponseErrorResponse {
+  /** @example "error description" */
   error?: string;
 }
 
@@ -906,7 +947,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/data/qualification/lanes/Unassigned/{id}
      */
     qualificationLanesUnassignedDetail: (id: number, params: RequestParams = {}) =>
-      this.request<string, string>({
+      this.request<DatabaseQualification[], ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/data/qualification/lanes/Unassigned/${id}`,
         method: "GET",
         format: "json",
@@ -922,7 +963,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/data/qualification/lanes/players/{id}
      */
     qualificationLanesPlayersDetail: (id: number, params: RequestParams = {}) =>
-      this.request<string, string>({
+      this.request<DatabaseQualification, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/data/qualification/lanes/players/${id}`,
         method: "GET",
         format: "json",
@@ -938,7 +979,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/qualification/lanes/{id}
      */
     lanesDetail: (id: number, params: RequestParams = {}) =>
-      this.request<string, string>({
+      this.request<DatabaseQualification, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/qualification/lanes/${id}`,
         method: "GET",
         format: "json",
@@ -954,7 +995,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/qualification/whole/{id}
      */
     wholeUpdate: (id: string, Qualification: string, params: RequestParams = {}) =>
-      this.request<string, string>({
+      this.request<DatabaseQualification, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/qualification/whole/${id}`,
         method: "PUT",
         body: Qualification,
@@ -972,7 +1013,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/qualification/{id}
      */
     qualificationDetail: (id: number, params: RequestParams = {}) =>
-      this.request<string, string>({
+      this.request<DatabaseQualification, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/qualification/${id}`,
         method: "GET",
         format: "json",
@@ -1477,7 +1518,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/lane/all/{id}
      */
     getLane: (id: number, params: RequestParams = {}) =>
-      this.request<string, string>({
+      this.request<DatabaseLane[], ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/lane/all/${id}`,
         method: "GET",
         format: "json",
@@ -1493,7 +1534,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/lane/scores/{id}
      */
     scoresDetail: (id: number, params: RequestParams = {}) =>
-      this.request<string, string>({
+      this.request<DatabaseLane, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/lane/scores/${id}`,
         method: "GET",
         format: "json",
@@ -1509,7 +1550,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/lane/{id}
      */
     laneDetail: (id: number, params: RequestParams = {}) =>
-      this.request<string, string>({
+      this.request<DatabaseLane, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/lane/${id}`,
         method: "GET",
         format: "json",
@@ -1777,7 +1818,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/medal/elimination/{id}
      */
     eliminationDetail: (id: number, params: RequestParams = {}) =>
-      this.request<string, string>({
+      this.request<DatabaseMedal, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/medal/elimination/${id}`,
         method: "GET",
         format: "json",
@@ -1793,12 +1834,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/medal/playersetid/{id}
      */
     playersetidUpdate: (id: number, PlayerSetId: string, params: RequestParams = {}) =>
-      this.request<string, string>({
+      this.request<void, ResponseErrorReceiveDataFormatResponse | ResponseErrorInternalErrorResponse>({
         path: `/medal/playersetid/${id}`,
         method: "PUT",
         body: PlayerSetId,
         type: ContentType.Json,
-        format: "json",
         ...params,
       }),
 
@@ -1811,7 +1851,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/medal/{id}
      */
     medalDetail: (id: number, params: RequestParams = {}) =>
-      this.request<string, string>({
+      this.request<DatabaseMedal, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/medal/${id}`,
         method: "GET",
         format: "json",
@@ -1939,10 +1979,28 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/participant/
      */
     participantCreate: (NewParticipantInfo: EndpointNewParticipantInfo, params: RequestParams = {}) =>
-      this.request<string, string>({
+      this.request<DatabaseParticipant, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/participant/`,
         method: "POST",
         body: NewParticipantInfo,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get Participants By competition ID, including realname
+     *
+     * @tags Participant
+     * @name CompetitionList
+     * @summary Show Participants By competition ID
+     * @request GET:/participant/competition
+     */
+    competitionList: (competition_id: number, params: RequestParams = {}) =>
+      this.request<EndpointParticipantWName[], ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/participant/competition`,
+        method: "GET",
+        body: competition_id,
         type: ContentType.Json,
         format: "json",
         ...params,
@@ -1957,27 +2015,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/participant/competition/user
      */
     competitionUserList: (user_id: number, params: RequestParams = {}) =>
-      this.request<string, string>({
+      this.request<DatabaseParticipant[], ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/participant/competition/user`,
         method: "GET",
         body: user_id,
         type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Get Participants By competition ID, including realname
-     *
-     * @tags Participant
-     * @name CompetitionDetail
-     * @summary Show Participants By competition ID
-     * @request GET:/participant/competition/{competitionid}
-     */
-    competitionDetail: (competitionid: number, params: RequestParams = {}) =>
-      this.request<string, string>({
-        path: `/participant/competition/${competitionid}`,
-        method: "GET",
         format: "json",
         ...params,
       }),
@@ -1991,7 +2033,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/participant/user
      */
     userList: (user_id: number, params: RequestParams = {}) =>
-      this.request<string, string>({
+      this.request<DatabaseParticipant[], ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/participant/user`,
         method: "GET",
         body: user_id,
@@ -2009,7 +2051,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/participant/whole/{id}
      */
     wholeUpdate: (id: string, Participant: string, params: RequestParams = {}) =>
-      this.request<string, string>({
+      this.request<DatabaseParticipant, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/participant/whole/${id}`,
         method: "PUT",
         body: Participant,
@@ -2027,7 +2069,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/participant/{id}
      */
     participantDetail: (id: number, params: RequestParams = {}) =>
-      this.request<string, string>({
+      this.request<DatabaseParticipant, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/participant/${id}`,
         method: "GET",
         format: "json",
@@ -2043,7 +2085,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request DELETE:/participant/{id}
      */
     participantDelete: (id: string, params: RequestParams = {}) =>
-      this.request<string, string>({
+      this.request<ResponseDeleteSuccessResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/participant/${id}`,
         method: "DELETE",
         type: ContentType.Json,
@@ -2459,7 +2501,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/playerset/elimination/medal/{eliminationid}
      */
     eliminationMedalDetail: (eliminationid: number, params: RequestParams = {}) =>
-      this.request<string, string>({
+      this.request<
+        EndpointGetPlayerSetsByMedalByEliminationIdPlayerSetData[],
+        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/playerset/elimination/medal/${eliminationid}`,
         method: "GET",
         format: "json",
@@ -2475,7 +2520,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request GET:/playerset/elimination/{eliminationid}
      */
     eliminationDetail: (eliminationid: number, params: RequestParams = {}) =>
-      this.request<string, string>({
+      this.request<DatabasePlayerSet[], ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/playerset/elimination/${eliminationid}`,
         method: "GET",
         format: "json",
@@ -2491,12 +2536,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/playerset/name/{id}
      */
     nameUpdate: (id: number, data: string, params: RequestParams = {}) =>
-      this.request<string, string>({
+      this.request<void, ResponseErrorReceiveDataFormatResponse | ResponseErrorInternalErrorResponse>({
         path: `/playerset/name/${id}`,
         method: "PUT",
         body: data,
         type: ContentType.Json,
-        format: "json",
         ...params,
       }),
 
@@ -2509,10 +2553,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PUT:/playerset/preranking/{eliminationid}
      */
     prerankingUpdate: (eliminationid: number, params: RequestParams = {}) =>
-      this.request<string, string>({
+      this.request<void, ResponseErrorInternalErrorResponse>({
         path: `/playerset/preranking/${eliminationid}`,
         method: "PUT",
-        format: "json",
         ...params,
       }),
 
@@ -2549,7 +2592,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request DELETE:/playerset/{id}
      */
     playersetDelete: (id: number, params: RequestParams = {}) =>
-      this.request<string, string>({
+      this.request<ResponseDeleteSuccessResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/playerset/${id}`,
         method: "DELETE",
         ...params,
@@ -2565,7 +2608,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/session
      */
     sessionCreate: (LoginInfo: EndpointLoginInfo, params: RequestParams = {}) =>
-      this.request<string, string>({
+      this.request<ResponseResponse, ResponseErrorReceiveDataFormatResponse | ResponseErrorResponse>({
         path: `/session`,
         method: "POST",
         body: LoginInfo,
