@@ -9,7 +9,7 @@ export default function useGetPlayersByParticipant(
 ) {
   return useQuery(
     ["competitionGroupsPlayersDetail", competitionId],
-    () => apiClient.competition.competitionGroupsPlayersDetail(competitionId),
+    () => apiClient.competition.groupsPlayersDetail(competitionId),
     {
       select: (data) => {
         const groups = data.data.groups as unknown as Group[];

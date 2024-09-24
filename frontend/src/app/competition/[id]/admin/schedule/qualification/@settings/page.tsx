@@ -36,9 +36,7 @@ export default function Page({ params }: { params: { id: string } }) {
   const { data: group, isSuccess: isGroupSuccess } = useQuery(
     ["groupinfoPlayersDetail", groupIndex],
     () =>
-      apiClient.groupInfo.groupinfoPlayersDetail(
-        competition?.groups![groupIndex].id
-      ),
+      apiClient.groupInfo.playersDetail(competition?.groups![groupIndex].id),
 
     {
       staleTime: 60000 * 30,
@@ -63,7 +61,7 @@ export default function Page({ params }: { params: { id: string } }) {
   );
   const { mutate: saveSettings } = useMutation(
     () =>
-      apiClient.qualification.qualificationWholeUpdate(qualification!.id, {
+      apiClient.qualification.wholeUpdate(qualification!.id.toString(), {
         start_lane: startLane,
         end_lane: endLane,
         advancing_num: advancingNum,

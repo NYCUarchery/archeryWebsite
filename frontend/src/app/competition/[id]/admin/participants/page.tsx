@@ -22,19 +22,19 @@ export default function Page({ params }: { params: { id: string } }) {
   const queryClient = useQueryClient();
   const { data: participants } = useQuery(
     ["participantCompetitionList", params.id],
-    () => apiClient.participant.participantCompetitionList(parseInt(params.id)),
+    () => apiClient.participant.competitionList(parseInt(params.id)),
     {
       select: (data) => data.data as unknown as Participant[],
       staleTime: Infinity,
     }
   );
   const { mutate: approveParticipant } = useMutation((id: number) =>
-    apiClient.participant.participantWholeUpdate(id, {
+    apiClient.participant.wholeUpdate(id.toString(), {
       status: "approved",
     })
   );
   const { mutate: deleteParticipant } = useMutation((id: number) =>
-    apiClient.participant.participantDelete(id)
+    apiClient.participant.participantDelete(id.toString())
   );
 
   const [rowSelectionModel, setRowSelectionModel] =

@@ -50,14 +50,14 @@ export default function Page({ params }: { params: { id: string } }) {
   };
   const { mutate: assignPlayerLane } = useMutation(
     ({ playerId, laneId }: { playerId: number; laneId: number }) =>
-      apiClient.player.playerLaneidUpdate(playerId, { lane_id: laneId }),
+      apiClient.player.laneidUpdate(playerId, { lane_id: laneId }),
     {
       onSuccess: handleSuccess,
     }
   );
   const { mutate: assignPlayerOrder } = useMutation(
     ({ playerId, order }: { playerId: number; order: number }) =>
-      apiClient.player.playerOrderUpdate(playerId, { order: order }),
+      apiClient.player.orderUpdate(playerId, { order: order }),
     {
       onSuccess: handleSuccess,
     }

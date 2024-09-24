@@ -10,7 +10,7 @@ export default function Page({ params }: { params: { id: string } }) {
   const { data: competition } = useGetCompetitionWithGroups(competitionId);
   const { mutate: activateQualification } = useMutation(
     (id: number) =>
-      apiClient.competition.competitionQualificationisactiveUpdate(id),
+      apiClient.competition.qualificationIsactiveUpdate(id.toString()),
     {
       onSuccess: () => {
         queryClient.invalidateQueries(["competitionWithGroups", competitionId]);
@@ -20,7 +20,7 @@ export default function Page({ params }: { params: { id: string } }) {
 
   const { mutate: activateElimination } = useMutation(
     (id: number) =>
-      apiClient.competition.competitionEliminationisactiveUpdate(id),
+      apiClient.competition.eliminationIsactiveUpdate(id.toString()),
     {
       onSuccess: () => {
         queryClient.invalidateQueries(["competitionWithGroups", competitionId]);
@@ -30,7 +30,7 @@ export default function Page({ params }: { params: { id: string } }) {
 
   const { mutate: activateTeamElimination } = useMutation(
     (id: number) =>
-      apiClient.competition.competitionTeameliminationisactiveUpdate(id),
+      apiClient.competition.teamEliminationIsactiveUpdate(id.toString()),
     {
       onSuccess: () => {
         queryClient.invalidateQueries(["competitionWithGroups", competitionId]);
@@ -40,7 +40,7 @@ export default function Page({ params }: { params: { id: string } }) {
 
   const { mutate: activateMixedElimination } = useMutation(
     (id: number) =>
-      apiClient.competition.competitionMixedeliminationisactiveUpdate(id),
+      apiClient.competition.eliminationIsactiveUpdate(id.toString()),
     {
       onSuccess: () => {
         queryClient.invalidateQueries(["competitionWithGroups", competitionId]);

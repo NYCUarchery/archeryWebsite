@@ -7,7 +7,7 @@ const useGetEliminationOfCompetition = (
 ) => {
   return useQuery(
     ["eliminationOfCompetition", competitionId],
-    () => apiClient.competition.competitionGroupsQuaeliDetail(competitionId),
+    () => apiClient.competition.groupsQualieliDetail(competitionId),
     {
       select: (data) => {
         return data.data.filter(

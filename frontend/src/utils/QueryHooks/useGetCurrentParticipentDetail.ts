@@ -10,10 +10,7 @@ export default function useGetCurrentParticipentDetail(
   return useQuery(
     "currentParticipent",
     () =>
-      apiClient.participant.participantCompetitionUserList(
-        userId ?? -1,
-        competitionId
-      ),
+      apiClient.participant.competitionUserList(userId ?? -1, competitionId),
     {
       select: (data) => data.data[0] as unknown as Participant,
       enabled: !!userId,
