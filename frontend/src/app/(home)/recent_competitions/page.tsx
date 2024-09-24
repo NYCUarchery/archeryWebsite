@@ -23,7 +23,7 @@ export default function RecentCompetitionPage() {
   const { data: competitions, isLoading: isLoadingCompetitions } = useQuery(
     "competitions",
     () =>
-      apiClient.competition.competitionCurrentDetail(
+      apiClient.competition.currentDetail(
         startIndex.toString(),
         endIndex.toString(),
         {

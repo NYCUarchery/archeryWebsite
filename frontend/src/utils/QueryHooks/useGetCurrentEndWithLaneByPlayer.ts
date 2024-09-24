@@ -13,7 +13,7 @@ export default function useGetCurrentEndWithLaneByPlayer(
 ) {
   return useQuery(
     ["currentEndWithLaneByPlayer", player?.id, currentEndIndex],
-    () => apiClient.lane.laneScoresDetail(player?.lane_id ?? -1),
+    () => apiClient.lane.scoresDetail(player?.lane_id ?? -1),
     {
       select: (data: any) => {
         const lane = data.data as Lane;

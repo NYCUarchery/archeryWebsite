@@ -5,7 +5,7 @@ import { Lane } from "@/types/oldRef/Lane";
 export default function useGetLanes(competitionId: number) {
   return useQuery(
     ["laneAllDetail", competitionId],
-    () => apiClient.lane.laneAllDetail(competitionId),
+    () => apiClient.lane.getLane(competitionId),
     {
       select: (data) => {
         return data.data as Lane[];

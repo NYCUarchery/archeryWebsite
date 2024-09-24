@@ -45,7 +45,7 @@ export default function GroupGrid({
   const group = groups[groupIndex];
   const { mutate: assignPlayer } = useMutation(
     ({ id, groudId }: { id: number; groudId: number }) =>
-      apiClient.player.playerGroupidUpdate(id, groudId)
+      apiClient.player.groupidUpdate(id, groudId.toString())
   );
 
   const handleAssign = () => {
