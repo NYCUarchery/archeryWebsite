@@ -731,6 +731,7 @@ paths:
         Post one new Competition data with new id.
         Create UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup.
         Add host as admin of competition, and return the new Competition data.
+        RoundsNum and LanesNum will influence player post data, so cannot be changed.
         ZeroTime 0001-01-01T00:00:00+00:01
       parameters:
       - description: Competition
@@ -3262,7 +3263,7 @@ paths:
   /player/{id}:
     delete:
       description: Delete one Player by id, delete related round, roundend, roundscore
-        data, and playerNum minus one in lane
+        data, and playerNum minus one in lane.
       parameters:
       - description: Player ID
         in: path
@@ -3284,11 +3285,11 @@ paths:
           description: internal db error for deleting player
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Delete one Player by id
+      summary: Delete one Player by id.
       tags:
       - Player
     get:
-      description: Get one Player without other data by id
+      description: Get one Player without other data by id.
       parameters:
       - description: Player ID
         in: path
@@ -3299,7 +3300,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: success, but no rounds, player sets
+          description: success, return player without rounds, player sets
           schema:
             allOf:
             - $ref: '#/definitions/database.Player'
@@ -3314,17 +3315,20 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: internal db error
+          description: internal db error / Get player
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Show one Player info without other data
+      summary: Show one Player info without other data.
       tags:
       - Player
   /player/{participantid}:
     post:
       description: |-
-        Create one Player by participant id
-        Create related rounds by laneNum of competition, create 6 roundscores for each 6 roundends, UnassignedLane playerNum ++
+        Create one Player by participant id.
+        Create related rounds by laneNum of competition, create 6 roundscores for each 6 roundends, UnassignedLane playerNum ++.
+        Order is 0, TotalScore is 0, ShootOffScore is -1, Rank is 0.
+        Group is unassigned group, Lane is unassigned lane.
+        Will copy data from participant, user, competition.
       parameters:
       - description: Participant ID
         in: path
@@ -3335,7 +3339,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: success, show player info
+          description: success, return player info
           schema:
             allOf:
             - $ref: '#/definitions/database.Player'
@@ -3350,10 +3354,11 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: internal db error to create player, round, roundend, roundscore
+          description: internal db error / create player / create round / create roundend
+            / create roundscore
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Create one Player by Participant ID
+      summary: Create one Player by Participant ID.
       tags:
       - Player
   /player/all-endscores/{endid}:
@@ -3384,12 +3389,11 @@ paths:
           schema:
             $ref: '#/definitions/response.Nill'
         "400":
-          description: invalid end id parameter, may not exist, or length of scores
-            not equal to 6
+          description: invalid end id / length of scores not equal to 6
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: internal db error for updating player end scores, get round
+          description: internal db error / updating player end scores / get round
             score ids
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
@@ -3398,7 +3402,7 @@ paths:
       - Player
   /player/dummy/{participantid}:
     get:
-      description: Get dummy players by participant id
+      description: Get dummy players by participant id.
       parameters:
       - description: Participant ID
         in: path
@@ -3426,15 +3430,15 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: internal db error for getting dummy players
+          description: internal db error / Get dummy players
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Show dummy players
+      summary: Show dummy players.
       tags:
       - Player
   /player/dummy/{playerid}:
     post:
-      description: Create dummy player by player id
+      description: Create dummy player by player id.
       parameters:
       - description: Player ID
         in: path
@@ -3460,18 +3464,20 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: internal db error for creating dummy player
+          description: internal db error / Creating player / Get player / Get participant
+            / Get competition unassigned lane id / Get competition unassigned group
+            id
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Create dummy player
+      summary: Create dummy player.
       tags:
       - Player
-  /player/group/{playerid}:
+  /player/group/{id}:
     put:
       consumes:
       - application/json
       description: Update one Player groupId by id, and change player laneid to Unassigned
-        lane
+        lane.
       parameters:
       - description: Player ID
         in: path
@@ -3488,7 +3494,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: success, show player info
+          description: success, return player info
           schema:
             allOf:
             - $ref: '#/definitions/database.Player'
@@ -3499,22 +3505,22 @@ paths:
                   $ref: '#/definitions/response.Nill'
               type: object
         "400":
-          description: invalid player id, group id parameter, may not exist
+          description: invalid player id / invalid group id parameter, may not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: internal db error for updating player groupId, or get player
-            info, or get unassigned lane id
+          description: internal db error / updating player groupId / get player info
+            / get unassigned lane id
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Update one Player groupId by id
+      summary: Update one Player groupId by id.
       tags:
       - Player
   /player/isconfirmed/{roundendid}:
     put:
       consumes:
       - application/json
-      description: Update one Player isConfirmed by id
+      description: Update one Player isConfirmed by id.
       parameters:
       - description: RoundEnd ID
         in: path
@@ -3531,7 +3537,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: success
+          description: success, return nil
           schema:
             $ref: '#/definitions/response.Nill'
         "400":
@@ -3542,14 +3548,14 @@ paths:
           description: internal db error for updating player isConfirmed
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Update one Player isConfirmed by id
+      summary: Update one Player isConfirmed by id.
       tags:
       - Player
   /player/lane/{id}:
     put:
       consumes:
       - application/json
-      description: Update one Player laneId by id, update lane playernum
+      description: Update one Player laneId by id, update lane playernum.
       parameters:
       - description: Player ID
         in: path
@@ -3566,7 +3572,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: success, show player info
+          description: success, return player info
           schema:
             allOf:
             - $ref: '#/definitions/database.Player'
@@ -3577,22 +3583,21 @@ paths:
                   $ref: '#/definitions/response.Nill'
               type: object
         "400":
-          description: invalid player id, lane id parameter, may not exist
+          description: invalid player id / invalid lane id parameter
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: internal db error for updating player laneid, or get player
-            info
+          description: internal db error / updating player laneid / get player info
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Update one Player laneId by id
+      summary: Update one Player laneId by id.
       tags:
       - Player
   /player/order/{id}:
     put:
       consumes:
       - application/json
-      description: Update one Player order by id
+      description: Update one Player order by id.
       parameters:
       - description: Player ID
         in: path
@@ -3609,7 +3614,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: success, show player info
+          description: success, return player info
           schema:
             allOf:
             - $ref: '#/definitions/database.Player'
@@ -3624,16 +3629,15 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: internal db error for updating player order, or get player
-            info
+          description: internal db error / updating player order / get player info
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Update one Player order by id
+      summary: Update one Player order by id.
       tags:
       - Player
   /player/playersets/{id}/{eliminationid}:
     get:
-      description: Get one Player with player sets by id and elimination id
+      description: Get one Player with player sets by id and elimination id.
       parameters:
       - description: Player ID
         in: path
@@ -3649,50 +3653,59 @@ paths:
       - application/json
       responses:
         "200":
-          description: success, show player sets, but no rounds
+          description: success, return player with player sets
           schema:
             allOf:
             - $ref: '#/definitions/database.Player'
             - properties:
                 player_sets:
-                  allOf:
-                  - $ref: '#/definitions/database.PlayerSet'
-                  - properties:
-                      players:
-                        $ref: '#/definitions/response.Nill'
-                    type: object
+                  items:
+                    allOf:
+                    - $ref: '#/definitions/database.PlayerSet'
+                    - properties:
+                        players:
+                          $ref: '#/definitions/response.Nill'
+                      type: object
+                  type: array
                 rounds:
                   $ref: '#/definitions/response.Nill'
               type: object
         "400":
-          description: invalid player id parameter, elimination id parameter, may
-            not exist
+          description: invalid player id parameter / invalid elimination id parameter
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: internal db error
+          description: internal db error / Get player with player sets
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Show one Player with player sets
+      summary: Show one Player with player sets.
       tags:
       - Player
   /player/roundend:
     post:
       consumes:
       - application/json
-      description: Create one RoundEnd by round id, IsComfirmed is false
+      description: |-
+        Just in case api.
+        Create one RoundEnd by round id, IsComfirmed is false.
+        Should not be used, just in case function, PostPlayer is used to create player, rounds, roundends, roundscores.
       parameters:
       - description: RoundEnd
         in: body
         name: RoundEnd
         required: true
         schema:
-          $ref: '#/definitions/endpoint.PostRoundEnd.RoundEndData'
+          allOf:
+          - $ref: '#/definitions/endpoint.PostRoundEnd.RoundEndData'
+          - properties:
+              round_scores:
+                $ref: '#/definitions/response.Nill'
+            type: object
       produces:
       - application/json
       responses:
         "200":
-          description: success, show roundend info
+          description: success, return roundend info
           schema:
             $ref: '#/definitions/database.RoundEnd'
         "400":
@@ -3700,18 +3713,22 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: internal db error for creating roundend
+          description: internal db error / creating roundend
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Create one RoundEnd by Round ID
+      summary: Create one RoundEnd by Round ID.
       tags:
       - Player
   /player/roundscore:
     post:
       consumes:
       - application/json
-      description: Create one RoundScore by roundend id, and update total score in
-        rounds
+      description: |-
+        Just in case api.
+        Need to modify to refresh total scores.
+        Create one RoundScore by roundend id.
+        Update total score in player, round, roundend for one arrow score.
+        Should not be used, just in case function, PostPlayer is used to create player, rounds, roundends, roundscores.
       parameters:
       - description: RoundScore
         in: body
@@ -3723,20 +3740,20 @@ paths:
       - application/json
       responses:
         "200":
-          description: success, show roundscore info
+          description: success, return roundscore info
           schema:
             $ref: '#/definitions/database.RoundScore'
         "400":
-          description: invalid roundend id, player id, round id parameter, may not
-            exist
+          description: invalid roundend id / invalid player id / invalid round id
+            parameter, may not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: internal db error for creating roundscore, get old score, update
+          description: internal db error / creating roundscore / get old score / update
             total score
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Create one RoundScore by RoundEnd ID
+      summary: Create one RoundScore by RoundEnd ID.
       tags:
       - Player
   /player/roundscore/{roundscoreid}:
@@ -3744,8 +3761,8 @@ paths:
       consumes:
       - application/json
       description: |-
-        Update one Player score by id
-        Update doesn't change total score in player, round, roundend
+        Update one Player score by id.
+        Update doesn't change total score in player, round, roundend.
       parameters:
       - description: RoundScore ID
         in: path
@@ -3766,21 +3783,20 @@ paths:
           schema:
             $ref: '#/definitions/response.Nill'
         "400":
-          description: invalid roundscore id, player id, round id, roundend id parameter,
-            may not exist
+          description: invalid roundscore id / player id / round id / roundend id
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: internal db error for updating player score, get old score,
+          description: internal db error / updating player score / get old score /
             update total score
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Update one Player score by id
+      summary: Update one Player score by id.
       tags:
       - Player
   /player/scores/{id}:
     get:
-      description: Get one Player with rounds, roundends, roundscores by id
+      description: Get one Player with rounds, roundends, roundscores by id.
       parameters:
       - description: Player ID
         in: path
@@ -3817,17 +3833,17 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: internal db error
+          description: internal db error / Get player with scores
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Show one Player with scores
+      summary: Show one Player with scores.
       tags:
       - Player
   /player/shootoffscore/{id}:
     put:
       consumes:
       - application/json
-      description: Update one Player shootoffScore by id
+      description: Update one Player shootoffScore by id.
       parameters:
       - description: Player ID
         in: path
@@ -3844,7 +3860,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: success, show player info
+          description: success, return player info
           schema:
             allOf:
             - $ref: '#/definitions/database.Player'
@@ -3859,18 +3875,18 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: internal db error for updating player shootoffScore, or get
-            player info
+          description: internal db error for updating player shootoffScore / get player
+            info
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Update one Player shootoffScore by id
+      summary: Update one Player shootoffScore by id.
       tags:
       - Player
   /player/totalscore/{id}:
     put:
       consumes:
       - application/json
-      description: Update one Player total score by id
+      description: Update one Player total score by id.
       parameters:
       - description: Player ID
         in: path
@@ -3902,7 +3918,7 @@ paths:
           description: internal db error for updating player total score
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Update one Player total score by id
+      summary: Update one Player total score by id.
       tags:
       - Player
   /playerset:

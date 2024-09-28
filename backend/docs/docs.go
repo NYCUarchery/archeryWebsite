@@ -65,7 +65,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Post one new Competition data with new id.\nCreate UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup.\nAdd host as admin of competition, and return the new Competition data.\nZeroTime 0001-01-01T00:00:00+00:01",
+                "description": "Post one new Competition data with new id.\nCreate UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup.\nAdd host as admin of competition, and return the new Competition data.\nRoundsNum and LanesNum will influence player post data, so cannot be changed.\nZeroTime 0001-01-01T00:00:00+00:01",
                 "consumes": [
                     "application/json"
                 ],
@@ -3968,13 +3968,13 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "invalid end id parameter, may not exist, or length of scores not equal to 6",
+                        "description": "invalid end id / length of scores not equal to 6",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
-                        "description": "internal db error for updating player end scores, get round score ids",
+                        "description": "internal db error / updating player end scores / get round score ids",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -3984,14 +3984,14 @@ const docTemplate = `{
         },
         "/player/dummy/{participantid}": {
             "get": {
-                "description": "Get dummy players by participant id",
+                "description": "Get dummy players by participant id.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Player"
                 ],
-                "summary": "Show dummy players",
+                "summary": "Show dummy players.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -4033,7 +4033,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "internal db error for getting dummy players",
+                        "description": "internal db error / Get dummy players",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -4043,14 +4043,14 @@ const docTemplate = `{
         },
         "/player/dummy/{playerid}": {
             "post": {
-                "description": "Create dummy player by player id",
+                "description": "Create dummy player by player id.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Player"
                 ],
-                "summary": "Create dummy player",
+                "summary": "Create dummy player.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -4089,7 +4089,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "internal db error for creating dummy player",
+                        "description": "internal db error / Creating player / Get player / Get participant / Get competition unassigned lane id / Get competition unassigned group id",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -4097,9 +4097,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/player/group/{playerid}": {
+        "/player/group/{id}": {
             "put": {
-                "description": "Update one Player groupId by id, and change player laneid to Unassigned lane",
+                "description": "Update one Player groupId by id, and change player laneid to Unassigned lane.",
                 "consumes": [
                     "application/json"
                 ],
@@ -4109,7 +4109,7 @@ const docTemplate = `{
                 "tags": [
                     "Player"
                 ],
-                "summary": "Update one Player groupId by id",
+                "summary": "Update one Player groupId by id.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -4130,7 +4130,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "success, show player info",
+                        "description": "success, return player info",
                         "schema": {
                             "allOf": [
                                 {
@@ -4151,13 +4151,13 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "invalid player id, group id parameter, may not exist",
+                        "description": "invalid player id / invalid group id parameter, may not exist",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
-                        "description": "internal db error for updating player groupId, or get player info, or get unassigned lane id",
+                        "description": "internal db error / updating player groupId / get player info / get unassigned lane id",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -4167,7 +4167,7 @@ const docTemplate = `{
         },
         "/player/isconfirmed/{roundendid}": {
             "put": {
-                "description": "Update one Player isConfirmed by id",
+                "description": "Update one Player isConfirmed by id.",
                 "consumes": [
                     "application/json"
                 ],
@@ -4177,7 +4177,7 @@ const docTemplate = `{
                 "tags": [
                     "Player"
                 ],
-                "summary": "Update one Player isConfirmed by id",
+                "summary": "Update one Player isConfirmed by id.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -4198,7 +4198,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "success",
+                        "description": "success, return nil",
                         "schema": {
                             "$ref": "#/definitions/response.Nill"
                         }
@@ -4220,7 +4220,7 @@ const docTemplate = `{
         },
         "/player/lane/{id}": {
             "put": {
-                "description": "Update one Player laneId by id, update lane playernum",
+                "description": "Update one Player laneId by id, update lane playernum.",
                 "consumes": [
                     "application/json"
                 ],
@@ -4230,7 +4230,7 @@ const docTemplate = `{
                 "tags": [
                     "Player"
                 ],
-                "summary": "Update one Player laneId by id",
+                "summary": "Update one Player laneId by id.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -4251,7 +4251,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "success, show player info",
+                        "description": "success, return player info",
                         "schema": {
                             "allOf": [
                                 {
@@ -4272,13 +4272,13 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "invalid player id, lane id parameter, may not exist",
+                        "description": "invalid player id / invalid lane id parameter",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
-                        "description": "internal db error for updating player laneid, or get player info",
+                        "description": "internal db error / updating player laneid / get player info",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -4288,7 +4288,7 @@ const docTemplate = `{
         },
         "/player/order/{id}": {
             "put": {
-                "description": "Update one Player order by id",
+                "description": "Update one Player order by id.",
                 "consumes": [
                     "application/json"
                 ],
@@ -4298,7 +4298,7 @@ const docTemplate = `{
                 "tags": [
                     "Player"
                 ],
-                "summary": "Update one Player order by id",
+                "summary": "Update one Player order by id.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -4319,7 +4319,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "success, show player info",
+                        "description": "success, return player info",
                         "schema": {
                             "allOf": [
                                 {
@@ -4346,7 +4346,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "internal db error for updating player order, or get player info",
+                        "description": "internal db error / updating player order / get player info",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -4356,14 +4356,14 @@ const docTemplate = `{
         },
         "/player/playersets/{id}/{eliminationid}": {
             "get": {
-                "description": "Get one Player with player sets by id and elimination id",
+                "description": "Get one Player with player sets by id and elimination id.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Player"
                 ],
-                "summary": "Show one Player with player sets",
+                "summary": "Show one Player with player sets.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -4382,7 +4382,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "success, show player sets, but no rounds",
+                        "description": "success, return player with player sets",
                         "schema": {
                             "allOf": [
                                 {
@@ -4392,19 +4392,22 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "player_sets": {
-                                            "allOf": [
-                                                {
-                                                    "$ref": "#/definitions/database.PlayerSet"
-                                                },
-                                                {
-                                                    "type": "object",
-                                                    "properties": {
-                                                        "players": {
-                                                            "$ref": "#/definitions/response.Nill"
+                                            "type": "array",
+                                            "items": {
+                                                "allOf": [
+                                                    {
+                                                        "$ref": "#/definitions/database.PlayerSet"
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "players": {
+                                                                "$ref": "#/definitions/response.Nill"
+                                                            }
                                                         }
                                                     }
-                                                }
-                                            ]
+                                                ]
+                                            }
                                         },
                                         "rounds": {
                                             "$ref": "#/definitions/response.Nill"
@@ -4415,13 +4418,13 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "invalid player id parameter, elimination id parameter, may not exist",
+                        "description": "invalid player id parameter / invalid elimination id parameter",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
-                        "description": "internal db error",
+                        "description": "internal db error / Get player with player sets",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -4431,7 +4434,7 @@ const docTemplate = `{
         },
         "/player/roundend": {
             "post": {
-                "description": "Create one RoundEnd by round id, IsComfirmed is false",
+                "description": "Just in case api.\nCreate one RoundEnd by round id, IsComfirmed is false.\nShould not be used, just in case function, PostPlayer is used to create player, rounds, roundends, roundscores.",
                 "consumes": [
                     "application/json"
                 ],
@@ -4441,7 +4444,7 @@ const docTemplate = `{
                 "tags": [
                     "Player"
                 ],
-                "summary": "Create one RoundEnd by Round ID",
+                "summary": "Create one RoundEnd by Round ID.",
                 "parameters": [
                     {
                         "description": "RoundEnd",
@@ -4449,13 +4452,25 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/endpoint.PostRoundEnd.RoundEndData"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/endpoint.PostRoundEnd.RoundEndData"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "round_scores": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "success, show roundend info",
+                        "description": "success, return roundend info",
                         "schema": {
                             "$ref": "#/definitions/database.RoundEnd"
                         }
@@ -4467,7 +4482,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "internal db error for creating roundend",
+                        "description": "internal db error / creating roundend",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -4477,7 +4492,7 @@ const docTemplate = `{
         },
         "/player/roundscore": {
             "post": {
-                "description": "Create one RoundScore by roundend id, and update total score in rounds",
+                "description": "Just in case api.\nNeed to modify to refresh total scores.\nCreate one RoundScore by roundend id.\nUpdate total score in player, round, roundend for one arrow score.\nShould not be used, just in case function, PostPlayer is used to create player, rounds, roundends, roundscores.",
                 "consumes": [
                     "application/json"
                 ],
@@ -4487,7 +4502,7 @@ const docTemplate = `{
                 "tags": [
                     "Player"
                 ],
-                "summary": "Create one RoundScore by RoundEnd ID",
+                "summary": "Create one RoundScore by RoundEnd ID.",
                 "parameters": [
                     {
                         "description": "RoundScore",
@@ -4501,19 +4516,19 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "success, show roundscore info",
+                        "description": "success, return roundscore info",
                         "schema": {
                             "$ref": "#/definitions/database.RoundScore"
                         }
                     },
                     "400": {
-                        "description": "invalid roundend id, player id, round id parameter, may not exist",
+                        "description": "invalid roundend id / invalid player id / invalid round id parameter, may not exist",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
-                        "description": "internal db error for creating roundscore, get old score, update total score",
+                        "description": "internal db error / creating roundscore / get old score / update total score",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -4523,7 +4538,7 @@ const docTemplate = `{
         },
         "/player/roundscore/{roundscoreid}": {
             "put": {
-                "description": "Update one Player score by id\nUpdate doesn't change total score in player, round, roundend",
+                "description": "Update one Player score by id.\nUpdate doesn't change total score in player, round, roundend.",
                 "consumes": [
                     "application/json"
                 ],
@@ -4533,7 +4548,7 @@ const docTemplate = `{
                 "tags": [
                     "Player"
                 ],
-                "summary": "Update one Player score by id",
+                "summary": "Update one Player score by id.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -4560,13 +4575,13 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "invalid roundscore id, player id, round id, roundend id parameter, may not exist",
+                        "description": "invalid roundscore id / player id / round id / roundend id",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
-                        "description": "internal db error for updating player score, get old score, update total score",
+                        "description": "internal db error / updating player score / get old score / update total score",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -4576,14 +4591,14 @@ const docTemplate = `{
         },
         "/player/scores/{id}": {
             "get": {
-                "description": "Get one Player with rounds, roundends, roundscores by id",
+                "description": "Get one Player with rounds, roundends, roundscores by id.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Player"
                 ],
-                "summary": "Show one Player with scores",
+                "summary": "Show one Player with scores.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -4646,7 +4661,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "internal db error",
+                        "description": "internal db error / Get player with scores",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -4656,7 +4671,7 @@ const docTemplate = `{
         },
         "/player/shootoffscore/{id}": {
             "put": {
-                "description": "Update one Player shootoffScore by id",
+                "description": "Update one Player shootoffScore by id.",
                 "consumes": [
                     "application/json"
                 ],
@@ -4666,7 +4681,7 @@ const docTemplate = `{
                 "tags": [
                     "Player"
                 ],
-                "summary": "Update one Player shootoffScore by id",
+                "summary": "Update one Player shootoffScore by id.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -4687,7 +4702,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "success, show player info",
+                        "description": "success, return player info",
                         "schema": {
                             "allOf": [
                                 {
@@ -4714,7 +4729,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "internal db error for updating player shootoffScore, or get player info",
+                        "description": "internal db error for updating player shootoffScore / get player info",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -4724,7 +4739,7 @@ const docTemplate = `{
         },
         "/player/totalscore/{id}": {
             "put": {
-                "description": "Update one Player total score by id",
+                "description": "Update one Player total score by id.",
                 "consumes": [
                     "application/json"
                 ],
@@ -4734,7 +4749,7 @@ const docTemplate = `{
                 "tags": [
                     "Player"
                 ],
-                "summary": "Update one Player total score by id",
+                "summary": "Update one Player total score by id.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -4783,14 +4798,14 @@ const docTemplate = `{
         },
         "/player/{id}": {
             "get": {
-                "description": "Get one Player without other data by id",
+                "description": "Get one Player without other data by id.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Player"
                 ],
-                "summary": "Show one Player info without other data",
+                "summary": "Show one Player info without other data.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -4802,7 +4817,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "success, but no rounds, player sets",
+                        "description": "success, return player without rounds, player sets",
                         "schema": {
                             "allOf": [
                                 {
@@ -4829,7 +4844,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "internal db error",
+                        "description": "internal db error / Get player",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -4837,14 +4852,14 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Delete one Player by id, delete related round, roundend, roundscore data, and playerNum minus one in lane",
+                "description": "Delete one Player by id, delete related round, roundend, roundscore data, and playerNum minus one in lane.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Player"
                 ],
-                "summary": "Delete one Player by id",
+                "summary": "Delete one Player by id.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -4878,14 +4893,14 @@ const docTemplate = `{
         },
         "/player/{participantid}": {
             "post": {
-                "description": "Create one Player by participant id\nCreate related rounds by laneNum of competition, create 6 roundscores for each 6 roundends, UnassignedLane playerNum ++",
+                "description": "Create one Player by participant id.\nCreate related rounds by laneNum of competition, create 6 roundscores for each 6 roundends, UnassignedLane playerNum ++.\nOrder is 0, TotalScore is 0, ShootOffScore is -1, Rank is 0.\nGroup is unassigned group, Lane is unassigned lane.\nWill copy data from participant, user, competition.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Player"
                 ],
-                "summary": "Create one Player by Participant ID",
+                "summary": "Create one Player by Participant ID.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -4897,7 +4912,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "success, show player info",
+                        "description": "success, return player info",
                         "schema": {
                             "allOf": [
                                 {
@@ -4924,7 +4939,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "internal db error to create player, round, roundend, roundscore",
+                        "description": "internal db error / create player / create round / create roundend / create roundscore",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }

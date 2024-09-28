@@ -280,6 +280,7 @@ func GetCompetitionsOfUser(context *gin.Context) {
 //	@Description	Post one new Competition data with new id.
 //	@Description	Create UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup.
 //	@Description	Add host as admin of competition, and return the new Competition data.
+//	@Description	RoundsNum and LanesNum will influence player post data, so cannot be changed.
 //	@Description	ZeroTime 0001-01-01T00:00:00+00:01
 //	@Tags			Competition
 //	@Accept			json
