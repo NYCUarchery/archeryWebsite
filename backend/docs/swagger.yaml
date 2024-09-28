@@ -357,6 +357,11 @@ definitions:
       type:
         type: integer
     type: object
+  endpoint.GetUserID.ID:
+    properties:
+      id:
+        type: integer
+    type: object
   endpoint.GroupData:
     properties:
       bow_type:
@@ -384,6 +389,19 @@ definitions:
       new_password:
         type: string
       original_password:
+        type: string
+    type: object
+  endpoint.ModifyInfo.ModifyUser:
+    properties:
+      email:
+        type: string
+      institution_id:
+        type: integer
+      overview:
+        type: string
+      real_name:
+        type: string
+      user_name:
         type: string
     type: object
   endpoint.NewInstitutionInfo:
@@ -4328,7 +4346,7 @@ paths:
       - Qualification
   /session:
     delete:
-      description: delete the session
+      description: Delete the session.
       produces:
       - application/json
       responses:
@@ -4342,7 +4360,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: get a session
+      description: Get a session.
       parameters:
       - description: user_name, password
         in: body
@@ -4354,7 +4372,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: already loginned
+          description: success / already loginned
           schema:
             $ref: '#/definitions/response.Response'
         "400":
@@ -4362,7 +4380,7 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorReceiveDataFormatResponse'
         "401":
-          description: incorrect password
+          description: user not found / incorrect password
           schema:
             $ref: '#/definitions/response.ErrorResponse'
       summary: login
@@ -4386,11 +4404,10 @@ paths:
       consumes:
       - application/json
       description: |-
-        add a user to db
-        no need to post id
-        username cannot be empty or repeated
-        password cannot be empty
-        email cannot be empty or repeated
+        Add a user to db.
+        Username cannot be empty or repeated.
+        Password cannot be empty.
+        Email cannot be empty or repeated.
       parameters:
       - description: nessary information for register
         in: body
@@ -4414,64 +4431,58 @@ paths:
           description: db error
           schema:
             $ref: '#/definitions/response.Response'
-      summary: register a user
+      summary: Register a user.
       tags:
       - User
   /user/{id}:
     get:
       consumes:
       - application/json
-      description: get a user's username, overview, and institution id
+      description: Get a user's username, overview, and institution id.
       parameters:
       - description: user's id
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: success
+          description: success, return user's info
           schema:
-            allOf:
-            - $ref: '#/definitions/response.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/database.User'
-              type: object
+            $ref: '#/definitions/database.User'
         "400":
-          description: empty/invalid user id
+          description: invalid user id
           schema:
             $ref: '#/definitions/response.Response'
         "404":
           description: no user found
           schema:
             $ref: '#/definitions/response.Response'
-      summary: get a user's information
+      summary: Get a user's information.
       tags:
       - User
     put:
       consumes:
       - application/json
       description: |-
-        modify username, realname, email, overview, and institution_id
-        cannot change other's info
-        cannot change password
-        username cannot be empty, repeated
-        email cannot be empty, repeated
+        Modify username, realname, email, overview, and institution_id.
+        Cannot change password.
+        Username cannot be empty, repeated.
+        Email cannot be empty, repeated.
       parameters:
       - description: user's id
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       - description: modified information
         in: body
         name: ModifyInfo
         required: true
         schema:
-          $ref: '#/definitions/database.User'
+          $ref: '#/definitions/endpoint.ModifyInfo.ModifyUser'
       produces:
       - application/json
       responses:
@@ -4484,32 +4495,31 @@ paths:
           schema:
             $ref: '#/definitions/response.Response'
         "403":
-          description: cannot change other's info | wrong original password
+          description: cannot change other's info
           schema:
             $ref: '#/definitions/response.Response'
         "500":
           description: internal db error
           schema:
             $ref: '#/definitions/response.Response'
-      summary: modify user's information
+      summary: Modify user's information.
       tags:
       - User
   /user/me:
     get:
-      description: get my uid in the session
+      description: Get my uid in the session.
       produces:
       - application/json
       responses:
         "200":
-          description: success
+          description: success, return my uid
           schema:
-            allOf:
-            - $ref: '#/definitions/response.Response'
-            - properties:
-                id:
-                  type: integer
-              type: object
-      summary: get my uid
+            $ref: '#/definitions/endpoint.GetUserID.ID'
+        "401":
+          description: require login
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Get my uid.
       tags:
       - User
   /user/password/{id}:
@@ -4517,18 +4527,16 @@ paths:
       consumes:
       - application/json
       description: |-
-        modify user's password
-        cannot change other's password
-        original password cannot be empty
-        new password cannot be empty
-        original password must be correct
-        new password cannot be the same as original password
+        Modify user's password.
+        Original/New password cannot be empty.
+        Original password must be correct.
+        New password cannot be the same as original password.
       parameters:
       - description: user's id
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       - description: modified password information
         in: body
         name: ModifyInfo
@@ -4555,7 +4563,7 @@ paths:
           description: internal db error
           schema:
             $ref: '#/definitions/response.Response'
-      summary: modify user's password
+      summary: Modify user's password.
       tags:
       - User
 swagger: "2.0"

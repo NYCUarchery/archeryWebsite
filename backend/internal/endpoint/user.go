@@ -29,12 +29,11 @@ type ModifyAccountPasswordInfo struct {
 
 // Register godoc
 //
-//	@Summary		register a user
-//	@Description	add a user to db
-//	@Description	no need to post id
-//	@Description	username cannot be empty or repeated
-//	@Description	password cannot be empty
-//	@Description	email cannot be empty or repeated
+//	@Summary		Register a user.
+//	@Description	Add a user to db.
+//	@Description	Username cannot be empty or repeated.
+//	@Description	Password cannot be empty.
+//	@Description	Email cannot be empty or repeated.
 //	@Tags			User
 //	@Accept			json
 //	@Produce		json
@@ -99,23 +98,30 @@ func Register(c *gin.Context) {
 
 // ModifyInfo godoc
 //
-//	@Summary		modify user's information
-//	@Description	modify username, realname, email, overview, and institution_id
-//	@Description	cannot change other's info
-//	@Description	cannot change password
-//	@Description	username cannot be empty, repeated
-//	@Description	email cannot be empty, repeated
+//	@Summary		Modify user's information.
+//	@Description	Modify username, realname, email, overview, and institution_id.
+//	@Description	Cannot change password.
+//	@Description	Username cannot be empty, repeated.
+//	@Description	Email cannot be empty, repeated.
 //	@Tags			User
 //	@Accept			json
 //	@Produce		json
-//	@Param			id			path		string				true	"user's id"
-//	@Param			ModifyInfo	body		database.User		true	"modified information"
-//	@Success		200			{object}	response.Response	"success"
-//	@Failure		400			{object}	response.Response	"empty/invalid user id | invalid modified information"
-//	@Failure		403			{object}	response.Response	"cannot change other's info | wrong original password"
-//	@Failure		500			{object}	response.Response	"internal db error"
+//	@Param			id			path		int								true	"user's id"
+//	@Param			ModifyInfo	body		endpoint.ModifyInfo.ModifyUser	true	"modified information"
+//	@Success		200			{object}	response.Response				"success"
+//	@Failure		400			{object}	response.Response				"empty/invalid user id | invalid modified information"
+//	@Failure		403			{object}	response.Response				"cannot change other's info"
+//	@Failure		500			{object}	response.Response				"internal db error"
 //	@Router			/user/{id} [put]
 func ModifyInfo(c *gin.Context) {
+	type ModifyUser struct {
+		UserName      string `json:"user_name"`
+		RealName      string `json:"real_name"`
+		Email         string `json:"email"`
+		InstitutionID uint   `json:"institution_id"`
+		Overview      string `json:"overview"`
+	}
+	_ = ModifyUser{}
 	// check id
 	userId := Convert2uint(c, "id")
 	if response.ErrorIdTest(c, userId, database.GetUserIsExist(userId), "user id when modify") {
@@ -170,17 +176,15 @@ func ModifyInfo(c *gin.Context) {
 
 // ModifyPassword godoc
 //
-//	@Summary		modify user's password
-//	@Description	modify user's password
-//	@Description	cannot change other's password
-//	@Description	original password cannot be empty
-//	@Description	new password cannot be empty
-//	@Description	original password must be correct
-//	@Description	new password cannot be the same as original password
+//	@Summary		Modify user's password.
+//	@Description	Modify user's password.
+//	@Description	Original/New password cannot be empty.
+//	@Description	Original password must be correct.
+//	@Description	New password cannot be the same as original password.
 //	@Tags			User
 //	@Accept			json
 //	@Produce		json
-//	@Param			id			path		string								true	"user's id"
+//	@Param			id			path		int									true	"user's id"
 //	@Param			ModifyInfo	body		endpoint.ModifyAccountPasswordInfo	true	"modified password information"
 //	@Success		200			{object}	response.Response					"success"
 //	@Failure		400			{object}	response.Response					"empty/invalid user id | invalid modified information"
@@ -232,28 +236,33 @@ func ModifyPassword(c *gin.Context) {
 
 // GetUserID godoc
 //
-//	@Summary		get my uid
-//	@Description	get my uid in the session
+//	@Summary		Get my uid.
+//	@Description	Get my uid in the session.
 //	@Tags			User
 //	@Produce		json
-//	@Success		200	{object}	response.Response{id=uint}	"success"
+//	@Success		200	{object}	endpoint.GetUserID.ID	"success, return my uid"
+//	@Failure		401	{object}	response.Response		"require login"
 //	@Router			/user/me [get]
 func GetUserID(c *gin.Context) {
+	type ID struct {
+		ID uint `json:"id"`
+	}
+	_ = ID{}
 	id := pkg.QuerySession(c, "id")
 	c.JSON(http.StatusOK, gin.H{"id": id})
 }
 
 // UserInfo godoc
 //
-//	@Summary		get a user's information
-//	@Description	get a user's username, overview, and institution id
+//	@Summary		Get a user's information.
+//	@Description	Get a user's username, overview, and institution id.
 //	@Tags			User
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		string									true	"user's id"
-//	@Success		200	{object}	response.Response{data=database.User}	"success"
-//	@Failure		400	{object}	response.Response						"empty/invalid user id"
-//	@Failure		404	{object}	response.Response						"no user found"
+//	@Param			id	path		int					true	"user's id"
+//	@Success		200	{object}	database.User		"success, return user's info"
+//	@Failure		400	{object}	response.Response	"invalid user id"
+//	@Failure		404	{object}	response.Response	"no user found"
 //	@Router			/user/{id} [get]
 func UserInfo(c *gin.Context) {
 	uidstr := c.Param("id")
@@ -274,8 +283,5 @@ func UserInfo(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"result": "success",
-		"data":   user,
-	})
+	c.JSON(http.StatusOK, user)
 }

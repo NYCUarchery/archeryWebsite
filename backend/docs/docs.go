@@ -5588,7 +5588,7 @@ const docTemplate = `{
         },
         "/session": {
             "post": {
-                "description": "get a session",
+                "description": "Get a session.",
                 "consumes": [
                     "application/json"
                 ],
@@ -5612,7 +5612,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "already loginned",
+                        "description": "success / already loginned",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }
@@ -5624,7 +5624,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "incorrect password",
+                        "description": "user not found / incorrect password",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
@@ -5632,7 +5632,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "delete the session",
+                "description": "Delete the session.",
                 "produces": [
                     "application/json"
                 ],
@@ -5672,7 +5672,7 @@ const docTemplate = `{
         },
         "/user": {
             "post": {
-                "description": "add a user to db\nno need to post id\nusername cannot be empty or repeated\npassword cannot be empty\nemail cannot be empty or repeated",
+                "description": "Add a user to db.\nUsername cannot be empty or repeated.\nPassword cannot be empty.\nEmail cannot be empty or repeated.",
                 "consumes": [
                     "application/json"
                 ],
@@ -5682,7 +5682,7 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "register a user",
+                "summary": "Register a user.",
                 "parameters": [
                     {
                         "description": "nessary information for register",
@@ -5718,31 +5718,25 @@ const docTemplate = `{
         },
         "/user/me": {
             "get": {
-                "description": "get my uid in the session",
+                "description": "Get my uid in the session.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "User"
                 ],
-                "summary": "get my uid",
+                "summary": "Get my uid.",
                 "responses": {
                     "200": {
-                        "description": "success",
+                        "description": "success, return my uid",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/response.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "id": {
-                                            "type": "integer"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/endpoint.GetUserID.ID"
+                        }
+                    },
+                    "401": {
+                        "description": "require login",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
                         }
                     }
                 }
@@ -5750,7 +5744,7 @@ const docTemplate = `{
         },
         "/user/password/{id}": {
             "put": {
-                "description": "modify user's password\ncannot change other's password\noriginal password cannot be empty\nnew password cannot be empty\noriginal password must be correct\nnew password cannot be the same as original password",
+                "description": "Modify user's password.\nOriginal/New password cannot be empty.\nOriginal password must be correct.\nNew password cannot be the same as original password.",
                 "consumes": [
                     "application/json"
                 ],
@@ -5760,10 +5754,10 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "modify user's password",
+                "summary": "Modify user's password.",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "user's id",
                         "name": "id",
                         "in": "path",
@@ -5809,7 +5803,7 @@ const docTemplate = `{
         },
         "/user/{id}": {
             "get": {
-                "description": "get a user's username, overview, and institution id",
+                "description": "Get a user's username, overview, and institution id.",
                 "consumes": [
                     "application/json"
                 ],
@@ -5819,10 +5813,10 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "get a user's information",
+                "summary": "Get a user's information.",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "user's id",
                         "name": "id",
                         "in": "path",
@@ -5831,25 +5825,13 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "success",
+                        "description": "success, return user's info",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/response.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/database.User"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/database.User"
                         }
                     },
                     "400": {
-                        "description": "empty/invalid user id",
+                        "description": "invalid user id",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }
@@ -5863,7 +5845,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "modify username, realname, email, overview, and institution_id\ncannot change other's info\ncannot change password\nusername cannot be empty, repeated\nemail cannot be empty, repeated",
+                "description": "Modify username, realname, email, overview, and institution_id.\nCannot change password.\nUsername cannot be empty, repeated.\nEmail cannot be empty, repeated.",
                 "consumes": [
                     "application/json"
                 ],
@@ -5873,10 +5855,10 @@ const docTemplate = `{
                 "tags": [
                     "User"
                 ],
-                "summary": "modify user's information",
+                "summary": "Modify user's information.",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "user's id",
                         "name": "id",
                         "in": "path",
@@ -5888,7 +5870,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/database.User"
+                            "$ref": "#/definitions/endpoint.ModifyInfo.ModifyUser"
                         }
                     }
                 ],
@@ -5906,7 +5888,7 @@ const docTemplate = `{
                         }
                     },
                     "403": {
-                        "description": "cannot change other's info | wrong original password",
+                        "description": "cannot change other's info",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }
@@ -6469,6 +6451,14 @@ const docTemplate = `{
                 }
             }
         },
+        "endpoint.GetUserID.ID": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
         "endpoint.GroupData": {
             "type": "object",
             "properties": {
@@ -6510,6 +6500,26 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "original_password": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoint.ModifyInfo.ModifyUser": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "institution_id": {
+                    "type": "integer"
+                },
+                "overview": {
+                    "type": "string"
+                },
+                "real_name": {
+                    "type": "string"
+                },
+                "user_name": {
                     "type": "string"
                 }
             }

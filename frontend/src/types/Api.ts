@@ -204,6 +204,10 @@ export interface EndpointGetPlayerSetsByMedalByEliminationIdPlayerSetData {
   type?: number;
 }
 
+export interface EndpointGetUserIDID {
+  id?: number;
+}
+
 export interface EndpointGroupData {
   bow_type?: string;
   elimination_data?: EndpointEliminationData[];
@@ -220,6 +224,14 @@ export interface EndpointLoginInfo {
 export interface EndpointModifyAccountPasswordInfo {
   new_password?: string;
   original_password?: string;
+}
+
+export interface EndpointModifyInfoModifyUser {
+  email?: string;
+  institution_id?: number;
+  overview?: string;
+  real_name?: string;
+  user_name?: string;
 }
 
 export interface EndpointNewInstitutionInfo {
@@ -2682,7 +2694,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
   };
   session = {
     /**
-     * @description get a session
+     * @description Get a session.
      *
      * @tags Session
      * @name SessionCreate
@@ -2700,7 +2712,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description delete the session
+     * @description Delete the session.
      *
      * @tags Session
      * @name SessionDelete
@@ -2734,11 +2746,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
   };
   user = {
     /**
-     * @description add a user to db no need to post id username cannot be empty or repeated password cannot be empty email cannot be empty or repeated
+     * @description Add a user to db. Username cannot be empty or repeated. Password cannot be empty. Email cannot be empty or repeated.
      *
      * @tags User
      * @name UserCreate
-     * @summary register a user
+     * @summary Register a user.
      * @request POST:/user
      */
     userCreate: (AccountInfo: EndpointAccountInfo, params: RequestParams = {}) =>
@@ -2752,20 +2764,15 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description get my uid in the session
+     * @description Get my uid in the session.
      *
      * @tags User
      * @name GetUser
-     * @summary get my uid
+     * @summary Get my uid.
      * @request GET:/user/me
      */
     getUser: (params: RequestParams = {}) =>
-      this.request<
-        ResponseResponse & {
-          id?: number;
-        },
-        any
-      >({
+      this.request<EndpointGetUserIDID, ResponseResponse>({
         path: `/user/me`,
         method: "GET",
         format: "json",
@@ -2773,14 +2780,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description modify user's password cannot change other's password original password cannot be empty new password cannot be empty original password must be correct new password cannot be the same as original password
+     * @description Modify user's password. Original/New password cannot be empty. Original password must be correct. New password cannot be the same as original password.
      *
      * @tags User
      * @name PasswordUpdate
-     * @summary modify user's password
+     * @summary Modify user's password.
      * @request PUT:/user/password/{id}
      */
-    passwordUpdate: (id: string, ModifyInfo: EndpointModifyAccountPasswordInfo, params: RequestParams = {}) =>
+    passwordUpdate: (id: number, ModifyInfo: EndpointModifyAccountPasswordInfo, params: RequestParams = {}) =>
       this.request<ResponseResponse, ResponseResponse>({
         path: `/user/password/${id}`,
         method: "PUT",
@@ -2791,20 +2798,15 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description get a user's username, overview, and institution id
+     * @description Get a user's username, overview, and institution id.
      *
      * @tags User
      * @name UserDetail
-     * @summary get a user's information
+     * @summary Get a user's information.
      * @request GET:/user/{id}
      */
-    userDetail: (id: string, params: RequestParams = {}) =>
-      this.request<
-        ResponseResponse & {
-          data?: DatabaseUser;
-        },
-        ResponseResponse
-      >({
+    userDetail: (id: number, params: RequestParams = {}) =>
+      this.request<DatabaseUser, ResponseResponse>({
         path: `/user/${id}`,
         method: "GET",
         type: ContentType.Json,
@@ -2813,14 +2815,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description modify username, realname, email, overview, and institution_id cannot change other's info cannot change password username cannot be empty, repeated email cannot be empty, repeated
+     * @description Modify username, realname, email, overview, and institution_id. Cannot change password. Username cannot be empty, repeated. Email cannot be empty, repeated.
      *
      * @tags User
      * @name UserUpdate
-     * @summary modify user's information
+     * @summary Modify user's information.
      * @request PUT:/user/{id}
      */
-    userUpdate: (id: string, ModifyInfo: DatabaseUser, params: RequestParams = {}) =>
+    userUpdate: (id: number, ModifyInfo: EndpointModifyInfoModifyUser, params: RequestParams = {}) =>
       this.request<ResponseResponse, ResponseResponse>({
         path: `/user/${id}`,
         method: "PUT",
