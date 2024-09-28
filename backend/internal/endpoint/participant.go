@@ -211,7 +211,7 @@ func GetParticipantByCompetitionIdUserId(context *gin.Context) {
 //	@Success		200			{object}	database.Participant						"success, return updated participant"
 //	@Failure		400			{object}	response.ErrorIdResponse					"invalid participant id"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse			"internal db error / Update Participant"
-//	@Router			/participant/whole/{id} [put]
+//	@Router			/participant/{id} [put]
 func PutParticipant(context *gin.Context) {
 	type PutParticipantData struct {
 		Role   string `json:"role"`

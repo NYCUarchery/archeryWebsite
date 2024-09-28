@@ -125,7 +125,7 @@ const docTemplate = `{
             }
         },
         "/competition/current-phase/minus/{id}": {
-            "put": {
+            "patch": {
                 "description": "Update one Competition currentPhase -- by id.",
                 "tags": [
                     "Competition"
@@ -163,7 +163,7 @@ const docTemplate = `{
             }
         },
         "/competition/current-phase/plus/{id}": {
-            "put": {
+            "patch": {
                 "description": "Update one Competition currentPhase ++ by id.",
                 "tags": [
                     "Competition"
@@ -267,7 +267,7 @@ const docTemplate = `{
             }
         },
         "/competition/elimination-isactive/{id}": {
-            "put": {
+            "patch": {
                 "description": "Update one Competition Elimination Active to be true by id.\nCannot change to false, only can change to true.",
                 "tags": [
                     "Competition"
@@ -512,7 +512,7 @@ const docTemplate = `{
             }
         },
         "/competition/mixed-elimination-isactive/{id}": {
-            "put": {
+            "patch": {
                 "description": "Update one Competition Mixed Elimination Active to be true by id.\nCannot change to false, only can change to true.\ncreate all mixed elimination for groups",
                 "tags": [
                     "Competition"
@@ -612,7 +612,7 @@ const docTemplate = `{
             }
         },
         "/competition/qualification-current-end/minus/{id}": {
-            "put": {
+            "patch": {
                 "description": "Update one Competition Qualification currentEnd -- by id.",
                 "tags": [
                     "Competition"
@@ -650,7 +650,7 @@ const docTemplate = `{
             }
         },
         "/competition/qualification-current-end/plus/{id}": {
-            "put": {
+            "patch": {
                 "description": "Update one Competition Qualification currentEnd ++ by id.",
                 "tags": [
                     "Competition"
@@ -688,7 +688,7 @@ const docTemplate = `{
             }
         },
         "/competition/qualification-isactive/{id}": {
-            "put": {
+            "patch": {
                 "description": "Update one Competition Qualification Active to be true by id.\nCannot change to false, only can change to true.",
                 "tags": [
                     "Competition"
@@ -732,7 +732,7 @@ const docTemplate = `{
             }
         },
         "/competition/refresh/groups/players/playertotalscore/{id}": {
-            "put": {
+            "patch": {
                 "description": "Refresh competition player total score by competition id.",
                 "tags": [
                     "Competition"
@@ -770,7 +770,7 @@ const docTemplate = `{
             }
         },
         "/competition/refresh/groups/players/rank/{id}": {
-            "put": {
+            "patch": {
                 "description": "Refresh all player ranking of different groups in one Competition.",
                 "consumes": [
                     "application/json"
@@ -814,7 +814,7 @@ const docTemplate = `{
             }
         },
         "/competition/team-elimination-isactive/{id}": {
-            "put": {
+            "patch": {
                 "description": "Update one Competition Team Elimination Active to be true by id.\nCannot change to false, only can change to true.\nCreate all team elimination for groups.",
                 "tags": [
                     "Competition"
@@ -930,7 +930,61 @@ const docTemplate = `{
                 }
             }
         },
-        "/competition/whole/{id}": {
+        "/competition/{id}": {
+            "get": {
+                "description": "Get one Competition by id without groups and participants.\nzeroTime 0001-01-01T00:00:00+00:01",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "Show one Competition without groups and participants.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success, but groups and participants are empty",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Competition"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "groups": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        },
+                                        "participants": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "invalid competition id parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error for getting competition",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            },
             "put": {
                 "description": "Put whole new Competition and overwrite by the id.\nAllow to change title, subtitle, startTime, endTime, script, currentPhase, qualificationCurrentEnd.\nCannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId, hostId, currentPhase, qualificationCurrentEnd.\nzeroTime 0001-01-01T00:00:00+00:01",
                 "consumes": [
@@ -997,62 +1051,6 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "internal db error / Get Competition / Update Competition",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/competition/{id}": {
-            "get": {
-                "description": "Get one Competition by id without groups and participants.\nzeroTime 0001-01-01T00:00:00+00:01",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "Show one Competition without groups and participants.",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "success, but groups and participants are empty",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/database.Competition"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "groups": {
-                                            "$ref": "#/definitions/response.Nill"
-                                        },
-                                        "participants": {
-                                            "$ref": "#/definitions/response.Nill"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "invalid competition id parameter",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorIdResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "internal db error for getting competition",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -1164,7 +1162,7 @@ const docTemplate = `{
             }
         },
         "/elimination/currentend/minus/{id}": {
-            "put": {
+            "patch": {
                 "description": "Update one Elimination current end minus one by id",
                 "tags": [
                     "Elimination"
@@ -1202,7 +1200,7 @@ const docTemplate = `{
             }
         },
         "/elimination/currentend/plus/{id}": {
-            "put": {
+            "patch": {
                 "description": "Update one Elimination current end plus one by id",
                 "tags": [
                     "Elimination"
@@ -1240,7 +1238,7 @@ const docTemplate = `{
             }
         },
         "/elimination/currentstage/minus/{id}": {
-            "put": {
+            "patch": {
                 "description": "Update one Elimination current stage minus one by id",
                 "tags": [
                     "Elimination"
@@ -1278,7 +1276,7 @@ const docTemplate = `{
             }
         },
         "/elimination/currentstage/plus/{id}": {
-            "put": {
+            "patch": {
                 "description": "Update one Elimination current stage plus one by id",
                 "tags": [
                     "Elimination"
@@ -1871,7 +1869,7 @@ const docTemplate = `{
             }
         },
         "/groupinfo/ordering": {
-            "put": {
+            "patch": {
                 "description": "Put competition_id and group_ids to update GroupInfos Indices under the same Competition\nGroupIds cannot include UnassignedGroupId\nGroupIds length must be equal to Competition group_num",
                 "consumes": [
                     "application/json"
@@ -2011,7 +2009,58 @@ const docTemplate = `{
                 }
             }
         },
-        "/groupinfo/whole/{id}": {
+        "/groupinfo/{id}": {
+            "get": {
+                "description": "Get only one GroupInfo by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GroupInfo"
+                ],
+                "summary": "Show only one GroupInfo",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "GroupInfo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success, get GroupInfo by id without related data",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Group"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "players": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "invalid GroupInfo ID, may not exist",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "database error for Get GroupInfo",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            },
             "put": {
                 "description": "Put whole new GroupInfo and overwrite with the id\nCannot overwrite CompetitionId\nCannot overwrite UnassignedGroup",
                 "consumes": [
@@ -2069,59 +2118,6 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "database error for Update GroupInfo, Get GroupInfo",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/groupinfo/{id}": {
-            "get": {
-                "description": "Get only one GroupInfo by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "GroupInfo"
-                ],
-                "summary": "Show only one GroupInfo",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "GroupInfo ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "success, get GroupInfo by id without related data",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/database.Group"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "players": {
-                                            "$ref": "#/definitions/response.Nill"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "invalid GroupInfo ID, may not exist",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorIdResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "database error for Get GroupInfo",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -2505,7 +2501,7 @@ const docTemplate = `{
             }
         },
         "/matchresult/iswinner/{id}": {
-            "put": {
+            "patch": {
                 "description": "Update one MatchResult isWinner by id",
                 "consumes": [
                     "application/json"
@@ -2555,7 +2551,7 @@ const docTemplate = `{
             }
         },
         "/matchresult/lanenumber/{id}": {
-            "put": {
+            "patch": {
                 "description": "Update one MatchResult laneNumber by id",
                 "consumes": [
                     "application/json"
@@ -2651,7 +2647,7 @@ const docTemplate = `{
             }
         },
         "/matchresult/matchend/isconfirmed/{id}": {
-            "put": {
+            "patch": {
                 "description": "Update one MatchEnd isConfirmed by id",
                 "consumes": [
                     "application/json"
@@ -2701,7 +2697,7 @@ const docTemplate = `{
             }
         },
         "/matchresult/matchend/scores/{id}": {
-            "put": {
+            "patch": {
                 "description": "Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids\nMatchScore ids and scores must be the same length",
                 "consumes": [
                     "application/json"
@@ -2751,7 +2747,7 @@ const docTemplate = `{
             }
         },
         "/matchresult/matchend/totalscore/{id}": {
-            "put": {
+            "patch": {
                 "description": "Update one MatchEnd totalScores by id",
                 "consumes": [
                     "application/json"
@@ -2801,7 +2797,7 @@ const docTemplate = `{
             }
         },
         "/matchresult/matchscore/score/{id}": {
-            "put": {
+            "patch": {
                 "description": "Update one MatchScore score by id\nAlso update related MatchEnd totalScores",
                 "consumes": [
                     "application/json"
@@ -2916,7 +2912,7 @@ const docTemplate = `{
             }
         },
         "/matchresult/shootoffscore/{id}": {
-            "put": {
+            "patch": {
                 "description": "Update one MatchResult shootOffScore by id",
                 "consumes": [
                     "application/json"
@@ -2966,7 +2962,7 @@ const docTemplate = `{
             }
         },
         "/matchresult/totalpoints/{id}": {
-            "put": {
+            "patch": {
                 "description": "Update one MatchResult totalPoints by id",
                 "consumes": [
                     "application/json"
@@ -3164,7 +3160,7 @@ const docTemplate = `{
             }
         },
         "/medal/playersetid/{id}": {
-            "put": {
+            "patch": {
                 "description": "Update medal's player set id by id.",
                 "produces": [
                     "application/json"
@@ -3292,7 +3288,7 @@ const docTemplate = `{
             }
         },
         "/oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm}": {
-            "put": {
+            "patch": {
                 "description": "Put one OldLaneInfo confirm by index and id",
                 "consumes": [
                     "application/json"
@@ -3363,7 +3359,7 @@ const docTemplate = `{
             }
         },
         "/oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score}": {
-            "put": {
+            "patch": {
                 "description": "Put one OldLaneInfo score by index and id",
                 "consumes": [
                     "application/json"
@@ -3440,7 +3436,40 @@ const docTemplate = `{
                 }
             }
         },
-        "/oldlaneinfo/whole/{id}": {
+        "/oldlaneinfo/{id}": {
+            "get": {
+                "description": "Get one OldLaneInfo by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OldLaneInfo"
+                ],
+                "summary": "Show one OldLaneInfo",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "OldLaneInfo ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
             "put": {
                 "description": "Put whole new OldLaneInfo and overwrite with the id",
                 "consumes": [
@@ -3492,41 +3521,6 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
-                        "schema": {
-                            "type": "string"
-                        }
-                    }
-                }
-            }
-        },
-        "/oldlaneinfo/{id}": {
-            "get": {
-                "description": "Get one OldLaneInfo by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "OldLaneInfo"
-                ],
-                "summary": "Show one OldLaneInfo",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "OldLaneInfo ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
                         "schema": {
                             "type": "string"
                         }
@@ -3758,7 +3752,46 @@ const docTemplate = `{
                 }
             }
         },
-        "/participant/whole/{id}": {
+        "/participant/{id}": {
+            "get": {
+                "description": "Get One Participant By ID.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Participant"
+                ],
+                "summary": "Show One Participant By ID.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Participant ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success, return participant",
+                        "schema": {
+                            "$ref": "#/definitions/database.Participant"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid participant id",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "db error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            },
             "put": {
                 "description": "Put whole new Participant.",
                 "consumes": [
@@ -3804,47 +3837,6 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "internal db error / Update Participant",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/participant/{id}": {
-            "get": {
-                "description": "Get One Participant By ID.",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Participant"
-                ],
-                "summary": "Show One Participant By ID.",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Participant ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "success, return participant",
-                        "schema": {
-                            "$ref": "#/definitions/database.Participant"
-                        }
-                    },
-                    "400": {
-                        "description": "invalid participant id",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorIdResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "db error",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -5469,59 +5461,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/qualification/whole/{id}": {
-            "put": {
-                "description": "Put whole new Qualification and overwrite with the id, and update lanes below it ,but cannot replace groupid.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Qualification"
-                ],
-                "summary": "Update one Qualification.",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Qualification ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Qualification",
-                        "name": "Qualification",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/endpoint.PutQualificationByID.QualificationPutData"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "success, return updated Qualification",
-                        "schema": {
-                            "$ref": "#/definitions/database.Qualification"
-                        }
-                    },
-                    "400": {
-                        "description": "invalid qualification id / invalid lane id / lane is already occupied / invalid start or end lane number / Qualification is belong to UnassignedGroup, when update Qualification",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorIdResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "internal db error / Update Lane Qualification Id / Update Qualification / Get Only Qualification",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/qualification/{id}": {
             "get": {
                 "description": "Get one Qualification without Lanes by id.",
@@ -5568,6 +5507,57 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "internall db error / Get Only Qualification",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Put whole new Qualification and overwrite with the id, and update lanes below it ,but cannot replace groupid.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Qualification"
+                ],
+                "summary": "Update one Qualification.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Qualification ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Qualification",
+                        "name": "Qualification",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.PutQualificationByID.QualificationPutData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success, return updated Qualification",
+                        "schema": {
+                            "$ref": "#/definitions/database.Qualification"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid qualification id / invalid lane id / lane is already occupied / invalid start or end lane number / Qualification is belong to UnassignedGroup, when update Qualification",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error / Update Lane Qualification Id / Update Qualification / Get Only Qualification",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -5732,7 +5722,7 @@ const docTemplate = `{
             }
         },
         "/user/password/{id}": {
-            "put": {
+            "patch": {
                 "description": "Modify user's password.\nOriginal/New password cannot be empty.\nOriginal password must be correct.\nNew password cannot be the same as original password.",
                 "consumes": [
                     "application/json"

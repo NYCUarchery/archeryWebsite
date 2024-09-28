@@ -180,7 +180,7 @@ func PostUnassignedGroupInfo(context *gin.Context, competitionId uint) (bool, ui
 //	@Success		200			{object}	database.Group{players=response.Nill}	"success, return new updated GroupInfo data"
 //	@Failure		400			{object}	response.ErrorIdResponse				"invalid GroupInfo ID, may not exist, cannot update UnassignedGroup"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse		"database error for Update GroupInfo, Get GroupInfo"
-//	@Router			/groupinfo/whole/{id} [put]
+//	@Router			/groupinfo/{id} [put]
 func PutGroupInfo(context *gin.Context) {
 	type GroupData struct {
 		GroupName  string `json:"group_name"`
@@ -240,7 +240,7 @@ func PutGroupInfo(context *gin.Context) {
 //	@Success		200					{object}	database.Competition{groups=database.Group{players=response.Nill},participants=response.Nill}	"success, return new updated Competition data"
 //	@Failure		400					{object}	response.ErrorIdResponse																		"invalid Competition ID, group id, may not exist"
 //	@Failure		500					{object}	response.ErrorInternalErrorResponse																"database error for Update GroupInfo Index, Get Competition"
-//	@Router			/groupinfo/ordering [put]
+//	@Router			/groupinfo/ordering [patch]
 func PutGroupInfoOrdering(context *gin.Context) {
 	var idArray groupIdsForReorder
 	err := context.BindJSON(&idArray)

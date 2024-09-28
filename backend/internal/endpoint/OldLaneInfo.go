@@ -88,7 +88,7 @@ func PostOldLaneInfo(context *gin.Context) {
 //	@Failure		400			string	string
 //	@Failure		404			string	string
 //	@Failure		500			string	string
-//	@Router			/oldlaneinfo/whole/{id} [put]
+//	@Router			/oldlaneinfo/{id} [put]
 func PutOldLaneInfo(context *gin.Context) {
 	data := database.LaneData{}
 	err := context.BindJSON(&data)
@@ -121,7 +121,7 @@ func PutOldLaneInfo(context *gin.Context) {
 //	@Failure		400			string	string
 //	@Failure		404			string	string
 //	@Failure		500			string	string
-//	@Router			/oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score} [put]
+//	@Router			/oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score} [patch]
 func PutOldLaneScore(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	stageindex := Convert2int(context, "stageindex")
@@ -158,7 +158,7 @@ func PutOldLaneScore(context *gin.Context) {
 //	@Failure		400			string	string
 //	@Failure		404			string	string
 //	@Failure		500			string	string
-//	@Router			/oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm} [put]
+//	@Router			/oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm} [patch]
 func PutOldLaneConfirm(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	stageindex := Convert2int(context, "stageindex")

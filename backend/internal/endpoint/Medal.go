@@ -90,7 +90,7 @@ func GetMedalInfoByEliminationId(context *gin.Context) {
 //	@Success		200			{object}	nil												"success, return nil"
 //	@Failure		400			{object}	response.ErrorIdResponse						"invalid medal id / invalid playerset id / elimination id of medal and playerset is not same"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse				"internal db error / Get Medal By Id / Get Player Set By Id / Update Medal PLayer Set Id"
-//	@Router			/medal/playersetid/{id} [put]
+//	@Router			/medal/playersetid/{id} [patch]
 func PutMedalPlayerSetIdById(context *gin.Context) {
 	type RequestBody struct {
 		PlayerSetId uint `json:"player_set_id"`

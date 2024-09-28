@@ -862,8 +862,58 @@ paths:
       summary: Show one Competition without groups and participants.
       tags:
       - Competition
-  /competition/current-phase/minus/{id}:
     put:
+      consumes:
+      - application/json
+      description: |-
+        Put whole new Competition and overwrite by the id.
+        Allow to change title, subtitle, startTime, endTime, script, currentPhase, qualificationCurrentEnd.
+        Cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId, hostId, currentPhase, qualificationCurrentEnd.
+        zeroTime 0001-01-01T00:00:00+00:01
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Competition
+        in: body
+        name: Competition
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.PutCompetition.CompetitionPutData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success, return modified competition data
+          schema:
+            allOf:
+            - $ref: '#/definitions/database.Competition'
+            - properties:
+                groups:
+                  $ref: '#/definitions/response.Nill'
+                participants:
+                  $ref: '#/definitions/response.Nill'
+              type: object
+        "204":
+          description: success, but no change
+          schema:
+            $ref: '#/definitions/response.Nill'
+        "400":
+          description: invalid competition id parameter / When creating Competition,
+            startTime must <= endTime
+          schema:
+            $ref: '#/definitions/response.ErrorReceiveDataResponse'
+        "500":
+          description: internal db error / Get Competition / Update Competition
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: update one Competition
+      tags:
+      - Competition
+  /competition/current-phase/minus/{id}:
+    patch:
       description: Update one Competition currentPhase -- by id.
       parameters:
       - description: Competition ID
@@ -888,7 +938,7 @@ paths:
       tags:
       - Competition
   /competition/current-phase/plus/{id}:
-    put:
+    patch:
       description: Update one Competition currentPhase ++ by id.
       parameters:
       - description: Competition ID
@@ -958,7 +1008,7 @@ paths:
       tags:
       - Competition
   /competition/elimination-isactive/{id}:
-    put:
+    patch:
       description: |-
         Update one Competition Elimination Active to be true by id.
         Cannot change to false, only can change to true.
@@ -1110,7 +1160,7 @@ paths:
       tags:
       - Competition
   /competition/mixed-elimination-isactive/{id}:
-    put:
+    patch:
       description: |-
         Update one Competition Mixed Elimination Active to be true by id.
         Cannot change to false, only can change to true.
@@ -1178,7 +1228,7 @@ paths:
       tags:
       - Competition
   /competition/qualification-current-end/minus/{id}:
-    put:
+    patch:
       description: Update one Competition Qualification currentEnd -- by id.
       parameters:
       - description: Competition ID
@@ -1203,7 +1253,7 @@ paths:
       tags:
       - Competition
   /competition/qualification-current-end/plus/{id}:
-    put:
+    patch:
       description: Update one Competition Qualification currentEnd ++ by id.
       parameters:
       - description: Competition ID
@@ -1228,7 +1278,7 @@ paths:
       tags:
       - Competition
   /competition/qualification-isactive/{id}:
-    put:
+    patch:
       description: |-
         Update one Competition Qualification Active to be true by id.
         Cannot change to false, only can change to true.
@@ -1259,7 +1309,7 @@ paths:
       tags:
       - Competition
   /competition/refresh/groups/players/playertotalscore/{id}:
-    put:
+    patch:
       description: Refresh competition player total score by competition id.
       parameters:
       - description: Competition ID
@@ -1285,7 +1335,7 @@ paths:
       tags:
       - Competition
   /competition/refresh/groups/players/rank/{id}:
-    put:
+    patch:
       consumes:
       - application/json
       description: Refresh all player ranking of different groups in one Competition.
@@ -1316,7 +1366,7 @@ paths:
       tags:
       - Competition
   /competition/team-elimination-isactive/{id}:
-    put:
+    patch:
       description: |-
         Update one Competition Team Elimination Active to be true by id.
         Cannot change to false, only can change to true.
@@ -1397,57 +1447,6 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show recent Competitions dealing with User.
-      tags:
-      - Competition
-  /competition/whole/{id}:
-    put:
-      consumes:
-      - application/json
-      description: |-
-        Put whole new Competition and overwrite by the id.
-        Allow to change title, subtitle, startTime, endTime, script, currentPhase, qualificationCurrentEnd.
-        Cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId, hostId, currentPhase, qualificationCurrentEnd.
-        zeroTime 0001-01-01T00:00:00+00:01
-      parameters:
-      - description: Competition ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Competition
-        in: body
-        name: Competition
-        required: true
-        schema:
-          $ref: '#/definitions/endpoint.PutCompetition.CompetitionPutData'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: success, return modified competition data
-          schema:
-            allOf:
-            - $ref: '#/definitions/database.Competition'
-            - properties:
-                groups:
-                  $ref: '#/definitions/response.Nill'
-                participants:
-                  $ref: '#/definitions/response.Nill'
-              type: object
-        "204":
-          description: success, but no change
-          schema:
-            $ref: '#/definitions/response.Nill'
-        "400":
-          description: invalid competition id parameter / When creating Competition,
-            startTime must <= endTime
-          schema:
-            $ref: '#/definitions/response.ErrorReceiveDataResponse'
-        "500":
-          description: internal db error / Get Competition / Update Competition
-          schema:
-            $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: update one Competition
       tags:
       - Competition
   /elimination:
@@ -1554,7 +1553,7 @@ paths:
       tags:
       - Elimination
   /elimination/currentend/minus/{id}:
-    put:
+    patch:
       description: Update one Elimination current end minus one by id
       parameters:
       - description: Elimination ID
@@ -1579,7 +1578,7 @@ paths:
       tags:
       - Elimination
   /elimination/currentend/plus/{id}:
-    put:
+    patch:
       description: Update one Elimination current end plus one by id
       parameters:
       - description: Elimination ID
@@ -1604,7 +1603,7 @@ paths:
       tags:
       - Elimination
   /elimination/currentstage/minus/{id}:
-    put:
+    patch:
       description: Update one Elimination current stage minus one by id
       parameters:
       - description: Elimination ID
@@ -1629,7 +1628,7 @@ paths:
       tags:
       - Elimination
   /elimination/currentstage/plus/{id}:
-    put:
+    patch:
       description: Update one Elimination current stage plus one by id
       parameters:
       - description: Elimination ID
@@ -2010,8 +2009,50 @@ paths:
       summary: Show only one GroupInfo
       tags:
       - GroupInfo
-  /groupinfo/ordering:
     put:
+      consumes:
+      - application/json
+      description: |-
+        Put whole new GroupInfo and overwrite with the id
+        Cannot overwrite CompetitionId
+        Cannot overwrite UnassignedGroup
+      parameters:
+      - description: GroupInfo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: GroupInfo
+        in: body
+        name: GroupInfo
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.PutGroupInfo.GroupData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success, return new updated GroupInfo data
+          schema:
+            allOf:
+            - $ref: '#/definitions/database.Group'
+            - properties:
+                players:
+                  $ref: '#/definitions/response.Nill'
+              type: object
+        "400":
+          description: invalid GroupInfo ID, may not exist, cannot update UnassignedGroup
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: database error for Update GroupInfo, Get GroupInfo
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: update one GroupInfo
+      tags:
+      - GroupInfo
+  /groupinfo/ordering:
+    patch:
       consumes:
       - application/json
       description: |-
@@ -2092,49 +2133,6 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one GroupInfo with players
-      tags:
-      - GroupInfo
-  /groupinfo/whole/{id}:
-    put:
-      consumes:
-      - application/json
-      description: |-
-        Put whole new GroupInfo and overwrite with the id
-        Cannot overwrite CompetitionId
-        Cannot overwrite UnassignedGroup
-      parameters:
-      - description: GroupInfo ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: GroupInfo
-        in: body
-        name: GroupInfo
-        required: true
-        schema:
-          $ref: '#/definitions/endpoint.PutGroupInfo.GroupData'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: success, return new updated GroupInfo data
-          schema:
-            allOf:
-            - $ref: '#/definitions/database.Group'
-            - properties:
-                players:
-                  $ref: '#/definitions/response.Nill'
-              type: object
-        "400":
-          description: invalid GroupInfo ID, may not exist, cannot update UnassignedGroup
-          schema:
-            $ref: '#/definitions/response.ErrorIdResponse'
-        "500":
-          description: database error for Update GroupInfo, Get GroupInfo
-          schema:
-            $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: update one GroupInfo
       tags:
       - GroupInfo
   /institution:
@@ -2412,7 +2410,7 @@ paths:
       tags:
       - MatchResult
   /matchresult/iswinner/{id}:
-    put:
+    patch:
       consumes:
       - application/json
       description: Update one MatchResult isWinner by id
@@ -2445,7 +2443,7 @@ paths:
       tags:
       - MatchResult
   /matchresult/lanenumber/{id}:
-    put:
+    patch:
       consumes:
       - application/json
       description: Update one MatchResult laneNumber by id
@@ -2511,7 +2509,7 @@ paths:
       tags:
       - MatchEnd
   /matchresult/matchend/isconfirmed/{id}:
-    put:
+    patch:
       consumes:
       - application/json
       description: Update one MatchEnd isConfirmed by id
@@ -2544,7 +2542,7 @@ paths:
       tags:
       - MatchEnd
   /matchresult/matchend/scores/{id}:
-    put:
+    patch:
       consumes:
       - application/json
       description: |-
@@ -2580,7 +2578,7 @@ paths:
       tags:
       - MatchEnd
   /matchresult/matchend/totalscore/{id}:
-    put:
+    patch:
       consumes:
       - application/json
       description: Update one MatchEnd totalScores by id
@@ -2613,7 +2611,7 @@ paths:
       tags:
       - MatchEnd
   /matchresult/matchscore/score/{id}:
-    put:
+    patch:
       consumes:
       - application/json
       description: |-
@@ -2687,7 +2685,7 @@ paths:
       tags:
       - MatchResult
   /matchresult/shootoffscore/{id}:
-    put:
+    patch:
       consumes:
       - application/json
       description: Update one MatchResult shootOffScore by id
@@ -2720,7 +2718,7 @@ paths:
       tags:
       - MatchResult
   /matchresult/totalpoints/{id}:
-    put:
+    patch:
       consumes:
       - application/json
       description: Update one MatchResult totalPoints by id
@@ -2809,7 +2807,7 @@ paths:
       tags:
       - Medal
   /medal/playersetid/{id}:
-    put:
+    patch:
       description: Update medal's player set id by id.
       parameters:
       - description: Medal ID
@@ -2919,8 +2917,46 @@ paths:
       summary: Show one OldLaneInfo
       tags:
       - OldLaneInfo
-  /oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm}:
     put:
+      consumes:
+      - application/json
+      description: Put whole new OldLaneInfo and overwrite with the id
+      parameters:
+      - description: OldLaneInfo ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: LaneData
+        in: body
+        name: LaneData
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            type: string
+        "404":
+          description: Not Found
+          schema:
+            type: string
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: update one OldLaneInfo
+      tags:
+      - OldLaneInfo
+  /oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm}:
+    patch:
       consumes:
       - application/json
       description: Put one OldLaneInfo confirm by index and id
@@ -2968,7 +3004,7 @@ paths:
       tags:
       - OldLaneInfo
   /oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score}:
-    put:
+    patch:
       consumes:
       - application/json
       description: Put one OldLaneInfo score by index and id
@@ -3018,45 +3054,6 @@ paths:
           schema:
             type: string
       summary: update one OldLaneInfo Score
-      tags:
-      - OldLaneInfo
-  /oldlaneinfo/whole/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Put whole new OldLaneInfo and overwrite with the id
-      parameters:
-      - description: OldLaneInfo ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: LaneData
-        in: body
-        name: LaneData
-        required: true
-        schema:
-          type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      summary: update one OldLaneInfo
       tags:
       - OldLaneInfo
   /participant:
@@ -3149,6 +3146,40 @@ paths:
       summary: Show One Participant By ID.
       tags:
       - Participant
+    put:
+      consumes:
+      - application/json
+      description: Put whole new Participant.
+      parameters:
+      - description: Participant ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Participant
+        in: body
+        name: Participant
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.PutParticipant.PutParticipantData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success, return updated participant
+          schema:
+            $ref: '#/definitions/database.Participant'
+        "400":
+          description: invalid participant id
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Update Participant
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one Participant.
+      tags:
+      - Participant
   /participant/competition/{competitionid}:
     get:
       description: Get Participants by competition ID, including realname.
@@ -3239,41 +3270,6 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show Participants By user ID.
-      tags:
-      - Participant
-  /participant/whole/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Put whole new Participant.
-      parameters:
-      - description: Participant ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Participant
-        in: body
-        name: Participant
-        required: true
-        schema:
-          $ref: '#/definitions/endpoint.PutParticipant.PutParticipantData'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: success, return updated participant
-          schema:
-            $ref: '#/definitions/database.Participant'
-        "400":
-          description: invalid participant id
-          schema:
-            $ref: '#/definitions/response.ErrorIdResponse'
-        "500":
-          description: internal db error / Update Participant
-          schema:
-            $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Update one Participant.
       tags:
       - Participant
   /player/{id}:
@@ -4186,6 +4182,44 @@ paths:
       summary: Show one Qualification without Lanes.
       tags:
       - Qualification
+    put:
+      consumes:
+      - application/json
+      description: Put whole new Qualification and overwrite with the id, and update
+        lanes below it ,but cannot replace groupid.
+      parameters:
+      - description: Qualification ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Qualification
+        in: body
+        name: Qualification
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.PutQualificationByID.QualificationPutData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success, return updated Qualification
+          schema:
+            $ref: '#/definitions/database.Qualification'
+        "400":
+          description: invalid qualification id / invalid lane id / lane is already
+            occupied / invalid start or end lane number / Qualification is belong
+            to UnassignedGroup, when update Qualification
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Update Lane Qualification Id / Update Qualification
+            / Get Only Qualification
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one Qualification.
+      tags:
+      - Qualification
   /qualification/lanes/{id}:
     get:
       description: Get one Qualification with Lanes by id.
@@ -4312,45 +4346,6 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Qualification with Unassigned Lanes.
-      tags:
-      - Qualification
-  /qualification/whole/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Put whole new Qualification and overwrite with the id, and update
-        lanes below it ,but cannot replace groupid.
-      parameters:
-      - description: Qualification ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: Qualification
-        in: body
-        name: Qualification
-        required: true
-        schema:
-          $ref: '#/definitions/endpoint.PutQualificationByID.QualificationPutData'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: success, return updated Qualification
-          schema:
-            $ref: '#/definitions/database.Qualification'
-        "400":
-          description: invalid qualification id / invalid lane id / lane is already
-            occupied / invalid start or end lane number / Qualification is belong
-            to UnassignedGroup, when update Qualification
-          schema:
-            $ref: '#/definitions/response.ErrorIdResponse'
-        "500":
-          description: internal db error / Update Lane Qualification Id / Update Qualification
-            / Get Only Qualification
-          schema:
-            $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Update one Qualification.
       tags:
       - Qualification
   /session:
@@ -4532,7 +4527,7 @@ paths:
       tags:
       - User
   /user/password/{id}:
-    put:
+    patch:
       consumes:
       - application/json
       description: |-

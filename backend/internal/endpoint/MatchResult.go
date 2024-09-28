@@ -164,7 +164,7 @@ func PostMatchScore(context *gin.Context, matchEndId uint) bool {
 //	@Success		200			{object}	response.Nill														"success, return nil"
 //	@Failure		400			{object}	response.ErrorIdResponse											"invalid match result ID, maybe not exist"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse									"internal db failed for updating totalPoints"
-//	@Router			/matchresult/totalpoints/{id} [put]
+//	@Router			/matchresult/totalpoints/{id} [patch]
 func PutMatchResultTotalPointsById(context *gin.Context) {
 	type matchResultTotalPointsData struct {
 		TotalPoints int `json:"total_points"`
@@ -197,7 +197,7 @@ func PutMatchResultTotalPointsById(context *gin.Context) {
 //	@Success		200			{object}	response.Nill															"success, return nil"
 //	@Failure		400			{object}	response.ErrorIdResponse												"invalid match result ID, maybe not exist"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse										"internal db failed for updating shootOffScore"
-//	@Router			/matchresult/shootoffscore/{id} [put]
+//	@Router			/matchresult/shootoffscore/{id} [patch]
 func PutMatchResultShootOffScoreById(context *gin.Context) {
 	type matchResultShootOffScoreData struct {
 		ShootOffScore int `json:"shoot_off_score"`
@@ -230,7 +230,7 @@ func PutMatchResultShootOffScoreById(context *gin.Context) {
 //	@Success		200			{object}	response.Nill												"success, return nil"
 //	@Failure		400			{object}	response.ErrorIdResponse									"invalid match result ID, maybe not exist"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse							"internal db failed for updating isWinner"
-//	@Router			/matchresult/iswinner/{id} [put]
+//	@Router			/matchresult/iswinner/{id} [patch]
 func PutMatchResultIsWinnerById(context *gin.Context) {
 	type matchResultIsWinnerData struct {
 		IsWinner bool `json:"is_winner"`
@@ -263,7 +263,7 @@ func PutMatchResultIsWinnerById(context *gin.Context) {
 //	@Success		200			{object}	response.Nill													"success, return nil"
 //	@Failure		400			{object}	response.ErrorIdResponse										"invalid match result ID, maybe not exist"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse								"internal db failed for updating laneNumber"
-//	@Router			/matchresult/lanenumber/{id} [put]
+//	@Router			/matchresult/lanenumber/{id} [patch]
 func PutMatchResultLaneNumberById(context *gin.Context) {
 	type matchResultLaneNumberData struct {
 		LaneNumber int `json:"lane_number"`
@@ -296,7 +296,7 @@ func PutMatchResultLaneNumberById(context *gin.Context) {
 //	@Success		200			{object}	response.Nill													"success, return nil"
 //	@Failure		400			{object}	response.ErrorIdResponse										"invalid match end ID, maybe not exist"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse								"internal db failed for updating totalScores"
-//	@Router			/matchresult/matchend/totalscore/{id} [put]
+//	@Router			/matchresult/matchend/totalscore/{id} [patch]
 func PutMatchEndsTotalScoresById(context *gin.Context) {
 	type matchEndTotalScoresData struct {
 		TotalScore int `json:"total_scores"`
@@ -330,7 +330,7 @@ func PutMatchEndsTotalScoresById(context *gin.Context) {
 //	@Success		200					{object}	response.Nill										"success, return nil"
 //	@Failure		400					{object}	response.ErrorIdResponse							"invalid match end ID, maybe not exist, or matchScore ids not exist, or matchScore ids and scores length not match"
 //	@Failure		500					{object}	response.ErrorInternalErrorResponse					"internal db failed for updating scores"
-//	@Router			/matchresult/matchend/scores/{id} [put]
+//	@Router			/matchresult/matchend/scores/{id} [patch]
 func PutMatchEndsScoresById(context *gin.Context) {
 	type matchEndScoresData struct {
 		TotalScore    int    `json:"total_scores"`
@@ -379,7 +379,7 @@ func PutMatchEndsScoresById(context *gin.Context) {
 //	@Success		200			{object}	response.Nill													"success, return nil"
 //	@Failure		400			{object}	response.ErrorIdResponse										"invalid match end ID, maybe not exist"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse								"internal db failed for updating isConfirmed"
-//	@Router			/matchresult/matchend/isconfirmed/{id} [put]
+//	@Router			/matchresult/matchend/isconfirmed/{id} [patch]
 func PutMatchEndsIsConfirmedById(context *gin.Context) {
 	type matchEndIsConfirmedData struct {
 		IsConfirmed bool `json:"is_confirmed"`
@@ -413,7 +413,7 @@ func PutMatchEndsIsConfirmedById(context *gin.Context) {
 //	@Success		200			{object}	response.Nill									"success, return nil"
 //	@Failure		400			{object}	response.ErrorIdResponse						"invalid match score ID, maybe not exist"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse				"internal db failed for updating score, get matchEnd by id, get matchScore, update matchEnd totalScores"
-//	@Router			/matchresult/matchscore/score/{id} [put]
+//	@Router			/matchresult/matchscore/score/{id} [patch]
 func PutMatchScoreScoreById(context *gin.Context) {
 	type matchScoreData struct {
 		Score int `json:"score"`

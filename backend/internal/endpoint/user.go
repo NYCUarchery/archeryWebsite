@@ -190,7 +190,7 @@ func ModifyInfo(c *gin.Context) {
 //	@Failure		400			{object}	response.Response					"empty/invalid user id | invalid modified information"
 //	@Failure		403			{object}	response.Response					"cannot change other's password | wrong original password | original & modified passwords are the same"
 //	@Failure		500			{object}	response.Response					"internal db error"
-//	@Router			/user/password/{id} [put]
+//	@Router			/user/password/{id} [patch]
 func ModifyPassword(c *gin.Context) {
 	// check id
 	userId := Convert2uint(c, "id")

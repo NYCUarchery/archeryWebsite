@@ -644,14 +644,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Update one Competition currentPhase -- by id.
      *
      * @tags Competition
-     * @name CurrentPhaseMinusUpdate
+     * @name CurrentPhaseMinusPartialUpdate
      * @summary Update one Competition currentPhase -- by id.
-     * @request PUT:/competition/current-phase/minus/{id}
+     * @request PATCH:/competition/current-phase/minus/{id}
      */
-    currentPhaseMinusUpdate: (id: number, params: RequestParams = {}) =>
+    currentPhaseMinusPartialUpdate: (id: number, params: RequestParams = {}) =>
       this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/competition/current-phase/minus/${id}`,
-        method: "PUT",
+        method: "PATCH",
         ...params,
       }),
 
@@ -659,14 +659,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Update one Competition currentPhase ++ by id.
      *
      * @tags Competition
-     * @name CurrentPhasePlusUpdate
+     * @name CurrentPhasePlusPartialUpdate
      * @summary Update one Competition currentPhase ++ by id.
-     * @request PUT:/competition/current-phase/plus/{id}
+     * @request PATCH:/competition/current-phase/plus/{id}
      */
-    currentPhasePlusUpdate: (id: number, params: RequestParams = {}) =>
+    currentPhasePlusPartialUpdate: (id: number, params: RequestParams = {}) =>
       this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/competition/current-phase/plus/${id}`,
-        method: "PUT",
+        method: "PATCH",
         ...params,
       }),
 
@@ -696,14 +696,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Update one Competition Elimination Active to be true by id. Cannot change to false, only can change to true.
      *
      * @tags Competition
-     * @name EliminationIsactiveUpdate
+     * @name EliminationIsactivePartialUpdate
      * @summary Update one Competition Elimination Active to be true by id.
-     * @request PUT:/competition/elimination-isactive/{id}
+     * @request PATCH:/competition/elimination-isactive/{id}
      */
-    eliminationIsactiveUpdate: (id: number, params: RequestParams = {}) =>
+    eliminationIsactivePartialUpdate: (id: number, params: RequestParams = {}) =>
       this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/competition/elimination-isactive/${id}`,
-        method: "PUT",
+        method: "PATCH",
         ...params,
       }),
 
@@ -778,14 +778,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Update one Competition Mixed Elimination Active to be true by id. Cannot change to false, only can change to true. create all mixed elimination for groups
      *
      * @tags Competition
-     * @name MixedEliminationIsactiveUpdate
+     * @name MixedEliminationIsactivePartialUpdate
      * @summary Update one Competition Mixed Elimination Active to be true and create mixed elimination.
-     * @request PUT:/competition/mixed-elimination-isactive/{id}
+     * @request PATCH:/competition/mixed-elimination-isactive/{id}
      */
-    mixedEliminationIsactiveUpdate: (id: number, params: RequestParams = {}) =>
+    mixedEliminationIsactivePartialUpdate: (id: number, params: RequestParams = {}) =>
       this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/competition/mixed-elimination-isactive/${id}`,
-        method: "PUT",
+        method: "PATCH",
         ...params,
       }),
 
@@ -815,14 +815,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Update one Competition Qualification currentEnd -- by id.
      *
      * @tags Competition
-     * @name QualificationCurrentEndMinusUpdate
+     * @name QualificationCurrentEndMinusPartialUpdate
      * @summary Update one Competition Qualification currentEnd -- by id.
-     * @request PUT:/competition/qualification-current-end/minus/{id}
+     * @request PATCH:/competition/qualification-current-end/minus/{id}
      */
-    qualificationCurrentEndMinusUpdate: (id: number, params: RequestParams = {}) =>
+    qualificationCurrentEndMinusPartialUpdate: (id: number, params: RequestParams = {}) =>
       this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/competition/qualification-current-end/minus/${id}`,
-        method: "PUT",
+        method: "PATCH",
         ...params,
       }),
 
@@ -830,14 +830,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Update one Competition Qualification currentEnd ++ by id.
      *
      * @tags Competition
-     * @name QualificationCurrentEndPlusUpdate
+     * @name QualificationCurrentEndPlusPartialUpdate
      * @summary Update one Competition Qualification currentEnd ++ by id.
-     * @request PUT:/competition/qualification-current-end/plus/{id}
+     * @request PATCH:/competition/qualification-current-end/plus/{id}
      */
-    qualificationCurrentEndPlusUpdate: (id: number, params: RequestParams = {}) =>
+    qualificationCurrentEndPlusPartialUpdate: (id: number, params: RequestParams = {}) =>
       this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/competition/qualification-current-end/plus/${id}`,
-        method: "PUT",
+        method: "PATCH",
         ...params,
       }),
 
@@ -845,14 +845,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Update one Competition Qualification Active to be true by id. Cannot change to false, only can change to true.
      *
      * @tags Competition
-     * @name QualificationIsactiveUpdate
+     * @name QualificationIsactivePartialUpdate
      * @summary Update one Competition Qualification Active to be true by id.
-     * @request PUT:/competition/qualification-isactive/{id}
+     * @request PATCH:/competition/qualification-isactive/{id}
      */
-    qualificationIsactiveUpdate: (id: number, params: RequestParams = {}) =>
+    qualificationIsactivePartialUpdate: (id: number, params: RequestParams = {}) =>
       this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/competition/qualification-isactive/${id}`,
-        method: "PUT",
+        method: "PATCH",
         ...params,
       }),
 
@@ -860,14 +860,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Refresh competition player total score by competition id.
      *
      * @tags Competition
-     * @name RefreshGroupsPlayersPlayertotalscoreUpdate
+     * @name RefreshGroupsPlayersPlayertotalscorePartialUpdate
      * @summary Refresh competition player total score by competition id.
-     * @request PUT:/competition/refresh/groups/players/playertotalscore/{id}
+     * @request PATCH:/competition/refresh/groups/players/playertotalscore/{id}
      */
-    refreshGroupsPlayersPlayertotalscoreUpdate: (id: number, params: RequestParams = {}) =>
+    refreshGroupsPlayersPlayertotalscorePartialUpdate: (id: number, params: RequestParams = {}) =>
       this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/competition/refresh/groups/players/playertotalscore/${id}`,
-        method: "PUT",
+        method: "PATCH",
         ...params,
       }),
 
@@ -875,14 +875,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Refresh all player ranking of different groups in one Competition.
      *
      * @tags Competition
-     * @name RefreshGroupsPlayersRankUpdate
+     * @name RefreshGroupsPlayersRankPartialUpdate
      * @summary Refresh one Competition Ranking.
-     * @request PUT:/competition/refresh/groups/players/rank/{id}
+     * @request PATCH:/competition/refresh/groups/players/rank/{id}
      */
-    refreshGroupsPlayersRankUpdate: (id: number, params: RequestParams = {}) =>
+    refreshGroupsPlayersRankPartialUpdate: (id: number, params: RequestParams = {}) =>
       this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/competition/refresh/groups/players/rank/${id}`,
-        method: "PUT",
+        method: "PATCH",
         type: ContentType.Json,
         format: "json",
         ...params,
@@ -892,14 +892,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Update one Competition Team Elimination Active to be true by id. Cannot change to false, only can change to true. Create all team elimination for groups.
      *
      * @tags Competition
-     * @name TeamEliminationIsactiveUpdate
+     * @name TeamEliminationIsactivePartialUpdate
      * @summary Update one Competition Team Elimination Active to be true and create team elimination.
-     * @request PUT:/competition/team-elimination-isactive/{id}
+     * @request PATCH:/competition/team-elimination-isactive/{id}
      */
-    teamEliminationIsactiveUpdate: (id: number, params: RequestParams = {}) =>
+    teamEliminationIsactivePartialUpdate: (id: number, params: RequestParams = {}) =>
       this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/competition/team-elimination-isactive/${id}`,
-        method: "PUT",
+        method: "PATCH",
         ...params,
       }),
 
@@ -926,30 +926,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Put whole new Competition and overwrite by the id. Allow to change title, subtitle, startTime, endTime, script, currentPhase, qualificationCurrentEnd. Cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId, hostId, currentPhase, qualificationCurrentEnd. zeroTime 0001-01-01T00:00:00+00:01
-     *
-     * @tags Competition
-     * @name WholeUpdate
-     * @summary update one Competition
-     * @request PUT:/competition/whole/{id}
-     */
-    wholeUpdate: (id: number, Competition: EndpointPutCompetitionCompetitionPutData, params: RequestParams = {}) =>
-      this.request<
-        DatabaseCompetition & {
-          groups?: ResponseNill;
-          participants?: ResponseNill;
-        },
-        ResponseErrorReceiveDataResponse | ResponseErrorInternalErrorResponse
-      >({
-        path: `/competition/whole/${id}`,
-        method: "PUT",
-        body: Competition,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
      * @description Get one Competition by id without groups and participants. zeroTime 0001-01-01T00:00:00+00:01
      *
      * @tags Competition
@@ -967,6 +943,34 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       >({
         path: `/competition/${id}`,
         method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Put whole new Competition and overwrite by the id. Allow to change title, subtitle, startTime, endTime, script, currentPhase, qualificationCurrentEnd. Cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId, hostId, currentPhase, qualificationCurrentEnd. zeroTime 0001-01-01T00:00:00+00:01
+     *
+     * @tags Competition
+     * @name CompetitionUpdate
+     * @summary update one Competition
+     * @request PUT:/competition/{id}
+     */
+    competitionUpdate: (
+      id: number,
+      Competition: EndpointPutCompetitionCompetitionPutData,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        DatabaseCompetition & {
+          groups?: ResponseNill;
+          participants?: ResponseNill;
+        },
+        ResponseErrorReceiveDataResponse | ResponseErrorInternalErrorResponse
+      >({
+        path: `/competition/${id}`,
+        method: "PUT",
+        body: Competition,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),
@@ -1017,14 +1021,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Update one Elimination current end minus one by id
      *
      * @tags Elimination
-     * @name CurrentendMinusUpdate
+     * @name CurrentendMinusPartialUpdate
      * @summary Update one Elimination current end minus one
-     * @request PUT:/elimination/currentend/minus/{id}
+     * @request PATCH:/elimination/currentend/minus/{id}
      */
-    currentendMinusUpdate: (id: number, params: RequestParams = {}) =>
+    currentendMinusPartialUpdate: (id: number, params: RequestParams = {}) =>
       this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/elimination/currentend/minus/${id}`,
-        method: "PUT",
+        method: "PATCH",
         ...params,
       }),
 
@@ -1032,14 +1036,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Update one Elimination current end plus one by id
      *
      * @tags Elimination
-     * @name CurrentendPlusUpdate
+     * @name CurrentendPlusPartialUpdate
      * @summary Update one Elimination current end plus one
-     * @request PUT:/elimination/currentend/plus/{id}
+     * @request PATCH:/elimination/currentend/plus/{id}
      */
-    currentendPlusUpdate: (id: number, params: RequestParams = {}) =>
+    currentendPlusPartialUpdate: (id: number, params: RequestParams = {}) =>
       this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/elimination/currentend/plus/${id}`,
-        method: "PUT",
+        method: "PATCH",
         ...params,
       }),
 
@@ -1047,14 +1051,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Update one Elimination current stage minus one by id
      *
      * @tags Elimination
-     * @name CurrentstageMinusUpdate
+     * @name CurrentstageMinusPartialUpdate
      * @summary Update one Elimination current stage minus one
-     * @request PUT:/elimination/currentstage/minus/{id}
+     * @request PATCH:/elimination/currentstage/minus/{id}
      */
-    currentstageMinusUpdate: (id: number, params: RequestParams = {}) =>
+    currentstageMinusPartialUpdate: (id: number, params: RequestParams = {}) =>
       this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/elimination/currentstage/minus/${id}`,
-        method: "PUT",
+        method: "PATCH",
         ...params,
       }),
 
@@ -1062,14 +1066,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Update one Elimination current stage plus one by id
      *
      * @tags Elimination
-     * @name CurrentstagePlusUpdate
+     * @name CurrentstagePlusPartialUpdate
      * @summary Update one Elimination current stage plus one
-     * @request PUT:/elimination/currentstage/plus/{id}
+     * @request PATCH:/elimination/currentstage/plus/{id}
      */
-    currentstagePlusUpdate: (id: number, params: RequestParams = {}) =>
+    currentstagePlusPartialUpdate: (id: number, params: RequestParams = {}) =>
       this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/elimination/currentstage/plus/${id}`,
-        method: "PUT",
+        method: "PATCH",
         ...params,
       }),
 
@@ -1288,11 +1292,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Put competition_id and group_ids to update GroupInfos Indices under the same Competition GroupIds cannot include UnassignedGroupId GroupIds length must be equal to Competition group_num
      *
      * @tags GroupInfo
-     * @name OrderingUpdate
+     * @name OrderingPartialUpdate
      * @summary update all GroupInfos Indices under the same Competition
-     * @request PUT:/groupinfo/ordering
+     * @request PATCH:/groupinfo/ordering
      */
-    orderingUpdate: (groupIdsForReorder: EndpointGroupIdsForReorder, params: RequestParams = {}) =>
+    orderingPartialUpdate: (groupIdsForReorder: EndpointGroupIdsForReorder, params: RequestParams = {}) =>
       this.request<
         DatabaseCompetition & {
           groups?: DatabaseGroup & {
@@ -1303,7 +1307,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
       >({
         path: `/groupinfo/ordering`,
-        method: "PUT",
+        method: "PATCH",
         body: groupIdsForReorder,
         type: ContentType.Json,
         format: "json",
@@ -1335,29 +1339,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Put whole new GroupInfo and overwrite with the id Cannot overwrite CompetitionId Cannot overwrite UnassignedGroup
-     *
-     * @tags GroupInfo
-     * @name WholeUpdate
-     * @summary update one GroupInfo
-     * @request PUT:/groupinfo/whole/{id}
-     */
-    wholeUpdate: (id: number, GroupInfo: EndpointPutGroupInfoGroupData, params: RequestParams = {}) =>
-      this.request<
-        DatabaseGroup & {
-          players?: ResponseNill;
-        },
-        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
-      >({
-        path: `/groupinfo/whole/${id}`,
-        method: "PUT",
-        body: GroupInfo,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
      * @description Get only one GroupInfo by id
      *
      * @tags GroupInfo
@@ -1374,6 +1355,29 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       >({
         path: `/groupinfo/${id}`,
         method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Put whole new GroupInfo and overwrite with the id Cannot overwrite CompetitionId Cannot overwrite UnassignedGroup
+     *
+     * @tags GroupInfo
+     * @name GroupinfoUpdate
+     * @summary update one GroupInfo
+     * @request PUT:/groupinfo/{id}
+     */
+    groupinfoUpdate: (id: number, GroupInfo: EndpointPutGroupInfoGroupData, params: RequestParams = {}) =>
+      this.request<
+        DatabaseGroup & {
+          players?: ResponseNill;
+        },
+        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+      >({
+        path: `/groupinfo/${id}`,
+        method: "PUT",
+        body: GroupInfo,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),
@@ -1535,18 +1539,18 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Update one MatchResult isWinner by id
      *
      * @tags MatchResult
-     * @name IswinnerUpdate
+     * @name IswinnerPartialUpdate
      * @summary Update one MatchResult isWinner
-     * @request PUT:/matchresult/iswinner/{id}
+     * @request PATCH:/matchresult/iswinner/{id}
      */
-    iswinnerUpdate: (
+    iswinnerPartialUpdate: (
       id: number,
       MatchResult: EndpointPutMatchResultIsWinnerByIdMatchResultIsWinnerData,
       params: RequestParams = {},
     ) =>
       this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/matchresult/iswinner/${id}`,
-        method: "PUT",
+        method: "PATCH",
         body: MatchResult,
         type: ContentType.Json,
         ...params,
@@ -1556,18 +1560,18 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Update one MatchResult laneNumber by id
      *
      * @tags MatchResult
-     * @name LanenumberUpdate
+     * @name LanenumberPartialUpdate
      * @summary Update one MatchResult laneNumber
-     * @request PUT:/matchresult/lanenumber/{id}
+     * @request PATCH:/matchresult/lanenumber/{id}
      */
-    lanenumberUpdate: (
+    lanenumberPartialUpdate: (
       id: number,
       MatchResult: EndpointPutMatchResultLaneNumberByIdMatchResultLaneNumberData,
       params: RequestParams = {},
     ) =>
       this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/matchresult/lanenumber/${id}`,
-        method: "PUT",
+        method: "PATCH",
         body: MatchResult,
         type: ContentType.Json,
         ...params,
@@ -1600,18 +1604,18 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Update one MatchResult shootOffScore by id
      *
      * @tags MatchResult
-     * @name ShootoffscoreUpdate
+     * @name ShootoffscorePartialUpdate
      * @summary Update one MatchResult shootOffScore
-     * @request PUT:/matchresult/shootoffscore/{id}
+     * @request PATCH:/matchresult/shootoffscore/{id}
      */
-    shootoffscoreUpdate: (
+    shootoffscorePartialUpdate: (
       id: number,
       MatchResult: EndpointPutMatchResultShootOffScoreByIdMatchResultShootOffScoreData,
       params: RequestParams = {},
     ) =>
       this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/matchresult/shootoffscore/${id}`,
-        method: "PUT",
+        method: "PATCH",
         body: MatchResult,
         type: ContentType.Json,
         ...params,
@@ -1621,18 +1625,18 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Update one MatchResult totalPoints by id
      *
      * @tags MatchResult
-     * @name TotalpointsUpdate
+     * @name TotalpointsPartialUpdate
      * @summary Update one MatchResult totalPoints
-     * @request PUT:/matchresult/totalpoints/{id}
+     * @request PATCH:/matchresult/totalpoints/{id}
      */
-    totalpointsUpdate: (
+    totalpointsPartialUpdate: (
       id: number,
       MatchResult: EndpointPutMatchResultTotalPointsByIdMatchResultTotalPointsData,
       params: RequestParams = {},
     ) =>
       this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/matchresult/totalpoints/${id}`,
-        method: "PUT",
+        method: "PATCH",
         body: MatchResult,
         type: ContentType.Json,
         ...params,
@@ -1700,18 +1704,18 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Update one MatchEnd isConfirmed by id
      *
      * @tags MatchEnd
-     * @name MatchendIsconfirmedUpdate
+     * @name MatchendIsconfirmedPartialUpdate
      * @summary Update one MatchEnd isConfirmed
-     * @request PUT:/matchresult/matchend/isconfirmed/{id}
+     * @request PATCH:/matchresult/matchend/isconfirmed/{id}
      */
-    matchendIsconfirmedUpdate: (
+    matchendIsconfirmedPartialUpdate: (
       id: number,
       MatchEnd: EndpointPutMatchEndsIsConfirmedByIdMatchEndIsConfirmedData,
       params: RequestParams = {},
     ) =>
       this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/matchresult/matchend/isconfirmed/${id}`,
-        method: "PUT",
+        method: "PATCH",
         body: MatchEnd,
         type: ContentType.Json,
         ...params,
@@ -1721,18 +1725,18 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids MatchScore ids and scores must be the same length
      *
      * @tags MatchEnd
-     * @name MatchendScoresUpdate
+     * @name MatchendScoresPartialUpdate
      * @summary Update one MatchEnd scores
-     * @request PUT:/matchresult/matchend/scores/{id}
+     * @request PATCH:/matchresult/matchend/scores/{id}
      */
-    matchendScoresUpdate: (
+    matchendScoresPartialUpdate: (
       id: number,
       matchEndScoresData: EndpointPutMatchEndsScoresByIdMatchEndScoresData,
       params: RequestParams = {},
     ) =>
       this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/matchresult/matchend/scores/${id}`,
-        method: "PUT",
+        method: "PATCH",
         body: matchEndScoresData,
         type: ContentType.Json,
         ...params,
@@ -1742,18 +1746,18 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Update one MatchEnd totalScores by id
      *
      * @tags MatchEnd
-     * @name MatchendTotalscoreUpdate
+     * @name MatchendTotalscorePartialUpdate
      * @summary Update one MatchEnd totalScores
-     * @request PUT:/matchresult/matchend/totalscore/{id}
+     * @request PATCH:/matchresult/matchend/totalscore/{id}
      */
-    matchendTotalscoreUpdate: (
+    matchendTotalscorePartialUpdate: (
       id: number,
       MatchEnd: EndpointPutMatchEndsTotalScoresByIdMatchEndTotalScoresData,
       params: RequestParams = {},
     ) =>
       this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/matchresult/matchend/totalscore/${id}`,
-        method: "PUT",
+        method: "PATCH",
         body: MatchEnd,
         type: ContentType.Json,
         ...params,
@@ -1764,18 +1768,18 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Update one MatchScore score by id Also update related MatchEnd totalScores
      *
      * @tags MatchScore
-     * @name MatchscoreScoreUpdate
+     * @name MatchscoreScorePartialUpdate
      * @summary Update one MatchScore score
-     * @request PUT:/matchresult/matchscore/score/{id}
+     * @request PATCH:/matchresult/matchscore/score/{id}
      */
-    matchscoreScoreUpdate: (
+    matchscoreScorePartialUpdate: (
       id: number,
       MatchScore: EndpointPutMatchScoreScoreByIdMatchScoreData,
       params: RequestParams = {},
     ) =>
       this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/matchresult/matchscore/score/${id}`,
-        method: "PUT",
+        method: "PATCH",
         body: MatchScore,
         type: ContentType.Json,
         ...params,
@@ -1802,18 +1806,18 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Update medal's player set id by id.
      *
      * @tags Medal
-     * @name PlayersetidUpdate
+     * @name PlayersetidPartialUpdate
      * @summary Update medal's player set id by id.
-     * @request PUT:/medal/playersetid/{id}
+     * @request PATCH:/medal/playersetid/{id}
      */
-    playersetidUpdate: (
+    playersetidPartialUpdate: (
       id: number,
       PlayerSetId: EndpointPutMedalPlayerSetIdByIdRequestBody,
       params: RequestParams = {},
     ) =>
       this.request<void, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/medal/playersetid/${id}`,
-        method: "PUT",
+        method: "PATCH",
         body: PlayerSetId,
         type: ContentType.Json,
         ...params,
@@ -1858,14 +1862,20 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Put one OldLaneInfo confirm by index and id
      *
      * @tags OldLaneInfo
-     * @name ConfirmUpdate
+     * @name ConfirmPartialUpdate
      * @summary update one OldLaneInfo confirmation
-     * @request PUT:/oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm}
+     * @request PATCH:/oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm}
      */
-    confirmUpdate: (id: string, stageindex: string, userindex: string, confirm: string, params: RequestParams = {}) =>
+    confirmPartialUpdate: (
+      id: string,
+      stageindex: string,
+      userindex: string,
+      confirm: string,
+      params: RequestParams = {},
+    ) =>
       this.request<string, string>({
         path: `/oldlaneinfo/confirm/${id}/${stageindex}/${userindex}/${confirm}`,
-        method: "PUT",
+        method: "PATCH",
         type: ContentType.Json,
         format: "json",
         ...params,
@@ -1875,11 +1885,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Put one OldLaneInfo score by index and id
      *
      * @tags OldLaneInfo
-     * @name ScoreUpdate
+     * @name ScorePartialUpdate
      * @summary update one OldLaneInfo Score
-     * @request PUT:/oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score}
+     * @request PATCH:/oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score}
      */
-    scoreUpdate: (
+    scorePartialUpdate: (
       id: string,
       stageindex: string,
       userindex: string,
@@ -1889,25 +1899,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<string, string>({
         path: `/oldlaneinfo/score/${id}/${stageindex}/${userindex}/${arrowindex}/${score}`,
-        method: "PUT",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Put whole new OldLaneInfo and overwrite with the id
-     *
-     * @tags OldLaneInfo
-     * @name WholeUpdate
-     * @summary update one OldLaneInfo
-     * @request PUT:/oldlaneinfo/whole/{id}
-     */
-    wholeUpdate: (id: string, LaneData: string, params: RequestParams = {}) =>
-      this.request<string, string>({
-        path: `/oldlaneinfo/whole/${id}`,
-        method: "PUT",
-        body: LaneData,
+        method: "PATCH",
         type: ContentType.Json,
         format: "json",
         ...params,
@@ -1925,6 +1917,24 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       this.request<string, string>({
         path: `/oldlaneinfo/${id}`,
         method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Put whole new OldLaneInfo and overwrite with the id
+     *
+     * @tags OldLaneInfo
+     * @name OldlaneinfoUpdate
+     * @summary update one OldLaneInfo
+     * @request PUT:/oldlaneinfo/{id}
+     */
+    oldlaneinfoUpdate: (id: string, LaneData: string, params: RequestParams = {}) =>
+      this.request<string, string>({
+        path: `/oldlaneinfo/${id}`,
+        method: "PUT",
+        body: LaneData,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),
@@ -2014,24 +2024,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Put whole new Participant.
-     *
-     * @tags Participant
-     * @name WholeUpdate
-     * @summary Update one Participant.
-     * @request PUT:/participant/whole/{id}
-     */
-    wholeUpdate: (id: number, Participant: EndpointPutParticipantPutParticipantData, params: RequestParams = {}) =>
-      this.request<DatabaseParticipant, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
-        path: `/participant/whole/${id}`,
-        method: "PUT",
-        body: Participant,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
      * @description Get One Participant By ID.
      *
      * @tags Participant
@@ -2043,6 +2035,28 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       this.request<DatabaseParticipant, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/participant/${id}`,
         method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Put whole new Participant.
+     *
+     * @tags Participant
+     * @name ParticipantUpdate
+     * @summary Update one Participant.
+     * @request PUT:/participant/{id}
+     */
+    participantUpdate: (
+      id: number,
+      Participant: EndpointPutParticipantPutParticipantData,
+      params: RequestParams = {},
+    ) =>
+      this.request<DatabaseParticipant, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/participant/${id}`,
+        method: "PUT",
+        body: Participant,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),
@@ -2655,28 +2669,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Put whole new Qualification and overwrite with the id, and update lanes below it ,but cannot replace groupid.
-     *
-     * @tags Qualification
-     * @name WholeUpdate
-     * @summary Update one Qualification.
-     * @request PUT:/qualification/whole/{id}
-     */
-    wholeUpdate: (
-      id: number,
-      Qualification: EndpointPutQualificationByIDQualificationPutData,
-      params: RequestParams = {},
-    ) =>
-      this.request<DatabaseQualification, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
-        path: `/qualification/whole/${id}`,
-        method: "PUT",
-        body: Qualification,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
      * @description Get one Qualification without Lanes by id.
      *
      * @tags Qualification
@@ -2693,6 +2685,28 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       >({
         path: `/qualification/${id}`,
         method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Put whole new Qualification and overwrite with the id, and update lanes below it ,but cannot replace groupid.
+     *
+     * @tags Qualification
+     * @name QualificationUpdate
+     * @summary Update one Qualification.
+     * @request PUT:/qualification/{id}
+     */
+    qualificationUpdate: (
+      id: number,
+      Qualification: EndpointPutQualificationByIDQualificationPutData,
+      params: RequestParams = {},
+    ) =>
+      this.request<DatabaseQualification, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/qualification/${id}`,
+        method: "PUT",
+        body: Qualification,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),
@@ -2788,14 +2802,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Modify user's password. Original/New password cannot be empty. Original password must be correct. New password cannot be the same as original password.
      *
      * @tags User
-     * @name PasswordUpdate
+     * @name PasswordPartialUpdate
      * @summary Modify user's password.
-     * @request PUT:/user/password/{id}
+     * @request PATCH:/user/password/{id}
      */
-    passwordUpdate: (id: number, ModifyInfo: EndpointModifyAccountPasswordInfo, params: RequestParams = {}) =>
+    passwordPartialUpdate: (id: number, ModifyInfo: EndpointModifyAccountPasswordInfo, params: RequestParams = {}) =>
       this.request<ResponseResponse, ResponseResponse>({
         path: `/user/password/${id}`,
-        method: "PUT",
+        method: "PATCH",
         body: ModifyInfo,
         type: ContentType.Json,
         format: "json",

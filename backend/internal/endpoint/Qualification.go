@@ -169,7 +169,7 @@ func PostQualificationThroughGroup(context *gin.Context, id uint) bool {
 //	@Success		200				{object}	database.Qualification								"success, return updated Qualification"
 //	@Failure		400				{object}	response.ErrorIdResponse							"invalid qualification id / invalid lane id / lane is already occupied / invalid start or end lane number / Qualification is belong to UnassignedGroup, when update Qualification"
 //	@Failure		500				{object}	response.ErrorInternalErrorResponse					"internal db error / Update Lane Qualification Id / Update Qualification / Get Only Qualification"
-//	@Router			/qualification/whole/{id} [put]
+//	@Router			/qualification/{id} [put]
 func PutQualificationByID(context *gin.Context) {
 	type QualificationPutData struct {
 		AdvancingNum    int `json:"advancing_num"`

@@ -364,7 +364,7 @@ func PostMatch(context *gin.Context) {
 //	@Success		200	{object}	response.Nill						"success, return one Elimination with new current stage"
 //	@Failure		400	{object}	response.ErrorIdResponse			"invalid Elimination ID, maybe not exist"
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error for Update Elimination CurrentStage"
-//	@Router			/elimination/currentstage/plus/{id} [put]
+//	@Router			/elimination/currentstage/plus/{id} [patch]
 func PutEliminationCurrentStagePlusById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
@@ -387,7 +387,7 @@ func PutEliminationCurrentStagePlusById(context *gin.Context) {
 //	@Success		200	{object}	response.Nill						"success, return one Elimination with new current stage"
 //	@Failure		400	{object}	response.ErrorIdResponse			"invalid Elimination ID, maybe not exist"
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error for Update Elimination CurrentStage"
-//	@Router			/elimination/currentstage/minus/{id} [put]
+//	@Router			/elimination/currentstage/minus/{id} [patch]
 func PutEliminationCurrentStageMinusById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
@@ -410,7 +410,7 @@ func PutEliminationCurrentStageMinusById(context *gin.Context) {
 //	@Success		200	{object}	response.Nill						"success, return one Elimination with new current end"
 //	@Failure		400	{object}	response.ErrorIdResponse			"invalid Elimination ID, maybe not exist"
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error for Update Elimination CurrentStage"
-//	@Router			/elimination/currentend/plus/{id} [put]
+//	@Router			/elimination/currentend/plus/{id} [patch]
 func PutEliminationCurrentEndPlusById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
@@ -433,7 +433,7 @@ func PutEliminationCurrentEndPlusById(context *gin.Context) {
 //	@Success		200	{object}	response.Nill						"success, return one Elimination with new current end"
 //	@Failure		400	{object}	response.ErrorIdResponse			"invalid Elimination ID, maybe not exist"
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error for Update Elimination CurrentStage"
-//	@Router			/elimination/currentend/minus/{id} [put]
+//	@Router			/elimination/currentend/minus/{id} [patch]
 func PutEliminationCurrentEndMinusById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
