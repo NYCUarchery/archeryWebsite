@@ -2275,13 +2275,13 @@ paths:
       summary: Show one Lane.
       tags:
       - Lane
-  /lane/all/{id}:
+  /lane/all/{competitionid}:
     get:
       description: Get all Lanes and related data by competition id.
       parameters:
       - description: competition ID
         in: path
-        name: id
+        name: competitionid
         required: true
         type: integer
       produces:

@@ -1475,16 +1475,16 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @tags Lane
      * @name GetLane
      * @summary Show all Lanes and related data of a competition.
-     * @request GET:/lane/all/{id}
+     * @request GET:/lane/all/{competitionid}
      */
-    getLane: (id: number, params: RequestParams = {}) =>
+    getLane: (competitionid: number, params: RequestParams = {}) =>
       this.request<
         (DatabaseLane & {
           players?: ResponseNill;
         })[],
         ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
       >({
-        path: `/lane/all/${id}`,
+        path: `/lane/all/${competitionid}`,
         method: "GET",
         format: "json",
         ...params,

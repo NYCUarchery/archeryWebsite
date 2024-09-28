@@ -78,11 +78,11 @@ func GetLaneWScoresByID(context *gin.Context) {
 //	@Description	Get all Lanes and related data by competition id.
 //	@Tags			Lane
 //	@Produce		json
-//	@Param			id	path		int										true	"competition ID"
-//	@Success		200	{object}	[]database.Lane{players=response.Nill}	"succsess, return lanes"
-//	@Failure		400	{object}	response.ErrorIdResponse				"invalid competition id"
-//	@Failure		500	{object}	response.ErrorInternalErrorResponse		"internal db error / Get All Lane By Competition ID"
-//	@Router			/lane/all/{id} [get]
+//	@Param			competitionid	path		int										true	"competition ID"
+//	@Success		200				{object}	[]database.Lane{players=response.Nill}	"succsess, return lanes"
+//	@Failure		400				{object}	response.ErrorIdResponse				"invalid competition id"
+//	@Failure		500				{object}	response.ErrorInternalErrorResponse		"internal db error / Get All Lane By Competition ID"
+//	@Router			/lane/all/{competitionid} [get]
 func GetAllLaneByCompetitionId(context *gin.Context) {
 	competitionId := Convert2uint(context, "competitionid")
 	var data []database.Lane

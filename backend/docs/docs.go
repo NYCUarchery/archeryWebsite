@@ -2326,7 +2326,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/lane/all/{id}": {
+        "/lane/all/{competitionid}": {
             "get": {
                 "description": "Get all Lanes and related data by competition id.",
                 "produces": [
@@ -2340,7 +2340,7 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "competition ID",
-                        "name": "id",
+                        "name": "competitionid",
                         "in": "path",
                         "required": true
                     }
