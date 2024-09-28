@@ -2173,41 +2173,26 @@ const docTemplate = `{
         },
         "/institution": {
             "get": {
-                "description": "get all institution info from db",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Get all institution info from db.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Institution"
                 ],
-                "summary": "get all institution info",
+                "summary": "Get all institution info.",
                 "responses": {
                     "200": {
-                        "description": "success",
+                        "description": "success, return all institution info",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/response.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/database.Institution"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/database.Institution"
+                            }
                         }
                     },
                     "500": {
-                        "description": "db error",
+                        "description": "DB error",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }
@@ -2215,7 +2200,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "add an institution to db\ncannot repeat institution name",
+                "description": "Add an institution to db.\nCannot repeat institution name.\nInstitution name cannot be empty.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2225,7 +2210,7 @@ const docTemplate = `{
                 "tags": [
                     "Institution"
                 ],
-                "summary": "create an institution",
+                "summary": "Create an institution.",
                 "parameters": [
                     {
                         "description": "institution's information",
@@ -2245,13 +2230,13 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "empty institution name || institution already exists",
+                        "description": "empty institution name / institution name already exists",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }
                     },
                     "500": {
-                        "description": "db error",
+                        "description": "db error / get institution / add institution",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }
@@ -2261,7 +2246,7 @@ const docTemplate = `{
         },
         "/institution/{id}": {
             "get": {
-                "description": "get institution info from db by id",
+                "description": "Get institution info from db by id.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2271,10 +2256,10 @@ const docTemplate = `{
                 "tags": [
                     "Institution"
                 ],
-                "summary": "get institution info by id",
+                "summary": "Get institution info by id.",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "institution's id",
                         "name": "id",
                         "in": "path",
@@ -2283,25 +2268,13 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "success",
+                        "description": "success, return institution info",
                         "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/response.Response"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/database.Institution"
-                                        }
-                                    }
-                                }
-                            ]
+                            "$ref": "#/definitions/database.Institution"
                         }
                     },
                     "400": {
-                        "description": "invalid id",
+                        "description": "invalid institution id",
                         "schema": {
                             "$ref": "#/definitions/response.Response"
                         }
@@ -2315,7 +2288,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "delete an institution from db",
+                "description": "Delete an institution from db.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2325,10 +2298,10 @@ const docTemplate = `{
                 "tags": [
                     "Institution"
                 ],
-                "summary": "delete an institution",
+                "summary": "Delete an institution.",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "institution's id",
                         "name": "id",
                         "in": "path",

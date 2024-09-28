@@ -2110,36 +2110,30 @@ paths:
       - GroupInfo
   /institution:
     get:
-      consumes:
-      - application/json
-      description: get all institution info from db
+      description: Get all institution info from db.
       produces:
       - application/json
       responses:
         "200":
-          description: success
+          description: success, return all institution info
           schema:
-            allOf:
-            - $ref: '#/definitions/response.Response'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/database.Institution'
-                  type: array
-              type: object
+            items:
+              $ref: '#/definitions/database.Institution'
+            type: array
         "500":
-          description: db error
+          description: DB error
           schema:
             $ref: '#/definitions/response.Response'
-      summary: get all institution info
+      summary: Get all institution info.
       tags:
       - Institution
     post:
       consumes:
       - application/json
       description: |-
-        add an institution to db
-        cannot repeat institution name
+        Add an institution to db.
+        Cannot repeat institution name.
+        Institution name cannot be empty.
       parameters:
       - description: institution's information
         in: body
@@ -2155,27 +2149,27 @@ paths:
           schema:
             $ref: '#/definitions/response.Response'
         "400":
-          description: empty institution name || institution already exists
+          description: empty institution name / institution name already exists
           schema:
             $ref: '#/definitions/response.Response'
         "500":
-          description: db error
+          description: db error / get institution / add institution
           schema:
             $ref: '#/definitions/response.Response'
-      summary: create an institution
+      summary: Create an institution.
       tags:
       - Institution
   /institution/{id}:
     delete:
       consumes:
       - application/json
-      description: delete an institution from db
+      description: Delete an institution from db.
       parameters:
       - description: institution's id
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
@@ -2191,40 +2185,35 @@ paths:
           description: institution not found
           schema:
             $ref: '#/definitions/response.Response'
-      summary: delete an institution
+      summary: Delete an institution.
       tags:
       - Institution
     get:
       consumes:
       - application/json
-      description: get institution info from db by id
+      description: Get institution info from db by id.
       parameters:
       - description: institution's id
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: success
+          description: success, return institution info
           schema:
-            allOf:
-            - $ref: '#/definitions/response.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/database.Institution'
-              type: object
+            $ref: '#/definitions/database.Institution'
         "400":
-          description: invalid id
+          description: invalid institution id
           schema:
             $ref: '#/definitions/response.Response'
         "404":
           description: no institution found
           schema:
             $ref: '#/definitions/response.Response'
-      summary: get institution info by id
+      summary: Get institution info by id.
       tags:
       - Institution
   /lane/{id}:

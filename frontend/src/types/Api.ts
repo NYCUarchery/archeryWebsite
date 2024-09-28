@@ -1377,33 +1377,27 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
   };
   institution = {
     /**
-     * @description get all institution info from db
+     * @description Get all institution info from db.
      *
      * @tags Institution
      * @name InstitutionList
-     * @summary get all institution info
+     * @summary Get all institution info.
      * @request GET:/institution
      */
     institutionList: (params: RequestParams = {}) =>
-      this.request<
-        ResponseResponse & {
-          data?: DatabaseInstitution[];
-        },
-        ResponseResponse
-      >({
+      this.request<DatabaseInstitution[], ResponseResponse>({
         path: `/institution`,
         method: "GET",
-        type: ContentType.Json,
         format: "json",
         ...params,
       }),
 
     /**
-     * @description add an institution to db cannot repeat institution name
+     * @description Add an institution to db. Cannot repeat institution name. Institution name cannot be empty.
      *
      * @tags Institution
      * @name InstitutionCreate
-     * @summary create an institution
+     * @summary Create an institution.
      * @request POST:/institution
      */
     institutionCreate: (NewInstitutionInfo: EndpointNewInstitutionInfo, params: RequestParams = {}) =>
@@ -1417,20 +1411,15 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description get institution info from db by id
+     * @description Get institution info from db by id.
      *
      * @tags Institution
      * @name InstitutionDetail
-     * @summary get institution info by id
+     * @summary Get institution info by id.
      * @request GET:/institution/{id}
      */
-    institutionDetail: (id: string, params: RequestParams = {}) =>
-      this.request<
-        ResponseResponse & {
-          data?: DatabaseInstitution;
-        },
-        ResponseResponse
-      >({
+    institutionDetail: (id: number, params: RequestParams = {}) =>
+      this.request<DatabaseInstitution, ResponseResponse>({
         path: `/institution/${id}`,
         method: "GET",
         type: ContentType.Json,
@@ -1439,14 +1428,14 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description delete an institution from db
+     * @description Delete an institution from db.
      *
      * @tags Institution
      * @name InstitutionDelete
-     * @summary delete an institution
+     * @summary Delete an institution.
      * @request DELETE:/institution/{id}
      */
-    institutionDelete: (id: string, params: RequestParams = {}) =>
+    institutionDelete: (id: number, params: RequestParams = {}) =>
       this.request<ResponseResponse, ResponseResponse>({
         path: `/institution/${id}`,
         method: "DELETE",

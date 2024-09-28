@@ -15,16 +15,17 @@ type NewInstitutionInfo struct {
 
 // CreateInstitution godoc
 //
-//	@Summary		create an institution
-//	@Description	add an institution to db
-//	@Description	cannot repeat institution name
+//	@Summary		Create an institution.
+//	@Description	Add an institution to db.
+//	@Description	Cannot repeat institution name.
+//	@Description	Institution name cannot be empty.
 //	@Tags			Institution
 //	@Accept			json
 //	@Produce		json
 //	@Param			NewInstitutionInfo	body		NewInstitutionInfo	true	"institution's information"
 //	@Success		200					{object}	response.Response	"success"
-//	@Failure		400					{object}	response.Response	"empty institution name || institution already exists"
-//	@Failure		500					{object}	response.Response	"db error"
+//	@Failure		400					{object}	response.Response	"empty institution name / institution name already exists"
+//	@Failure		500					{object}	response.Response	"db error / get institution / add institution"
 //	@Router			/institution [post]
 func CreateInstitution(c *gin.Context) {
 	var newInstitutionInfo NewInstitutionInfo
@@ -55,15 +56,15 @@ func CreateInstitution(c *gin.Context) {
 
 // InstitutionInfo godoc
 //
-//	@Summary		get institution info by id
-//	@Description	get institution info from db by id
+//	@Summary		Get institution info by id.
+//	@Description	Get institution info from db by id.
 //	@Tags			Institution
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		string											true	"institution's id"
-//	@Success		200	{object}	response.Response{data=database.Institution}	"success"
-//	@Failure		400	{object}	response.Response								"invalid id"
-//	@Failure		404	{object}	response.Response								"no institution found"
+//	@Param			id	path		int						true	"institution's id"
+//	@Success		200	{object}	database.Institution	"success, return institution info"
+//	@Failure		400	{object}	response.Response		"invalid institution id"
+//	@Failure		404	{object}	response.Response		"no institution found"
 //	@Router			/institution/{id} [get]
 func InstitutionInfo(c *gin.Context) {
 	idstr := c.Param("id")
@@ -84,13 +85,12 @@ func InstitutionInfo(c *gin.Context) {
 
 // AllInstitutionInfo godoc
 //
-//	@Summary		get all institution info
-//	@Description	get all institution info from db
+//	@Summary		Get all institution info.
+//	@Description	Get all institution info from db.
 //	@Tags			Institution
-//	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	response.Response{data=[]database.Institution}	"success"
-//	@Failure		500	{object}	response.Response								"db error"
+//	@Success		200	{object}	[]database.Institution	"success, return all institution info"
+//	@Failure		500	{object}	response.Response		"DB error"
 //	@Router			/institution [get]
 func AllInstitutionInfo(c *gin.Context) {
 	institutions, err := database.AllInstitutionInfo()
@@ -104,12 +104,12 @@ func AllInstitutionInfo(c *gin.Context) {
 
 // DeleteInstitution godoc
 //
-//	@Summary		delete an institution
-//	@Description	delete an institution from db
+//	@Summary		Delete an institution.
+//	@Description	Delete an institution from db.
 //	@Tags			Institution
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path		string				true	"institution's id"
+//	@Param			id	path		int					true	"institution's id"
 //	@Success		200	{object}	response.Response	"success"
 //	@Failure		400	{object}	response.Response	"invalid id"
 //	@Failure		404	{object}	response.Response	"institution not found"
