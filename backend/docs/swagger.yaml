@@ -589,6 +589,13 @@ definitions:
       score:
         type: integer
     type: object
+  endpoint.PutParticipant.PutParticipantData:
+    properties:
+      role:
+        type: string
+      status:
+        type: string
+    type: object
   endpoint.PutPlayerAllEndScoresByEndId.EndScores:
     properties:
       scores:
@@ -677,12 +684,6 @@ definitions:
     properties:
       error:
         example: 'bad request data: sth error'
-        type: string
-    type: object
-  response.ErrorReceiveDataNilResponse:
-    properties:
-      error:
-        example: 'bad request data is nil ID(1): sth error'
         type: string
     type: object
   response.ErrorReceiveDataResponse:
@@ -3045,15 +3046,15 @@ paths:
       summary: update one OldLaneInfo
       tags:
       - OldLaneInfo
-  /participant/:
+  /participant:
     post:
       consumes:
       - application/json
       description: |-
-        post a particpant to the competition
-        cannot repeat participant
-        role cannot be empty
-        status is always "pending"
+        Post a particpant to the competition from the user.
+        Cannot repeat participant.
+        Role cannot be empty.
+        Status is always initialized as "pending".
       parameters:
       - description: role
         in: body
@@ -3065,31 +3066,32 @@ paths:
       - application/json
       responses:
         "200":
-          description: success
+          description: success, return participant
           schema:
             $ref: '#/definitions/database.Participant'
         "400":
-          description: competition ID is not exist
+          description: invalid info / role is empty / participant exists / invalid
+            user ID / invalid competition ID
           schema:
-            $ref: '#/definitions/response.ErrorIdResponse'
+            $ref: '#/definitions/response.ErrorReceiveDataFormatResponse'
         "500":
           description: db error
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: post a particpant to the competition
+      summary: Post a particpant to the competition.
       tags:
       - Participant
   /participant/{id}:
     delete:
-      consumes:
-      - application/json
-      description: delete one Participant by id
+      description: |-
+        Delete one Participant by id.
+        This api is intentionally designed not to delete related data, because a user may drop out of competition, but competition still need the record.
       parameters:
       - description: Participant ID
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
@@ -3105,11 +3107,11 @@ paths:
           description: internal db error / Delete Participant
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: delete one Participant
+      summary: Delete one Participant.
       tags:
       - Participant
     get:
-      description: Get One Participant By ID
+      description: Get One Participant By ID.
       parameters:
       - description: Participant ID
         in: path
@@ -3120,7 +3122,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: success
+          description: success, return participant
           schema:
             $ref: '#/definitions/database.Participant'
         "400":
@@ -3131,24 +3133,23 @@ paths:
           description: db error
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Show One Participant By ID
+      summary: Show One Participant By ID.
       tags:
       - Participant
-  /participant/competition:
+  /participant/competition/{competitionid}:
     get:
-      description: Get Participants By competition ID, including realname
+      description: Get Participants by competition ID, including realname.
       parameters:
       - description: competition ID
-        in: body
-        name: competition_id
+        in: path
+        name: competitionid
         required: true
-        schema:
-          type: integer
+        type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: success
+          description: success, return participants of the competition
           schema:
             items:
               $ref: '#/definitions/endpoint.ParticipantWName'
@@ -3162,36 +3163,32 @@ paths:
             user by id
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Show Participants By competition ID
+      summary: Show Participants by competition ID.
       tags:
       - Participant
-  /participant/competition/user:
+  /participant/competition/user/{competitionid}/{userid}:
     get:
       description: Get Participants By competition ID and user ID
       parameters:
       - description: competition ID
-        in: body
-        name: competition_id
+        in: path
+        name: competitionid
         required: true
-        schema:
-          type: integer
+        type: integer
       - description: user ID
-        in: body
-        name: user_id
+        in: path
+        name: userid
         required: true
-        schema:
-          type: integer
+        type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: success
+          description: success, return participants of the competition and user
           schema:
-            items:
-              $ref: '#/definitions/database.Participant'
-            type: array
+            $ref: '#/definitions/database.Participant'
         "400":
-          description: invalid competition id
+          description: invalid user id / invalid competition id
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
         "500":
@@ -3202,21 +3199,20 @@ paths:
       summary: Show Participants By competition ID and user ID
       tags:
       - Participant
-  /participant/user:
+  /participant/user/{userid}:
     get:
-      description: Get Participants By user ID
+      description: Get Participants By user ID.
       parameters:
       - description: user ID
-        in: body
-        name: user_id
+        in: path
+        name: userid
         required: true
-        schema:
-          type: integer
+        type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: success
+          description: success, return participants of the user
           schema:
             items:
               $ref: '#/definitions/database.Participant'
@@ -3226,34 +3222,34 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: db error
+          description: internal db error / Get participants by user id / Get user
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Show Participants By user ID
+      summary: Show Participants By user ID.
       tags:
       - Participant
   /participant/whole/{id}:
     put:
       consumes:
       - application/json
-      description: Put whole new Participant and overwrite with the id
+      description: Put whole new Participant.
       parameters:
       - description: Participant ID
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       - description: Participant
         in: body
         name: Participant
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PutParticipant.PutParticipantData'
       produces:
       - application/json
       responses:
         "200":
-          description: success
+          description: success, return updated participant
           schema:
             $ref: '#/definitions/database.Participant'
         "400":
@@ -3264,7 +3260,7 @@ paths:
           description: internal db error / Update Participant
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: update one Participant
+      summary: Update one Participant.
       tags:
       - Participant
   /player/{id}:

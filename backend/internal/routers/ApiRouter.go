@@ -211,7 +211,7 @@ func profileRouter(api *gin.RouterGroup) {
 		parssr.GET("/user/:userid", endpoint.GetParticipantByUserId)
 		parssr.GET("/competition/:competitionid", endpoint.GetParticipantByCompetitionId)
 		parssr.GET("/competition/user/:competitionid/:userid", endpoint.GetParticipantByCompetitionIdUserId)
-		parssr.PUT("/:id", endpoint.PutParticipant)
+		parssr.PUT("/whole/:id", endpoint.PutParticipant)
 		parssr.DELETE("/:id", endpoint.DeleteParticipantById)
 
 	}

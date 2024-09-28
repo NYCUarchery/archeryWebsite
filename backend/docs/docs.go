@@ -3573,9 +3573,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/participant/": {
+        "/participant": {
             "post": {
-                "description": "post a particpant to the competition\ncannot repeat participant\nrole cannot be empty\nstatus is always \"pending\"",
+                "description": "Post a particpant to the competition from the user.\nCannot repeat participant.\nRole cannot be empty.\nStatus is always initialized as \"pending\".",
                 "consumes": [
                     "application/json"
                 ],
@@ -3585,7 +3585,7 @@ const docTemplate = `{
                 "tags": [
                     "Participant"
                 ],
-                "summary": "post a particpant to the competition",
+                "summary": "Post a particpant to the competition.",
                 "parameters": [
                     {
                         "description": "role",
@@ -3599,15 +3599,15 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "success",
+                        "description": "success, return participant",
                         "schema": {
                             "$ref": "#/definitions/database.Participant"
                         }
                     },
                     "400": {
-                        "description": "competition ID is not exist",
+                        "description": "invalid info / role is empty / participant exists / invalid user ID / invalid competition ID",
                         "schema": {
-                            "$ref": "#/definitions/response.ErrorIdResponse"
+                            "$ref": "#/definitions/response.ErrorReceiveDataFormatResponse"
                         }
                     },
                     "500": {
@@ -3619,30 +3619,76 @@ const docTemplate = `{
                 }
             }
         },
-        "/participant/competition": {
+        "/participant/competition/user/{competitionid}/{userid}": {
             "get": {
-                "description": "Get Participants By competition ID, including realname",
+                "description": "Get Participants By competition ID and user ID",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Participant"
                 ],
-                "summary": "Show Participants By competition ID",
+                "summary": "Show Participants By competition ID and user ID",
                 "parameters": [
                     {
+                        "type": "integer",
                         "description": "competition ID",
-                        "name": "competition_id",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
+                        "name": "competitionid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "user ID",
+                        "name": "userid",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "success",
+                        "description": "success, return participants of the competition and user",
+                        "schema": {
+                            "$ref": "#/definitions/database.Participant"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid user id / invalid competition id",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error / Get participants by competition id and user id",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/participant/competition/{competitionid}": {
+            "get": {
+                "description": "Get Participants by competition ID, including realname.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Participant"
+                ],
+                "summary": "Show Participants by competition ID.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "competition ID",
+                        "name": "competitionid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success, return participants of the competition",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -3665,85 +3711,28 @@ const docTemplate = `{
                 }
             }
         },
-        "/participant/competition/user": {
+        "/participant/user/{userid}": {
             "get": {
-                "description": "Get Participants By competition ID and user ID",
+                "description": "Get Participants By user ID.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Participant"
                 ],
-                "summary": "Show Participants By competition ID and user ID",
+                "summary": "Show Participants By user ID.",
                 "parameters": [
                     {
-                        "description": "competition ID",
-                        "name": "competition_id",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    },
-                    {
+                        "type": "integer",
                         "description": "user ID",
-                        "name": "user_id",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
+                        "name": "userid",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "success",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/database.Participant"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "invalid competition id",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorIdResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "internal db error / Get participants by competition id and user id",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/participant/user": {
-            "get": {
-                "description": "Get Participants By user ID",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Participant"
-                ],
-                "summary": "Show Participants By user ID",
-                "parameters": [
-                    {
-                        "description": "user ID",
-                        "name": "user_id",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "success",
+                        "description": "success, return participants of the user",
                         "schema": {
                             "type": "array",
                             "items": {
@@ -3758,7 +3747,7 @@ const docTemplate = `{
                         }
                     },
                     "500": {
-                        "description": "db error",
+                        "description": "internal db error / Get participants by user id / Get user",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -3768,7 +3757,7 @@ const docTemplate = `{
         },
         "/participant/whole/{id}": {
             "put": {
-                "description": "Put whole new Participant and overwrite with the id",
+                "description": "Put whole new Participant.",
                 "consumes": [
                     "application/json"
                 ],
@@ -3778,10 +3767,10 @@ const docTemplate = `{
                 "tags": [
                     "Participant"
                 ],
-                "summary": "update one Participant",
+                "summary": "Update one Participant.",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "Participant ID",
                         "name": "id",
                         "in": "path",
@@ -3793,13 +3782,13 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/endpoint.PutParticipant.PutParticipantData"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "success",
+                        "description": "success, return updated participant",
                         "schema": {
                             "$ref": "#/definitions/database.Participant"
                         }
@@ -3821,14 +3810,14 @@ const docTemplate = `{
         },
         "/participant/{id}": {
             "get": {
-                "description": "Get One Participant By ID",
+                "description": "Get One Participant By ID.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Participant"
                 ],
-                "summary": "Show One Participant By ID",
+                "summary": "Show One Participant By ID.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -3840,7 +3829,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "success",
+                        "description": "success, return participant",
                         "schema": {
                             "$ref": "#/definitions/database.Participant"
                         }
@@ -3860,20 +3849,17 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "delete one Participant by id",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Delete one Participant by id.\nThis api is intentionally designed not to delete related data, because a user may drop out of competition, but competition still need the record.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Participant"
                 ],
-                "summary": "delete one Participant",
+                "summary": "Delete one Participant.",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "Participant ID",
                         "name": "id",
                         "in": "path",
@@ -6812,6 +6798,17 @@ const docTemplate = `{
                 }
             }
         },
+        "endpoint.PutParticipant.PutParticipantData": {
+            "type": "object",
+            "properties": {
+                "role": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
         "endpoint.PutPlayerAllEndScoresByEndId.EndScores": {
             "type": "object",
             "properties": {
@@ -6949,15 +6946,6 @@ const docTemplate = `{
                 "error": {
                     "type": "string",
                     "example": "bad request data: sth error"
-                }
-            }
-        },
-        "response.ErrorReceiveDataNilResponse": {
-            "type": "object",
-            "properties": {
-                "error": {
-                    "type": "string",
-                    "example": "bad request data is nil ID(1): sth error"
                 }
             }
         },

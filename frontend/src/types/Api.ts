@@ -353,6 +353,11 @@ export interface EndpointPutMatchScoreScoreByIdMatchScoreData {
   score?: number;
 }
 
+export interface EndpointPutParticipantPutParticipantData {
+  role?: string;
+  status?: string;
+}
+
 export interface EndpointPutPlayerAllEndScoresByEndIdEndScores {
   scores?: number[];
 }
@@ -416,11 +421,6 @@ export interface ResponseErrorInternalErrorResponse {
 
 export interface ResponseErrorReceiveDataFormatResponse {
   /** @example "bad request data: sth error" */
-  error?: string;
-}
-
-export interface ResponseErrorReceiveDataNilResponse {
-  /** @example "bad request data is nil ID(1): sth error" */
   error?: string;
 }
 
@@ -1936,36 +1936,18 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
   };
   participant = {
     /**
-     * @description post a particpant to the competition cannot repeat participant role cannot be empty status is always "pending"
+     * @description Post a particpant to the competition from the user. Cannot repeat participant. Role cannot be empty. Status is always initialized as "pending".
      *
      * @tags Participant
      * @name ParticipantCreate
-     * @summary post a particpant to the competition
-     * @request POST:/participant/
+     * @summary Post a particpant to the competition.
+     * @request POST:/participant
      */
     participantCreate: (NewParticipantInfo: EndpointNewParticipantInfo, params: RequestParams = {}) =>
-      this.request<DatabaseParticipant, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
-        path: `/participant/`,
+      this.request<DatabaseParticipant, ResponseErrorReceiveDataFormatResponse | ResponseErrorInternalErrorResponse>({
+        path: `/participant`,
         method: "POST",
         body: NewParticipantInfo,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Get Participants By competition ID, including realname
-     *
-     * @tags Participant
-     * @name CompetitionList
-     * @summary Show Participants By competition ID
-     * @request GET:/participant/competition
-     */
-    competitionList: (competition_id: number, params: RequestParams = {}) =>
-      this.request<EndpointParticipantWName[], ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
-        path: `/participant/competition`,
-        method: "GET",
-        body: competition_id,
         type: ContentType.Json,
         format: "json",
         ...params,
@@ -1975,47 +1957,59 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @description Get Participants By competition ID and user ID
      *
      * @tags Participant
-     * @name CompetitionUserList
+     * @name CompetitionUserDetail
      * @summary Show Participants By competition ID and user ID
-     * @request GET:/participant/competition/user
+     * @request GET:/participant/competition/user/{competitionid}/{userid}
      */
-    competitionUserList: (user_id: number, params: RequestParams = {}) =>
-      this.request<DatabaseParticipant[], ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
-        path: `/participant/competition/user`,
+    competitionUserDetail: (competitionid: number, userid: number, params: RequestParams = {}) =>
+      this.request<DatabaseParticipant, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/participant/competition/user/${competitionid}/${userid}`,
         method: "GET",
-        body: user_id,
-        type: ContentType.Json,
         format: "json",
         ...params,
       }),
 
     /**
-     * @description Get Participants By user ID
+     * @description Get Participants by competition ID, including realname.
      *
      * @tags Participant
-     * @name UserList
-     * @summary Show Participants By user ID
-     * @request GET:/participant/user
+     * @name CompetitionDetail
+     * @summary Show Participants by competition ID.
+     * @request GET:/participant/competition/{competitionid}
      */
-    userList: (user_id: number, params: RequestParams = {}) =>
-      this.request<DatabaseParticipant[], ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
-        path: `/participant/user`,
+    competitionDetail: (competitionid: number, params: RequestParams = {}) =>
+      this.request<EndpointParticipantWName[], ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/participant/competition/${competitionid}`,
         method: "GET",
-        body: user_id,
-        type: ContentType.Json,
         format: "json",
         ...params,
       }),
 
     /**
-     * @description Put whole new Participant and overwrite with the id
+     * @description Get Participants By user ID.
+     *
+     * @tags Participant
+     * @name UserDetail
+     * @summary Show Participants By user ID.
+     * @request GET:/participant/user/{userid}
+     */
+    userDetail: (userid: number, params: RequestParams = {}) =>
+      this.request<DatabaseParticipant[], ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/participant/user/${userid}`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Put whole new Participant.
      *
      * @tags Participant
      * @name WholeUpdate
-     * @summary update one Participant
+     * @summary Update one Participant.
      * @request PUT:/participant/whole/{id}
      */
-    wholeUpdate: (id: string, Participant: string, params: RequestParams = {}) =>
+    wholeUpdate: (id: number, Participant: EndpointPutParticipantPutParticipantData, params: RequestParams = {}) =>
       this.request<DatabaseParticipant, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/participant/whole/${id}`,
         method: "PUT",
@@ -2026,11 +2020,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Get One Participant By ID
+     * @description Get One Participant By ID.
      *
      * @tags Participant
      * @name ParticipantDetail
-     * @summary Show One Participant By ID
+     * @summary Show One Participant By ID.
      * @request GET:/participant/{id}
      */
     participantDetail: (id: number, params: RequestParams = {}) =>
@@ -2042,18 +2036,17 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description delete one Participant by id
+     * @description Delete one Participant by id. This api is intentionally designed not to delete related data, because a user may drop out of competition, but competition still need the record.
      *
      * @tags Participant
      * @name ParticipantDelete
-     * @summary delete one Participant
+     * @summary Delete one Participant.
      * @request DELETE:/participant/{id}
      */
-    participantDelete: (id: string, params: RequestParams = {}) =>
+    participantDelete: (id: number, params: RequestParams = {}) =>
       this.request<ResponseDeleteSuccessResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/participant/${id}`,
         method: "DELETE",
-        type: ContentType.Json,
         format: "json",
         ...params,
       }),
