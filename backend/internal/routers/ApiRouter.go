@@ -25,8 +25,6 @@ func AddApiRouter(api *gin.RouterGroup) {
 	eliminationRouter(api)
 	matchResultRouter(api)
 	medalRouter(api)
-
-	oldLaneInfoRouter(api)
 }
 
 func playerRouter(api *gin.RouterGroup) {
@@ -173,18 +171,6 @@ func medalRouter(api *gin.RouterGroup) {
 		medalssr.GET("/:id", endpoint.GetMedalById)
 		medalssr.GET("/elimination/:eliminationid", endpoint.GetMedalInfoByEliminationId)
 		medalssr.PATCH("/playersetid/:id", endpoint.PutMedalPlayerSetIdById)
-	}
-}
-
-func oldLaneInfoRouter(api *gin.RouterGroup) {
-	oldlaneinfossr := api.Group("/oldlaneinfo")
-	{
-		oldlaneinfossr.GET("/:id", endpoint.GetOldLaneInfoByID)
-		oldlaneinfossr.POST("/", endpoint.PostOldLaneInfo)
-		oldlaneinfossr.PUT("/:id", endpoint.PutOldLaneInfo)
-		oldlaneinfossr.PATCH("/score/:id/:stageindex/:userindex/:arrowindex/:score", endpoint.PutOldLaneScore)
-		oldlaneinfossr.PATCH("/confirm/:id/:stageindex/:userindex/:confirm", endpoint.PutOldLaneConfirm)
-		oldlaneinfossr.DELETE("/:id", endpoint.DeleteOldLaneInfoByID)
 	}
 }
 
