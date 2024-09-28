@@ -589,6 +589,11 @@ definitions:
       score:
         type: integer
     type: object
+  endpoint.PutMedalPlayerSetIdById.RequestBody:
+    properties:
+      player_set_id:
+        type: integer
+    type: object
   endpoint.PutParticipant.PutParticipantData:
     properties:
       role:
@@ -2744,7 +2749,7 @@ paths:
       - MatchResult
   /medal/{id}:
     get:
-      description: get one medal by id
+      description: Get one medal by id.
       parameters:
       - description: Medal ID
         in: path
@@ -2755,7 +2760,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: success
+          description: success, return one medal
           schema:
             $ref: '#/definitions/database.Medal'
         "400":
@@ -2766,25 +2771,27 @@ paths:
           description: internal db error / Get Medal By Id
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Show one medal by id
+      summary: Show one medal by id.
       tags:
       - Medal
-  /medal/elimination/{id}:
+  /medal/elimination/{eliminationid}:
     get:
-      description: get medals of elimination by elimination id
+      description: Get medals of elimination by elimination id.
       parameters:
       - description: elimination ID
         in: path
-        name: id
+        name: eliminationid
         required: true
         type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: success
+          description: success, return medals of elimination
           schema:
-            $ref: '#/definitions/database.Medal'
+            items:
+              $ref: '#/definitions/database.Medal'
+            type: array
         "400":
           description: invalid elimination id
           schema:
@@ -2793,12 +2800,12 @@ paths:
           description: internal db error / Get Medal Info By Elimination Id
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Show medals of elimination by elimination id
+      summary: Show medals of elimination by elimination id.
       tags:
       - Medal
   /medal/playersetid/{id}:
     put:
-      description: update medal's player set id by id
+      description: Update medal's player set id by id.
       parameters:
       - description: Medal ID
         in: path
@@ -2810,22 +2817,23 @@ paths:
         name: PlayerSetId
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PutMedalPlayerSetIdById.RequestBody'
       produces:
       - application/json
       responses:
         "200":
-          description: success
+          description: success, return nil
         "400":
-          description: elimination id of medal and playerset is not same
+          description: invalid medal id / invalid playerset id / elimination id of
+            medal and playerset is not same
           schema:
-            $ref: '#/definitions/response.ErrorReceiveDataFormatResponse'
+            $ref: '#/definitions/response.ErrorIdResponse'
         "500":
           description: internal db error / Get Medal By Id / Get Player Set By Id
             / Update Medal PLayer Set Id
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Update medal's player set id by id
+      summary: Update medal's player set id by id.
       tags:
       - Medal
   /oldlaneinfo:

@@ -3119,30 +3119,33 @@ const docTemplate = `{
                 }
             }
         },
-        "/medal/elimination/{id}": {
+        "/medal/elimination/{eliminationid}": {
             "get": {
-                "description": "get medals of elimination by elimination id",
+                "description": "Get medals of elimination by elimination id.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Medal"
                 ],
-                "summary": "Show medals of elimination by elimination id",
+                "summary": "Show medals of elimination by elimination id.",
                 "parameters": [
                     {
                         "type": "integer",
                         "description": "elimination ID",
-                        "name": "id",
+                        "name": "eliminationid",
                         "in": "path",
                         "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "success",
+                        "description": "success, return medals of elimination",
                         "schema": {
-                            "$ref": "#/definitions/database.Medal"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/database.Medal"
+                            }
                         }
                     },
                     "400": {
@@ -3162,14 +3165,14 @@ const docTemplate = `{
         },
         "/medal/playersetid/{id}": {
             "put": {
-                "description": "update medal's player set id by id",
+                "description": "Update medal's player set id by id.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Medal"
                 ],
-                "summary": "Update medal's player set id by id",
+                "summary": "Update medal's player set id by id.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -3184,18 +3187,18 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/endpoint.PutMedalPlayerSetIdById.RequestBody"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "success"
+                        "description": "success, return nil"
                     },
                     "400": {
-                        "description": "elimination id of medal and playerset is not same",
+                        "description": "invalid medal id / invalid playerset id / elimination id of medal and playerset is not same",
                         "schema": {
-                            "$ref": "#/definitions/response.ErrorReceiveDataFormatResponse"
+                            "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
                     "500": {
@@ -3209,14 +3212,14 @@ const docTemplate = `{
         },
         "/medal/{id}": {
             "get": {
-                "description": "get one medal by id",
+                "description": "Get one medal by id.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Medal"
                 ],
-                "summary": "Show one medal by id",
+                "summary": "Show one medal by id.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -3228,7 +3231,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "success",
+                        "description": "success, return one medal",
                         "schema": {
                             "$ref": "#/definitions/database.Medal"
                         }
@@ -6794,6 +6797,14 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "score": {
+                    "type": "integer"
+                }
+            }
+        },
+        "endpoint.PutMedalPlayerSetIdById.RequestBody": {
+            "type": "object",
+            "properties": {
+                "player_set_id": {
                     "type": "integer"
                 }
             }

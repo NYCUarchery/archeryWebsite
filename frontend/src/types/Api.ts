@@ -353,6 +353,10 @@ export interface EndpointPutMatchScoreScoreByIdMatchScoreData {
   score?: number;
 }
 
+export interface EndpointPutMedalPlayerSetIdByIdRequestBody {
+  player_set_id?: number;
+}
+
 export interface EndpointPutParticipantPutParticipantData {
   role?: string;
   status?: string;
@@ -1775,31 +1779,35 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
   };
   medal = {
     /**
-     * @description get medals of elimination by elimination id
+     * @description Get medals of elimination by elimination id.
      *
      * @tags Medal
      * @name EliminationDetail
-     * @summary Show medals of elimination by elimination id
-     * @request GET:/medal/elimination/{id}
+     * @summary Show medals of elimination by elimination id.
+     * @request GET:/medal/elimination/{eliminationid}
      */
-    eliminationDetail: (id: number, params: RequestParams = {}) =>
-      this.request<DatabaseMedal, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
-        path: `/medal/elimination/${id}`,
+    eliminationDetail: (eliminationid: number, params: RequestParams = {}) =>
+      this.request<DatabaseMedal[], ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/medal/elimination/${eliminationid}`,
         method: "GET",
         format: "json",
         ...params,
       }),
 
     /**
-     * @description update medal's player set id by id
+     * @description Update medal's player set id by id.
      *
      * @tags Medal
      * @name PlayersetidUpdate
-     * @summary Update medal's player set id by id
+     * @summary Update medal's player set id by id.
      * @request PUT:/medal/playersetid/{id}
      */
-    playersetidUpdate: (id: number, PlayerSetId: string, params: RequestParams = {}) =>
-      this.request<void, ResponseErrorReceiveDataFormatResponse | ResponseErrorInternalErrorResponse>({
+    playersetidUpdate: (
+      id: number,
+      PlayerSetId: EndpointPutMedalPlayerSetIdByIdRequestBody,
+      params: RequestParams = {},
+    ) =>
+      this.request<void, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/medal/playersetid/${id}`,
         method: "PUT",
         body: PlayerSetId,
@@ -1808,11 +1816,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description get one medal by id
+     * @description Get one medal by id.
      *
      * @tags Medal
      * @name MedalDetail
-     * @summary Show one medal by id
+     * @summary Show one medal by id.
      * @request GET:/medal/{id}
      */
     medalDetail: (id: number, params: RequestParams = {}) =>
