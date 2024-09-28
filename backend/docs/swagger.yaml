@@ -628,6 +628,11 @@ definitions:
       order:
         type: integer
     type: object
+  endpoint.PutPlayerSetName.playerSetData:
+    properties:
+      set_name:
+        type: string
+    type: object
   endpoint.PutPlayerShootoffScore.UpdateShootoffScoreData:
     properties:
       shoot_off_score:
@@ -1261,7 +1266,7 @@ paths:
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       responses:
         "200":
           description: success
@@ -1408,7 +1413,7 @@ paths:
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       - description: Competition
         in: body
         name: Competition
@@ -4109,7 +4114,7 @@ paths:
         name: data
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PutPlayerSetName.playerSetData'
       produces:
       - application/json
       responses:

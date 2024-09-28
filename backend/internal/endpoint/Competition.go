@@ -397,7 +397,7 @@ func PostCompetition(context *gin.Context) {
 //	@Tags			Competition
 //	@Accept			json
 //	@Produce		json
-//	@Param			id			path		string																	true	"Competition ID"
+//	@Param			id			path		int																		true	"Competition ID"
 //	@Param			Competition	body		endpoint.PutCompetition.CompetitionPutData								true	"Competition"
 //	@Success		200			{object}	database.Competition{groups=response.Nill,participants=response.Nill}	"success, return modified competition data"
 //	@Success		204			{object}	response.Nill															"success, but no change"
@@ -855,7 +855,7 @@ func PutCompetitionMixedEliminationActive(context *gin.Context) {
 //	@Summary		Refresh competition player total score by competition id.
 //	@Description	Refresh competition player total score by competition id.
 //	@Tags			Competition
-//	@Param			id	path		string								true	"Competition ID"
+//	@Param			id	path		int									true	"Competition ID"
 //	@Success		200	{object}	response.Response					"success"
 //	@Failure		400	{object}	response.ErrorIdResponse			"invalid competition id parameter"
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse	"Get Competition with Groups Players Scores / Update Round Total Score / Update Player Total Score"

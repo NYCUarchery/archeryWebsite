@@ -740,7 +740,7 @@ const docTemplate = `{
                 "summary": "Refresh competition player total score by competition id.",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "Competition ID",
                         "name": "id",
                         "in": "path",
@@ -945,7 +945,7 @@ const docTemplate = `{
                 "summary": "update one Competition",
                 "parameters": [
                     {
-                        "type": "string",
+                        "type": "integer",
                         "description": "Competition ID",
                         "name": "id",
                         "in": "path",
@@ -5082,7 +5082,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/endpoint.PutPlayerSetName.playerSetData"
                         }
                     }
                 ],
@@ -6860,6 +6860,14 @@ const docTemplate = `{
             "properties": {
                 "order": {
                     "type": "integer"
+                }
+            }
+        },
+        "endpoint.PutPlayerSetName.playerSetData": {
+            "type": "object",
+            "properties": {
+                "set_name": {
+                    "type": "string"
                 }
             }
         },

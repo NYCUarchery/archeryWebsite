@@ -382,6 +382,10 @@ export interface EndpointPutPlayerOrderUpdateOrderData {
   order?: number;
 }
 
+export interface EndpointPutPlayerSetNamePlayerSetData {
+  set_name?: string;
+}
+
 export interface EndpointPutPlayerShootoffScoreUpdateShootoffScoreData {
   shoot_off_score?: number;
 }
@@ -860,7 +864,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Refresh competition player total score by competition id.
      * @request PUT:/competition/refresh/groups/players/playertotalscore/{id}
      */
-    refreshGroupsPlayersPlayertotalscoreUpdate: (id: string, params: RequestParams = {}) =>
+    refreshGroupsPlayersPlayertotalscoreUpdate: (id: number, params: RequestParams = {}) =>
       this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/competition/refresh/groups/players/playertotalscore/${id}`,
         method: "PUT",
@@ -929,7 +933,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary update one Competition
      * @request PUT:/competition/whole/{id}
      */
-    wholeUpdate: (id: string, Competition: EndpointPutCompetitionCompetitionPutData, params: RequestParams = {}) =>
+    wholeUpdate: (id: number, Competition: EndpointPutCompetitionCompetitionPutData, params: RequestParams = {}) =>
       this.request<
         DatabaseCompetition & {
           groups?: ResponseNill;
@@ -2511,7 +2515,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Put player set name
      * @request PUT:/playerset/name/{id}
      */
-    nameUpdate: (id: number, data: string, params: RequestParams = {}) =>
+    nameUpdate: (id: number, data: EndpointPutPlayerSetNamePlayerSetData, params: RequestParams = {}) =>
       this.request<void, ResponseErrorReceiveDataFormatResponse | ResponseErrorInternalErrorResponse>({
         path: `/playerset/name/${id}`,
         method: "PUT",

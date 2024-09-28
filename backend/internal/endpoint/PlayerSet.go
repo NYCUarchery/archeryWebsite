@@ -187,7 +187,7 @@ func PostPlayerSet(context *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id		path		uint									true	"Player Set ID"
-//	@Param			data	body		string									true	"Player Set Data"
+//	@Param			data	body		endpoint.PutPlayerSetName.playerSetData	true	"Player Set Data"
 //	@Success		200		{object}	nil										"success"
 //	@Failure		400		{object}	response.ErrorIdResponse				"invalid player set id"
 //	@Failure		400		{object}	response.ErrorReceiveDataFormatResponse	"invalid player set data format"
