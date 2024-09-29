@@ -18,15 +18,34 @@ import (
 
 //	@license.name	no license yet
 
-//	@host	localhost:8080
+//	@host	localhost:80
 //	@BasePath  /api/
-//
+
+//	@tag.name	Session
+//	@tag.name	User
+//	@tag.name	Institution
+//	@tag.name	Competition
+//	@tag.name	Participant
+//	@tag.name	GroupInfo
+//	@tag.name	Qualification
+//	@tag.name	Lane
+//	@tag.name	Player
+//	@tag.name	Elimination
+//	@tag.name	PlayerSet
+//	@tag.name	MatchResult
+//	@tag.name	MatchEnd
+//	@tag.name	MatchScore
+//	@tag.name	Medal
+//	@tag.name	OldLaneInfo
+//	@tag.name	docs
+
+// Set the test data into container(server) with FTP clis.
 // schemes http
 func main() {
 	server := gin.Default() // initialize a Gin router
 	mode := endpoint.GetConf("config/db.yaml").Mode
 	ip := getIpByMode()
-	port := "8080"
+	port := "80"
 
 	SetupGinMode(mode)
 	database.SetupDatabaseByMode(mode)

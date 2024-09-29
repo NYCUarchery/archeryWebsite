@@ -36,13 +36,14 @@ func IsGetEliminationWStagesMatchesById(context *gin.Context) (bool, database.El
 
 // Get one Elimination By ID godoc
 //
-//	@Summary		Show one Elimination
-//	@Description	Get one Elimination by id
+//	@Summary		Show only one Elimination
+//	@Description	Get only one Elimination by id
 //	@Tags			Elimination
 //	@Produce		json
-//	@Param			id	path	int	true	"Elimination ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			id	path		int																							true	"Elimination ID"
+//	@Success		200	{object}	database.Elimination{player_sets=response.Nill,stages=response.Nill,medals=response.Nill}	"success, return one Elimination without related data"
+//	@Failure		400	{object}	response.ErrorIdResponse																	"invalid Elimination ID, maybe not exist"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse															"internal db error for Get Elimination"
 //	@Router			/elimination/{id} [get]
 func GetOnlyEliminationById(context *gin.Context) {
 	isExist, data := IsGetEliminationById(context)
@@ -58,9 +59,10 @@ func GetOnlyEliminationById(context *gin.Context) {
 //	@Description	Get one Elimination with player sets by id
 //	@Tags			Elimination
 //	@Produce		json
-//	@Param			id	path	int	true	"Elimination ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			id	path		int																														true	"Elimination ID"
+//	@Success		200	{object}	database.Elimination{player_sets=database.PlayerSet{players=response.Nill},stages=response.Nill,medals=response.Nill}	"success, return one Elimination with player sets"
+//	@Failure		400	{object}	response.ErrorIdResponse																								"invalid Elimination ID, maybe not exist"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse																						"internal db error for Get Elimination"
 //	@Router			/elimination/playersets/{id} [get]
 func GetEliminationWPlayerSetsById(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -82,10 +84,11 @@ func GetEliminationWPlayerSetsById(context *gin.Context) {
 //	@Description	Get one Elimination with stages, matches by id
 //	@Tags			Elimination
 //	@Produce		json
-//	@Param			id	path	int	true	"Elimination ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
-//	@Router			/elimination/stages/{id} [get]
+//	@Param			id	path		int																																				true	"Elimination ID"
+//	@Success		200	{object}	database.Elimination{stages=database.Stage{matches=database.Match{MatchResult=response.Nill}},medals=response.Nill,player_sets=response.Nill}	"success, return one Elimination with stages, matches"
+//	@Failure		400	{object}	response.ErrorIdResponse																														"invalid Elimination ID, maybe not exist"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse																												"internal db error for Get Elimination"
+//	@Router			/elimination/stages/matches/{id} [get]
 func GetEliminationWStagesMatchesById(context *gin.Context) {
 	isExist, data := IsGetEliminationWStagesMatchesById(context)
 	if !isExist {
@@ -100,9 +103,10 @@ func GetEliminationWStagesMatchesById(context *gin.Context) {
 //	@Description	Get one Elimination with stages, matches, matchResults, matchEnds, scores by id
 //	@Tags			Elimination
 //	@Produce		json
-//	@Param			id	path	int	true	"Elimination ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			id	path		int																		true	"Elimination ID"
+//	@Success		200	{object}	database.Elimination{medals=response.Nill,player_sets=response.Nill}	"success, return one Elimination with all scores"
+//	@Failure		400	{object}	response.ErrorIdResponse												"invalid Elimination ID, maybe not exist"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse										"internal db error for Get Elimination"
 //	@Router			/elimination/scores/{id} [get]
 func GetEliminationWScoresById(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -124,9 +128,10 @@ func GetEliminationWScoresById(context *gin.Context) {
 //	@Description	Get one Elimination with stages, matches, matchResults, matchEnds, scores, playerSets, players, medals by id
 //	@Tags			Elimination
 //	@Produce		json
-//	@Param			id	path	int	true	"Elimination ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			id	path		int									true	"Elimination ID"
+//	@Success		200	{object}	database.Elimination				"success, return one Elimination with all related data"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid Elimination ID, maybe not exist"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error for Get Elimination"
 //	@Router			/elimination/stages/scores/medals/{id} [get]
 func GetEliminationById(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -148,9 +153,10 @@ func GetEliminationById(context *gin.Context) {
 //	@Description	Get one Match with matchResults, matchEnds, scores, playerSets, players by id
 //	@Tags			Elimination
 //	@Produce		json
-//	@Param			matchid	path	int	true	"Match ID"
-//	@Success		200		string	string
-//	@Failure		400		string	string
+//	@Param			matchid	path		int									true	"Match ID"
+//	@Success		200		{object}	database.Match						"success, return one Match with all related data"
+//	@Failure		400		{object}	response.ErrorIdResponse			"invalid Match ID, maybe not exist"
+//	@Failure		500		{object}	response.ErrorInternalErrorResponse	"internal db error for Get Match"
 //	@Router			/elimination/match/scores/{matchid} [get]
 func GetMatchWScoresById(context *gin.Context) {
 	id := Convert2uint(context, "matchid")
@@ -192,11 +198,17 @@ func PostEliminationById(context *gin.Context, data database.Elimination) (bool,
 //	@Tags			Elimination
 //	@Accept			json
 //	@Produce		json
-//	@Param			Elimination	body	string	true	"Elimination"
-//	@Success		200			string	string
-//	@Failure		400			string	string
+//	@Param			Elimination	body		endpoint.PostElimination.PostEliminationData												true	"Elimination"
+//	@Success		200			{object}	database.Elimination{player_sets=response.Nill,stages=response.Nill,medals=response.Nill}	"success, return one Elimination with new id"
+//	@Failure		400			{object}	response.ErrorIdResponse																	"invalid group ID, maybe not exist"
+//	@Failure		500			{object}	response.ErrorInternalErrorResponse															"internal db error for Create Elimination"
 //	@Router			/elimination [post]
 func PostElimination(context *gin.Context) {
+	type PostEliminationData struct {
+		GroupId  uint `json:"group_id"`
+		TeamSize int  `json:"team_size"`
+	}
+	_ = PostEliminationData{}
 	var data database.Elimination
 	err := context.BindJSON(&data)
 	if response.ErrorReceiveDataTest(context, 0, "Elimination", err) {
@@ -220,11 +232,16 @@ func PostElimination(context *gin.Context) {
 //	@Tags			Elimination
 //	@Accept			json
 //	@Produce		json
-//	@Param			Stage	body	string	true	"Stage"
-//	@Success		200		string	string
-//	@Failure		400		string	string
+//	@Param			Stage	body		endpoint.PostStage.PostStageData		true	"Stage"
+//	@Success		200		{object}	database.Stage{matchs=response.Nill}	"success, return one Stage with new id"
+//	@Failure		400		{object}	response.ErrorIdResponse				"invalid elimination ID, maybe not exist"
+//	@Failure		500		{object}	response.ErrorInternalErrorResponse		"internal db error for Create Stage"
 //	@Router			/elimination/stage [post]
 func PostStage(context *gin.Context) {
+	type PostStageData struct {
+		EliminationId uint `json:"elimination_id"`
+	}
+	_ = PostStageData{}
 	var data database.Stage
 	err := context.BindJSON(&data)
 	if response.ErrorReceiveDataTest(context, 0, "Stage", err) {
@@ -245,14 +262,17 @@ func PostStage(context *gin.Context) {
 //
 //	@Summary		Create one Match
 //	@Description	Post one new Match data with 2 matchResults
-//	@Description	Each matchResults with 4 or 5 matchEnds
-//	@Description	Each matchEnds with 3, 4, 6 matchScores
+//	@Description	Each matchResults with 4 or 5 matchEnds with different teamSize
+//	@Description	Each matchEnds with 3, 4, 6 matchScores with different teamSize
+//	@Description	input PlayerSetIds should have 2 playerSets in the same elimination
+//	@Description	input LaneNumbers should have 2 laneNumbers for each playerset
 //	@Tags			Elimination
 //	@Accept			json
 //	@Produce		json
-//	@Param			Match	body	string	true	"Match"
-//	@Success		200		string	string
-//	@Failure		400		string	string
+//	@Param			Match	body		endpoint.PostMatch.MatchData		true	"Match"
+//	@Success		200		{object}	database.Match						"success, return one Match with new id"
+//	@Failure		400		{object}	response.ErrorIdResponse			"invalid stage ID, maybe not exist, or player set id should be 2, lane numbers should be 2"
+//	@Failure		500		{object}	response.ErrorInternalErrorResponse	"internal db error for Create Match, MatchResult, MatchEnd, MatchScore, or get Stage"
 //	@Router			/elimination/match [post]
 func PostMatch(context *gin.Context) {
 	type MatchData struct {
@@ -340,10 +360,11 @@ func PostMatch(context *gin.Context) {
 //	@Summary		Update one Elimination current stage plus one
 //	@Description	Update one Elimination current stage plus one by id
 //	@Tags			Elimination
-//	@Param			id	path	int	true	"Elimination ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
-//	@Router			/elimination/currentstage/plus/{id} [put]
+//	@Param			id	path		int									true	"Elimination ID"
+//	@Success		200	{object}	response.Nill						"success, return one Elimination with new current stage"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid Elimination ID, maybe not exist"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error for Update Elimination CurrentStage"
+//	@Router			/elimination/currentstage/plus/{id} [patch]
 func PutEliminationCurrentStagePlusById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
@@ -362,10 +383,11 @@ func PutEliminationCurrentStagePlusById(context *gin.Context) {
 //	@Summary		Update one Elimination current stage minus one
 //	@Description	Update one Elimination current stage minus one by id
 //	@Tags			Elimination
-//	@Param			id	path	int	true	"Elimination ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
-//	@Router			/elimination/currentstage/minus/{id} [put]
+//	@Param			id	path		int									true	"Elimination ID"
+//	@Success		200	{object}	response.Nill						"success, return one Elimination with new current stage"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid Elimination ID, maybe not exist"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error for Update Elimination CurrentStage"
+//	@Router			/elimination/currentstage/minus/{id} [patch]
 func PutEliminationCurrentStageMinusById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
@@ -384,10 +406,11 @@ func PutEliminationCurrentStageMinusById(context *gin.Context) {
 //	@Summary		Update one Elimination current end plus one
 //	@Description	Update one Elimination current end plus one by id
 //	@Tags			Elimination
-//	@Param			id	path	int	true	"Elimination ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
-//	@Router			/elimination/currentend/plus/{id} [put]
+//	@Param			id	path		int									true	"Elimination ID"
+//	@Success		200	{object}	response.Nill						"success, return one Elimination with new current end"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid Elimination ID, maybe not exist"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error for Update Elimination CurrentStage"
+//	@Router			/elimination/currentend/plus/{id} [patch]
 func PutEliminationCurrentEndPlusById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
@@ -406,10 +429,11 @@ func PutEliminationCurrentEndPlusById(context *gin.Context) {
 //	@Summary		Update one Elimination current end minus one
 //	@Description	Update one Elimination current end minus one by id
 //	@Tags			Elimination
-//	@Param			id	path	int	true	"Elimination ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
-//	@Router			/elimination/currentend/minus/{id} [put]
+//	@Param			id	path		int									true	"Elimination ID"
+//	@Success		200	{object}	response.Nill						"success, return one Elimination with new current end"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid Elimination ID, maybe not exist"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error for Update Elimination CurrentStage"
+//	@Router			/elimination/currentend/minus/{id} [patch]
 func PutEliminationCurrentEndMinusById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	isExist, _ := IsGetEliminationById(context)
@@ -430,10 +454,10 @@ func PutEliminationCurrentEndMinusById(context *gin.Context) {
 //	@Tags			Elimination
 //	@Accept			json
 //	@Produce		json
-//	@Param			id	path	int	true	"Elimination ID"
-//	@Success		200	string	string
-//	@Success		204	string	string
-//	@Failure		400	string	string
+//	@Param			id	path		int									true	"Elimination ID"
+//	@Success		200	{object}	response.DeleteSuccessResponse		"success, return delete success message"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid Elimination ID, maybe not exist, or already deleted"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error for Delete Elimination"
 //	@Router			/elimination/{id} [delete]
 func DeleteElimination(context *gin.Context) {
 	id := Convert2uint(context, "id")

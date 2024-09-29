@@ -97,7 +97,7 @@ func TestErrorIdTest(t *testing.T) {
 		expectedMessage string
 	}{
 		{1, true, "\"test message\"", "id exist", false, 200, ""},
-		{2, false, "\"test message\"", "id not exist", true, 400, "{\n    \"error\": \"invalid \\\"test message\\\" ID(2)\"\n}"},
+		{2, false, "\"test message\"", "id not exist", true, 400, "{\n    \"error\": \"invalid ID(2) : \\\"test message\\\"\"\n}"},
 	}
 	Convey("TestErrorIdTest", t, func() {
 		for _, tc := range testcases {
@@ -124,7 +124,7 @@ func TestErrorInternalErrorTest(t *testing.T) {
 		expectedMessage string
 	}{
 		{1, "\"test message\"", nil, "internal error has no error", false, 200, ""},
-		{2, "\"test message\"", fmt.Errorf("\"error\""), "internal error has error", true, 500, "{\n    \"error\": \"\\\"test message\\\" need fix ID(2) \\\"error\\\"\"\n}"},
+		{2, "\"test message\"", fmt.Errorf("\"error\""), "internal error has error", true, 500, "{\n    \"error\": \"\\\"test message\\\" need fix ID(2) : \\\"error\\\"\"\n}"},
 	}
 
 	Convey("TestErrorInternalErrorTest", t, func() {

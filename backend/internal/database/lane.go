@@ -64,7 +64,7 @@ func GetUnassignedLaneId(competitionId uint) uint {
 	return data.ID
 }
 
-func GetAllLaneByCompetitionId(competitionId uint) ([]Lane, error) {
+func GetAllLanesByCompetitionId(competitionId uint) ([]Lane, error) {
 	var data []Lane
 	result := DB.Model(&Lane{}).Where("competition_id = ?", competitionId).Order("`lane_number` asc").Find(&data)
 	return data, result.Error

@@ -47,6 +47,31 @@ definitions:
       unassigned_lane_id:
         type: integer
     type: object
+  database.Elimination:
+    properties:
+      current_end:
+        type: integer
+      current_stage:
+        type: integer
+      group_id:
+        type: integer
+      id:
+        type: integer
+      medals:
+        items:
+          $ref: '#/definitions/database.Medal'
+        type: array
+      player_sets:
+        items:
+          $ref: '#/definitions/database.PlayerSet'
+        type: array
+      stages:
+        items:
+          $ref: '#/definitions/database.Stage'
+        type: array
+      team_size:
+        type: integer
+    type: object
   database.Group:
     properties:
       bow_type:
@@ -72,6 +97,90 @@ definitions:
         type: integer
       name:
         type: string
+    type: object
+  database.Lane:
+    properties:
+      competition_id:
+        type: integer
+      id:
+        type: integer
+      lane_number:
+        type: integer
+      players:
+        items:
+          $ref: '#/definitions/database.Player'
+        type: array
+      qualification_id:
+        type: integer
+    type: object
+  database.Match:
+    properties:
+      id:
+        type: integer
+      match_results:
+        items:
+          $ref: '#/definitions/database.MatchResult'
+        type: array
+      stage_id:
+        type: integer
+    type: object
+  database.MatchEnd:
+    properties:
+      id:
+        type: integer
+      is_confirmed:
+        type: boolean
+      match_result_id:
+        type: integer
+      match_scores:
+        items:
+          $ref: '#/definitions/database.MatchScore'
+        type: array
+      total_scores:
+        type: integer
+    type: object
+  database.MatchResult:
+    properties:
+      id:
+        type: integer
+      is_winner:
+        type: boolean
+      lane_number:
+        type: integer
+      match_ends:
+        items:
+          $ref: '#/definitions/database.MatchEnd'
+        type: array
+      match_id:
+        type: integer
+      player_set:
+        $ref: '#/definitions/database.PlayerSet'
+      player_set_id:
+        type: integer
+      shoot_off_score:
+        type: integer
+      total_points:
+        type: integer
+    type: object
+  database.MatchScore:
+    properties:
+      id:
+        type: integer
+      match_end_id:
+        type: integer
+      score:
+        type: integer
+    type: object
+  database.Medal:
+    properties:
+      elimination_id:
+        type: integer
+      id:
+        type: integer
+      player_set_id:
+        type: integer
+      type:
+        type: integer
     type: object
   database.Participant:
     properties:
@@ -132,6 +241,21 @@ definitions:
       total_score:
         type: integer
     type: object
+  database.Qualification:
+    properties:
+      advancing_num:
+        type: integer
+      end_lane:
+        type: integer
+      id:
+        type: integer
+      lanes:
+        items:
+          $ref: '#/definitions/database.Lane'
+        type: array
+      start_lane:
+        type: integer
+    type: object
   database.Round:
     properties:
       id:
@@ -167,6 +291,17 @@ definitions:
       score:
         type: integer
     type: object
+  database.Stage:
+    properties:
+      elimination_id:
+        type: integer
+      id:
+        type: integer
+      matchs:
+        items:
+          $ref: '#/definitions/database.Match'
+        type: array
+    type: object
   database.User:
     properties:
       email:
@@ -197,6 +332,51 @@ definitions:
       user_name:
         type: string
     type: object
+  endpoint.CompetitionWGroupsQuaEliData:
+    properties:
+      competition_id:
+        type: integer
+      group_data:
+        items:
+          $ref: '#/definitions/endpoint.GroupData'
+        type: array
+    type: object
+  endpoint.EliminationData:
+    properties:
+      elimination_id:
+        type: integer
+      team_size:
+        type: integer
+    type: object
+  endpoint.GetPlayerSetsByMedalByEliminationId.playerSetData:
+    properties:
+      id:
+        type: integer
+      set_name:
+        type: string
+      type:
+        type: integer
+    type: object
+  endpoint.GetUserID.ID:
+    properties:
+      id:
+        type: integer
+    type: object
+  endpoint.GroupData:
+    properties:
+      bow_type:
+        type: string
+      elimination_data:
+        items:
+          $ref: '#/definitions/endpoint.EliminationData'
+        type: array
+      group_id:
+        type: integer
+      group_name:
+        type: string
+      group_range:
+        type: string
+    type: object
   endpoint.LoginInfo:
     properties:
       password:
@@ -209,6 +389,19 @@ definitions:
       new_password:
         type: string
       original_password:
+        type: string
+    type: object
+  endpoint.ModifyInfo.ModifyUser:
+    properties:
+      email:
+        type: string
+      institution_id:
+        type: integer
+      overview:
+        type: string
+      real_name:
+        type: string
+      user_name:
         type: string
     type: object
   endpoint.NewInstitutionInfo:
@@ -225,6 +418,189 @@ definitions:
       user_id:
         type: integer
     type: object
+  endpoint.ParticipantWName:
+    properties:
+      competition_id:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      role:
+        type: string
+      status:
+        type: string
+      user_id:
+        type: integer
+    type: object
+  endpoint.PostCompetition.CompetitionPostData:
+    properties:
+      end_time:
+        type: string
+      host_id:
+        type: integer
+      lanes_num:
+        type: integer
+      rounds_num:
+        type: integer
+      script:
+        type: string
+      start_time:
+        type: string
+      sub_title:
+        type: string
+      title:
+        type: string
+    type: object
+  endpoint.PostElimination.PostEliminationData:
+    properties:
+      group_id:
+        type: integer
+      team_size:
+        type: integer
+    type: object
+  endpoint.PostGroupInfo.GroupData:
+    properties:
+      bow_type:
+        type: string
+      competition_id:
+        type: integer
+      group_index:
+        type: integer
+      group_name:
+        type: string
+      group_range:
+        type: string
+    type: object
+  endpoint.PostMatch.MatchData:
+    properties:
+      lane_numbers:
+        items:
+          type: integer
+        type: array
+      player_set_ids:
+        items:
+          type: integer
+        type: array
+      stage_id:
+        type: integer
+    type: object
+  endpoint.PostMatchEnd.matchEndData:
+    properties:
+      match_result_id:
+        type: integer
+      team_size:
+        type: integer
+    type: object
+  endpoint.PostPlayerSet.playerSetData:
+    properties:
+      elimination_id:
+        type: integer
+      player_ids:
+        items:
+          type: integer
+        type: array
+      set_name:
+        type: string
+    type: object
+  endpoint.PostRoundEnd.RoundEndData:
+    properties:
+      round_id:
+        type: integer
+    type: object
+  endpoint.PostStage.PostStageData:
+    properties:
+      elimination_id:
+        type: integer
+    type: object
+  endpoint.PutCompetition.CompetitionPutData:
+    properties:
+      current_phase:
+        type: integer
+      end_time:
+        type: string
+      qualification_current_end:
+        type: integer
+      script:
+        type: string
+      start_time:
+        type: string
+      sub_title:
+        type: string
+      title:
+        type: string
+    type: object
+  endpoint.PutGroupInfo.GroupData:
+    properties:
+      bow_type:
+        type: string
+      group_index:
+        type: integer
+      group_name:
+        type: string
+      group_range:
+        type: string
+    type: object
+  endpoint.PutMatchEndsIsConfirmedById.matchEndIsConfirmedData:
+    properties:
+      is_confirmed:
+        type: boolean
+    type: object
+  endpoint.PutMatchEndsScoresById.matchEndScoresData:
+    properties:
+      match_score_ids:
+        items:
+          type: integer
+        type: array
+      scores:
+        items:
+          type: integer
+        type: array
+      total_scores:
+        type: integer
+    type: object
+  endpoint.PutMatchEndsTotalScoresById.matchEndTotalScoresData:
+    properties:
+      total_scores:
+        type: integer
+    type: object
+  endpoint.PutMatchResultIsWinnerById.matchResultIsWinnerData:
+    properties:
+      is_winner:
+        type: boolean
+    type: object
+  endpoint.PutMatchResultLaneNumberById.matchResultLaneNumberData:
+    properties:
+      lane_number:
+        type: integer
+    type: object
+  endpoint.PutMatchResultShootOffScoreById.matchResultShootOffScoreData:
+    properties:
+      shoot_off_score:
+        type: integer
+    type: object
+  endpoint.PutMatchResultTotalPointsById.matchResultTotalPointsData:
+    properties:
+      total_points:
+        type: integer
+    type: object
+  endpoint.PutMatchScoreScoreById.matchScoreData:
+    properties:
+      score:
+        type: integer
+    type: object
+  endpoint.PutMedalPlayerSetIdById.RequestBody:
+    properties:
+      player_set_id:
+        type: integer
+    type: object
+  endpoint.PutParticipant.PutParticipantData:
+    properties:
+      role:
+        type: string
+      status:
+        type: string
+    type: object
   endpoint.PutPlayerAllEndScoresByEndId.EndScores:
     properties:
       scores:
@@ -232,13 +608,115 @@ definitions:
           type: integer
         type: array
     type: object
+  endpoint.PutPlayerGroupId.UpdateGroupIdData:
+    properties:
+      group_id:
+        type: integer
+    type: object
+  endpoint.PutPlayerIsConfirmed.UpdateIsConfirmedData:
+    properties:
+      is_confirmed:
+        type: boolean
+    type: object
+  endpoint.PutPlayerLaneId.UpdateLaneIdData:
+    properties:
+      lane_id:
+        type: integer
+    type: object
+  endpoint.PutPlayerOrder.UpdateOrderData:
+    properties:
+      order:
+        type: integer
+    type: object
+  endpoint.PutPlayerSetName.playerSetData:
+    properties:
+      set_name:
+        type: string
+    type: object
+  endpoint.PutPlayerShootoffScore.UpdateShootoffScoreData:
+    properties:
+      shoot_off_score:
+        type: integer
+    type: object
+  endpoint.PutPlayerTotalScoreByplayerId.UpdateTotalScoreData:
+    properties:
+      new_score:
+        type: integer
+    type: object
+  endpoint.PutQualificationByID.QualificationPutData:
+    properties:
+      advancing_num:
+        type: integer
+      end_lane:
+        type: integer
+      start_lane:
+        type: integer
+    type: object
+  endpoint.UpdateTotalScoreData:
+    properties:
+      player_id:
+        type: integer
+      round_end_id:
+        type: integer
+      round_id:
+        type: integer
+      score:
+        type: integer
+    type: object
+  endpoint.groupIdsForReorder:
+    properties:
+      competition_id:
+        type: integer
+      group_ids:
+        items:
+          type: integer
+        type: array
+    type: object
+  response.DeleteSuccessResponse:
+    properties:
+      message:
+        example: 'Delete ID(1) : sth delete success'
+        type: string
+    type: object
+  response.ErrorIdResponse:
+    properties:
+      error:
+        example: 'invalid ID(1) : sth error'
+        type: string
+    type: object
+  response.ErrorInternalErrorResponse:
+    properties:
+      error:
+        example: 'sth need fix ID(1) : sth error'
+        type: string
+    type: object
+  response.ErrorReceiveDataFormatResponse:
+    properties:
+      error:
+        example: 'bad request data: sth error'
+        type: string
+    type: object
+  response.ErrorReceiveDataResponse:
+    properties:
+      error:
+        example: 'bad request data ID(1): sth error'
+        type: string
+    type: object
+  response.ErrorResponse:
+    properties:
+      error:
+        example: error description
+        type: string
+    type: object
+  response.Nill:
+    type: object
   response.Response:
     properties:
-      result:
+      message:
         example: result description
         type: string
     type: object
-host: localhost:8080
+host: localhost:80
 info:
   contact:
     name: NYCUArchery
@@ -251,7 +729,7 @@ info:
 paths:
   /competition:
     get:
-      description: get information of all the competitions
+      description: Get the information of all competitions.
       produces:
       - application/json
       responses:
@@ -259,75 +737,99 @@ paths:
           description: success
           schema:
             items:
-              $ref: '#/definitions/database.Competition'
+              allOf:
+              - $ref: '#/definitions/database.Competition'
+              - properties:
+                  groups:
+                    $ref: '#/definitions/response.Nill'
+                  participants:
+                    $ref: '#/definitions/response.Nill'
+                type: object
             type: array
         "500":
-          description: internal db error
+          description: internal db error for getting all competitions
           schema:
-            type: string
-      summary: get information of all the competitions
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Get the information of all competitions.
       tags:
       - Competition
     post:
       consumes:
       - application/json
       description: |-
-        Post one new Competition data with new id, create UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup, add host as admin of competition, and return the new Competition data
-        zeroTime 0001-01-01T00:00:00+00:01
+        Post one new Competition data with new id.
+        Create UnassignedGroup, create Lanes and UnassignedLane which link to UnassignedGroup.
+        Add host as admin of competition, and return the new Competition data.
+        RoundsNum and LanesNum will influence player post data, so cannot be changed.
+        ZeroTime 0001-01-01T00:00:00+00:01
       parameters:
       - description: Competition
         in: body
         name: Competition
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PostCompetition.CompetitionPostData'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return new competition data
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Competition'
+            - properties:
+                groups:
+                  $ref: '#/definitions/response.Nill'
+                participants:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: roundsNum must > 0 / When creating Competition, startTime must
+            <= endTime
           schema:
-            type: string
-      summary: Create one Competition and related data
+            $ref: '#/definitions/response.ErrorReceiveDataFormatResponse'
+        "500":
+          description: internal db error / Post GroupInfo / Update Competition UnassignedLaneId
+            / Update Competition UnassignedGroupId
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Create one Competition and related data.
       tags:
       - Competition
   /competition/{id}:
     delete:
-      consumes:
-      - application/json
-      description: delete one Competition by id, delete all related groups, lanes,
-        players
+      description: |-
+        Delete one Competition by id.
+        Delete all related groups, lanes, players, participants.
       parameters:
       - description: Competition ID
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: delete success
           schema:
-            type: string
+            $ref: '#/definitions/response.DeleteSuccessResponse'
         "400":
-          description: Bad Request
+          description: invalid competition id parameter
           schema:
-            type: string
-        "404":
-          description: Not Found
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Delete Competition with Groups / Delete
+            GroupInfo By Id Through Competition / Delete Player Through Competition
+            / Delete Participaint / Delete Lane By Competition Id
           schema:
-            type: string
-      summary: delete one Competition
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Delete one Competition.
       tags:
       - Competition
     get:
       description: |-
-        Get one Competition by id without GroupInfo
+        Get one Competition by id without groups and participants.
         zeroTime 0001-01-01T00:00:00+00:01
       parameters:
       - description: Competition ID
@@ -339,51 +841,141 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, but groups and participants are empty
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Competition'
+            - properties:
+                groups:
+                  $ref: '#/definitions/response.Nill'
+                participants:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid competition id parameter
           schema:
-            type: string
-      summary: Show one Competition without GroupInfo
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for getting competition
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show one Competition without groups and participants.
       tags:
       - Competition
-  /competition/current-phase/plus/{id}:
     put:
-      description: update one Competition currentPhase --
+      consumes:
+      - application/json
+      description: |-
+        Put whole new Competition and overwrite by the id.
+        Allow to change title, subtitle, startTime, endTime, script, currentPhase, qualificationCurrentEnd.
+        Cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId, hostId, currentPhase, qualificationCurrentEnd.
+        zeroTime 0001-01-01T00:00:00+00:01
       parameters:
       - description: Competition ID
         in: path
         name: id
         required: true
-        type: string
+        type: integer
+      - description: Competition
+        in: body
+        name: Competition
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.PutCompetition.CompetitionPutData'
+      produces:
+      - application/json
       responses:
         "200":
-          description: OK
+          description: success, return modified competition data
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Competition'
+            - properties:
+                groups:
+                  $ref: '#/definitions/response.Nill'
+                participants:
+                  $ref: '#/definitions/response.Nill'
+              type: object
+        "204":
+          description: success, but no change
+          schema:
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid competition id parameter / When creating Competition,
+            startTime must <= endTime
           schema:
-            type: string
-      summary: update one Competition currentPhase --
+            $ref: '#/definitions/response.ErrorReceiveDataResponse'
+        "500":
+          description: internal db error / Get Competition / Update Competition
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: update one Competition
+      tags:
+      - Competition
+  /competition/current-phase/minus/{id}:
+    patch:
+      description: Update one Competition currentPhase -- by id.
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: invalid competition id parameter
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: Update Competition CurrentPhase Minus
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one Competition currentPhase -- by id.
+      tags:
+      - Competition
+  /competition/current-phase/plus/{id}:
+    patch:
+      description: Update one Competition currentPhase ++ by id.
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: invalid competition id parameter
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: Update Competition CurrentPhase Plus
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one Competition currentPhase ++ by id.
       tags:
       - Competition
   /competition/current/{head}/{tail}:
     get:
       description: |-
-        Get current Competitions, head and tail are the range of most recent competitions
-        For example, head = 0, tail = 10, then return the most recent 10 competitions
+        Get current Competitions, head and tail are the range of most recent competitions.
+        For example, head = 0, tail = 10, then return the most recent 10 competitions.
         head >= 0, tail >= 0, head <= tail
       parameters:
       - description: head
-        in: query
+        in: path
         name: head
         required: true
         type: integer
       - description: tail
-        in: query
+        in: path
         name: tail
         required: true
         type: integer
@@ -391,29 +983,59 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return most recent competitions
           schema:
-            type: string
+            items:
+              allOf:
+              - $ref: '#/definitions/database.Competition'
+              - properties:
+                  groups:
+                    $ref: '#/definitions/response.Nill'
+                  participants:
+                    $ref: '#/definitions/response.Nill'
+                type: object
+            type: array
         "400":
-          description: Bad Request
+          description: head and tail must >= 0 / head must <= tail / invalid head
+            parameter / invalid tail parameter
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorReceiveDataFormatResponse'
+        "500":
+          description: internal db error / Get Current Competitions
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show current Competitions
       tags:
       - Competition
   /competition/elimination-isactive/{id}:
-    put:
-      description: update one Competition Elimination Active to be true
+    patch:
+      description: |-
+        Update one Competition Elimination Active to be true by id.
+        Cannot change to false, only can change to true.
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/response.Response'
+        "204":
+          description: success, but no change
+          schema:
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid competition id parameter
           schema:
-            type: string
-      summary: update one Competition Elimination Active to be true
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: Update Competition Elimination Active
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one Competition Elimination Active to be true by id.
       tags:
       - Competition
   /competition/groups/{id}:
@@ -429,19 +1051,67 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return competition without participants
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Competition'
+            - properties:
+                groups:
+                  items:
+                    allOf:
+                    - $ref: '#/definitions/database.Group'
+                    - properties:
+                        players:
+                          $ref: '#/definitions/response.Nill'
+                      type: object
+                  type: array
+                participants:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid competition id parameter
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for getting competition
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Competition with GroupInfos
+      tags:
+      - Competition
+  /competition/groups/eliminations/{id}:
+    get:
+      description: Get one Competition by id with related Groups which have related
+        one Qualification id and many Elimination ids.
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success, return competition with groups and eliminations
+          schema:
+            $ref: '#/definitions/endpoint.CompetitionWGroupsQuaEliData'
+        "400":
+          description: invalid comepetition id parameter
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Get Competition Group Ids when get Competition
+            with Groups Qualification Elimination / Get Elimination By Group Id when
+            get Competition with Groups Qualification Elimination
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show Groups and Eliminations of one Competition.
       tags:
       - Competition
   /competition/groups/players/{id}:
     get:
-      description: Get one Competition by id with GroupInfos and Players
+      description: Get one Competition by id with GroupInfos and Players.
       parameters:
       - description: Competition ID
         in: path
@@ -452,124 +1122,80 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return competition with groups and players
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Competition'
+            - properties:
+                groups:
+                  items:
+                    allOf:
+                    - $ref: '#/definitions/database.Group'
+                    - properties:
+                        players:
+                          items:
+                            allOf:
+                            - $ref: '#/definitions/database.Player'
+                            - properties:
+                                player_sets:
+                                  $ref: '#/definitions/response.Nill'
+                                rounds:
+                                  $ref: '#/definitions/response.Nill'
+                              type: object
+                          type: array
+                      type: object
+                  type: array
+                participants:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid comepetition id parameter
           schema:
-            type: string
-      summary: Show one Competition with GroupInfos and Players
-      tags:
-      - Competition
-  /competition/groups/players/playertotal/{id}:
-    put:
-      description: update competition recount player total score
-      parameters:
-      - description: Competition ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: Internal Server Error
+          description: internal db error for getting competition
           schema:
-            type: string
-      summary: update competition recount player total score
-      tags:
-      - Competition
-  /competition/groups/players/rank/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Update update all  player ranking of different groups in one Competition
-      parameters:
-      - description: Competition ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      summary: update one Competition Ranking
-      tags:
-      - Competition
-  /competition/groups/qualieli/{id}:
-    get:
-      description: Get one Competition by id with related Groups which have related
-        one Qualification id and many Elimination ids
-      parameters:
-      - description: Competition ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Show one Competition with Groups Qualification Elimination
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show one Competition with GroupInfos and Players.
       tags:
       - Competition
   /competition/mixed-elimination-isactive/{id}:
-    put:
-      description: update one Competition Mixed Elimination Active to be true and
+    patch:
+      description: |-
+        Update one Competition Mixed Elimination Active to be true by id.
+        Cannot change to false, only can change to true.
         create all mixed elimination for groups
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/response.Response'
+        "204":
+          description: success, but no change
+          schema:
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid competition id parameter
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: Internal Server Error
+          description: Update Competition Mixed Elimination Active / Get Competition
+            Group Ids / Post Elimination By Id
           schema:
-            type: string
-      summary: update one Competition Mixed Elimination Active to be true and create
-        all mixed elimination for groups
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one Competition Mixed Elimination Active to be true and create
+        mixed elimination.
       tags:
       - Competition
   /competition/participants/{id}:
     get:
-      description: Get one Competition by id with Participants
+      description: Get one Competition by id with Participants.
       parameters:
       - description: Competition ID
         in: path
@@ -580,92 +1206,218 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return competition without groups
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Competition'
+            - properties:
+                groups:
+                  $ref: '#/definitions/response.Nill'
+                participants:
+                  $ref: '#/definitions/database.Participant'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid comepetition id parameter
           schema:
-            type: string
-      summary: Show one Competition with Participants
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for getting competition
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show one Competition with Participants.
       tags:
       - Competition
   /competition/qualification-current-end/minus/{id}:
-    put:
-      description: update one Competition Qualification currentEnd --
+    patch:
+      description: Update one Competition Qualification currentEnd -- by id.
       parameters:
       - description: Competition ID
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/response.Response'
         "400":
-          description: Bad Request
+          description: invalid competition id parameter
           schema:
-            type: string
-      summary: update one Competition Qualification currentEnd --
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: Update Competition Qualification CurrentEnd Minus
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one Competition Qualification currentEnd -- by id.
       tags:
       - Competition
   /competition/qualification-current-end/plus/{id}:
-    put:
-      description: update one Competition Qualification currentEnd ++
+    patch:
+      description: Update one Competition Qualification currentEnd ++ by id.
       parameters:
       - description: Competition ID
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/response.Response'
         "400":
-          description: Bad Request
+          description: invalid competition id parameter
           schema:
-            type: string
-      summary: update one Competition Qualification currentEnd ++
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: Update Competition Qualification CurrentEnd Plus
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one Competition Qualification currentEnd ++ by id.
       tags:
       - Competition
   /competition/qualification-isactive/{id}:
-    put:
-      description: update one Competition Qualification Active to be true
+    patch:
+      description: |-
+        Update one Competition Qualification Active to be true by id.
+        Cannot change to false, only can change to true.
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/response.Response'
+        "204":
+          description: success, but no change
+          schema:
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid competition id parameter
           schema:
-            type: string
-      summary: update one Competition Qualification Active to be true
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: Update Competition Qualification Active
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one Competition Qualification Active to be true by id.
       tags:
       - Competition
-  /competition/recent/{userid}/{head}/{tail}:
+  /competition/refresh/groups/players/playertotalscore/{id}:
+    patch:
+      description: Refresh competition player total score by competition id.
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: invalid competition id parameter
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: Get Competition with Groups Players Scores / Update Round Total
+            Score / Update Player Total Score
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Refresh competition player total score by competition id.
+      tags:
+      - Competition
+  /competition/refresh/groups/players/rank/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: Refresh all player ranking of different groups in one Competition.
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Update Competition Ranking Success
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: invalid competition id parameter
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Get Competition GroupIds when update ranking
+            / Get player ids when update ranking / Update player rank when update
+            ranking by competition id
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Refresh one Competition Ranking.
+      tags:
+      - Competition
+  /competition/team-elimination-isactive/{id}:
+    patch:
+      description: |-
+        Update one Competition Team Elimination Active to be true by id.
+        Cannot change to false, only can change to true.
+        Create all team elimination for groups.
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/response.Response'
+        "204":
+          description: success, but no change
+          schema:
+            $ref: '#/definitions/response.Nill'
+        "400":
+          description: invalid competition id parameter
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: Update Competition Team Elimination Active / Get Competition
+            Group Ids / Post Elimination By Id
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one Competition Team Elimination Active to be true and create
+        team elimination.
+      tags:
+      - Competition
+  /competition/user/{userid}/{head}/{tail}:
     get:
       description: |-
-        Get recent Competitions by User id, head and tail are the range of most recent competitions
-        For example, head = 0, tail = 10, then return the most recent 10 competitions
+        Get recent Competitions by User id, head and tail are the range of most recent competitions.
+        For example, head = 0, tail = 10, then return the most recent 10 competitions.
         head >= 0, tail >= 0, head <= tail
       parameters:
       - description: User ID
-        in: query
+        in: path
         name: userid
         required: true
         type: integer
       - description: head
-        in: query
+        in: path
         name: head
         required: true
         type: integer
       - description: tail
-        in: query
+        in: path
         name: tail
         required: true
         type: integer
@@ -673,124 +1425,30 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return most recent competitions dealing with User
           schema:
-            type: string
+            items:
+              allOf:
+              - $ref: '#/definitions/database.Competition'
+              - properties:
+                  groups:
+                    $ref: '#/definitions/response.Nill'
+                  participants:
+                    $ref: '#/definitions/response.Nill'
+                type: object
+            type: array
         "400":
-          description: Bad Request
+          description: head and tail must >= 0 / head must <= tail / invalid head
+            parameter / invalid tail parameter / invalid userid parameter
           schema:
-            type: string
-      summary: Show recent Competitions dealing with User
-      tags:
-      - Competition
-  /competition/team-elimination-isactive/{id}:
-    put:
-      description: update one Competition Team Elimination Active to be true and create
-        all team elimination for groups
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
+            $ref: '#/definitions/response.ErrorReceiveDataFormatResponse'
         "500":
-          description: Internal Server Error
+          description: internal db error / Get User / Get Competitions Of User
           schema:
-            type: string
-      summary: update one Competition Team Elimination Active to be true and create
-        all team elimination for groups
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show recent Competitions dealing with User.
       tags:
       - Competition
-  /competition/whole/{id}:
-    put:
-      consumes:
-      - application/json
-      description: |-
-        Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId
-        zeroTime 0001-01-01T00:00:00+00:01
-      parameters:
-      - description: Competition ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Competition
-        in: body
-        name: Competition
-        required: true
-        schema:
-          type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      summary: update one Competition without GroupInfo
-      tags:
-      - Competition
-  /data/qualification/lanes/Unassigned/{id}:
-    get:
-      description: Get one Qualification with Unassigned Lanes by id
-      parameters:
-      - description: Qualification ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Show one Qualification
-      tags:
-      - Qualification
-  /data/qualification/lanes/players/{id}:
-    get:
-      description: Get one Qualification with Lanes and Players by id
-      parameters:
-      - description: Qualification ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Show one Qualification
-      tags:
-      - Qualification
   /elimination:
     post:
       consumes:
@@ -802,18 +1460,31 @@ paths:
         name: Elimination
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PostElimination.PostEliminationData'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return one Elimination with new id
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Elimination'
+            - properties:
+                medals:
+                  $ref: '#/definitions/response.Nill'
+                player_sets:
+                  $ref: '#/definitions/response.Nill'
+                stages:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid group ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Create Elimination
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Create one Elimination
       tags:
       - Elimination
@@ -832,22 +1503,22 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return delete success message
           schema:
-            type: string
-        "204":
-          description: No Content
-          schema:
-            type: string
+            $ref: '#/definitions/response.DeleteSuccessResponse'
         "400":
-          description: Bad Request
+          description: invalid Elimination ID, maybe not exist, or already deleted
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Delete Elimination
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Delete one Elimination, and related stages and matches
       tags:
       - Elimination
     get:
-      description: Get one Elimination by id
+      description: Get only one Elimination by id
       parameters:
       - description: Elimination ID
         in: path
@@ -858,18 +1529,31 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return one Elimination without related data
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Elimination'
+            - properties:
+                medals:
+                  $ref: '#/definitions/response.Nill'
+                player_sets:
+                  $ref: '#/definitions/response.Nill'
+                stages:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid Elimination ID, maybe not exist
           schema:
-            type: string
-      summary: Show one Elimination
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Get Elimination
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show only one Elimination
       tags:
       - Elimination
   /elimination/currentend/minus/{id}:
-    put:
+    patch:
       description: Update one Elimination current end minus one by id
       parameters:
       - description: Elimination ID
@@ -879,18 +1563,22 @@ paths:
         type: integer
       responses:
         "200":
-          description: OK
+          description: success, return one Elimination with new current end
           schema:
-            type: string
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid Elimination ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Update Elimination CurrentStage
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Update one Elimination current end minus one
       tags:
       - Elimination
   /elimination/currentend/plus/{id}:
-    put:
+    patch:
       description: Update one Elimination current end plus one by id
       parameters:
       - description: Elimination ID
@@ -900,18 +1588,22 @@ paths:
         type: integer
       responses:
         "200":
-          description: OK
+          description: success, return one Elimination with new current end
           schema:
-            type: string
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid Elimination ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Update Elimination CurrentStage
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Update one Elimination current end plus one
       tags:
       - Elimination
   /elimination/currentstage/minus/{id}:
-    put:
+    patch:
       description: Update one Elimination current stage minus one by id
       parameters:
       - description: Elimination ID
@@ -921,18 +1613,22 @@ paths:
         type: integer
       responses:
         "200":
-          description: OK
+          description: success, return one Elimination with new current stage
           schema:
-            type: string
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid Elimination ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Update Elimination CurrentStage
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Update one Elimination current stage minus one
       tags:
       - Elimination
   /elimination/currentstage/plus/{id}:
-    put:
+    patch:
       description: Update one Elimination current stage plus one by id
       parameters:
       - description: Elimination ID
@@ -942,13 +1638,17 @@ paths:
         type: integer
       responses:
         "200":
-          description: OK
+          description: success, return one Elimination with new current stage
           schema:
-            type: string
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid Elimination ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Update Elimination CurrentStage
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Update one Elimination current stage plus one
       tags:
       - Elimination
@@ -958,26 +1658,34 @@ paths:
       - application/json
       description: |-
         Post one new Match data with 2 matchResults
-        Each matchResults with 4 or 5 matchEnds
-        Each matchEnds with 3, 4, 6 matchScores
+        Each matchResults with 4 or 5 matchEnds with different teamSize
+        Each matchEnds with 3, 4, 6 matchScores with different teamSize
+        input PlayerSetIds should have 2 playerSets in the same elimination
+        input LaneNumbers should have 2 laneNumbers for each playerset
       parameters:
       - description: Match
         in: body
         name: Match
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PostMatch.MatchData'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return one Match with new id
           schema:
-            type: string
+            $ref: '#/definitions/database.Match'
         "400":
-          description: Bad Request
+          description: invalid stage ID, maybe not exist, or player set id should
+            be 2, lane numbers should be 2
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Create Match, MatchResult, MatchEnd,
+            MatchScore, or get Stage
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Create one Match
       tags:
       - Elimination
@@ -995,13 +1703,17 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return one Match with all related data
           schema:
-            type: string
+            $ref: '#/definitions/database.Match'
         "400":
-          description: Bad Request
+          description: invalid Match ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Get Match
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Match with all related data
       tags:
       - Elimination
@@ -1018,13 +1730,31 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return one Elimination with player sets
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Elimination'
+            - properties:
+                medals:
+                  $ref: '#/definitions/response.Nill'
+                player_sets:
+                  allOf:
+                  - $ref: '#/definitions/database.PlayerSet'
+                  - properties:
+                      players:
+                        $ref: '#/definitions/response.Nill'
+                    type: object
+                stages:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid Elimination ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Get Elimination
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Elimination with player sets
       tags:
       - Elimination
@@ -1042,13 +1772,24 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return one Elimination with all scores
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Elimination'
+            - properties:
+                medals:
+                  $ref: '#/definitions/response.Nill'
+                player_sets:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid Elimination ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Get Elimination
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Elimination with all scores
       tags:
       - Elimination
@@ -1063,22 +1804,31 @@ paths:
         name: Stage
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PostStage.PostStageData'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return one Stage with new id
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Stage'
+            - properties:
+                matchs:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid elimination ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Create Stage
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Create one Stage
       tags:
       - Elimination
-  /elimination/stages/{id}:
+  /elimination/stages/matches/{id}:
     get:
       description: Get one Elimination with stages, matches by id
       parameters:
@@ -1091,13 +1841,36 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return one Elimination with stages, matches
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Elimination'
+            - properties:
+                medals:
+                  $ref: '#/definitions/response.Nill'
+                player_sets:
+                  $ref: '#/definitions/response.Nill'
+                stages:
+                  allOf:
+                  - $ref: '#/definitions/database.Stage'
+                  - properties:
+                      matches:
+                        allOf:
+                        - $ref: '#/definitions/database.Match'
+                        - properties:
+                            MatchResult:
+                              $ref: '#/definitions/response.Nill'
+                          type: object
+                    type: object
+              type: object
         "400":
-          description: Bad Request
+          description: invalid Elimination ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Get Elimination
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Elimination with stages, matches
       tags:
       - Elimination
@@ -1115,13 +1888,17 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return one Elimination with all related data
           schema:
-            type: string
+            $ref: '#/definitions/database.Elimination'
         "400":
-          description: Bad Request
+          description: invalid Elimination ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Get Elimination
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Elimination with all related data
       tags:
       - Elimination
@@ -1129,26 +1906,39 @@ paths:
     post:
       consumes:
       - application/json
-      description: Post one new GroupInfo data with new id, create qualification with
-        same id, auto write GroupIndex, and auto create elimination
+      description: |-
+        Post one new GroupInfo data with new id
+        Create qualification with same id
+        Auto write GroupIndex
+        Auto create elimination
       parameters:
       - description: LaneData
         in: body
         name: GroupInfo
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PostGroupInfo.GroupData'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return new GroupInfo data
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Group'
+            - properties:
+                players:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid Competition ID, may not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: database error for Create GroupInfo, Create Qualification,
+            Create Elimination, get Competition
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Create one GroupInfo
       tags:
       - GroupInfo
@@ -1156,36 +1946,13 @@ paths:
     delete:
       consumes:
       - application/json
-      description: delete one GroupInfo by id, delete qualification, and change player
-        to UnassignedGroup and UnassignedLane
+      description: |-
+        Delete one GroupInfo by id, delete qualification,
+        Change player to UnassignedGroup and UnassignedLane
+        Update competition group_num
+        Cannot delete UnassignedGroup
       parameters:
       - description: GroupInfo ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-      summary: delete one GroupInfo
-      tags:
-      - GroupInfo
-    get:
-      description: Get one GroupInfo by id
-      parameters:
-      - description: LaneInfo ID
         in: path
         name: id
         required: true
@@ -1194,49 +1961,139 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, delete GroupInfo by id
           schema:
-            type: string
+            $ref: '#/definitions/response.DeleteSuccessResponse'
         "400":
-          description: Bad Request
+          description: invalid GroupInfo ID, may not exist, or already deleted, or
+            cannot delete UnassignedGroup
           schema:
-            type: string
-      summary: Show one GroupInfo
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: database error for Delete GroupInfo, Get PlayerIds, Update
+            PlayerGroupId, Update PlayerLaneId, Delete Qualification, Delete GroupInfo,
+            MinusOneCompetitionGroupNum
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: delete one GroupInfo
       tags:
       - GroupInfo
-  /groupinfo/ordering:
+    get:
+      description: Get only one GroupInfo by id
+      parameters:
+      - description: GroupInfo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success, get GroupInfo by id without related data
+          schema:
+            allOf:
+            - $ref: '#/definitions/database.Group'
+            - properties:
+                players:
+                  $ref: '#/definitions/response.Nill'
+              type: object
+        "400":
+          description: invalid GroupInfo ID, may not exist
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: database error for Get GroupInfo
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show only one GroupInfo
+      tags:
+      - GroupInfo
     put:
       consumes:
       - application/json
-      description: Put competition_id and group_ids to update GroupInfos Indexes under
-        the same Competition
+      description: |-
+        Put whole new GroupInfo and overwrite with the id
+        Cannot overwrite CompetitionId
+        Cannot overwrite UnassignedGroup
+      parameters:
+      - description: GroupInfo ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: GroupInfo
+        in: body
+        name: GroupInfo
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.PutGroupInfo.GroupData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success, return new updated GroupInfo data
+          schema:
+            allOf:
+            - $ref: '#/definitions/database.Group'
+            - properties:
+                players:
+                  $ref: '#/definitions/response.Nill'
+              type: object
+        "400":
+          description: invalid GroupInfo ID, may not exist, cannot update UnassignedGroup
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: database error for Update GroupInfo, Get GroupInfo
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: update one GroupInfo
+      tags:
+      - GroupInfo
+  /groupinfo/ordering:
+    patch:
+      consumes:
+      - application/json
+      description: |-
+        Put competition_id and group_ids to update GroupInfos Indices under the same Competition
+        GroupIds cannot include UnassignedGroupId
+        GroupIds length must be equal to Competition group_num
       parameters:
       - description: GroupInfo IDs for reorder
         in: body
         name: groupIdsForReorder
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.groupIdsForReorder'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return new updated Competition data
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Competition'
+            - properties:
+                groups:
+                  allOf:
+                  - $ref: '#/definitions/database.Group'
+                  - properties:
+                      players:
+                        $ref: '#/definitions/response.Nill'
+                    type: object
+                participants:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid Competition ID, group id, may not exist
           schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: Internal Server Error
+          description: database error for Update GroupInfo Index, Get Competition
           schema:
-            type: string
-      summary: update GroupInfos Indexes under the same Competition
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: update all GroupInfos Indices under the same Competition
       tags:
       - GroupInfo
   /groupinfo/players/{id}:
@@ -1252,88 +2109,58 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, get GroupInfo with players by id
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Group'
+            - properties:
+                players:
+                  allOf:
+                  - $ref: '#/definitions/database.Player'
+                  - properties:
+                      player_sets:
+                        $ref: '#/definitions/response.Nill'
+                      rounds:
+                        $ref: '#/definitions/response.Nill'
+                    type: object
+              type: object
         "400":
-          description: Bad Request
+          description: invalid GroupInfo ID, may not exist
           schema:
-            type: string
-      summary: Show one GroupInfo with players
-      tags:
-      - GroupInfo
-  /groupinfo/whole/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Put whole new GroupInfo and overwrite with the id, cannot overwrite
-        CompetitionId
-      parameters:
-      - description: GroupInfo ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: GroupInfo
-        in: body
-        name: GroupInfo
-        required: true
-        schema:
-          type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: Internal Server Error
+          description: database error for Get GroupInfo with players
           schema:
-            type: string
-      summary: update one GroupInfo
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show one GroupInfo with players
       tags:
       - GroupInfo
   /institution:
     get:
-      consumes:
-      - application/json
-      description: get all institution info from db
+      description: Get all institution info from db.
       produces:
       - application/json
       responses:
         "200":
-          description: success
+          description: success, return all institution info
           schema:
-            allOf:
-            - $ref: '#/definitions/response.Response'
-            - properties:
-                data:
-                  items:
-                    $ref: '#/definitions/database.Institution'
-                  type: array
-              type: object
+            items:
+              $ref: '#/definitions/database.Institution'
+            type: array
         "500":
-          description: db error
+          description: DB error
           schema:
             $ref: '#/definitions/response.Response'
-      summary: get all institution info
+      summary: Get all institution info.
       tags:
       - Institution
     post:
       consumes:
       - application/json
       description: |-
-        add an institution to db
-        cannot repeat institution name
+        Add an institution to db.
+        Cannot repeat institution name.
+        Institution name cannot be empty.
       parameters:
       - description: institution's information
         in: body
@@ -1349,27 +2176,27 @@ paths:
           schema:
             $ref: '#/definitions/response.Response'
         "400":
-          description: empty institution name || institution already exists
+          description: empty institution name / institution name already exists
           schema:
             $ref: '#/definitions/response.Response'
         "500":
-          description: db error
+          description: db error / get institution / add institution
           schema:
             $ref: '#/definitions/response.Response'
-      summary: create an institution
+      summary: Create an institution.
       tags:
       - Institution
   /institution/{id}:
     delete:
       consumes:
       - application/json
-      description: delete an institution from db
+      description: Delete an institution from db.
       parameters:
       - description: institution's id
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
@@ -1385,45 +2212,40 @@ paths:
           description: institution not found
           schema:
             $ref: '#/definitions/response.Response'
-      summary: delete an institution
+      summary: Delete an institution.
       tags:
       - Institution
     get:
       consumes:
       - application/json
-      description: get institution info from db by id
+      description: Get institution info from db by id.
       parameters:
       - description: institution's id
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: success
+          description: success, return institution info
           schema:
-            allOf:
-            - $ref: '#/definitions/response.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/database.Institution'
-              type: object
+            $ref: '#/definitions/database.Institution'
         "400":
-          description: invalid id
+          description: invalid institution id
           schema:
             $ref: '#/definitions/response.Response'
         "404":
           description: no institution found
           schema:
             $ref: '#/definitions/response.Response'
-      summary: get institution info by id
+      summary: Get institution info by id.
       tags:
       - Institution
   /lane/{id}:
     get:
-      description: Get one Lane by id
+      description: Get one Lane by id.
       parameters:
       - description: Lane ID
         in: path
@@ -1434,42 +2256,62 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return lane
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Lane'
+            - properties:
+                players:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid lane id
           schema:
-            type: string
-      summary: Show one Lane
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Get Lane By Id
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show one Lane.
       tags:
       - Lane
-  /lane/all/{id}:
+  /lane/all/{competitionid}:
     get:
-      description: Get all Lane by competition id
+      description: Get all Lanes and related data by competition id.
       parameters:
       - description: competition ID
         in: path
-        name: id
+        name: competitionid
         required: true
         type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: succsess, return lanes
           schema:
-            type: string
+            items:
+              allOf:
+              - $ref: '#/definitions/database.Lane'
+              - properties:
+                  players:
+                    $ref: '#/definitions/response.Nill'
+                type: object
+            type: array
         "400":
-          description: Bad Request
+          description: invalid competition id
           schema:
-            type: string
-      summary: Show all Lane of a competition
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Get All Lane By Competition ID
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show all Lanes and related data of a competition.
       tags:
       - Lane
   /lane/scores/{id}:
     get:
-      description: Get one Lane with players, rounds, roundends, roundscores by id
+      description: Get one Lane with players, rounds, roundends, roundscores by id.
       parameters:
       - description: Lane ID
         in: path
@@ -1480,18 +2322,194 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return lane
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Lane'
+            - properties:
+                players:
+                  allOf:
+                  - $ref: '#/definitions/database.Player'
+                  - properties:
+                      player_sets:
+                        $ref: '#/definitions/response.Nill'
+                    type: object
+              type: object
         "400":
-          description: Bad Request
+          description: invalid lane id
           schema:
-            type: string
-      summary: Show one Lane with players, rounds, roundends, roundscores
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Get Lane With Scores By Id
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show one Lane with players, rounds, roundends, roundscores.
       tags:
       - Lane
-  /matchend/isconfirmed/{id}:
-    put:
+  /matchresult/{id}:
+    delete:
+      description: Delete one MatchResult with matchEnds and matchScores by id
+      parameters:
+      - description: MatchResult ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: success, return nil
+          schema:
+            $ref: '#/definitions/response.Nill'
+        "400":
+          description: invalid match result ID, maybe not exist
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db failed for deleting match result
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Delete one MatchResult
+      tags:
+      - MatchResult
+    get:
+      description: Get one MatchResult with player set by id
+      parameters:
+      - description: MatchResult ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success, return MatchResult with player set
+          schema:
+            allOf:
+            - $ref: '#/definitions/database.MatchResult'
+            - properties:
+                match_ends:
+                  $ref: '#/definitions/response.Nill'
+                player_set:
+                  allOf:
+                  - $ref: '#/definitions/database.PlayerSet'
+                  - properties:
+                      players:
+                        $ref: '#/definitions/response.Nill'
+                    type: object
+              type: object
+        "400":
+          description: invalid match result ID, maybe not exist
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db failed for getting match result
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show one MatchResult with player set
+      tags:
+      - MatchResult
+  /matchresult/iswinner/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: Update one MatchResult isWinner by id
+      parameters:
+      - description: MatchResult ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: MatchResult
+        in: body
+        name: MatchResult
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.PutMatchResultIsWinnerById.matchResultIsWinnerData'
+      responses:
+        "200":
+          description: success, return nil
+          schema:
+            $ref: '#/definitions/response.Nill'
+        "400":
+          description: invalid match result ID, maybe not exist
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db failed for updating isWinner
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one MatchResult isWinner
+      tags:
+      - MatchResult
+  /matchresult/lanenumber/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: Update one MatchResult laneNumber by id
+      parameters:
+      - description: MatchResult ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: MatchResult
+        in: body
+        name: MatchResult
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.PutMatchResultLaneNumberById.matchResultLaneNumberData'
+      responses:
+        "200":
+          description: success, return nil
+          schema:
+            $ref: '#/definitions/response.Nill'
+        "400":
+          description: invalid match result ID, maybe not exist
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db failed for updating laneNumber
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one MatchResult laneNumber
+      tags:
+      - MatchResult
+  /matchresult/matchend:
+    post:
+      consumes:
+      - application/json
+      description: |-
+        Post one new MatchEnd data,
+        Auto write totalScores IsConfirmed, and auto create matchScores by teamSize
+        teamSize: 1, 2, 3
+      parameters:
+      - description: matchEndData
+        in: body
+        name: matchEndData
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.PostMatchEnd.matchEndData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success, return nil
+          schema:
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: invalid match result ID, maybe not exist
+          schema:
+            $ref: '#/definitions/response.ErrorReceiveDataResponse'
+        "500":
+          description: internal db failed for creating matchEnd, creating matchScores
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Create one MatchEnd
+      tags:
+      - MatchEnd
+  /matchresult/matchend/isconfirmed/{id}:
+    patch:
       consumes:
       - application/json
       description: Update one MatchEnd isConfirmed by id
@@ -1506,21 +2524,25 @@ paths:
         name: MatchEnd
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PutMatchEndsIsConfirmedById.matchEndIsConfirmedData'
       responses:
         "200":
-          description: OK
+          description: success, return nil
           schema:
-            type: string
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid match end ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db failed for updating isConfirmed
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Update one MatchEnd isConfirmed
       tags:
       - MatchEnd
-  /matchend/scores/{id}:
-    put:
+  /matchresult/matchend/scores/{id}:
+    patch:
       consumes:
       - application/json
       description: |-
@@ -1537,21 +2559,26 @@ paths:
         name: matchEndScoresData
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PutMatchEndsScoresById.matchEndScoresData'
       responses:
         "200":
-          description: OK
+          description: success, return nil
           schema:
-            type: string
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid match end ID, maybe not exist, or matchScore ids not
+            exist, or matchScore ids and scores length not match
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db failed for updating scores
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Update one MatchEnd scores
       tags:
       - MatchEnd
-  /matchend/totalscores/{id}:
-    put:
+  /matchresult/matchend/totalscore/{id}:
+    patch:
       consumes:
       - application/json
       description: Update one MatchEnd totalScores by id
@@ -1566,147 +2593,59 @@ paths:
         name: MatchEnd
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PutMatchEndsTotalScoresById.matchEndTotalScoresData'
       responses:
         "200":
-          description: OK
+          description: success, return nil
           schema:
-            type: string
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid match end ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db failed for updating totalScores
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Update one MatchEnd totalScores
       tags:
       - MatchEnd
-  /matchresult/{id}:
-    delete:
-      description: Delete one MatchResult with matchEnds and matchScores by id
-      parameters:
-      - description: MatchResult ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Delete one MatchResult
-      tags:
-      - MatchResult
-    get:
-      description: Get one MatchResult with player set by id
-      parameters:
-      - description: MatchResult ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Show one MatchResult with player set
-      tags:
-      - MatchResult
-  /matchresult/iswinner/{id}:
-    put:
+  /matchresult/matchscore/score/{id}:
+    patch:
       consumes:
       - application/json
-      description: Update one MatchResult isWinner by id
+      description: |-
+        Update one MatchScore score by id
+        Also update related MatchEnd totalScores
       parameters:
-      - description: MatchResult ID
+      - description: MatchScore ID
         in: path
         name: id
         required: true
         type: integer
-      - description: MatchResult
+      - description: MatchScore
         in: body
-        name: MatchResult
+        name: MatchScore
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PutMatchScoreScoreById.matchScoreData'
       responses:
         "200":
-          description: OK
+          description: success, return nil
           schema:
-            type: string
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid match score ID, maybe not exist
           schema:
-            type: string
-      summary: Update one MatchResult isWinner
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db failed for updating score, get matchEnd by id,
+            get matchScore, update matchEnd totalScores
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one MatchScore score
       tags:
-      - MatchResult
-  /matchresult/lanenumber/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Update one MatchResult laneNumber by id
-      parameters:
-      - description: MatchResult ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: MatchResult
-        in: body
-        name: MatchResult
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Update one MatchResult laneNumber
-      tags:
-      - MatchResult
-  /matchresult/matchend:
-    post:
-      consumes:
-      - application/json
-      description: Post one new MatchEnd data, and auto write totalScores IsConfirmed,
-        and auto create matchScores by teamSize
-      parameters:
-      - description: matchEndData
-        in: body
-        name: matchEndData
-        required: true
-        schema:
-          type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Create one MatchEnd
-      tags:
-      - MatchEnd
+      - MatchScore
   /matchresult/scores/{id}:
     get:
       description: Get one MatchResult with match_ends, match_scores, player set by
@@ -1721,18 +2660,32 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return MatchResult with scores
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.MatchResult'
+            - properties:
+                player_set:
+                  allOf:
+                  - $ref: '#/definitions/database.PlayerSet'
+                  - properties:
+                      players:
+                        $ref: '#/definitions/response.Nill'
+                    type: object
+              type: object
         "400":
-          description: Bad Request
+          description: invalid match result ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db failed for getting match result with scores
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one MatchResult with match_ends, match_scores, player set
       tags:
       - MatchResult
   /matchresult/shootoffscore/{id}:
-    put:
+    patch:
       consumes:
       - application/json
       description: Update one MatchResult shootOffScore by id
@@ -1747,21 +2700,25 @@ paths:
         name: MatchResult
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PutMatchResultShootOffScoreById.matchResultShootOffScoreData'
       responses:
         "200":
-          description: OK
+          description: success, return nil
           schema:
-            type: string
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid match result ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db failed for updating shootOffScore
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Update one MatchResult shootOffScore
       tags:
       - MatchResult
   /matchresult/totalpoints/{id}:
-    put:
+    patch:
       consumes:
       - application/json
       description: Update one MatchResult totalPoints by id
@@ -1776,51 +2733,26 @@ paths:
         name: MatchResult
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PutMatchResultTotalPointsById.matchResultTotalPointsData'
       responses:
         "200":
-          description: OK
+          description: success, return nil
           schema:
-            type: string
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid match result ID, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db failed for updating totalPoints
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Update one MatchResult totalPoints
       tags:
       - MatchResult
-  /matchscore/score/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Update one MatchScore score by id
-      parameters:
-      - description: MatchScore ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: MatchScore
-        in: body
-        name: MatchScore
-        required: true
-        schema:
-          type: string
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Update one MatchScore score
-      tags:
-      - MatchScore
   /medal/{id}:
     get:
-      description: get one medal by id
+      description: Get one medal by id.
       parameters:
       - description: Medal ID
         in: path
@@ -1831,42 +2763,52 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return one medal
           schema:
-            type: string
+            $ref: '#/definitions/database.Medal'
         "400":
-          description: Bad Request
+          description: invalid medal id
           schema:
-            type: string
-      summary: Show one medal by id
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Get Medal By Id
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show one medal by id.
       tags:
       - Medal
-  /medal/elimination/{id}:
+  /medal/elimination/{eliminationid}:
     get:
-      description: get medals of elimination by elimination id
+      description: Get medals of elimination by elimination id.
       parameters:
       - description: elimination ID
         in: path
-        name: id
+        name: eliminationid
         required: true
         type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return medals of elimination
           schema:
-            type: string
+            items:
+              $ref: '#/definitions/database.Medal'
+            type: array
         "400":
-          description: Bad Request
+          description: invalid elimination id
           schema:
-            type: string
-      summary: Show medals of elimination by elimination id
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Get Medal Info By Elimination Id
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show medals of elimination by elimination id.
       tags:
       - Medal
   /medal/playersetid/{id}:
-    put:
-      description: update medal's player set id by id
+    patch:
+      description: Update medal's player set id by id.
       parameters:
       - description: Medal ID
         in: path
@@ -1878,248 +2820,34 @@ paths:
         name: PlayerSetId
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PutMedalPlayerSetIdById.RequestBody'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
-          schema:
-            type: string
+          description: success, return nil
         "400":
-          description: Bad Request
+          description: invalid medal id / invalid playerset id / elimination id of
+            medal and playerset is not same
           schema:
-            type: string
-      summary: Update medal's player set id by id
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Get Medal By Id / Get Player Set By Id
+            / Update Medal PLayer Set Id
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update medal's player set id by id.
       tags:
       - Medal
-  /oldlaneinfo:
-    post:
-      consumes:
-      - application/json
-      description: Post one new OldLaneInfo data with new id, and return the new OldLaneInfo
-        data
-      parameters:
-      - description: LaneData
-        in: body
-        name: LaneData
-        required: true
-        schema:
-          type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Create one OldLaneInfo
-      tags:
-      - OldLaneInfo
-  /oldlaneinfo/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: delete one OldLaneInfo by id
-      parameters:
-      - description: OldLaneInfo ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-      summary: delete one OldLaneInfo
-      tags:
-      - OldLaneInfo
-    get:
-      description: Get one OldLaneInfo by id
-      parameters:
-      - description: OldLaneInfo ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Show one OldLaneInfo
-      tags:
-      - OldLaneInfo
-  /oldlaneinfo/confirm/{id}/{stageindex}/{userindex}/{confirm}:
-    put:
-      consumes:
-      - application/json
-      description: Put one OldLaneInfo confirm by index and id
-      parameters:
-      - description: OldLaneInfo ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: OldLaneInfo stage index
-        in: path
-        name: stageindex
-        required: true
-        type: string
-      - description: OldLaneInfo user index of the stage
-        in: path
-        name: userindex
-        required: true
-        type: string
-      - description: confirmation of the user
-        in: path
-        name: confirm
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      summary: update one OldLaneInfo confirmation
-      tags:
-      - OldLaneInfo
-  /oldlaneinfo/score/{id}/{stageindex}/{userindex}/{arrowindex}/{score}:
-    put:
-      consumes:
-      - application/json
-      description: Put one OldLaneInfo score by index and id
-      parameters:
-      - description: OldLaneInfo ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: OldLaneInfo stage index
-        in: path
-        name: stageindex
-        required: true
-        type: string
-      - description: OldLaneInfo user index of the stage
-        in: path
-        name: userindex
-        required: true
-        type: string
-      - description: OldLaneInfo arrow index of the user
-        in: path
-        name: arrowindex
-        required: true
-        type: string
-      - description: score of the arrow
-        in: path
-        name: score
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      summary: update one OldLaneInfo Score
-      tags:
-      - OldLaneInfo
-  /oldlaneinfo/whole/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Put whole new OldLaneInfo and overwrite with the id
-      parameters:
-      - description: OldLaneInfo ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: LaneData
-        in: body
-        name: LaneData
-        required: true
-        schema:
-          type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-        "500":
-          description: Internal Server Error
-          schema:
-            type: string
-      summary: update one OldLaneInfo
-      tags:
-      - OldLaneInfo
-  /participant/:
+  /participant:
     post:
       consumes:
       - application/json
       description: |-
-        post a particpant to the competition
-        cannot repeat participant
-        role cannot be empty
-        status is always "pending"
+        Post a particpant to the competition from the user.
+        Cannot repeat participant.
+        Role cannot be empty.
+        Status is always initialized as "pending".
       parameters:
       - description: role
         in: body
@@ -2131,51 +2859,26 @@ paths:
       - application/json
       responses:
         "200":
-          description: success
+          description: success, return participant
           schema:
-            type: string
+            $ref: '#/definitions/database.Participant'
         "400":
-          description: competition ID is not exist
+          description: invalid info / role is empty / participant exists / invalid
+            user ID / invalid competition ID
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorReceiveDataFormatResponse'
         "500":
           description: db error
           schema:
-            type: string
-      summary: post a particpant to the competition
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Post a particpant to the competition.
       tags:
       - Participant
   /participant/{id}:
     delete:
-      consumes:
-      - application/json
-      description: delete one Participant by id
-      parameters:
-      - description: Participant ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
-      summary: delete one Participant
-      tags:
-      - Participant
-    get:
-      description: Get One Participant By ID
+      description: |-
+        Delete one Participant by id.
+        This api is intentionally designed not to delete related data, because a user may drop out of competition, but competition still need the record.
       parameters:
       - description: Participant ID
         in: path
@@ -2186,137 +2889,176 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/response.DeleteSuccessResponse'
         "400":
-          description: Bad Request
+          description: invalid participant id
           schema:
-            type: string
-      summary: Show One Participant By ID
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Delete Participant
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Delete one Participant.
       tags:
       - Participant
-  /participant/competition:
     get:
-      description: Get Participants By competition ID, including realname
-      parameters:
-      - description: competition ID
-        in: body
-        name: competition_id
-        required: true
-        schema:
-          type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Show Participants By competition ID
-      tags:
-      - Participant
-  /participant/competition/user:
-    get:
-      description: Get Participants By competition ID and user ID
-      parameters:
-      - description: competition ID
-        in: body
-        name: competition_id
-        required: true
-        schema:
-          type: integer
-      - description: user ID
-        in: body
-        name: user_id
-        required: true
-        schema:
-          type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Show Participants By competition ID and user ID
-      tags:
-      - Participant
-  /participant/user:
-    get:
-      description: Get Participants By user ID
-      parameters:
-      - description: user ID
-        in: body
-        name: user_id
-        required: true
-        schema:
-          type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Show Participants By user ID
-      tags:
-      - Participant
-  /participant/whole/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Put whole new Participant and overwrite with the id
+      description: Get One Participant By ID.
       parameters:
       - description: Participant ID
         in: path
         name: id
         required: true
-        type: string
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success, return participant
+          schema:
+            $ref: '#/definitions/database.Participant'
+        "400":
+          description: invalid participant id
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: db error
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show One Participant By ID.
+      tags:
+      - Participant
+    put:
+      consumes:
+      - application/json
+      description: Put whole new Participant.
+      parameters:
+      - description: Participant ID
+        in: path
+        name: id
+        required: true
+        type: integer
       - description: Participant
         in: body
         name: Participant
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PutParticipant.PutParticipantData'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return updated participant
           schema:
-            type: string
+            $ref: '#/definitions/database.Participant'
         "400":
-          description: Bad Request
+          description: invalid participant id
           schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: Internal Server Error
+          description: internal db error / Update Participant
           schema:
-            type: string
-      summary: update one Participant
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one Participant.
+      tags:
+      - Participant
+  /participant/competition/{competitionid}:
+    get:
+      description: Get Participants by competition ID, including realname.
+      parameters:
+      - description: competition ID
+        in: path
+        name: competitionid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success, return participants of the competition
+          schema:
+            items:
+              $ref: '#/definitions/endpoint.ParticipantWName'
+            type: array
+        "400":
+          description: invalid competition id
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Get participants by competition id / Get
+            user by id
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show Participants by competition ID.
+      tags:
+      - Participant
+  /participant/competition/user/{competitionid}/{userid}:
+    get:
+      description: Get Participants By competition ID and user ID
+      parameters:
+      - description: competition ID
+        in: path
+        name: competitionid
+        required: true
+        type: integer
+      - description: user ID
+        in: path
+        name: userid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success, return participants of the competition and user
+          schema:
+            $ref: '#/definitions/database.Participant'
+        "400":
+          description: invalid user id / invalid competition id
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Get participants by competition id and
+            user id
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show Participants By competition ID and user ID
+      tags:
+      - Participant
+  /participant/user/{userid}:
+    get:
+      description: Get Participants By user ID.
+      parameters:
+      - description: user ID
+        in: path
+        name: userid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success, return participants of the user
+          schema:
+            items:
+              $ref: '#/definitions/database.Participant'
+            type: array
+        "400":
+          description: invalid user id
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Get participants by user id / Get user
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show Participants By user ID.
       tags:
       - Participant
   /player/{id}:
     delete:
       description: Delete one Player by id, delete related round, roundend, roundscore
-        data, and playerNum minus one in lane
+        data, and playerNum minus one in lane.
       parameters:
       - description: Player ID
         in: path
@@ -2327,18 +3069,22 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: successfully delete player
           schema:
-            type: string
+            $ref: '#/definitions/response.DeleteSuccessResponse'
         "400":
-          description: Bad Request
+          description: invalid player id parameter, may not exist
           schema:
-            type: string
-      summary: Delete one Player by id
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for deleting player
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Delete one Player by id.
       tags:
       - Player
     get:
-      description: Get one Player without other data by id
+      description: Get one Player without other data by id.
       parameters:
       - description: Player ID
         in: path
@@ -2349,21 +3095,35 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return player without rounds, player sets
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Player'
+            - properties:
+                player_sets:
+                  $ref: '#/definitions/response.Nill'
+                rounds:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid player id parameter, may not exist
           schema:
-            type: string
-      summary: Show one Player without other data
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Get player
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show one Player info without other data.
       tags:
       - Player
   /player/{participantid}:
     post:
-      description: Create one Player by participant id, create realeted rounds by
-        laneNum of competition, create 6 roundscores for each 6 roundends, UnassignedLane
-        playerNum ++
+      description: |-
+        Create one Player by participant id.
+        Create related rounds by laneNum of competition, create 6 roundscores for each 6 roundends, UnassignedLane playerNum ++.
+        Order is 0, TotalScore is 0, ShootOffScore is -1, Rank is 0.
+        Group is unassigned group, Lane is unassigned lane.
+        Will copy data from participant, user, competition.
       parameters:
       - description: Participant ID
         in: path
@@ -2374,17 +3134,29 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return player info
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Player'
+            - properties:
+                player_sets:
+                  $ref: '#/definitions/response.Nill'
+                rounds:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid participant id parameter, may not exist
           schema:
-            type: string
-      summary: Create one Player by Participant ID
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / create player / create round / create roundend
+            / create roundscore
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Create one Player by Participant ID.
       tags:
       - Player
-  /player/all-endscores/{id}:
+  /player/all-endscores/{endid}:
     put:
       consumes:
       - application/json
@@ -2395,7 +3167,7 @@ paths:
       parameters:
       - description: End ID
         in: path
-        name: id
+        name: endid
         required: true
         type: integer
       - description: Scores
@@ -2404,25 +3176,28 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/endpoint.PutPlayerAllEndScoresByEndId.EndScores'
+      produces:
+      - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            $ref: '#/definitions/endpoint.PutPlayerAllEndScoresByEndId.EndScores'
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid end id / length of scores not equal to 6
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: Internal Server Error
+          description: internal db error / updating player end scores / get round
+            score ids
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Update all scores of one end by end id
       tags:
       - Player
   /player/dummy/{participantid}:
     get:
-      description: Get dummy players by participant id
+      description: Get dummy players by participant id.
       parameters:
       - description: Participant ID
         in: path
@@ -2433,19 +3208,32 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, show dummy players info
           schema:
-            type: string
+            items:
+              allOf:
+              - $ref: '#/definitions/database.Player'
+              - properties:
+                  player_sets:
+                    $ref: '#/definitions/response.Nill'
+                  rounds:
+                    $ref: '#/definitions/response.Nill'
+                type: object
+            type: array
         "400":
-          description: Bad Request
+          description: invalid participant id parameter, may not exist
           schema:
-            type: string
-      summary: Show dummy players
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Get dummy players
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show dummy players.
       tags:
       - Player
   /player/dummy/{playerid}:
     post:
-      description: Create dummy player by player id
+      description: Create dummy player by player id.
       parameters:
       - description: Player ID
         in: path
@@ -2456,120 +3244,195 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, show dummy player info
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Player'
+            - properties:
+                player_sets:
+                  $ref: '#/definitions/response.Nill'
+                rounds:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid player id parameter, may not exist
           schema:
-            type: string
-      summary: Create dummy player
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Creating player / Get player / Get participant
+            / Get competition unassigned lane id / Get competition unassigned group
+            id
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Create dummy player.
       tags:
       - Player
-  /player/groupid/{playerid}/{groupid}:
+  /player/group/{id}:
     put:
       consumes:
       - application/json
       description: Update one Player groupId by id, and change player laneid to Unassigned
-        lane
+        lane.
       parameters:
       - description: Player ID
         in: path
         name: playerid
         required: true
         type: integer
+      - description: UpdateGroupIdData
+        in: body
+        name: groupid
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.PutPlayerGroupId.UpdateGroupIdData'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return player info
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Player'
+            - properties:
+                player_sets:
+                  $ref: '#/definitions/response.Nill'
+                rounds:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid player id / invalid group id parameter, may not exist
           schema:
-            type: string
-      summary: Update one Player groupId by id
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / updating player groupId / get player info
+            / get unassigned lane id
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one Player groupId by id.
       tags:
       - Player
   /player/isconfirmed/{roundendid}:
     put:
       consumes:
       - application/json
-      description: Update one Player isConfirmed by id
+      description: Update one Player isConfirmed by id.
       parameters:
       - description: RoundEnd ID
         in: path
         name: roundendid
         required: true
         type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Update one Player isConfirmed by id
-      tags:
-      - Player
-  /player/laneid/{playerid}:
-    put:
-      consumes:
-      - application/json
-      description: Update one Player laneId by id, update lane playernum
-      parameters:
-      - description: Player ID
-        in: path
-        name: playerid
+      - description: UpdateIsConfirmedData
+        in: body
+        name: data
         required: true
-        type: integer
+        schema:
+          $ref: '#/definitions/endpoint.PutPlayerIsConfirmed.UpdateIsConfirmedData'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return nil
           schema:
-            type: string
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid roundend id parameter, may not exist
           schema:
-            type: string
-      summary: Update one Player laneId by id
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for updating player isConfirmed
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one Player isConfirmed by id.
       tags:
       - Player
-  /player/order/{id}:
+  /player/lane/{id}:
     put:
       consumes:
       - application/json
-      description: Update one Player order by id
+      description: Update one Player laneId by id, update lane playernum.
       parameters:
       - description: Player ID
         in: path
         name: id
         required: true
         type: integer
+      - description: UpdateLaneIdData
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.PutPlayerLaneId.UpdateLaneIdData'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return player info
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Player'
+            - properties:
+                player_sets:
+                  $ref: '#/definitions/response.Nill'
+                rounds:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid player id / invalid lane id parameter
           schema:
-            type: string
-      summary: Update one Player order by id
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / updating player laneid / get player info
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one Player laneId by id.
+      tags:
+      - Player
+  /player/order/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Update one Player order by id.
+      parameters:
+      - description: Player ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: UpdateOrderData
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.PutPlayerOrder.UpdateOrderData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success, return player info
+          schema:
+            allOf:
+            - $ref: '#/definitions/database.Player'
+            - properties:
+                player_sets:
+                  $ref: '#/definitions/response.Nill'
+                rounds:
+                  $ref: '#/definitions/response.Nill'
+              type: object
+        "400":
+          description: invalid player id parameter, may not exist
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / updating player order / get player info
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one Player order by id.
       tags:
       - Player
   /player/playersets/{id}/{eliminationid}:
     get:
-      description: Get one Player with player sets by id and elimination id
+      description: Get one Player with player sets by id and elimination id.
       parameters:
       - description: Player ID
         in: path
@@ -2585,82 +3448,150 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return player with player sets
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Player'
+            - properties:
+                player_sets:
+                  items:
+                    allOf:
+                    - $ref: '#/definitions/database.PlayerSet'
+                    - properties:
+                        players:
+                          $ref: '#/definitions/response.Nill'
+                      type: object
+                  type: array
+                rounds:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid player id parameter / invalid elimination id parameter
           schema:
-            type: string
-      summary: Show one Player with player sets
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Get player with player sets
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show one Player with player sets.
       tags:
       - Player
   /player/roundend:
     post:
       consumes:
       - application/json
-      description: Create one RoundEnd by round id, IsComfirmed is false
+      description: |-
+        Just in case api.
+        Create one RoundEnd by round id, IsComfirmed is false.
+        Should not be used, just in case function, PostPlayer is used to create player, rounds, roundends, roundscores.
+      parameters:
+      - description: RoundEnd
+        in: body
+        name: RoundEnd
+        required: true
+        schema:
+          allOf:
+          - $ref: '#/definitions/endpoint.PostRoundEnd.RoundEndData'
+          - properties:
+              round_scores:
+                $ref: '#/definitions/response.Nill'
+            type: object
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return roundend info
           schema:
-            type: string
+            $ref: '#/definitions/database.RoundEnd'
         "400":
-          description: Bad Request
+          description: invalid round id parameter, may not exist
           schema:
-            type: string
-      summary: Create one RoundEnd by Round ID
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / creating roundend
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Create one RoundEnd by Round ID.
       tags:
       - Player
   /player/roundscore:
     post:
       consumes:
       - application/json
-      description: Create one RoundScore by roundend id
+      description: |-
+        Just in case api.
+        Need to modify to refresh total scores.
+        Create one RoundScore by roundend id.
+        Update total score in player, round, roundend for one arrow score.
+        Should not be used, just in case function, PostPlayer is used to create player, rounds, roundends, roundscores.
+      parameters:
+      - description: RoundScore
+        in: body
+        name: RoundScore
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.UpdateTotalScoreData'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return roundscore info
           schema:
-            type: string
+            $ref: '#/definitions/database.RoundScore'
         "400":
-          description: Bad Request
+          description: invalid roundend id / invalid player id / invalid round id
+            parameter, may not exist
           schema:
-            type: string
-      summary: Create one RoundScore by RoundEnd ID
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / creating roundscore / get old score / update
+            total score
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Create one RoundScore by RoundEnd ID.
       tags:
       - Player
-  /player/score/{roundscoreid}:
+  /player/roundscore/{roundscoreid}:
     put:
       consumes:
       - application/json
-      description: Update one Player score by id
+      description: |-
+        Update one Player score by id.
+        Update doesn't change total score in player, round, roundend.
       parameters:
       - description: RoundScore ID
         in: path
         name: roundscoreid
         required: true
         type: integer
+      - description: UpdateTotalScoreData
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.UpdateTotalScoreData'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid roundscore id / player id / round id / roundend id
           schema:
-            type: string
-      summary: Update one Player score by id
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / updating player score / get old score /
+            update total score
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one Player score by id.
       tags:
       - Player
   /player/scores/{id}:
     get:
-      description: Get one Player with rounds, roundends, roundscores by id
+      description: Get one Player with rounds, roundends, roundscores by id.
       parameters:
       - description: Player ID
         in: path
@@ -2671,64 +3602,118 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, show rounds, roundends, roundscores, but no player
+            sets
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Player'
+            - properties:
+                player_sets:
+                  $ref: '#/definitions/response.Nill'
+                rounds:
+                  allOf:
+                  - $ref: '#/definitions/database.Round'
+                  - properties:
+                      round_ends:
+                        allOf:
+                        - $ref: '#/definitions/database.RoundEnd'
+                        - properties:
+                            round_scores:
+                              $ref: '#/definitions/database.RoundScore'
+                          type: object
+                    type: object
+              type: object
         "400":
-          description: Bad Request
+          description: invalid player id parameter, may not exist
           schema:
-            type: string
-      summary: Show one Player with scores
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / Get player with scores
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show one Player with scores.
       tags:
       - Player
   /player/shootoffscore/{id}:
     put:
       consumes:
       - application/json
-      description: Update one Player shootoffScore by id
+      description: Update one Player shootoffScore by id.
       parameters:
       - description: Player ID
         in: path
         name: id
         required: true
         type: integer
+      - description: UpdateShootoffScoreData
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.PutPlayerShootoffScore.UpdateShootoffScoreData'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return player info
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Player'
+            - properties:
+                player_sets:
+                  $ref: '#/definitions/response.Nill'
+                rounds:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid player id parameter, may not exist
           schema:
-            type: string
-      summary: Update one Player shootoffScore by id
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for updating player shootoffScore / get player
+            info
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one Player shootoffScore by id.
       tags:
       - Player
   /player/totalscore/{id}:
     put:
       consumes:
       - application/json
-      description: Update one Player total score by id
+      description: Update one Player total score by id.
       parameters:
       - description: Player ID
         in: path
         name: id
         required: true
         type: integer
+      - description: UpdateTotalScoreData
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.PutPlayerTotalScoreByplayerId.UpdateTotalScoreData'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/response.Nill'
+        "204":
+          description: no change
+          schema:
+            $ref: '#/definitions/response.Nill'
         "400":
-          description: Bad Request
+          description: invalid player id parameter, may not exist
           schema:
-            type: string
-      summary: Update one Player total score by id
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for updating player total score
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one Player total score by id.
       tags:
       - Player
   /playerset:
@@ -2744,22 +3729,29 @@ paths:
         name: data
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PostPlayerSet.playerSetData'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return player set without players
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.PlayerSet'
+            - properties:
+                players:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid elimination id, player id maybe not exist / player
+            set's length and teamsize does not match
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: Internal Server Error
+          description: internal db error for create player set / get player / create
+            player set match table / get elimination
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Post player set
       tags:
       - PlayerSet
@@ -2774,17 +3766,18 @@ paths:
         type: integer
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            $ref: '#/definitions/response.DeleteSuccessResponse'
         "400":
-          description: Bad Request
+          description: invalid plyer set id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: Internal Server Error
+          description: internal db error / Get Player Set By Id / Delete Player Set
+            Match Table By Player Set Id / Delete Player Set By Id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Delete player set
       tags:
       - PlayerSet
@@ -2800,17 +3793,29 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return player set with players
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.PlayerSet'
+            - properties:
+                players:
+                  allOf:
+                  - $ref: '#/definitions/database.Player'
+                  - properties:
+                      player_sets:
+                        $ref: '#/definitions/response.Nill'
+                      rounds:
+                        $ref: '#/definitions/response.Nill'
+                    type: object
+              type: object
         "400":
-          description: Bad Request
+          description: invalid player set id, maybe not exist
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: Internal Server Error
+          description: internal error for get player set by id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Get player set with players by id
       tags:
       - PlayerSet
@@ -2827,17 +3832,19 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            items:
+              $ref: '#/definitions/database.PlayerSet'
+            type: array
         "400":
-          description: Bad Request
+          description: invalid player set id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: Internal Server Error
+          description: internal db error / Get Player Sets By Elimination Id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Get all player sets by elimination id
       tags:
       - PlayerSet
@@ -2854,17 +3861,19 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success
           schema:
-            type: string
+            items:
+              $ref: '#/definitions/endpoint.GetPlayerSetsByMedalByEliminationId.playerSetData'
+            type: array
         "400":
-          description: Bad Request
+          description: invalid elimination id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: Internal Server Error
+          description: internal db error / Get Medal Info By Elimination Id
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Get player sets which have medals by elimination id
       tags:
       - PlayerSet
@@ -2884,22 +3893,21 @@ paths:
         name: data
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PutPlayerSetName.playerSetData'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
-          schema:
-            type: string
+          description: success
         "400":
-          description: Bad Request
+          description: teamsize of elimination should not be 1
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorReceiveDataFormatResponse'
         "500":
-          description: Internal Server Error
+          description: internal db error / Get Player Set By Id / Update Player Set
+            Name
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Put player set name
       tags:
       - PlayerSet
@@ -2916,23 +3924,18 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
+          description: success
         "500":
-          description: Internal Server Error
+          description: internal db error / Get Elimination Player Set Id Rank Order
+            By Id / Update Player Set Rank
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Put player set rank
       tags:
       - PlayerSet
   /qualification/{id}:
     get:
-      description: Get one Qualification by id
+      description: Get one Qualification without Lanes by id.
       parameters:
       - description: Qualification ID
         in: path
@@ -2943,82 +3946,194 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return Qualification without lanes
           schema:
-            type: string
+            allOf:
+            - $ref: '#/definitions/database.Qualification'
+            - properties:
+                lanes:
+                  $ref: '#/definitions/response.Nill'
+              type: object
         "400":
-          description: Bad Request
+          description: invalid qualification id
           schema:
-            type: string
-      summary: Show one Qualification
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internall db error / Get Only Qualification
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show one Qualification without Lanes.
       tags:
       - Qualification
-  /qualification/lanes/{id}:
-    get:
-      description: Get one Qualification with Lanes by id
-      parameters:
-      - description: Qualification ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            type: string
-        "400":
-          description: Bad Request
-          schema:
-            type: string
-      summary: Show one Qualification
-      tags:
-      - Qualification
-  /qualification/whole/{id}:
     put:
       consumes:
       - application/json
       description: Put whole new Qualification and overwrite with the id, and update
-        lanes below it ,but cannot replace groupid
+        lanes below it ,but cannot replace groupid.
       parameters:
       - description: Qualification ID
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       - description: Qualification
         in: body
         name: Qualification
         required: true
         schema:
-          type: string
+          $ref: '#/definitions/endpoint.PutQualificationByID.QualificationPutData'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success, return updated Qualification
           schema:
-            type: string
+            $ref: '#/definitions/database.Qualification'
         "400":
-          description: Bad Request
+          description: invalid qualification id / invalid lane id / lane is already
+            occupied / invalid start or end lane number / Qualification is belong
+            to UnassignedGroup, when update Qualification
           schema:
-            type: string
-        "404":
-          description: Not Found
-          schema:
-            type: string
+            $ref: '#/definitions/response.ErrorIdResponse'
         "500":
-          description: Internal Server Error
+          description: internal db error / Update Lane Qualification Id / Update Qualification
+            / Get Only Qualification
           schema:
-            type: string
-      summary: update one Qualification
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one Qualification.
+      tags:
+      - Qualification
+  /qualification/lanes/{id}:
+    get:
+      description: Get one Qualification with Lanes by id.
+      parameters:
+      - description: Qualification ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success, return Qualification with lanes
+          schema:
+            allOf:
+            - $ref: '#/definitions/database.Qualification'
+            - properties:
+                lanes:
+                  allOf:
+                  - $ref: '#/definitions/database.Lane'
+                  - properties:
+                      players:
+                        $ref: '#/definitions/response.Nill'
+                    type: object
+              type: object
+        "400":
+          description: invalid qualification id
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internall db error / Get Qualification With Lanes
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show one Qualification with Lanes.
+      tags:
+      - Qualification
+  /qualification/lanes/players/{id}:
+    get:
+      description: Get one Qualification with Lanes and Players by id
+      parameters:
+      - description: Qualification ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success, return Qualification with lanes and players
+          schema:
+            allOf:
+            - $ref: '#/definitions/database.Qualification'
+            - properties:
+                lanes:
+                  allOf:
+                  - $ref: '#/definitions/database.Lane'
+                  - properties:
+                      players:
+                        allOf:
+                        - $ref: '#/definitions/database.Player'
+                        - properties:
+                            player_sets:
+                              $ref: '#/definitions/response.Nill'
+                            rounds:
+                              $ref: '#/definitions/response.Nill'
+                          type: object
+                    type: object
+              type: object
+        "400":
+          description: invalid qualification id
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internall db error / Get Qualification With Lanes and Players
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show one Qualification
+      tags:
+      - Qualification
+  /qualification/lanes/unassigned/{id}:
+    get:
+      description: Get one Qualification with Unassigned Lanes by id.
+      parameters:
+      - description: Qualification ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success, return Qualification with Unassigned lanes
+          schema:
+            items:
+              allOf:
+              - $ref: '#/definitions/database.Qualification'
+              - properties:
+                  lanes:
+                    allOf:
+                    - $ref: '#/definitions/database.Lane'
+                    - properties:
+                        players:
+                          allOf:
+                          - $ref: '#/definitions/database.Player'
+                          - properties:
+                              player_sets:
+                                $ref: '#/definitions/response.Nill'
+                              rounds:
+                                $ref: '#/definitions/response.Nill'
+                            type: object
+                      type: object
+                type: object
+            type: array
+        "400":
+          description: invalid qualification id
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internall db error / Get Qualification With Lanes and Players
+            / Get Qualification With Unassigned Lanes By ID
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show one Qualification with Unassigned Lanes.
       tags:
       - Qualification
   /session:
     delete:
-      description: delete the session
+      description: Delete the session.
       produces:
       - application/json
       responses:
@@ -3032,7 +4147,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: get a session
+      description: Get a session.
       parameters:
       - description: user_name, password
         in: body
@@ -3044,13 +4159,17 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: success / already loginned
           schema:
-            type: string
+            $ref: '#/definitions/response.Response'
+        "400":
+          description: invalid login info
+          schema:
+            $ref: '#/definitions/response.ErrorReceiveDataFormatResponse'
         "401":
-          description: Unauthorized
+          description: user not found / incorrect password
           schema:
-            type: string
+            $ref: '#/definitions/response.ErrorResponse'
       summary: login
       tags:
       - Session
@@ -3072,11 +4191,10 @@ paths:
       consumes:
       - application/json
       description: |-
-        add a user to db
-        no need to post id
-        username cannot be empty, repeated
-        password cannot be empty
-        email cannot be empty, repeated
+        Add a user to db.
+        Username cannot be empty or repeated.
+        Password cannot be empty.
+        Email cannot be empty or repeated.
       parameters:
       - description: nessary information for register
         in: body
@@ -3100,64 +4218,58 @@ paths:
           description: db error
           schema:
             $ref: '#/definitions/response.Response'
-      summary: register a user
+      summary: Register a user.
       tags:
       - User
   /user/{id}:
     get:
       consumes:
       - application/json
-      description: get a user's username, overview, and institution id
+      description: Get a user's username, overview, and institution id.
       parameters:
       - description: user's id
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
         "200":
-          description: success
+          description: success, return user's info
           schema:
-            allOf:
-            - $ref: '#/definitions/response.Response'
-            - properties:
-                data:
-                  $ref: '#/definitions/database.User'
-              type: object
+            $ref: '#/definitions/database.User'
         "400":
-          description: empty/invalid user id
+          description: invalid user id
           schema:
             $ref: '#/definitions/response.Response'
         "404":
           description: no user found
           schema:
             $ref: '#/definitions/response.Response'
-      summary: get a user's information
+      summary: Get a user's information.
       tags:
       - User
     put:
       consumes:
       - application/json
       description: |-
-        modify username, realname, email, overview, and institution_id
-        cannot change other's info
-        cannot change password
-        username cannot be empty, repeated
-        email cannot be empty, repeated
+        Modify username, realname, email, overview, and institution_id.
+        Cannot change password.
+        Username cannot be empty, repeated.
+        Email cannot be empty, repeated.
       parameters:
       - description: user's id
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       - description: modified information
         in: body
         name: ModifyInfo
         required: true
         schema:
-          $ref: '#/definitions/database.User'
+          $ref: '#/definitions/endpoint.ModifyInfo.ModifyUser'
       produces:
       - application/json
       responses:
@@ -3170,51 +4282,48 @@ paths:
           schema:
             $ref: '#/definitions/response.Response'
         "403":
-          description: cannot change other's info | wrong original password
+          description: cannot change other's info
           schema:
             $ref: '#/definitions/response.Response'
         "500":
           description: internal db error
           schema:
             $ref: '#/definitions/response.Response'
-      summary: modify user's information
+      summary: Modify user's information.
       tags:
       - User
   /user/me:
     get:
-      description: get my uid in the session
+      description: Get my uid in the session.
       produces:
       - application/json
       responses:
         "200":
-          description: success
+          description: success, return my uid
           schema:
-            allOf:
-            - $ref: '#/definitions/response.Response'
-            - properties:
-                id:
-                  type: integer
-              type: object
-      summary: get my uid
+            $ref: '#/definitions/endpoint.GetUserID.ID'
+        "401":
+          description: require login
+          schema:
+            $ref: '#/definitions/response.Response'
+      summary: Get my uid.
       tags:
       - User
   /user/password/{id}:
-    put:
+    patch:
       consumes:
       - application/json
       description: |-
-        modify user's password
-        cannot change other's password
-        original password cannot be empty
-        new password cannot be empty
-        original password must be correct
-        new password cannot be the same as original password
+        Modify user's password.
+        Original/New password cannot be empty.
+        Original password must be correct.
+        New password cannot be the same as original password.
       parameters:
       - description: user's id
         in: path
         name: id
         required: true
-        type: string
+        type: integer
       - description: modified password information
         in: body
         name: ModifyInfo
@@ -3241,7 +4350,25 @@ paths:
           description: internal db error
           schema:
             $ref: '#/definitions/response.Response'
-      summary: modify user's password
+      summary: Modify user's password.
       tags:
       - User
 swagger: "2.0"
+tags:
+- name: Session
+- name: User
+- name: Institution
+- name: Competition
+- name: Participant
+- name: GroupInfo
+- name: Qualification
+- name: Lane
+- name: Player
+- name: Elimination
+- name: PlayerSet
+- name: MatchResult
+- name: MatchEnd
+- name: MatchScore
+- name: Medal
+- name: OldLaneInfo
+- name: docs

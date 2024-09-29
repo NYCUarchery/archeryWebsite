@@ -33,13 +33,10 @@ func setTables() {
 	InitMatchResult()
 	InitMedal()
 
-	InitOldLaneInfo()
 	log.Println("All tables are created")
 }
 
 func DropTables() {
-	DropOldLaneInfo()
-
 	DropMedal()
 	DropMatchResult()
 	DropPlayerSet()

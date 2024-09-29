@@ -30,10 +30,10 @@ func IsGetPlayerSetById(context *gin.Context, id uint) (bool, database.PlayerSet
 //	@Description	Get player set with players by id
 //	@Tags			PlayerSet
 //	@Produce		json
-//	@Param			id	path	uint	true	"Player Set ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
-//	@Failure		500	string	string
+//	@Param			id	path		uint																						true	"Player Set ID"
+//	@Success		200	{object}	database.PlayerSet{players=database.Player{rounds=response.Nill,player_sets=response.Nill}}	"success, return player set with players"
+//	@Failure		400	{object}	response.ErrorIdResponse																	"invalid player set id, maybe not exist"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse															"internal error for get player set by id"
 //	@Router			/playerset/{id} [get]
 func GetPlayerSetWPlayerById(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -51,10 +51,10 @@ func GetPlayerSetWPlayerById(context *gin.Context) {
 //	@Description	Get all player sets by elimination id
 //	@Tags			PlayerSet
 //	@Produce		json
-//	@Param			eliminationid	path	uint	true	"Elimination ID"
-//	@Success		200				string	string
-//	@Failure		400				string	string
-//	@Failure		500				string	string
+//	@Param			eliminationid	path		uint								true	"Elimination ID"
+//	@Success		200				{object}	[]database.PlayerSet				"success"
+//	@Failure		400				{object}	response.ErrorIdResponse			"invalid player set id"
+//	@Failure		500				{object}	response.ErrorInternalErrorResponse	"internal db error / Get Player Sets By Elimination Id"
 //	@Router			/playerset/elimination/{eliminationid} [get]
 func GetAllPlayerSetsByEliminationId(context *gin.Context) {
 	id := Convert2uint(context, "eliminationid")
@@ -73,10 +73,10 @@ func GetAllPlayerSetsByEliminationId(context *gin.Context) {
 //	@Description	Get player sets which have medals by elimination id
 //	@Tags			PlayerSet
 //	@Produce		json
-//	@Param			eliminationid	path	uint	true	"Elimination ID"
-//	@Success		200				string	string
-//	@Failure		400				string	string
-//	@Failure		500				string	string
+//	@Param			eliminationid	path		uint															true	"Elimination ID"
+//	@Success		200				{object}	[]endpoint.GetPlayerSetsByMedalByEliminationId.playerSetData	"success"
+//	@Failure		400				{object}	response.ErrorIdResponse										"invalid elimination id"
+//	@Failure		500				{object}	response.ErrorInternalErrorResponse								"internal db error / Get Medal Info By Elimination Id"
 //	@Router			/playerset/elimination/medal/{eliminationid} [get]
 func GetPlayerSetsByMedalByEliminationId(context *gin.Context) {
 	type playerSetData struct {
@@ -112,10 +112,10 @@ func GetPlayerSetsByMedalByEliminationId(context *gin.Context) {
 //	@Tags			PlayerSet
 //	@Accept			json
 //	@Produce		json
-//	@Param			data	body	string	true	"Player Set Data"
-//	@Success		200		string	string
-//	@Failure		400		string	string
-//	@Failure		500		string	string
+//	@Param			data	body		endpoint.PostPlayerSet.playerSetData		true	"Player Set Data"
+//	@Success		200		{object}	database.PlayerSet{players=response.Nill}	"success, return player set without players"
+//	@Failure		400		{object}	response.ErrorIdResponse					"invalid elimination id, player id maybe not exist / player set's length and teamsize does not match"
+//	@Failure		500		{object}	response.ErrorInternalErrorResponse			"internal db error for create player set / get player / create player set match table / get elimination"
 //	@Router			/playerset [post]
 func PostPlayerSet(context *gin.Context) {
 	type playerSetData struct {
@@ -186,11 +186,13 @@ func PostPlayerSet(context *gin.Context) {
 //	@Tags			PlayerSet
 //	@Accept			json
 //	@Produce		json
-//	@Param			id		path	uint	true	"Player Set ID"
-//	@Param			data	body	string	true	"Player Set Data"
-//	@Success		200		string	string
-//	@Failure		400		string	string
-//	@Failure		500		string	string
+//	@Param			id		path		uint									true	"Player Set ID"
+//	@Param			data	body		endpoint.PutPlayerSetName.playerSetData	true	"Player Set Data"
+//	@Success		200		{object}	nil										"success"
+//	@Failure		400		{object}	response.ErrorIdResponse				"invalid player set id"
+//	@Failure		400		{object}	response.ErrorReceiveDataFormatResponse	"invalid player set data format"
+//	@Failure		400		{object}	response.ErrorReceiveDataFormatResponse	"teamsize of elimination should not be 1"
+//	@Failure		500		{object}	response.ErrorInternalErrorResponse		"internal db error / Get Player Set By Id / Update Player Set Name"
 //	@Router			/playerset/name/{id} [put]
 func PutPlayerSetName(context *gin.Context) {
 	type playerSetData struct {
@@ -228,10 +230,9 @@ func PutPlayerSetName(context *gin.Context) {
 //	@Description	Put player set rank by elimination id
 //	@Tags			PlayerSet
 //	@Produce		json
-//	@Param			eliminationid	path	uint	true	"Elimination ID"
-//	@Success		200				string	string
-//	@Failure		400				string	string
-//	@Failure		500				string	string
+//	@Param			eliminationid	path		uint								true	"Elimination ID"
+//	@Success		200				{object}	nil									"success"
+//	@Failure		500				{object}	response.ErrorInternalErrorResponse	"internal db error / Get Elimination Player Set Id Rank Order By Id / Update Player Set Rank"
 //	@Router			/playerset/preranking/{eliminationid} [put]
 func PutPlayerSetPreRankingByEliminationId(context *gin.Context) {
 	var yourResultStruct []database.ResultStruct
@@ -255,10 +256,10 @@ func PutPlayerSetPreRankingByEliminationId(context *gin.Context) {
 //	@Summary		Delete player set
 //	@Description	Delete player set, and delete player set match table
 //	@Tags			PlayerSet
-//	@Param			id	path	uint	true	"Player Set ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
-//	@Failure		500	string	string
+//	@Param			id	path		uint								true	"Player Set ID"
+//	@Success		200	{object}	response.DeleteSuccessResponse		"success"
+//	@Failure		400	{object}	response.ErrorIdResponse			"invalid plyer set id"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error / Get Player Set By Id / Delete Player Set Match Table By Player Set Id / Delete Player Set By Id"
 //	@Router			/playerset/{id} [delete]
 func DeletePlayerSet(context *gin.Context) {
 	id := Convert2uint(context, "id")
