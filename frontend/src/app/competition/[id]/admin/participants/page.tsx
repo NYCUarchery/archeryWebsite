@@ -37,6 +37,18 @@ export default function Page({ params }: { params: { id: string } }) {
     apiClient.participant.participantDelete(id)
   );
 
+  const { mutate: createPlayer } = useMutation(
+    (id: number) => apiClient.player.playerCreate(id),
+    {
+      onError: (error, id) => {
+        alert(`
+        Player creation for participant ${id} failed.
+        Error: ${error}
+        `);
+      },
+    }
+  );
+
   const [rowSelectionModel, setRowSelectionModel] =
     useState<GridRowSelectionModel>([]);
 
@@ -45,14 +57,17 @@ export default function Page({ params }: { params: { id: string } }) {
       const config =
         i === rowSelectionModel.length - 1
           ? {
-              onSuccess: () =>
+              mudationKeys: ["participantApprove", rowSelectionModel[i]],
+              onSuccess: () => {
                 queryClient.invalidateQueries([
                   "participantCompetitionList",
                   params.id,
-                ]),
+                ]);
+              },
             }
           : {};
       approveParticipant(rowSelectionModel[i] as number, config);
+      createPlayer(rowSelectionModel[i] as number);
     }
     setRowSelectionModel([]);
   };
