@@ -1,4 +1,4 @@
-version: "3.8"
+version: "3.8" # Server has older version of docker-compose, so this line looks different.
 
 services:
   frontend:
@@ -41,15 +41,15 @@ services:
       - /certbot/www/:/var/www/certbot/:rw
       - /certbot/conf/:/etc/letsencrypt/:rw
     entrypoint:
-    - /bin/sh
-    - -c
-    - |
-      trap exit TERM;
-      while :;
-      do
-        certbot renew;
-        sleep 12h;
-      done;
+      - /bin/sh
+      - -c
+      - |
+        trap exit TERM;
+        while :;
+        do
+          certbot renew;
+          sleep 12h;
+        done;
 
 volumes:
   db_data:
