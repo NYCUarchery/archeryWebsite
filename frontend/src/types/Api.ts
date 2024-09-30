@@ -2031,9 +2031,12 @@ export class Api<
       scores: EndpointPutPlayerAllEndScoresByEndIdEndScores,
       params: RequestParams = {}
     ) =>
-      this.request<EndpointPutPlayerAllEndScoresByEndIdEndScores, string>({
-        path: `/player/all-endscores/${id}`,
-        method: "PUT",
+      this.request<
+        ResponseNill,
+        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+      >({
+        path: `/player/all-endscores/${endid}`,
+        method: "PATCH",
         body: scores,
         type: ContentType.Json,
         format: "json",
@@ -2097,9 +2100,16 @@ export class Api<
       groupid: string,
       params: RequestParams = {}
     ) =>
-      this.request<any, string>({
-        path: `/player/groupid/${playerid}/${groupid}`,
-        method: "PUT",
+      this.request<
+        DatabasePlayer & {
+          player_sets?: ResponseNill;
+          rounds?: ResponseNill;
+        },
+        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+      >({
+        path: `/player/group/${id}`,
+        method: "PATCH",
+        body: groupid,
         type: ContentType.Json,
         format: "json",
         ...params,
@@ -2120,8 +2130,8 @@ export class Api<
     ) =>
       this.request<any, string>({
         path: `/player/isconfirmed/${roundendid}`,
-        body: body,
-        method: "PUT",
+        method: "PATCH",
+        body: data,
         type: ContentType.Json,
         format: "json",
         ...params,
@@ -2135,11 +2145,21 @@ export class Api<
      * @summary Update one Player laneId by id
      * @request PUT:/player/laneid/{playerid}
      */
-    laneidUpdate: (playerid: number, body: any, params: RequestParams = {}) =>
-      this.request<any, string>({
-        path: `/player/laneid/${playerid}`,
-        method: "PUT",
-        body: body,
+    laneUpdate: (
+      id: number,
+      data: EndpointPutPlayerLaneIdUpdateLaneIdData,
+      params: RequestParams = {}
+    ) =>
+      this.request<
+        DatabasePlayer & {
+          player_sets?: ResponseNill;
+          rounds?: ResponseNill;
+        },
+        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+      >({
+        path: `/player/lane/${id}`,
+        method: "PATCH",
+        body: data,
         type: ContentType.Json,
         format: "json",
         ...params,
@@ -2157,7 +2177,7 @@ export class Api<
       this.request<any, string>({
         path: `/player/order/${id}`,
         method: "PUT",
-        body: body,
+        body: data,
         type: ContentType.Json,
         format: "json",
         ...params,
@@ -2227,10 +2247,18 @@ export class Api<
      * @summary Update one Player score by id
      * @request PUT:/player/score/{roundscoreid}
      */
-    scoreUpdate: (roundscoreid: number, params: RequestParams = {}) =>
-      this.request<any, string>({
-        path: `/player/score/${roundscoreid}`,
-        method: "PUT",
+    roundscoreUpdate: (
+      roundscoreid: number,
+      data: EndpointUpdateTotalScoreData,
+      params: RequestParams = {}
+    ) =>
+      this.request<
+        ResponseNill,
+        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+      >({
+        path: `/player/roundscore/${roundscoreid}`,
+        method: "PATCH",
+        body: data,
         type: ContentType.Json,
         format: "json",
         ...params,
@@ -2273,7 +2301,8 @@ export class Api<
     shootoffscoreUpdate: (id: number, params: RequestParams = {}) =>
       this.request<any, string>({
         path: `/player/shootoffscore/${id}`,
-        method: "PUT",
+        method: "PATCH",
+        body: data,
         type: ContentType.Json,
         format: "json",
         ...params,
@@ -2290,7 +2319,8 @@ export class Api<
     totalscoreUpdate: (id: number, params: RequestParams = {}) =>
       this.request<any, string>({
         path: `/player/totalscore/${id}`,
-        method: "PUT",
+        method: "PATCH",
+        body: data,
         type: ContentType.Json,
         format: "json",
         ...params,
@@ -2439,7 +2469,6 @@ export class Api<
       this.request<any, string>({
         path: `/playerset/preranking/${eliminationid}`,
         method: "PUT",
-        format: "json",
         ...params,
       }),
 
