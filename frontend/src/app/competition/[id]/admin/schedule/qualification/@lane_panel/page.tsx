@@ -35,7 +35,7 @@ export default function Page({ params }: { params: { id: string } }) {
   const { data: qualifications } = useQuery(
     ["qualificationLanesUnassignedDetail", groupIndex],
     () =>
-      apiClient.qualification.qualificationLanesUnassignedDetail(
+      apiClient.qualification.lanesUnassignedDetail(
         competition?.groups![groupIndex].id
       ),
     { select: (data) => data.data as Qualification[] }
@@ -50,7 +50,7 @@ export default function Page({ params }: { params: { id: string } }) {
   };
   const { mutate: assignPlayerLane } = useMutation(
     ({ playerId, laneId }: { playerId: number; laneId: number }) =>
-      apiClient.player.laneidUpdate(playerId, { lane_id: laneId }),
+      apiClient.player.laneUpdate(playerId, { lane_id: laneId }),
     {
       onSuccess: handleSuccess,
     }

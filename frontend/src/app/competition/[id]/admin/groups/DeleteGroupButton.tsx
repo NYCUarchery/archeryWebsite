@@ -33,7 +33,7 @@ export default function DeleteGroupButton({ group, competitionId }: Props) {
             alert("只能刪空組別");
             return;
           }
-          mutate(group.id.toString());
+          mutate(group.id);
           setSnackbarOpen(true);
         }}
       >
