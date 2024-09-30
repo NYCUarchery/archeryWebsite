@@ -3561,7 +3561,7 @@ const docTemplate = `{
             }
         },
         "/player/all-endscores/{endid}": {
-            "put": {
+            "patch": {
                 "description": "Update all scores of one end by end id\nWill auto update player total score\nShould have a 6 element array scores array",
                 "consumes": [
                     "application/json"
@@ -3729,7 +3729,7 @@ const docTemplate = `{
             }
         },
         "/player/group/{id}": {
-            "put": {
+            "patch": {
                 "description": "Update one Player groupId by id, and change player laneid to Unassigned lane.",
                 "consumes": [
                     "application/json"
@@ -3797,7 +3797,7 @@ const docTemplate = `{
             }
         },
         "/player/isconfirmed/{roundendid}": {
-            "put": {
+            "patch": {
                 "description": "Update one Player isConfirmed by id.",
                 "consumes": [
                     "application/json"
@@ -3850,7 +3850,7 @@ const docTemplate = `{
             }
         },
         "/player/lane/{id}": {
-            "put": {
+            "patch": {
                 "description": "Update one Player laneId by id, update lane playernum.",
                 "consumes": [
                     "application/json"
@@ -3918,7 +3918,7 @@ const docTemplate = `{
             }
         },
         "/player/order/{id}": {
-            "put": {
+            "patch": {
                 "description": "Update one Player order by id.",
                 "consumes": [
                     "application/json"
@@ -4168,7 +4168,7 @@ const docTemplate = `{
             }
         },
         "/player/roundscore/{roundscoreid}": {
-            "put": {
+            "patch": {
                 "description": "Update one Player score by id.\nUpdate doesn't change total score in player, round, roundend.",
                 "consumes": [
                     "application/json"
@@ -4301,7 +4301,7 @@ const docTemplate = `{
             }
         },
         "/player/shootoffscore/{id}": {
-            "put": {
+            "patch": {
                 "description": "Update one Player shootoffScore by id.",
                 "consumes": [
                     "application/json"
@@ -4369,7 +4369,7 @@ const docTemplate = `{
             }
         },
         "/player/totalscore/{id}": {
-            "put": {
+            "patch": {
                 "description": "Update one Player total score by id.",
                 "consumes": [
                     "application/json"
@@ -4725,7 +4725,7 @@ const docTemplate = `{
             }
         },
         "/playerset/name/{id}": {
-            "put": {
+            "patch": {
                 "description": "Put player set name",
                 "consumes": [
                     "application/json"
@@ -4775,7 +4775,7 @@ const docTemplate = `{
             }
         },
         "/playerset/preranking/{eliminationid}": {
-            "put": {
+            "patch": {
                 "description": "Put player set rank by elimination id",
                 "produces": [
                     "application/json"

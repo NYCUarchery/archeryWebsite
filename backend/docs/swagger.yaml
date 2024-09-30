@@ -3157,7 +3157,7 @@ paths:
       tags:
       - Player
   /player/all-endscores/{endid}:
-    put:
+    patch:
       consumes:
       - application/json
       description: |-
@@ -3268,7 +3268,7 @@ paths:
       tags:
       - Player
   /player/group/{id}:
-    put:
+    patch:
       consumes:
       - application/json
       description: Update one Player groupId by id, and change player laneid to Unassigned
@@ -3312,7 +3312,7 @@ paths:
       tags:
       - Player
   /player/isconfirmed/{roundendid}:
-    put:
+    patch:
       consumes:
       - application/json
       description: Update one Player isConfirmed by id.
@@ -3347,7 +3347,7 @@ paths:
       tags:
       - Player
   /player/lane/{id}:
-    put:
+    patch:
       consumes:
       - application/json
       description: Update one Player laneId by id, update lane playernum.
@@ -3389,7 +3389,7 @@ paths:
       tags:
       - Player
   /player/order/{id}:
-    put:
+    patch:
       consumes:
       - application/json
       description: Update one Player order by id.
@@ -3552,7 +3552,7 @@ paths:
       tags:
       - Player
   /player/roundscore/{roundscoreid}:
-    put:
+    patch:
       consumes:
       - application/json
       description: |-
@@ -3635,7 +3635,7 @@ paths:
       tags:
       - Player
   /player/shootoffscore/{id}:
-    put:
+    patch:
       consumes:
       - application/json
       description: Update one Player shootoffScore by id.
@@ -3678,7 +3678,7 @@ paths:
       tags:
       - Player
   /player/totalscore/{id}:
-    put:
+    patch:
       consumes:
       - application/json
       description: Update one Player total score by id.
@@ -3878,7 +3878,7 @@ paths:
       tags:
       - PlayerSet
   /playerset/name/{id}:
-    put:
+    patch:
       consumes:
       - application/json
       description: Put player set name
@@ -3912,7 +3912,7 @@ paths:
       tags:
       - PlayerSet
   /playerset/preranking/{eliminationid}:
-    put:
+    patch:
       description: Put player set rank by elimination id
       parameters:
       - description: Elimination ID
