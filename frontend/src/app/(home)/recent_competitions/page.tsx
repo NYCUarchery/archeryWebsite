@@ -22,15 +22,7 @@ export default function RecentCompetitionPage() {
 
   const { data: competitions, isLoading: isLoadingCompetitions } = useQuery(
     "competitions",
-    () =>
-      apiClient.competition.currentDetail(
-        startIndex.toString(),
-        endIndex.toString(),
-        {
-          head: startIndex,
-          tail: endIndex,
-        }
-      ),
+    () => apiClient.competition.currentDetail(startIndex, endIndex),
     {
       retry: false,
       select: (data) => data.data as unknown as DatabaseCompetition[],

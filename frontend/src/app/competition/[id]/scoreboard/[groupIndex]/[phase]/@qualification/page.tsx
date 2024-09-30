@@ -32,8 +32,7 @@ export default function Page({
 
   const { data: qualification } = useQuery(
     ["qualification", group?.id ?? -1],
-    () =>
-      apiClient.qualification.qualificationLanesPlayersDetail(group?.id ?? -1),
+    () => apiClient.qualification.lanesPlayersDetail(group?.id ?? -1),
     {
       select: (data) => data.data as unknown as Qualification,
       staleTime: Infinity,

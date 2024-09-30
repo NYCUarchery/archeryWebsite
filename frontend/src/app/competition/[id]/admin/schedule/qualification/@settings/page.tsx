@@ -48,7 +48,7 @@ export default function Page({ params }: { params: { id: string } }) {
   const { data: qualification, isSuccess: isQualificationSuccess } = useQuery(
     ["qualificationPlayersDetail", groupIndex],
     () =>
-      apiClient.qualification.qualificationLanesPlayersDetail(
+      apiClient.qualification.lanesPlayersDetail(
         competition?.groups![groupIndex].id
       ),
     {
@@ -61,7 +61,7 @@ export default function Page({ params }: { params: { id: string } }) {
   );
   const { mutate: saveSettings } = useMutation(
     () =>
-      apiClient.qualification.wholeUpdate(qualification!.id.toString(), {
+      apiClient.qualification.qualificationUpdate(qualification!.id, {
         start_lane: startLane,
         end_lane: endLane,
         advancing_num: advancingNum,
