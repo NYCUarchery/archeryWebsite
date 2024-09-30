@@ -1,0 +1,36 @@
+name: nycu-archery-system
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+    restart: unless-stopped
+  mysql:
+    image: mysql:8
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: testdb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    restart: unless-stopped
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    depends_on:
+      - mysql
+  reverse-proxy:
+    build:
+      context: ./reverse-proxy
+    restart: unless-stopped
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - frontend
+      - backend
+
+volumes:
+  db_data:
