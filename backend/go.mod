@@ -1,8 +1,6 @@
 module backend
 
-go 1.22.0
-
-toolchain go1.23.1
+go 1.23
 
 require (
 	github.com/gin-contrib/sessions v1.0.1
