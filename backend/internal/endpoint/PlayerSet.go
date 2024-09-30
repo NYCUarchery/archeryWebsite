@@ -193,7 +193,7 @@ func PostPlayerSet(context *gin.Context) {
 //	@Failure		400		{object}	response.ErrorReceiveDataFormatResponse	"invalid player set data format"
 //	@Failure		400		{object}	response.ErrorReceiveDataFormatResponse	"teamsize of elimination should not be 1"
 //	@Failure		500		{object}	response.ErrorInternalErrorResponse		"internal db error / Get Player Set By Id / Update Player Set Name"
-//	@Router			/playerset/name/{id} [put]
+//	@Router			/playerset/name/{id} [patch]
 func PutPlayerSetName(context *gin.Context) {
 	type playerSetData struct {
 		SetName string `json:"set_name"`
@@ -233,7 +233,7 @@ func PutPlayerSetName(context *gin.Context) {
 //	@Param			eliminationid	path		uint								true	"Elimination ID"
 //	@Success		200				{object}	nil									"success"
 //	@Failure		500				{object}	response.ErrorInternalErrorResponse	"internal db error / Get Elimination Player Set Id Rank Order By Id / Update Player Set Rank"
-//	@Router			/playerset/preranking/{eliminationid} [put]
+//	@Router			/playerset/preranking/{eliminationid} [patch]
 func PutPlayerSetPreRankingByEliminationId(context *gin.Context) {
 	var yourResultStruct []database.ResultStruct
 	eliminationId := Convert2uint(context, "eliminationid")

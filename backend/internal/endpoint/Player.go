@@ -305,7 +305,7 @@ func IsUpdatePlayerLaneId(context *gin.Context, playerId uint, laneId uint) bool
 //	@Success		200			{object}	database.Player{rounds=response.Nill,player_sets=response.Nill}	"success, return player info"
 //	@Failure		400			{object}	response.ErrorIdResponse										"invalid player id / invalid group id parameter, may not exist"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse								"internal db error / updating player groupId / get player info / get unassigned lane id"
-//	@Router			/player/group/{id} [put]
+//	@Router			/player/group/{id} [patch]
 func PutPlayerGroupId(context *gin.Context) {
 	type UpdateGroupIdData struct {
 		GroupId uint `json:"group_id"`
@@ -354,7 +354,7 @@ func PutPlayerGroupId(context *gin.Context) {
 //	@Success		200		{object}	database.Player{rounds=response.Nill,player_sets=response.Nill}	"success, return player info"
 //	@Failure		400		{object}	response.ErrorIdResponse										"invalid player id / invalid lane id parameter"
 //	@Failure		500		{object}	response.ErrorInternalErrorResponse								"internal db error / updating player laneid / get player info"
-//	@Router			/player/lane/{id} [put]
+//	@Router			/player/lane/{id} [patch]
 func PutPlayerLaneId(context *gin.Context) {
 	type UpdateLaneIdData struct {
 		LaneId uint `json:"lane_id"`
@@ -389,7 +389,7 @@ func PutPlayerLaneId(context *gin.Context) {
 //	@Success		200		{object}	database.Player{rounds=response.Nill,player_sets=response.Nill}	"success, return player info"
 //	@Failure		400		{object}	response.ErrorIdResponse										"invalid player id parameter, may not exist"
 //	@Failure		500		{object}	response.ErrorInternalErrorResponse								"internal db error / updating player order / get player info"
-//	@Router			/player/order/{id} [put]
+//	@Router			/player/order/{id} [patch]
 func PutPlayerOrder(context *gin.Context) {
 	type UpdateOrderData struct {
 		Order int `json:"order"`
@@ -430,7 +430,7 @@ func PutPlayerOrder(context *gin.Context) {
 //	@Success		200			{object}	response.Nill										"success, return nil"
 //	@Failure		400			{object}	response.ErrorIdResponse							"invalid roundend id parameter, may not exist"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse					"internal db error for updating player isConfirmed"
-//	@Router			/player/isconfirmed/{roundendid} [put]
+//	@Router			/player/isconfirmed/{roundendid} [patch]
 func PutPlayerIsConfirmed(context *gin.Context) {
 	type UpdateIsConfirmedData struct {
 		IsConfirmed bool `json:"is_confirmed"`
@@ -492,7 +492,7 @@ func UpdatePlayerTotalScoreWithOneScore(context *gin.Context, playerId uint, rou
 //	@Success		204		{object}	response.Nill												"no change"
 //	@Failure		400		{object}	response.ErrorIdResponse									"invalid player id parameter, may not exist"
 //	@Failure		500		{object}	response.ErrorInternalErrorResponse							"internal db error for updating player total score"
-//	@Router			/player/totalscore/{id} [put]
+//	@Router			/player/totalscore/{id} [patch]
 func PutPlayerTotalScoreByplayerId(context *gin.Context) {
 	type UpdateTotalScoreData struct {
 		NewScore int `json:"new_score"`
@@ -532,7 +532,7 @@ func PutPlayerTotalScoreByplayerId(context *gin.Context) {
 //	@Success		200				{object}	response.Nill						"success"
 //	@Failure		400				{object}	response.ErrorIdResponse			"invalid roundscore id / player id / round id / roundend id"
 //	@Failure		500				{object}	response.ErrorInternalErrorResponse	"internal db error / updating player score / get old score / update total score"
-//	@Router			/player/roundscore/{roundscoreid} [put]
+//	@Router			/player/roundscore/{roundscoreid} [patch]
 func PutPlayerScore(context *gin.Context) {
 	var data UpdateTotalScoreData
 	roundScoreId := Convert2uint(context, "roundscoreid")
@@ -598,7 +598,7 @@ func PutPlayerScore(context *gin.Context) {
 //	@Success		200		{object}	database.Player{rounds=response.Nill,player_sets=response.Nill}	"success, return player info"
 //	@Failure		400		{object}	response.ErrorIdResponse										"invalid player id parameter, may not exist"
 //	@Failure		500		{object}	response.ErrorInternalErrorResponse								"internal db error for updating player shootoffScore / get player info"
-//	@Router			/player/shootoffscore/{id} [put]
+//	@Router			/player/shootoffscore/{id} [patch]
 func PutPlayerShootoffScore(context *gin.Context) {
 	type UpdateShootoffScoreData struct {
 		ShootOffScore int `json:"shoot_off_score"`
@@ -669,7 +669,7 @@ func RefreshPlayerTotalScore(context *gin.Context, playerId uint) {
 //	@Success		200		{object}	response.Nill									"success"
 //	@Failure		400		{object}	response.ErrorIdResponse						"invalid end id / length of scores not equal to 6"
 //	@Failure		500		{object}	response.ErrorInternalErrorResponse				"internal db error / updating player end scores / get round score ids"
-//	@Router			/player/all-endscores/{endid} [put]
+//	@Router			/player/all-endscores/{endid} [patch]
 func PutPlayerAllEndScoresByEndId(context *gin.Context) {
 	type EndScores struct {
 		Scores []int `json:"scores"`
