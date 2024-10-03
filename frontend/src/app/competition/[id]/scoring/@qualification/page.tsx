@@ -11,7 +11,10 @@ export default function Page({ params }: { params: { id: string } }) {
   const { data: user } = useGetCurrentUserDetail();
   const competitionId = parseInt(params.id);
   const { data: competition } = useGetCompetitionWithGroups(competitionId);
-  const { data: participant } = useGetCurrentParticipentDetail(user?.id);
+  const { data: participant } = useGetCurrentParticipentDetail(
+    competitionId,
+    user?.id
+  );
   const { data: players } = useGetPlayersByParticipant(
     (participant as Participant)?.id,
     competitionId
