@@ -2036,7 +2036,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PATCH:/player/group/{id}
      */
     groupPartialUpdate: (
-      playerid: number,
       id: string,
       groupid: EndpointPutPlayerGroupIdUpdateGroupIdData,
       params: RequestParams = {},
