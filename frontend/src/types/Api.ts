@@ -1921,9 +1921,16 @@ export class Api<
      * @summary Show Participants By competition ID and user ID
      * @request GET:/participant/competition/user/{competitionid}/{userid}
      */
-    competitionList: (competition_id: number, params: RequestParams = {}) =>
-      this.request<any, string>({
-        path: `/participant/competition`,
+    competitionUserDetail: (
+      competitionid: number,
+      userid: number,
+      params: RequestParams = {}
+    ) =>
+      this.request<
+        DatabaseParticipant[],
+        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+      >({
+        path: `/participant/competition/user/${competitionid}/${userid}`,
         method: "GET",
         format: "json",
         ...params,
