@@ -68,11 +68,7 @@ export default function Page({ params }: { params: { id: string } }) {
       }),
     {
       onSuccess: () => {
-        queryClient.invalidateQueries([
-          "qualificationPlayersDetail",
-          groupIndex,
-        ]);
-        queryClient.invalidateQueries(["groupinfoPlayersDetail", groupIndex]);
+        queryClient.invalidateQueries(["qualificationLanes", groupIndex]);
       },
     }
   );
@@ -93,8 +89,8 @@ export default function Page({ params }: { params: { id: string } }) {
         startLane={startLane}
         endLane={endLane}
         lanesNum={competition.lanes_num}
-        setStartLane={setStartLane}
-        setEndLane={setEndLane}
+        setStartLane={(value: number) => dispatch(setStartLane(value))}
+        setEndLane={(value: number) => dispatch(setEndLane(value))}
       />
       <AdvancingNumSetter playersNum={group ? group.players.length : 0} />
 
