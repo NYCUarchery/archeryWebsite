@@ -17,7 +17,7 @@ test.describe("Home", () => {
     await expect(await page.getByText("公告欄")).toBeVisible();
   });
   test("login", async ({ page }) => {
-    await loginUser(page, user);
+    await loginUser(page, new User("宋承諺", "Oatmeal", "Waaaaaaaa"));
   });
   test("apply to competition as player", async ({ page }) => {
     await registerUser(page, user);
