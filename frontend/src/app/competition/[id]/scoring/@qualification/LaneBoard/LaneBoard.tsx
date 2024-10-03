@@ -2,9 +2,7 @@ import LaneNumber from "./LaneNumber";
 import PlayerInfoBar from "./PlayerInfoBar/PlayerInfoBar";
 import { ToggleButtonGroup, ToggleButton, Box } from "@mui/material";
 import ScoreController from "./ScoreController/ScoreController";
-import { useAppDispatch, useAppSelector } from "store/hooks";
 import TargetSigns from "./TargetSigns";
-import { setSelectedIndex } from "./qualificationScoringSlice";
 import PreQualificationNote from "./PreQualificationNote";
 import useGetCompetitionWithGroups from "@/utils/QueryHooks/useGetCompetitionWithGroups";
 import { Player } from "@/types/oldRef/Player";
@@ -15,16 +13,17 @@ interface Props {
   player: Player;
   lane: LaneWithEnds;
   competitionId: number;
+  selectedOrder: number;
+  onSelectedOrderChange: (index: number) => void;
 }
-export default function LaneBoard({ player, competitionId, lane }: Props) {
-  const dispatch = useAppDispatch();
+export default function LaneBoard({
+  player,
+  competitionId,
+  lane,
+  selectedOrder,
+  onSelectedOrderChange,
+}: Props) {
   const { data: competition } = useGetCompetitionWithGroups(competitionId);
-  const selectedOrder = useAppSelector(
-    (state) => state.qualificationScoring.selectedOrder
-  );
-  // const selectedPlayerId = useComputed(() => {
-  //   return lane.players.find((p) => p.order === selectedOrder)?.id ?? -1;
-  // });
   const selectedEnd = useComputed(() => {
     const index = lane.players.findIndex((p) => p.order === selectedOrder);
     return lane.ends[index];
@@ -34,7 +33,7 @@ export default function LaneBoard({ player, competitionId, lane }: Props) {
     return <></>;
 
   const handleOnChange = (_event: any, newOrder: number) => {
-    dispatch(setSelectedIndex(newOrder));
+    onSelectedOrderChange(newOrder);
   };
 
   const playerInfos = [];

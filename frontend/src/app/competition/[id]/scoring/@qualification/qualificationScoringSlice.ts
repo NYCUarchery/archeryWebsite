@@ -9,11 +9,11 @@ export const qualificationScoringSlice = createSlice({
   name: "QualificationScoring",
   initialState,
   reducers: {
-    setSelectedIndex: (state, action: PayloadAction<number>) => {
+    setSelectedOrder: (state, action: PayloadAction<number>) => {
       state.selectedOrder = action.payload;
     },
   },
 });
 
-export const { setSelectedIndex } = qualificationScoringSlice.actions;
+export const { setSelectedOrder } = qualificationScoringSlice.actions;
 export default qualificationScoringSlice.reducer;

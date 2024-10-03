@@ -6,8 +6,14 @@ import { Participant } from "@/types/oldRef/Participant";
 import useGetCurrentEndWithLaneByPlayer from "@/utils/QueryHooks/useGetCurrentEndWithLaneByPlayer";
 import useGetCompetitionWithGroups from "@/utils/QueryHooks/useGetCompetitionWithGroups";
 import LaneBoard from "./LaneBoard/LaneBoard";
+import { useAppDispatch, useAppSelector } from "store/hooks";
+import { setSelectedOrder } from "./qualificationScoringSlice";
 
 export default function Page({ params }: { params: { id: string } }) {
+  const dispatch = useAppDispatch();
+  const selectedOrder = useAppSelector(
+    (state) => state.qualificationScoring.selectedOrder
+  );
   const { data: user } = useGetCurrentUserDetail();
   const competitionId = parseInt(params.id);
   const { data: competition } = useGetCompetitionWithGroups(competitionId);
@@ -24,9 +30,19 @@ export default function Page({ params }: { params: { id: string } }) {
     competition?.qualification_current_end
   );
 
+  const onSelectedOrderChange = (index: number) => {
+    dispatch(setSelectedOrder(index));
+  };
+
   if (!players || !lane) return <></>;
 
   return (
-    <LaneBoard player={players[0]} lane={lane} competitionId={competitionId} />
+    <LaneBoard
+      player={players[0]}
+      lane={lane}
+      competitionId={competitionId}
+      selectedOrder={selectedOrder}
+      onSelectedOrderChange={onSelectedOrderChange}
+    />
   );
 }
