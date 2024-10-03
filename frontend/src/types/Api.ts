@@ -449,19 +449,12 @@ export interface ResponseResponse {
   message?: string;
 }
 
-import type {
-  AxiosInstance,
-  AxiosRequestConfig,
-  AxiosResponse,
-  HeadersDefaults,
-  ResponseType,
-} from "axios";
+import type { AxiosInstance, AxiosRequestConfig, AxiosResponse, HeadersDefaults, ResponseType } from "axios";
 import axios from "axios";
 
 export type QueryParamsType = Record<string | number, any>;
 
-export interface FullRequestParams
-  extends Omit<AxiosRequestConfig, "data" | "params" | "url" | "responseType"> {
+export interface FullRequestParams extends Omit<AxiosRequestConfig, "data" | "params" | "url" | "responseType"> {
   /** set parameter to `true` for call `securityWorker` for this request */
   secure?: boolean;
   /** request path */
@@ -476,15 +469,11 @@ export interface FullRequestParams
   body?: unknown;
 }
 
-export type RequestParams = Omit<
-  FullRequestParams,
-  "body" | "method" | "query" | "path"
->;
+export type RequestParams = Omit<FullRequestParams, "body" | "method" | "query" | "path">;
 
-export interface ApiConfig<SecurityDataType = unknown>
-  extends Omit<AxiosRequestConfig, "data" | "cancelToken"> {
+export interface ApiConfig<SecurityDataType = unknown> extends Omit<AxiosRequestConfig, "data" | "cancelToken"> {
   securityWorker?: (
-    securityData: SecurityDataType | null
+    securityData: SecurityDataType | null,
   ) => Promise<AxiosRequestConfig | void> | AxiosRequestConfig | void;
   secure?: boolean;
   format?: ResponseType;
@@ -504,16 +493,8 @@ export class HttpClient<SecurityDataType = unknown> {
   private secure?: boolean;
   private format?: ResponseType;
 
-  constructor({
-    securityWorker,
-    secure,
-    format,
-    ...axiosConfig
-  }: ApiConfig<SecurityDataType> = {}) {
-    this.instance = axios.create({
-      ...axiosConfig,
-      baseURL: axiosConfig.baseURL || "//localhost:8080/api",
-    });
+  constructor({ securityWorker, secure, format, ...axiosConfig }: ApiConfig<SecurityDataType> = {}) {
+    this.instance = axios.create({ ...axiosConfig, baseURL: axiosConfig.baseURL || "//localhost:80/api" });
     this.secure = secure;
     this.format = format;
     this.securityWorker = securityWorker;
@@ -523,10 +504,7 @@ export class HttpClient<SecurityDataType = unknown> {
     this.securityData = data;
   };
 
-  protected mergeRequestParams(
-    params1: AxiosRequestConfig,
-    params2?: AxiosRequestConfig
-  ): AxiosRequestConfig {
+  protected mergeRequestParams(params1: AxiosRequestConfig, params2?: AxiosRequestConfig): AxiosRequestConfig {
     const method = params1.method || (params2 && params2.method);
 
     return {
@@ -534,11 +512,7 @@ export class HttpClient<SecurityDataType = unknown> {
       ...params1,
       ...(params2 || {}),
       headers: {
-        ...((method &&
-          this.instance.defaults.headers[
-            method.toLowerCase() as keyof HeadersDefaults
-          ]) ||
-          {}),
+        ...((method && this.instance.defaults.headers[method.toLowerCase() as keyof HeadersDefaults]) || {}),
         ...(params1.headers || {}),
         ...((params2 && params2.headers) || {}),
       },
@@ -559,15 +533,11 @@ export class HttpClient<SecurityDataType = unknown> {
     }
     return Object.keys(input || {}).reduce((formData, key) => {
       const property = input[key];
-      const propertyContent: any[] =
-        property instanceof Array ? property : [property];
+      const propertyContent: any[] = property instanceof Array ? property : [property];
 
       for (const formItem of propertyContent) {
         const isFileType = formItem instanceof Blob || formItem instanceof File;
-        formData.append(
-          key,
-          isFileType ? formItem : this.stringifyFormItem(formItem)
-        );
+        formData.append(key, isFileType ? formItem : this.stringifyFormItem(formItem));
       }
 
       return formData;
@@ -591,21 +561,11 @@ export class HttpClient<SecurityDataType = unknown> {
     const requestParams = this.mergeRequestParams(params, secureParams);
     const responseFormat = format || this.format || undefined;
 
-    if (
-      type === ContentType.FormData &&
-      body &&
-      body !== null &&
-      typeof body === "object"
-    ) {
+    if (type === ContentType.FormData && body && body !== null && typeof body === "object") {
       body = this.createFormData(body as Record<string, unknown>);
     }
 
-    if (
-      type === ContentType.Text &&
-      body &&
-      body !== null &&
-      typeof body !== "string"
-    ) {
+    if (type === ContentType.Text && body && body !== null && typeof body !== "string") {
       body = JSON.stringify(body);
     }
 
@@ -632,9 +592,7 @@ export class HttpClient<SecurityDataType = unknown> {
  *
  * Gin swagger
  */
-export class Api<
-  SecurityDataType extends unknown
-> extends HttpClient<SecurityDataType> {
+export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
   competition = {
     /**
      * @description Get the information of all competitions.
@@ -666,8 +624,14 @@ export class Api<
      * @summary Create one Competition and related data.
      * @request POST:/competition
      */
-    competitionCreate: (Competition: string, params: RequestParams = {}) =>
-      this.request<any, string>({
+    competitionCreate: (Competition: EndpointPostCompetitionCompetitionPostData, params: RequestParams = {}) =>
+      this.request<
+        DatabaseCompetition & {
+          groups?: ResponseNill;
+          participants?: ResponseNill;
+        },
+        ResponseErrorReceiveDataFormatResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/competition`,
         method: "POST",
         body: Competition,
@@ -684,8 +648,23 @@ export class Api<
      * @summary Update one Competition currentPhase -- by id.
      * @request PATCH:/competition/current-phase/minus/{id}
      */
-    currentPhasePlusUpdate: (id: string, params: RequestParams = {}) =>
-      this.request<any, string>({
+    currentPhaseMinusPartialUpdate: (id: number, params: RequestParams = {}) =>
+      this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/competition/current-phase/minus/${id}`,
+        method: "PATCH",
+        ...params,
+      }),
+
+    /**
+     * @description Update one Competition currentPhase ++ by id.
+     *
+     * @tags Competition
+     * @name CurrentPhasePlusPartialUpdate
+     * @summary Update one Competition currentPhase ++ by id.
+     * @request PATCH:/competition/current-phase/plus/{id}
+     */
+    currentPhasePlusPartialUpdate: (id: number, params: RequestParams = {}) =>
+      this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/competition/current-phase/plus/${id}`,
         method: "PATCH",
         ...params,
@@ -699,18 +678,14 @@ export class Api<
      * @summary Show current Competitions
      * @request GET:/competition/current/{head}/{tail}
      */
-    currentDetail: (
-      head: string,
-      tail: string,
-      query: {
-        /** head */
-        head: number;
-        /** tail */
-        tail: number;
-      },
-      params: RequestParams = {}
-    ) =>
-      this.request<any, string>({
+    currentDetail: (head: number, tail: number, params: RequestParams = {}) =>
+      this.request<
+        (DatabaseCompetition & {
+          groups?: ResponseNill;
+          participants?: ResponseNill;
+        })[],
+        ResponseErrorReceiveDataFormatResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/competition/current/${head}/${tail}`,
         method: "GET",
         format: "json",
@@ -725,8 +700,8 @@ export class Api<
      * @summary Update one Competition Elimination Active to be true by id.
      * @request PATCH:/competition/elimination-isactive/{id}
      */
-    eliminationIsactiveUpdate: (id: string, params: RequestParams = {}) =>
-      this.request<any, string>({
+    eliminationIsactivePartialUpdate: (id: number, params: RequestParams = {}) =>
+      this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/competition/elimination-isactive/${id}`,
         method: "PATCH",
         ...params,
@@ -740,10 +715,10 @@ export class Api<
      * @summary Show Groups and Eliminations of one Competition.
      * @request GET:/competition/groups/eliminations/{id}
      */
-    groupsPlayersPlayertotalUpdate: (id: string, params: RequestParams = {}) =>
-      this.request<any, string>({
-        path: `/competition/groups/players/playertotal/${id}`,
-        method: "PUT",
+    groupsEliminationsDetail: (id: number, params: RequestParams = {}) =>
+      this.request<EndpointCompetitionWGroupsQuaEliData, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/competition/groups/eliminations/${id}`,
+        method: "GET",
         format: "json",
         ...params,
       }),
@@ -807,8 +782,8 @@ export class Api<
      * @summary Update one Competition Mixed Elimination Active to be true and create mixed elimination.
      * @request PATCH:/competition/mixed-elimination-isactive/{id}
      */
-    mixedEliminationIsactiveUpdate: (id: string, params: RequestParams = {}) =>
-      this.request<any, string>({
+    mixedEliminationIsactivePartialUpdate: (id: number, params: RequestParams = {}) =>
+      this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/competition/mixed-elimination-isactive/${id}`,
         method: "PATCH",
         ...params,
@@ -844,11 +819,8 @@ export class Api<
      * @summary Update one Competition Qualification currentEnd -- by id.
      * @request PATCH:/competition/qualification-current-end/minus/{id}
      */
-    qualificationCurrentEndMinusUpdate: (
-      id: string,
-      params: RequestParams = {}
-    ) =>
-      this.request<any, string>({
+    qualificationCurrentEndMinusPartialUpdate: (id: number, params: RequestParams = {}) =>
+      this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/competition/qualification-current-end/minus/${id}`,
         method: "PATCH",
         ...params,
@@ -862,11 +834,8 @@ export class Api<
      * @summary Update one Competition Qualification currentEnd ++ by id.
      * @request PATCH:/competition/qualification-current-end/plus/{id}
      */
-    qualificationCurrentEndPlusUpdate: (
-      id: string,
-      params: RequestParams = {}
-    ) =>
-      this.request<any, string>({
+    qualificationCurrentEndPlusPartialUpdate: (id: number, params: RequestParams = {}) =>
+      this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/competition/qualification-current-end/plus/${id}`,
         method: "PATCH",
         ...params,
@@ -880,8 +849,8 @@ export class Api<
      * @summary Update one Competition Qualification Active to be true by id.
      * @request PATCH:/competition/qualification-isactive/{id}
      */
-    qualificationIsactiveUpdate: (id: string, params: RequestParams = {}) =>
-      this.request<any, string>({
+    qualificationIsactivePartialUpdate: (id: number, params: RequestParams = {}) =>
+      this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/competition/qualification-isactive/${id}`,
         method: "PATCH",
         ...params,
@@ -895,25 +864,10 @@ export class Api<
      * @summary Refresh competition player total score by competition id.
      * @request PATCH:/competition/refresh/groups/players/playertotalscore/{id}
      */
-    recentDetail: (
-      userid: string,
-      head: string,
-      tail: string,
-      query: {
-        /** User ID */
-        userid: number;
-        /** head */
-        head: number;
-        /** tail */
-        tail: number;
-      },
-      params: RequestParams = {}
-    ) =>
-      this.request<any, string>({
-        path: `/competition/recent/${userid}/${head}/${tail}`,
-        method: "GET",
-        query: query,
-        format: "json",
+    refreshGroupsPlayersPlayertotalscorePartialUpdate: (id: number, params: RequestParams = {}) =>
+      this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/competition/refresh/groups/players/playertotalscore/${id}`,
+        method: "PATCH",
         ...params,
       }),
 
@@ -921,49 +875,72 @@ export class Api<
      * @description Refresh all player ranking of different groups in one Competition.
      *
      * @tags Competition
-     * @name TeamEliminationIsactiveUpdate
-     * @summary update one Competition Team Elimination Active to be true and create all team elimination for groups
-     * @request PUT:/competition/team-elimination-isactive/{id}
+     * @name RefreshGroupsPlayersRankPartialUpdate
+     * @summary Refresh one Competition Ranking.
+     * @request PATCH:/competition/refresh/groups/players/rank/{id}
      */
-    teamEliminationIsactiveUpdate: (id: string, params: RequestParams = {}) =>
-      this.request<any, string>({
-        path: `/competition/team-elimination-isactive/${id}`,
-        method: "PUT",
-        ...params,
-      }),
-
-    /**
-     * @description Put whole new Competition and overwrite with the id but without GroupInfo, cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId zeroTime 0001-01-01T00:00:00+00:01
-     *
-     * @tags Competition
-     * @name WholeUpdate
-     * @summary update one Competition without GroupInfo
-     * @request PUT:/competition/whole/{id}
-     */
-    wholeUpdate: (
-      id: string,
-      Competition: string,
-      params: RequestParams = {}
-    ) =>
-      this.request<any, string>({
-        path: `/competition/whole/${id}`,
-        method: "PUT",
-        body: Competition,
+    refreshGroupsPlayersRankPartialUpdate: (id: number, params: RequestParams = {}) =>
+      this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/competition/refresh/groups/players/rank/${id}`,
+        method: "PATCH",
         type: ContentType.Json,
         format: "json",
         ...params,
       }),
 
     /**
-     * @description Get one Competition by id without GroupInfo zeroTime 0001-01-01T00:00:00+00:01
+     * @description Update one Competition Team Elimination Active to be true by id. Cannot change to false, only can change to true. Create all team elimination for groups.
+     *
+     * @tags Competition
+     * @name TeamEliminationIsactivePartialUpdate
+     * @summary Update one Competition Team Elimination Active to be true and create team elimination.
+     * @request PATCH:/competition/team-elimination-isactive/{id}
+     */
+    teamEliminationIsactivePartialUpdate: (id: number, params: RequestParams = {}) =>
+      this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/competition/team-elimination-isactive/${id}`,
+        method: "PATCH",
+        ...params,
+      }),
+
+    /**
+     * @description Get recent Competitions by User id, head and tail are the range of most recent competitions. For example, head = 0, tail = 10, then return the most recent 10 competitions. head >= 0, tail >= 0, head <= tail
+     *
+     * @tags Competition
+     * @name UserDetail
+     * @summary Show recent Competitions dealing with User.
+     * @request GET:/competition/user/{userid}/{head}/{tail}
+     */
+    userDetail: (userid: number, head: number, tail: number, params: RequestParams = {}) =>
+      this.request<
+        (DatabaseCompetition & {
+          groups?: ResponseNill;
+          participants?: ResponseNill;
+        })[],
+        ResponseErrorReceiveDataFormatResponse | ResponseErrorInternalErrorResponse
+      >({
+        path: `/competition/user/${userid}/${head}/${tail}`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get one Competition by id without groups and participants. zeroTime 0001-01-01T00:00:00+00:01
      *
      * @tags Competition
      * @name CompetitionDetail
-     * @summary Show one Competition without GroupInfo
+     * @summary Show one Competition without groups and participants.
      * @request GET:/competition/{id}
      */
     competitionDetail: (id: number, params: RequestParams = {}) =>
-      this.request<any, string>({
+      this.request<
+        DatabaseCompetition & {
+          groups?: ResponseNill;
+          participants?: ResponseNill;
+        },
+        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/competition/${id}`,
         method: "GET",
         format: "json",
@@ -971,85 +948,26 @@ export class Api<
       }),
 
     /**
-     * @description delete one Competition by id, delete all related groups, lanes, players
+     * @description Put whole new Competition and overwrite by the id. Allow to change title, subtitle, startTime, endTime, script, currentPhase, qualificationCurrentEnd. Cannot replace RoundNum, GroupNum, LaneNum, unassignedLaneId, unassignedGroupId, hostId, currentPhase, qualificationCurrentEnd. zeroTime 0001-01-01T00:00:00+00:01
      *
      * @tags Competition
-     * @name CompetitionDelete
-     * @summary delete one Competition
-     * @request DELETE:/competition/{id}
+     * @name CompetitionUpdate
+     * @summary update one Competition
+     * @request PUT:/competition/{id}
      */
-    competitionDelete: (id: string, params: RequestParams = {}) =>
-      this.request<any, string>({
-        path: `/competition/${id}`,
-        method: "DELETE",
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-  };
-  qualification = {
-    /**
-     * @description Get one Qualification with Unassigned Lanes by id
-     *
-     * @tags Qualification
-     * @name QualificationLanesUnassignedDetail
-     * @summary Show one Qualification
-     * @request GET:qualification/lanes/Unassigned/{id}
-     */
-    qualificationLanesUnassignedDetail: (
+    competitionUpdate: (
       id: number,
-      params: RequestParams = {}
+      Competition: EndpointPutCompetitionCompetitionPutData,
+      params: RequestParams = {},
     ) =>
-      this.request<any, string>({
-        path: `qualification/lanes/Unassigned/${id}`,
-        method: "GET",
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Get one Qualification with Lanes and Players by id
-     *
-     * @tags Qualification
-     * @name QualificationLanesPlayersDetail
-     * @summary Show one Qualification
-     * @request GET:qualification/lanes/players/{id}
-     */
-    qualificationLanesPlayersDetail: (id: number, params: RequestParams = {}) =>
-      this.request<any, string>({
-        path: `qualification/lanes/players/${id}`,
-        method: "GET",
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Get one Qualification with Lanes by id
-     *
-     * @tags Qualification
-     * @name LanesDetail
-     * @summary Show one Qualification
-     * @request GET:/qualification/lanes/{id}
-     */
-    lanesDetail: (id: number, params: RequestParams = {}) =>
-      this.request<any, string>({
-        path: `/qualification/lanes/${id}`,
-        method: "GET",
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Put whole new Qualification and overwrite with the id, and update lanes below it ,but cannot replace groupid
-     *
-     * @tags Qualification
-     * @name WholeUpdate
-     * @summary update one Qualification
-     * @request PUT:/qualification/whole/{id}
-     */
-    wholeUpdate: (id: string, Qualification: any, params: RequestParams = {}) =>
-      this.request<any, string>({
-        path: `/qualification/whole/${id}`,
+      this.request<
+        DatabaseCompetition & {
+          groups?: ResponseNill;
+          participants?: ResponseNill;
+        },
+        ResponseErrorReceiveDataResponse | ResponseErrorInternalErrorResponse
+      >({
+        path: `/competition/${id}`,
         method: "PUT",
         body: Competition,
         type: ContentType.Json,
@@ -1065,10 +983,10 @@ export class Api<
      * @summary Delete one Competition.
      * @request DELETE:/competition/{id}
      */
-    qualificationDetail: (id: number, params: RequestParams = {}) =>
-      this.request<any, string>({
-        path: `/qualification/${id}`,
-        method: "GET",
+    competitionDelete: (id: number, params: RequestParams = {}) =>
+      this.request<ResponseDeleteSuccessResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/competition/${id}`,
+        method: "DELETE",
         format: "json",
         ...params,
       }),
@@ -1082,8 +1000,15 @@ export class Api<
      * @summary Create one Elimination
      * @request POST:/elimination
      */
-    eliminationCreate: (Elimination: string, params: RequestParams = {}) =>
-      this.request<any, string>({
+    eliminationCreate: (Elimination: EndpointPostEliminationPostEliminationData, params: RequestParams = {}) =>
+      this.request<
+        DatabaseElimination & {
+          medals?: ResponseNill;
+          player_sets?: ResponseNill;
+          stages?: ResponseNill;
+        },
+        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/elimination`,
         method: "POST",
         body: Elimination,
@@ -1100,8 +1025,8 @@ export class Api<
      * @summary Update one Elimination current end minus one
      * @request PATCH:/elimination/currentend/minus/{id}
      */
-    currentendMinusUpdate: (id: number, params: RequestParams = {}) =>
-      this.request<any, string>({
+    currentendMinusPartialUpdate: (id: number, params: RequestParams = {}) =>
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/elimination/currentend/minus/${id}`,
         method: "PATCH",
         ...params,
@@ -1115,8 +1040,8 @@ export class Api<
      * @summary Update one Elimination current end plus one
      * @request PATCH:/elimination/currentend/plus/{id}
      */
-    currentendPlusUpdate: (id: number, params: RequestParams = {}) =>
-      this.request<any, string>({
+    currentendPlusPartialUpdate: (id: number, params: RequestParams = {}) =>
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/elimination/currentend/plus/${id}`,
         method: "PATCH",
         ...params,
@@ -1130,8 +1055,8 @@ export class Api<
      * @summary Update one Elimination current stage minus one
      * @request PATCH:/elimination/currentstage/minus/{id}
      */
-    currentstageMinusUpdate: (id: number, params: RequestParams = {}) =>
-      this.request<any, string>({
+    currentstageMinusPartialUpdate: (id: number, params: RequestParams = {}) =>
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/elimination/currentstage/minus/${id}`,
         method: "PATCH",
         ...params,
@@ -1145,8 +1070,8 @@ export class Api<
      * @summary Update one Elimination current stage plus one
      * @request PATCH:/elimination/currentstage/plus/{id}
      */
-    currentstagePlusUpdate: (id: number, params: RequestParams = {}) =>
-      this.request<any, string>({
+    currentstagePlusPartialUpdate: (id: number, params: RequestParams = {}) =>
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/elimination/currentstage/plus/${id}`,
         method: "PATCH",
         ...params,
@@ -1160,8 +1085,8 @@ export class Api<
      * @summary Create one Match
      * @request POST:/elimination/match
      */
-    matchCreate: (Match: string, params: RequestParams = {}) =>
-      this.request<any, string>({
+    matchCreate: (Match: EndpointPostMatchMatchData, params: RequestParams = {}) =>
+      this.request<DatabaseMatch, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/elimination/match`,
         method: "POST",
         body: Match,
@@ -1179,7 +1104,7 @@ export class Api<
      * @request GET:/elimination/match/scores/{matchid}
      */
     matchScoresDetail: (matchid: number, params: RequestParams = {}) =>
-      this.request<any, string>({
+      this.request<DatabaseMatch, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/elimination/match/scores/${matchid}`,
         method: "GET",
         format: "json",
@@ -1241,8 +1166,13 @@ export class Api<
      * @summary Create one Stage
      * @request POST:/elimination/stage
      */
-    stageCreate: (Stage: string, params: RequestParams = {}) =>
-      this.request<any, string>({
+    stageCreate: (Stage: EndpointPostStagePostStageData, params: RequestParams = {}) =>
+      this.request<
+        DatabaseStage & {
+          matchs?: ResponseNill;
+        },
+        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/elimination/stage`,
         method: "POST",
         body: Stage,
@@ -1286,9 +1216,9 @@ export class Api<
      * @summary Show one Elimination with all related data
      * @request GET:/elimination/stages/scores/medals/{id}
      */
-    stagesDetail: (id: number, params: RequestParams = {}) =>
-      this.request<any, string>({
-        path: `/elimination/stages/${id}`,
+    stagesScoresMedalsDetail: (id: number, params: RequestParams = {}) =>
+      this.request<DatabaseElimination, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/elimination/stages/scores/medals/${id}`,
         method: "GET",
         format: "json",
         ...params,
@@ -1326,7 +1256,7 @@ export class Api<
      * @request DELETE:/elimination/{id}
      */
     eliminationDelete: (id: number, params: RequestParams = {}) =>
-      this.request<any, string>({
+      this.request<ResponseDeleteSuccessResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/elimination/${id}`,
         method: "DELETE",
         type: ContentType.Json,
@@ -1343,8 +1273,13 @@ export class Api<
      * @summary Create one GroupInfo
      * @request POST:/groupinfo
      */
-    groupinfoCreate: (GroupInfo: string, params: RequestParams = {}) =>
-      this.request<any, string>({
+    groupinfoCreate: (GroupInfo: EndpointPostGroupInfoGroupData, params: RequestParams = {}) =>
+      this.request<
+        DatabaseGroup & {
+          players?: ResponseNill;
+        },
+        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/groupinfo`,
         method: "POST",
         body: GroupInfo,
@@ -1361,8 +1296,16 @@ export class Api<
      * @summary update all GroupInfos Indices under the same Competition
      * @request PATCH:/groupinfo/ordering
      */
-    orderingUpdate: (groupIdsForReorder: string, params: RequestParams = {}) =>
-      this.request<any, string>({
+    orderingPartialUpdate: (groupIdsForReorder: EndpointGroupIdsForReorder, params: RequestParams = {}) =>
+      this.request<
+        DatabaseCompetition & {
+          groups?: DatabaseGroup & {
+            players?: ResponseNill;
+          };
+          participants?: ResponseNill;
+        },
+        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/groupinfo/ordering`,
         method: "PATCH",
         body: groupIdsForReorder,
@@ -1424,8 +1367,13 @@ export class Api<
      * @summary update one GroupInfo
      * @request PUT:/groupinfo/{id}
      */
-    groupinfoDetail: (id: number, params: RequestParams = {}) =>
-      this.request<any, string>({
+    groupinfoUpdate: (id: number, GroupInfo: EndpointPutGroupInfoGroupData, params: RequestParams = {}) =>
+      this.request<
+        DatabaseGroup & {
+          players?: ResponseNill;
+        },
+        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/groupinfo/${id}`,
         method: "PUT",
         body: GroupInfo,
@@ -1442,8 +1390,8 @@ export class Api<
      * @summary delete one GroupInfo
      * @request DELETE:/groupinfo/{id}
      */
-    groupinfoDelete: (id: string, params: RequestParams = {}) =>
-      this.request<any, string>({
+    groupinfoDelete: (id: number, params: RequestParams = {}) =>
+      this.request<ResponseDeleteSuccessResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/groupinfo/${id}`,
         method: "DELETE",
         type: ContentType.Json,
@@ -1476,10 +1424,7 @@ export class Api<
      * @summary Create an institution.
      * @request POST:/institution
      */
-    institutionCreate: (
-      NewInstitutionInfo: EndpointNewInstitutionInfo,
-      params: RequestParams = {}
-    ) =>
+    institutionCreate: (NewInstitutionInfo: EndpointNewInstitutionInfo, params: RequestParams = {}) =>
       this.request<ResponseResponse, ResponseResponse>({
         path: `/institution`,
         method: "POST",
@@ -1600,10 +1545,10 @@ export class Api<
      */
     iswinnerPartialUpdate: (
       id: number,
-      MatchResult: string,
-      params: RequestParams = {}
+      MatchResult: EndpointPutMatchResultIsWinnerByIdMatchResultIsWinnerData,
+      params: RequestParams = {},
     ) =>
-      this.request<any, string>({
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/matchresult/iswinner/${id}`,
         method: "PATCH",
         body: MatchResult,
@@ -1621,10 +1566,10 @@ export class Api<
      */
     lanenumberPartialUpdate: (
       id: number,
-      MatchResult: string,
-      params: RequestParams = {}
+      MatchResult: EndpointPutMatchResultLaneNumberByIdMatchResultLaneNumberData,
+      params: RequestParams = {},
     ) =>
-      this.request<any, string>({
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/matchresult/lanenumber/${id}`,
         method: "PATCH",
         body: MatchResult,
@@ -1665,10 +1610,10 @@ export class Api<
      */
     shootoffscorePartialUpdate: (
       id: number,
-      MatchResult: string,
-      params: RequestParams = {}
+      MatchResult: EndpointPutMatchResultShootOffScoreByIdMatchResultShootOffScoreData,
+      params: RequestParams = {},
     ) =>
-      this.request<any, string>({
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/matchresult/shootoffscore/${id}`,
         method: "PATCH",
         body: MatchResult,
@@ -1686,10 +1631,10 @@ export class Api<
      */
     totalpointsPartialUpdate: (
       id: number,
-      MatchResult: string,
-      params: RequestParams = {}
+      MatchResult: EndpointPutMatchResultTotalPointsByIdMatchResultTotalPointsData,
+      params: RequestParams = {},
     ) =>
-      this.request<any, string>({
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/matchresult/totalpoints/${id}`,
         method: "PATCH",
         body: MatchResult,
@@ -1730,7 +1675,7 @@ export class Api<
      * @request DELETE:/matchresult/{id}
      */
     matchresultDelete: (id: number, params: RequestParams = {}) =>
-      this.request<any, string>({
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/matchresult/${id}`,
         method: "DELETE",
         ...params,
@@ -1745,11 +1690,11 @@ export class Api<
      * @summary Create one MatchEnd
      * @request POST:/matchresult/matchend
      */
-    scoreUpdate: (id: number, MatchScore: string, params: RequestParams = {}) =>
-      this.request<any, string>({
-        path: `/matchscore/score/${id}`,
-        method: "PUT",
-        body: MatchScore,
+    matchendCreate: (matchEndData: EndpointPostMatchEndMatchEndData, params: RequestParams = {}) =>
+      this.request<ResponseResponse, ResponseErrorReceiveDataResponse | ResponseErrorInternalErrorResponse>({
+        path: `/matchresult/matchend`,
+        method: "POST",
+        body: matchEndData,
         type: ContentType.Json,
         format: "json",
         ...params,
@@ -1765,13 +1710,13 @@ export class Api<
      */
     matchendIsconfirmedPartialUpdate: (
       id: number,
-      PlayerSetId: string,
-      params: RequestParams = {}
+      MatchEnd: EndpointPutMatchEndsIsConfirmedByIdMatchEndIsConfirmedData,
+      params: RequestParams = {},
     ) =>
-      this.request<any, string>({
-        path: `/medal/playersetid/${id}`,
-        method: "PUT",
-        body: PlayerSetId,
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/matchresult/matchend/isconfirmed/${id}`,
+        method: "PATCH",
+        body: MatchEnd,
         type: ContentType.Json,
         ...params,
       }),
@@ -1784,11 +1729,15 @@ export class Api<
      * @summary Update one MatchEnd scores
      * @request PATCH:/matchresult/matchend/scores/{id}
      */
-    oldlaneinfoCreate: (LaneData: string, params: RequestParams = {}) =>
-      this.request<any, string>({
-        path: `/oldlaneinfo`,
-        method: "POST",
-        body: LaneData,
+    matchendScoresPartialUpdate: (
+      id: number,
+      matchEndScoresData: EndpointPutMatchEndsScoresByIdMatchEndScoresData,
+      params: RequestParams = {},
+    ) =>
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/matchresult/matchend/scores/${id}`,
+        method: "PATCH",
+        body: matchEndScoresData,
         type: ContentType.Json,
         ...params,
       }),
@@ -1801,16 +1750,15 @@ export class Api<
      * @summary Update one MatchEnd totalScores
      * @request PATCH:/matchresult/matchend/totalscore/{id}
      */
-    confirmUpdate: (
-      id: string,
-      stageindex: string,
-      userindex: string,
-      confirm: string,
-      params: RequestParams = {}
+    matchendTotalscorePartialUpdate: (
+      id: number,
+      MatchEnd: EndpointPutMatchEndsTotalScoresByIdMatchEndTotalScoresData,
+      params: RequestParams = {},
     ) =>
-      this.request<any, string>({
-        path: `/oldlaneinfo/confirm/${id}/${stageindex}/${userindex}/${confirm}`,
-        method: "PUT",
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/matchresult/matchend/totalscore/${id}`,
+        method: "PATCH",
+        body: MatchEnd,
         type: ContentType.Json,
         ...params,
       }),
@@ -1824,17 +1772,15 @@ export class Api<
      * @summary Update one MatchScore score
      * @request PATCH:/matchresult/matchscore/score/{id}
      */
-    scoreUpdate: (
-      id: string,
-      stageindex: string,
-      userindex: string,
-      arrowindex: string,
-      score: string,
-      params: RequestParams = {}
+    matchscoreScorePartialUpdate: (
+      id: number,
+      MatchScore: EndpointPutMatchScoreScoreByIdMatchScoreData,
+      params: RequestParams = {},
     ) =>
-      this.request<any, string>({
-        path: `/oldlaneinfo/score/${id}/${stageindex}/${userindex}/${arrowindex}/${score}`,
-        method: "PUT",
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/matchresult/matchscore/score/${id}`,
+        method: "PATCH",
+        body: MatchScore,
         type: ContentType.Json,
         ...params,
       }),
@@ -1848,12 +1794,10 @@ export class Api<
      * @summary Show medals of elimination by elimination id.
      * @request GET:/medal/elimination/{eliminationid}
      */
-    wholeUpdate: (id: string, LaneData: string, params: RequestParams = {}) =>
-      this.request<any, string>({
-        path: `/oldlaneinfo/whole/${id}`,
-        method: "PUT",
-        body: LaneData,
-        type: ContentType.Json,
+    eliminationDetail: (eliminationid: number, params: RequestParams = {}) =>
+      this.request<DatabaseMedal[], ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/medal/elimination/${eliminationid}`,
+        method: "GET",
         format: "json",
         ...params,
       }),
@@ -1866,11 +1810,16 @@ export class Api<
      * @summary Update medal's player set id by id.
      * @request PATCH:/medal/playersetid/{id}
      */
-    oldlaneinfoDetail: (id: number, params: RequestParams = {}) =>
-      this.request<any, string>({
-        path: `/oldlaneinfo/${id}`,
-        method: "GET",
-        format: "json",
+    playersetidPartialUpdate: (
+      id: number,
+      PlayerSetId: EndpointPutMedalPlayerSetIdByIdRequestBody,
+      params: RequestParams = {},
+    ) =>
+      this.request<void, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/medal/playersetid/${id}`,
+        method: "PATCH",
+        body: PlayerSetId,
+        type: ContentType.Json,
         ...params,
       }),
 
@@ -1882,11 +1831,10 @@ export class Api<
      * @summary Show one medal by id.
      * @request GET:/medal/{id}
      */
-    oldlaneinfoDelete: (id: string, params: RequestParams = {}) =>
-      this.request<any, string>({
-        path: `/oldlaneinfo/${id}`,
-        method: "DELETE",
-        type: ContentType.Json,
+    medalDetail: (id: number, params: RequestParams = {}) =>
+      this.request<DatabaseMedal, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/medal/${id}`,
+        method: "GET",
         format: "json",
         ...params,
       }),
@@ -1900,12 +1848,9 @@ export class Api<
      * @summary Post a particpant to the competition.
      * @request POST:/participant
      */
-    participantCreate: (
-      NewParticipantInfo: EndpointNewParticipantInfo,
-      params: RequestParams = {}
-    ) =>
-      this.request<any, string>({
-        path: `/participant/`,
+    participantCreate: (NewParticipantInfo: EndpointNewParticipantInfo, params: RequestParams = {}) =>
+      this.request<DatabaseParticipant, ResponseErrorReceiveDataFormatResponse | ResponseErrorInternalErrorResponse>({
+        path: `/participant`,
         method: "POST",
         body: NewParticipantInfo,
         type: ContentType.Json,
@@ -1921,15 +1866,8 @@ export class Api<
      * @summary Show Participants By competition ID and user ID
      * @request GET:/participant/competition/user/{competitionid}/{userid}
      */
-    competitionUserDetail: (
-      competitionid: number,
-      userid: number,
-      params: RequestParams = {}
-    ) =>
-      this.request<
-        DatabaseParticipant[],
-        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
-      >({
+    competitionUserDetail: (competitionid: number, userid: number, params: RequestParams = {}) =>
+      this.request<DatabaseParticipant[], ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/participant/competition/user/${competitionid}/${userid}`,
         method: "GET",
         format: "json",
@@ -1944,13 +1882,9 @@ export class Api<
      * @summary Show Participants by competition ID.
      * @request GET:/participant/competition/{competitionid}
      */
-    competitionUserList: (
-      user_id: number,
-      competition_id: number,
-      params: RequestParams = {}
-    ) =>
-      this.request<string, string>({
-        path: `/participant/competition/user/${competition_id}/${user_id}`,
+    competitionDetail: (competitionid: number, params: RequestParams = {}) =>
+      this.request<EndpointParticipantWName[], ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/participant/competition/${competitionid}`,
         method: "GET",
         format: "json",
         ...params,
@@ -1964,9 +1898,9 @@ export class Api<
      * @summary Show Participants By user ID.
      * @request GET:/participant/user/{userid}
      */
-    userList: (user_id: number, params: RequestParams = {}) =>
-      this.request<any, string>({
-        path: `/participant/user`,
+    userDetail: (userid: number, params: RequestParams = {}) =>
+      this.request<DatabaseParticipant[], ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/participant/user/${userid}`,
         method: "GET",
         format: "json",
         ...params,
@@ -1980,12 +1914,10 @@ export class Api<
      * @summary Show One Participant By ID.
      * @request GET:/participant/{id}
      */
-    wholeUpdate: (id: string, Participant: any, params: RequestParams = {}) =>
-      this.request<any, string>({
-        path: `/participant/whole/${id}`,
-        method: "PUT",
-        body: Participant,
-        type: ContentType.Json,
+    participantDetail: (id: number, params: RequestParams = {}) =>
+      this.request<DatabaseParticipant, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/participant/${id}`,
+        method: "GET",
         format: "json",
         ...params,
       }),
@@ -1998,8 +1930,12 @@ export class Api<
      * @summary Update one Participant.
      * @request PUT:/participant/{id}
      */
-    participantDetail: (id: number, params: RequestParams = {}) =>
-      this.request<any, string>({
+    participantUpdate: (
+      id: number,
+      Participant: EndpointPutParticipantPutParticipantData,
+      params: RequestParams = {},
+    ) =>
+      this.request<DatabaseParticipant, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/participant/${id}`,
         method: "PUT",
         body: Participant,
@@ -2016,8 +1952,8 @@ export class Api<
      * @summary Delete one Participant.
      * @request DELETE:/participant/{id}
      */
-    participantDelete: (id: string, params: RequestParams = {}) =>
-      this.request<any, string>({
+    participantDelete: (id: number, params: RequestParams = {}) =>
+      this.request<ResponseDeleteSuccessResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/participant/${id}`,
         method: "DELETE",
         format: "json",
@@ -2031,17 +1967,14 @@ export class Api<
      * @tags Player
      * @name AllEndscoresPartialUpdate
      * @summary Update all scores of one end by end id
-     * @request PUT:/player/all-endscores/{id}
+     * @request PATCH:/player/all-endscores/{endid}
      */
-    allEndscoresUpdate: (
-      id: number,
+    allEndscoresPartialUpdate: (
+      endid: number,
       scores: EndpointPutPlayerAllEndScoresByEndIdEndScores,
-      params: RequestParams = {}
+      params: RequestParams = {},
     ) =>
-      this.request<
-        ResponseNill,
-        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
-      >({
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/player/all-endscores/${endid}`,
         method: "PATCH",
         body: scores,
@@ -2098,14 +2031,15 @@ export class Api<
      * @description Update one Player groupId by id, and change player laneid to Unassigned lane.
      *
      * @tags Player
-     * @name GroupidUpdate
-     * @summary Update one Player groupId by id
-     * @request PUT:/player/groupid/{playerid}/{groupid}
+     * @name GroupPartialUpdate
+     * @summary Update one Player groupId by id.
+     * @request PATCH:/player/group/{id}
      */
-    groupidUpdate: (
+    groupPartialUpdate: (
       playerid: number,
-      groupid: string,
-      params: RequestParams = {}
+      id: string,
+      groupid: EndpointPutPlayerGroupIdUpdateGroupIdData,
+      params: RequestParams = {},
     ) =>
       this.request<
         DatabasePlayer & {
@@ -2126,16 +2060,16 @@ export class Api<
      * @description Update one Player isConfirmed by id.
      *
      * @tags Player
-     * @name IsconfirmedUpdate
-     * @summary Update one Player isConfirmed by id
-     * @request PUT:/player/isconfirmed/{roundendid}
+     * @name IsconfirmedPartialUpdate
+     * @summary Update one Player isConfirmed by id.
+     * @request PATCH:/player/isconfirmed/{roundendid}
      */
     isconfirmedPartialUpdate: (
       roundendid: number,
-      body: any,
-      params: RequestParams = {}
+      data: EndpointPutPlayerIsConfirmedUpdateIsConfirmedData,
+      params: RequestParams = {},
     ) =>
-      this.request<any, string>({
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/player/isconfirmed/${roundendid}`,
         method: "PATCH",
         body: data,
@@ -2148,15 +2082,11 @@ export class Api<
      * @description Update one Player laneId by id, update lane playernum.
      *
      * @tags Player
-     * @name LaneidUpdate
-     * @summary Update one Player laneId by id
-     * @request PUT:/player/laneid/{playerid}
+     * @name LanePartialUpdate
+     * @summary Update one Player laneId by id.
+     * @request PATCH:/player/lane/{id}
      */
-    laneUpdate: (
-      id: number,
-      data: EndpointPutPlayerLaneIdUpdateLaneIdData,
-      params: RequestParams = {}
-    ) =>
+    lanePartialUpdate: (id: number, data: EndpointPutPlayerLaneIdUpdateLaneIdData, params: RequestParams = {}) =>
       this.request<
         DatabasePlayer & {
           player_sets?: ResponseNill;
@@ -2176,14 +2106,20 @@ export class Api<
      * @description Update one Player order by id.
      *
      * @tags Player
-     * @name OrderUpdate
-     * @summary Update one Player order by id
-     * @request PUT:/player/order/{id}
+     * @name OrderPartialUpdate
+     * @summary Update one Player order by id.
+     * @request PATCH:/player/order/{id}
      */
-    orderUpdate: (id: number, body: any, params: RequestParams = {}) =>
-      this.request<any, string>({
+    orderPartialUpdate: (id: number, data: EndpointPutPlayerOrderUpdateOrderData, params: RequestParams = {}) =>
+      this.request<
+        DatabasePlayer & {
+          player_sets?: ResponseNill;
+          rounds?: ResponseNill;
+        },
+        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/player/order/${id}`,
-        method: "PUT",
+        method: "PATCH",
         body: data,
         type: ContentType.Json,
         format: "json",
@@ -2198,12 +2134,16 @@ export class Api<
      * @summary Show one Player with player sets.
      * @request GET:/player/playersets/{id}/{eliminationid}
      */
-    playersetsDetail: (
-      id: number,
-      eliminationid: number,
-      params: RequestParams = {}
-    ) =>
-      this.request<any, string>({
+    playersetsDetail: (id: number, eliminationid: number, params: RequestParams = {}) =>
+      this.request<
+        DatabasePlayer & {
+          player_sets?: (DatabasePlayerSet & {
+            players?: ResponseNill;
+          })[];
+          rounds?: ResponseNill;
+        },
+        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/player/playersets/${id}/${eliminationid}`,
         method: "GET",
         format: "json",
@@ -2218,8 +2158,13 @@ export class Api<
      * @summary Create one RoundEnd by Round ID.
      * @request POST:/player/roundend
      */
-    roundendCreate: (params: RequestParams = {}) =>
-      this.request<any, string>({
+    roundendCreate: (
+      RoundEnd: EndpointPostRoundEndRoundEndData & {
+        round_scores?: ResponseNill;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<DatabaseRoundEnd, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/player/roundend`,
         method: "POST",
         body: RoundEnd,
@@ -2236,8 +2181,8 @@ export class Api<
      * @summary Create one RoundScore by RoundEnd ID.
      * @request POST:/player/roundscore
      */
-    roundscoreCreate: (params: RequestParams = {}) =>
-      this.request<any, string>({
+    roundscoreCreate: (RoundScore: EndpointUpdateTotalScoreData, params: RequestParams = {}) =>
+      this.request<DatabaseRoundScore, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/player/roundscore`,
         method: "POST",
         body: RoundScore,
@@ -2250,19 +2195,12 @@ export class Api<
      * @description Update one Player score by id. Update doesn't change total score in player, round, roundend.
      *
      * @tags Player
-     * @name ScoreUpdate
-     * @summary Update one Player score by id
-     * @request PUT:/player/score/{roundscoreid}
+     * @name RoundscorePartialUpdate
+     * @summary Update one Player score by id.
+     * @request PATCH:/player/roundscore/{roundscoreid}
      */
-    roundscoreUpdate: (
-      roundscoreid: number,
-      data: EndpointUpdateTotalScoreData,
-      params: RequestParams = {}
-    ) =>
-      this.request<
-        ResponseNill,
-        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
-      >({
+    roundscorePartialUpdate: (roundscoreid: number, data: EndpointUpdateTotalScoreData, params: RequestParams = {}) =>
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/player/roundscore/${roundscoreid}`,
         method: "PATCH",
         body: data,
@@ -2301,12 +2239,22 @@ export class Api<
      * @description Update one Player shootoffScore by id.
      *
      * @tags Player
-     * @name ShootoffscoreUpdate
-     * @summary Update one Player shootoffScore by id
-     * @request PUT:/player/shootoffscore/{id}
+     * @name ShootoffscorePartialUpdate
+     * @summary Update one Player shootoffScore by id.
+     * @request PATCH:/player/shootoffscore/{id}
      */
-    shootoffscoreUpdate: (id: number, params: RequestParams = {}) =>
-      this.request<any, string>({
+    shootoffscorePartialUpdate: (
+      id: number,
+      data: EndpointPutPlayerShootoffScoreUpdateShootoffScoreData,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        DatabasePlayer & {
+          player_sets?: ResponseNill;
+          rounds?: ResponseNill;
+        },
+        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/player/shootoffscore/${id}`,
         method: "PATCH",
         body: data,
@@ -2319,12 +2267,16 @@ export class Api<
      * @description Update one Player total score by id.
      *
      * @tags Player
-     * @name TotalscoreUpdate
-     * @summary Update one Player total score by id
-     * @request PUT:/player/totalscore/{id}
+     * @name TotalscorePartialUpdate
+     * @summary Update one Player total score by id.
+     * @request PATCH:/player/totalscore/{id}
      */
-    totalscoreUpdate: (id: number, params: RequestParams = {}) =>
-      this.request<any, string>({
+    totalscorePartialUpdate: (
+      id: number,
+      data: EndpointPutPlayerTotalScoreByplayerIdUpdateTotalScoreData,
+      params: RequestParams = {},
+    ) =>
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/player/totalscore/${id}`,
         method: "PATCH",
         body: data,
@@ -2364,7 +2316,7 @@ export class Api<
      * @request DELETE:/player/{id}
      */
     playerDelete: (id: number, params: RequestParams = {}) =>
-      this.request<any, string>({
+      this.request<ResponseDeleteSuccessResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/player/${id}`,
         method: "DELETE",
         format: "json",
@@ -2402,8 +2354,13 @@ export class Api<
      * @summary Post player set
      * @request POST:/playerset
      */
-    playersetCreate: (data: string, params: RequestParams = {}) =>
-      this.request<any, string>({
+    playersetCreate: (data: EndpointPostPlayerSetPlayerSetData, params: RequestParams = {}) =>
+      this.request<
+        DatabasePlayerSet & {
+          players?: ResponseNill;
+        },
+        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/playerset`,
         method: "POST",
         body: data,
@@ -2420,11 +2377,11 @@ export class Api<
      * @summary Get player sets which have medals by elimination id
      * @request GET:/playerset/elimination/medal/{eliminationid}
      */
-    eliminationMedalDetail: (
-      eliminationid: number,
-      params: RequestParams = {}
-    ) =>
-      this.request<any, string>({
+    eliminationMedalDetail: (eliminationid: number, params: RequestParams = {}) =>
+      this.request<
+        EndpointGetPlayerSetsByMedalByEliminationIdPlayerSetData[],
+        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/playerset/elimination/medal/${eliminationid}`,
         method: "GET",
         format: "json",
@@ -2440,7 +2397,7 @@ export class Api<
      * @request GET:/playerset/elimination/{eliminationid}
      */
     eliminationDetail: (eliminationid: number, params: RequestParams = {}) =>
-      this.request<any, string>({
+      this.request<DatabasePlayerSet[], ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/playerset/elimination/${eliminationid}`,
         method: "GET",
         format: "json",
@@ -2455,8 +2412,8 @@ export class Api<
      * @summary Put player set name
      * @request PATCH:/playerset/name/{id}
      */
-    nameUpdate: (id: number, data: string, params: RequestParams = {}) =>
-      this.request<any, string>({
+    namePartialUpdate: (id: number, data: EndpointPutPlayerSetNamePlayerSetData, params: RequestParams = {}) =>
+      this.request<void, ResponseErrorReceiveDataFormatResponse | ResponseErrorInternalErrorResponse>({
         path: `/playerset/name/${id}`,
         method: "PATCH",
         body: data,
@@ -2472,10 +2429,10 @@ export class Api<
      * @summary Put player set rank
      * @request PATCH:/playerset/preranking/{eliminationid}
      */
-    prerankingUpdate: (eliminationid: number, params: RequestParams = {}) =>
-      this.request<any, string>({
+    prerankingPartialUpdate: (eliminationid: number, params: RequestParams = {}) =>
+      this.request<void, ResponseErrorInternalErrorResponse>({
         path: `/playerset/preranking/${eliminationid}`,
-        method: "PUT",
+        method: "PATCH",
         ...params,
       }),
 
@@ -2512,9 +2469,128 @@ export class Api<
      * @request DELETE:/playerset/{id}
      */
     playersetDelete: (id: number, params: RequestParams = {}) =>
-      this.request<any, string>({
+      this.request<ResponseDeleteSuccessResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/playerset/${id}`,
         method: "DELETE",
+        ...params,
+      }),
+  };
+  qualification = {
+    /**
+     * @description Get one Qualification with Lanes and Players by id
+     *
+     * @tags Qualification
+     * @name LanesPlayersDetail
+     * @summary Show one Qualification
+     * @request GET:/qualification/lanes/players/{id}
+     */
+    lanesPlayersDetail: (id: number, params: RequestParams = {}) =>
+      this.request<
+        DatabaseQualification & {
+          lanes?: DatabaseLane & {
+            players?: DatabasePlayer & {
+              player_sets?: ResponseNill;
+              rounds?: ResponseNill;
+            };
+          };
+        },
+        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+      >({
+        path: `/qualification/lanes/players/${id}`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get one Qualification with Unassigned Lanes by id.
+     *
+     * @tags Qualification
+     * @name LanesUnassignedDetail
+     * @summary Show one Qualification with Unassigned Lanes.
+     * @request GET:/qualification/lanes/unassigned/{id}
+     */
+    lanesUnassignedDetail: (id: number, params: RequestParams = {}) =>
+      this.request<
+        (DatabaseQualification & {
+          lanes?: DatabaseLane & {
+            players?: DatabasePlayer & {
+              player_sets?: ResponseNill;
+              rounds?: ResponseNill;
+            };
+          };
+        })[],
+        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+      >({
+        path: `/qualification/lanes/unassigned/${id}`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get one Qualification with Lanes by id.
+     *
+     * @tags Qualification
+     * @name LanesDetail
+     * @summary Show one Qualification with Lanes.
+     * @request GET:/qualification/lanes/{id}
+     */
+    lanesDetail: (id: number, params: RequestParams = {}) =>
+      this.request<
+        DatabaseQualification & {
+          lanes?: DatabaseLane & {
+            players?: ResponseNill;
+          };
+        },
+        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+      >({
+        path: `/qualification/lanes/${id}`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get one Qualification without Lanes by id.
+     *
+     * @tags Qualification
+     * @name QualificationDetail
+     * @summary Show one Qualification without Lanes.
+     * @request GET:/qualification/{id}
+     */
+    qualificationDetail: (id: number, params: RequestParams = {}) =>
+      this.request<
+        DatabaseQualification & {
+          lanes?: ResponseNill;
+        },
+        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+      >({
+        path: `/qualification/${id}`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Put whole new Qualification and overwrite with the id, and update lanes below it ,but cannot replace groupid.
+     *
+     * @tags Qualification
+     * @name QualificationUpdate
+     * @summary Update one Qualification.
+     * @request PUT:/qualification/{id}
+     */
+    qualificationUpdate: (
+      id: number,
+      Qualification: EndpointPutQualificationByIDQualificationPutData,
+      params: RequestParams = {},
+    ) =>
+      this.request<DatabaseQualification, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/qualification/${id}`,
+        method: "PUT",
+        body: Qualification,
+        type: ContentType.Json,
+        format: "json",
         ...params,
       }),
   };
@@ -2528,7 +2604,7 @@ export class Api<
      * @request POST:/session
      */
     sessionCreate: (LoginInfo: EndpointLoginInfo, params: RequestParams = {}) =>
-      this.request<any, string>({
+      this.request<ResponseResponse, ResponseErrorReceiveDataFormatResponse | ResponseErrorResponse>({
         path: `/session`,
         method: "POST",
         body: LoginInfo,
@@ -2579,10 +2655,7 @@ export class Api<
      * @summary Register a user.
      * @request POST:/user
      */
-    userCreate: (
-      AccountInfo: EndpointAccountInfo,
-      params: RequestParams = {}
-    ) =>
+    userCreate: (AccountInfo: EndpointAccountInfo, params: RequestParams = {}) =>
       this.request<DatabaseUser, ResponseResponse>({
         path: `/user`,
         method: "POST",
@@ -2616,11 +2689,7 @@ export class Api<
      * @summary Modify user's password.
      * @request PATCH:/user/password/{id}
      */
-    passwordUpdate: (
-      id: string,
-      ModifyInfo: EndpointModifyAccountPasswordInfo,
-      params: RequestParams = {}
-    ) =>
+    passwordPartialUpdate: (id: number, ModifyInfo: EndpointModifyAccountPasswordInfo, params: RequestParams = {}) =>
       this.request<ResponseResponse, ResponseResponse>({
         path: `/user/password/${id}`,
         method: "PATCH",
@@ -2655,11 +2724,7 @@ export class Api<
      * @summary Modify user's information.
      * @request PUT:/user/{id}
      */
-    userUpdate: (
-      id: string,
-      ModifyInfo: DatabaseUser,
-      params: RequestParams = {}
-    ) =>
+    userUpdate: (id: number, ModifyInfo: EndpointModifyInfoModifyUser, params: RequestParams = {}) =>
       this.request<ResponseResponse, ResponseResponse>({
         path: `/user/${id}`,
         method: "PUT",
