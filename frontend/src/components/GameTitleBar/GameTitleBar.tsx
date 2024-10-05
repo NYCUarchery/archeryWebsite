@@ -32,7 +32,6 @@ export default function GameTitleBar({
   const segment = useSelectedLayoutSegment();
   const panelName = segment as string;
 
-  console.log(participant);
   return (
     <div
       className="top_bar"
