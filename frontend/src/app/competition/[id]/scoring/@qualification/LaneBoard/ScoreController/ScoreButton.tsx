@@ -1,6 +1,6 @@
 import { Button } from "@mui/material";
 import { findLastScoreInEnd } from "../util";
-import { RoundEnd } from "@/types/oldRef/Player";
+import { DatabaseRoundEnd } from "@/types/Api";
 
 const buttonColors = new Map([
   [0, "black_score"],
@@ -18,12 +18,12 @@ const buttonColors = new Map([
 ]);
 
 interface Props {
-  end: RoundEnd;
+  end: DatabaseRoundEnd;
   score: number;
-  onClick: (score: number) => void;
+  onAddScore: (score: number) => void;
 }
 
-export default function ScoreButton({ end, score, onClick }: Props) {
+export default function ScoreButton({ end, score, onAddScore }: Props) {
   let content = "";
   const buttonColor = buttonColors.get(score) as string;
 
@@ -46,7 +46,7 @@ export default function ScoreButton({ end, score, onClick }: Props) {
         end === undefined || end?.is_confirmed || lastScore === undefined
       }
       id={score.toString()}
-      onClick={() => onClick(score)}
+      onClick={() => onAddScore(score)}
       variant="contained"
       color={buttonColor as unknown as undefined}
       sx={{

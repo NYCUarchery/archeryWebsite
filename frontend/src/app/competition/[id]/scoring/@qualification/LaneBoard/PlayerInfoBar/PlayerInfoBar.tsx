@@ -2,11 +2,12 @@ import ConfirmationSignal from "./ConfirmationSignal";
 import NameBar from "./NameBar";
 import ScoreBar from "./ScoreBar";
 import { extractScores } from "../util";
-import { Player, RoundEnd } from "@/types/oldRef/Player";
+import { Player } from "@/types/oldRef/Player";
+import { DatabaseRoundEnd } from "@/types/Api";
 
 interface Props {
   player: Player;
-  end: RoundEnd;
+  end: DatabaseRoundEnd;
 }
 
 export default function PlayerInfo({ player, end }: Props) {

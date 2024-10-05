@@ -1,4 +1,5 @@
-import { Player, RoundEnd } from "@/types/oldRef/Player";
+import { DatabaseRoundEnd } from "@/types/Api";
+import { Player } from "@/types/oldRef/Player";
 
 export const extractEnd = (player: Player, currentEnd: number) => {
   if (!player || !player.rounds) return;
@@ -20,26 +21,26 @@ export const extractround = (
 
   return round;
 };
-export const extractScores = (end: RoundEnd | undefined) => {
+export const extractScores = (end: DatabaseRoundEnd | undefined) => {
   if (end === undefined) return [];
   const scores = [];
-  for (let i = 0; i < end.round_scores.length; i++) {
-    scores.push(end.round_scores[i].score);
+  for (let i = 0; i < end.round_scores!.length; i++) {
+    scores.push(end.round_scores![i].score!);
   }
   return scores;
 };
 
-export const findLastScoreInEnd = (end: RoundEnd | undefined) => {
+export const findLastScoreInEnd = (end: DatabaseRoundEnd | undefined) => {
   if (end === undefined) return;
-  for (let i = 0; i < end.round_scores.length; i++) {
-    if (end.round_scores[i].score === -1) return end.round_scores[i];
+  for (let i = 0; i < end.round_scores!.length; i++) {
+    if (end.round_scores![i].score === -1) return end.round_scores![i];
   }
   return undefined;
 };
-export const findUnfilledScoreInEnd = (end: RoundEnd) => {
+export const findUnfilledScoreInEnd = (end: DatabaseRoundEnd) => {
   if (end === undefined) return;
-  for (let i = 0; i < end.round_scores.length; i++) {
-    if (end.round_scores[i].score === -1) return end.round_scores[i - 1];
+  for (let i = 0; i < end.round_scores!.length; i++) {
+    if (end.round_scores![i].score === -1) return end.round_scores![i - 1];
   }
-  return end.round_scores[end.round_scores.length - 1];
+  return end.round_scores![end.round_scores!.length - 1];
 };

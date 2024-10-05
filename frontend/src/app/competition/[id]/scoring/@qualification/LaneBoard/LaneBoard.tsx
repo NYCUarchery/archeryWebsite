@@ -7,27 +7,35 @@ import PreQualificationNote from "./PreQualificationNote";
 import useGetCompetitionWithGroups from "@/utils/QueryHooks/useGetCompetitionWithGroups";
 import { Player } from "@/types/oldRef/Player";
 import { LaneWithEnds } from "@/utils/QueryHooks/useGetCurrentEndWithLaneByPlayer";
-import { useComputed } from "@preact/signals-react";
+import { DatabaseRoundEnd } from "@/types/Api";
 
 interface Props {
   player: Player;
   lane: LaneWithEnds;
+  ends: DatabaseRoundEnd[];
   competitionId: number;
   selectedOrder: number;
   onSelectedOrderChange: (index: number) => void;
+  onAddScore: (score: number) => void;
+  onDeleteScore: () => void;
+  onSendScore: () => void;
+  onConfirm: () => void;
 }
 export default function LaneBoard({
   player,
-  competitionId,
   lane,
+  ends,
+  competitionId,
   selectedOrder,
   onSelectedOrderChange,
+  onAddScore,
+  onDeleteScore,
+  onSendScore,
+  onConfirm,
 }: Props) {
   const { data: competition } = useGetCompetitionWithGroups(competitionId);
-  const selectedEnd = useComputed(() => {
-    const index = lane.players.findIndex((p) => p.order === selectedOrder);
-    return lane.ends[index];
-  });
+  const selectedEnd =
+    ends[lane.players.findIndex((p) => p.order === selectedOrder)];
 
   if (player === undefined || lane === undefined || competition === undefined)
     return <></>;
@@ -39,7 +47,7 @@ export default function LaneBoard({
   const playerInfos = [];
   for (let i = 0; i < lane.players.length; i++) {
     const player = lane.players[i];
-    const end = lane.ends[i];
+    const end = ends[i];
     if (player === undefined) continue;
     playerInfos.push(
       <ToggleButton value={player.order} key={i} className="player_button">
@@ -67,11 +75,12 @@ export default function LaneBoard({
         {playerInfos}
       </ToggleButtonGroup>
       <ScoreController
-        selectedEnd={selectedEnd.value}
+        selectedEnd={selectedEnd}
         possibleScores={[11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]} // TODO: get possible scores from "server"
-        onScoreChange={(score: number) => {
-          score;
-        }}
+        onAddScore={onAddScore}
+        onDeleteScore={onDeleteScore}
+        onSendScore={onSendScore}
+        onConfirm={onConfirm}
       ></ScoreController>
     </Box>
   );
