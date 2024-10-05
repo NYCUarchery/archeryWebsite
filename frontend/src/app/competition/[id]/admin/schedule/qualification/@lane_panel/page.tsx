@@ -11,7 +11,6 @@ import {
 import { useAppSelector } from "store/hooks";
 import { useQuery, useQueryClient, useMutation } from "react-query";
 import { Competition } from "@/types/oldRef/Competition";
-import { Qualification } from "@/types/oldRef/Qualification";
 import {
   TableContainer,
   Paper,
@@ -32,40 +31,44 @@ export default function Page({ params }: { params: { id: string } }) {
     queryClient.getQueryData(["competitionWithGroups", competitionId]) as any
   ).data as Competition;
   const groupIndex = useAppSelector((state) => state.schedule.groupIndex);
-  const { data: qualifications } = useQuery(
-    ["qualificationLanesUnassignedDetail", groupIndex],
+  const { data: qualification, isLoading: isLoadingQualification } = useQuery(
+    ["qualificationLanes", groupIndex],
     () =>
-      apiClient.qualification.qualificationLanesUnassignedDetail(
+      apiClient.qualification.lanesPlayersDetail(
         competition?.groups![groupIndex].id
       ),
-    { select: (data) => data.data as Qualification[] }
+    { select: (data) => data.data }
   );
 
+  const { data: unassignedLane, isLoading: isLoadingUnassignedLane } = useQuery(
+    ["qualificationLanes", groupIndex, "unassignedLane"],
+    () =>
+      apiClient.qualification.lanesUnassignedDetail(
+        competition?.groups![groupIndex].id
+      ),
+    { select: (data) => data.data[0].lanes![0] }
+  );
+  const isLoading = isLoadingQualification || isLoadingUnassignedLane;
+
   const handleSuccess = () => {
-    queryClient.invalidateQueries([
-      "qualificationLanesUnassignedDetail",
-      groupIndex,
-    ]);
+    queryClient.invalidateQueries(["qualificationLanes", groupIndex]);
     setSelectedPlayer(null);
   };
   const { mutate: assignPlayerLane } = useMutation(
     ({ playerId, laneId }: { playerId: number; laneId: number }) =>
-      apiClient.player.playerLaneidUpdate(playerId, { lane_id: laneId }),
+      apiClient.player.lanePartialUpdate(playerId, { lane_id: laneId }),
     {
       onSuccess: handleSuccess,
     }
   );
   const { mutate: assignPlayerOrder } = useMutation(
     ({ playerId, order }: { playerId: number; order: number }) =>
-      apiClient.player.playerOrderUpdate(playerId, { order: order }),
+      apiClient.player.orderPartialUpdate(playerId, { order: order }),
     {
       onSuccess: handleSuccess,
     }
   );
-  const qualification = qualifications ? qualifications[0] : null;
-  const unassignedplayers = qualifications
-    ? qualifications[1].lanes[0].players
-    : [];
+  const unassignedplayers = unassignedLane?.players ?? [];
 
   const handleAssign = (laneId: number, order: number) => {
     assignPlayerLane({
@@ -80,7 +83,7 @@ export default function Page({ params }: { params: { id: string } }) {
   const hanedleUnassign = () => {
     assignPlayerLane({
       playerId: playerToUnassign as number,
-      laneId: qualifications![1].lanes[0].id,
+      laneId: unassignedLane!.id!,
     });
     assignPlayerOrder({
       playerId: playerToUnassign as number,
@@ -88,6 +91,10 @@ export default function Page({ params }: { params: { id: string } }) {
     });
     setSelectedPlayer(null);
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <>
@@ -113,7 +120,7 @@ export default function Page({ params }: { params: { id: string } }) {
                     if (selectedPlayer === player.id) {
                       setSelectedPlayer(null);
                     } else {
-                      setSelectedPlayer(player.id);
+                      setSelectedPlayer(player!.id!);
                     }
                   }}
                 >
@@ -140,7 +147,7 @@ export default function Page({ params }: { params: { id: string } }) {
               </TableRow>
             </TableHead>
             <TableBody>
-              {qualification?.lanes.map((lane) => (
+              {qualification?.lanes!.map((lane) => (
                 <TableRow
                   key={lane.lane_number}
                   sx={{
@@ -155,26 +162,27 @@ export default function Page({ params }: { params: { id: string } }) {
                     .fill(null)
                     .map((_, index) => (
                       <TableCell component="th" scope="row" align="center">
-                        {lane.players.find((p) => p.order === index + 1) ? (
+                        {lane.players!.find((p) => p.order === index + 1) ? (
                           <Button
                             variant="contained"
                             onClick={() => {
                               setPlayerToUnassign(
-                                lane.players.find((p) => p.order === index + 1)!
-                                  .id
+                                lane.players!.find(
+                                  (p) => p.order === index + 1
+                                )!.id!
                               );
                               setOpen(true);
                             }}
                             sx={{ textTransform: "none" }}
                           >
                             {
-                              lane.players.find((p) => p.order === index + 1)!
+                              lane.players!.find((p) => p.order === index + 1)!
                                 .name
                             }
                             <br />
                             Pl. ID:
                             {
-                              lane.players.find((p) => p.order === index + 1)!
+                              lane.players!.find((p) => p.order === index + 1)!
                                 .id
                             }
                           </Button>
@@ -182,7 +190,7 @@ export default function Page({ params }: { params: { id: string } }) {
                           <Button
                             variant="outlined"
                             disabled={selectedPlayer === null}
-                            onClick={() => handleAssign(lane.id, index + 1)}
+                            onClick={() => handleAssign(lane.id!, index + 1)}
                             sx={{ textTransform: "none" }}
                           >
                             空

@@ -1,22 +1,17 @@
 "use client";
-import { Participant } from "@/types/oldRef/Participant";
 import { apiClient } from "../ApiClient";
 import { useQuery } from "react-query";
 
 export default function useGetCurrentParticipentDetail(
-  userId: number | undefined,
-  competitionId: number
+  competitionId: number | undefined,
+  userId: number | undefined
 ) {
   return useQuery(
     "currentParticipent",
-    () =>
-      apiClient.participant.participantCompetitionUserList(
-        userId ?? -1,
-        competitionId
-      ),
+    () => apiClient.participant.competitionUserDetail(competitionId!, userId!),
     {
-      select: (data) => data.data[0] as unknown as Participant,
-      enabled: !!userId,
+      select: (data) => data.data[0],
+      enabled: !!userId && !!competitionId,
       retry: false,
       staleTime: Infinity,
     }

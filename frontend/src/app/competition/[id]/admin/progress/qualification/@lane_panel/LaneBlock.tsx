@@ -38,7 +38,7 @@ export default function LaneBlock({
 
   const { mutate: toggleConfirmation } = useMutation(
     (confirmation: Confirmation) =>
-      apiClient.player.playerIsconfirmedUpdate(confirmation.endId, {
+      apiClient.player.isconfirmedPartialUpdate(confirmation.endId, {
         is_confirmed: !confirmation.isConfirmed,
       }),
     {

@@ -1,18 +1,24 @@
 import { ButtonGroup } from "@mui/material";
 import ScoreButton from "./ScoreButton";
 import ControllButtonGroup from "./ControllButtonGroup";
-import { RoundEnd } from "@/types/oldRef/Player";
+import { DatabaseRoundEnd } from "@/types/Api";
 
 interface Props {
-  selectedEnd: RoundEnd;
+  selectedEnd: DatabaseRoundEnd;
   possibleScores: number[];
-  onScoreChange: (score: number) => void;
+  onAddScore: (score: number) => void;
+  onDeleteScore: () => void;
+  onSendScore: () => void;
+  onConfirm: () => void;
 }
 
 export default function ScoreController({
   selectedEnd,
   possibleScores,
-  onScoreChange,
+  onAddScore,
+  onDeleteScore,
+  onSendScore,
+  onConfirm,
 }: Props) {
   const scoreButtons = [];
 
@@ -22,7 +28,7 @@ export default function ScoreController({
         key={i}
         score={possibleScores[i]}
         end={selectedEnd}
-        onClick={onScoreChange}
+        onAddScore={onAddScore}
       ></ScoreButton>
     );
   }
@@ -40,6 +46,9 @@ export default function ScoreController({
       <ControllButtonGroup
         selectedEnd={selectedEnd}
         isConfirmed={selectedEnd?.is_confirmed ?? false}
+        onDeleteScore={onDeleteScore}
+        onSendScore={onSendScore}
+        onConfirm={onConfirm}
       ></ControllButtonGroup>
     </>
   );
