@@ -253,6 +253,11 @@ export interface EndpointParticipantWName {
   user_id?: number;
 }
 
+export interface EndpointPatchPlayerLaneOrderUpdateLaneIdOrderData {
+  lane_id?: number;
+  order?: number;
+}
+
 export interface EndpointPostCompetitionCompetitionPostData {
   end_time?: string;
   host_id?: number;
@@ -1722,11 +1727,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids MatchScore ids and scores must be the same length
+     * @description Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids. MatchScore ids and scores must be the same length
      *
      * @tags MatchEnd
      * @name MatchendScoresPartialUpdate
-     * @summary Update one MatchEnd scores
+     * @summary Update one MatchEnd scores.
      * @request PATCH:/matchresult/matchend/scores/{id}
      */
     matchendScoresPartialUpdate: (
@@ -2035,11 +2040,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Update one Player groupId by id.
      * @request PATCH:/player/group/{id}
      */
-    groupPartialUpdate: (
-      id: string,
-      groupid: EndpointPutPlayerGroupIdUpdateGroupIdData,
-      params: RequestParams = {},
-    ) =>
+    groupPartialUpdate: (id: number, groupid: EndpointPutPlayerGroupIdUpdateGroupIdData, params: RequestParams = {}) =>
       this.request<
         DatabasePlayer & {
           player_sets?: ResponseNill;
@@ -2070,6 +2071,34 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/player/isconfirmed/${roundendid}`,
+        method: "PATCH",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update one Player order and landID By by id.
+     *
+     * @tags Player
+     * @name LaneOrderPartialUpdate
+     * @summary Update one Player order and landID By by id.
+     * @request PATCH:/player/lane-order/{id}
+     */
+    laneOrderPartialUpdate: (
+      id: number,
+      data: EndpointPatchPlayerLaneOrderUpdateLaneIdOrderData,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        DatabasePlayer & {
+          player_sets?: ResponseNill;
+          rounds?: ResponseNill;
+        },
+        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+      >({
+        path: `/player/lane-order/${id}`,
         method: "PATCH",
         body: data,
         type: ContentType.Json,
