@@ -14,13 +14,20 @@ services:
       MYSQL_DATABASE: testdb
       MYSQL_USER: user
       MYSQL_PASSWORD: password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"] # using "CMD" to run "mysqladmin" tool to "ping" the MySQL server, docker expected to receive "0" which means "mysqld is alive"
+      interval: 1s      # 每隔 1 秒檢查一次
+      timeout: 3s       # 每次健康檢查的超時時間為 3 秒
+      retries: 30       # 失敗 30 次後認為容器不健康
+      start_period: 5s  # 在容器啟動後等待 5 秒再開始健康檢查
     restart: unless-stopped
   backend:
     build:
       context: ./backend
     restart: unless-stopped
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
   reverse-proxy:
     build:
       context: ./reverse-proxy
