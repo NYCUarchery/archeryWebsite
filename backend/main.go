@@ -30,6 +30,7 @@ func main() {
 
 	SetupGinMode(mode)
 	database.SetupDatabaseByMode(mode)
+	database.CreateNoInstitution()
 	routers.SetUpRouter(server, ip, port)
 
 	server.Run(fmt.Sprintf("%s:%s", ip, port))
