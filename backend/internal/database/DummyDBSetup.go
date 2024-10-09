@@ -17,6 +17,7 @@ func TestDatabaseInitial() {
 	connectTestDB()
 	DropTables()
 	setTables()
+	CreateNoInstitution()
 	InitDummyData()
 	log.Println("Test database is initialized")
 }

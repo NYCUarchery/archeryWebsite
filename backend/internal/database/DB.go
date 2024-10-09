@@ -15,6 +15,7 @@ var DB *gorm.DB
 func DatabaseInitial() {
 	connectDB()
 	setTables()
+	CreateNoInstitution()
 }
 
 func setTables() {
