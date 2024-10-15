@@ -6,64 +6,48 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  const [tabValue, setTabValue] = useState(0);
-  const currentPath = prunePath(usePathname(), 4);
+  const [tabValue, setTabValue] = useState(1);
+  const currentPath = prunePath(usePathname(), 5);
 
   return (
     <>
       <Tabs
         centered
         value={tabValue}
-        aria-label="Administration board"
+        aria-label="schedule panel"
         role="navigation"
       >
         <LinkTab
-          href="/main"
-          label="主面板"
-          selected={tabValue === 0}
-          currentPath={currentPath}
-          setTabValue={setTabValue}
-          value={0}
-        />
-        <LinkTab
-          href="/participants"
-          label="參加者管理"
+          href="/qualification"
+          label="資格賽"
           selected={tabValue === 1}
           currentPath={currentPath}
           setTabValue={setTabValue}
           value={1}
         />
         <LinkTab
-          href="/groups"
-          label="組別管理"
+          href="/elimination/1"
+          label="個人對抗賽"
           selected={tabValue === 2}
           currentPath={currentPath}
           setTabValue={setTabValue}
           value={2}
         />
         <LinkTab
-          href="/schedule"
-          label="賽程"
+          href="/elimination/3"
+          label="團體對抗賽"
           selected={tabValue === 3}
           currentPath={currentPath}
           setTabValue={setTabValue}
           value={3}
         />
         <LinkTab
-          href="/progress"
-          label="進度"
+          href="/elimination/2"
+          label="混雙對抗賽"
           selected={tabValue === 4}
           currentPath={currentPath}
           setTabValue={setTabValue}
           value={4}
-        />
-        <LinkTab
-          href="/score-editing"
-          label="分數編輯"
-          selected={tabValue === 5}
-          currentPath={currentPath}
-          setTabValue={setTabValue}
-          value={5}
         />
       </Tabs>
       {children}
