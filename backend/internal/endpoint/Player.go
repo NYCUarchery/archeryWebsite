@@ -594,35 +594,11 @@ func PutPlayerScore(context *gin.Context) {
 		return
 	}
 	/*update one score*/
-	newScore := data.Score
-	oldScore, err := database.GetPlayerScoreByRoundScoreId(roundScoreId)
-	if response.ErrorInternalErrorTest(context, roundScoreId, "Get Player score when update totalscore", err) {
-		return
-	}
-
-	err, isChanged := database.UpdatePlayerScore(roundScoreId, newScore)
+	err, _ = database.UpdatePlayerScore(roundScoreId, data.Score)
 	if response.ErrorInternalErrorTest(context, roundScoreId, "Update Player score", err) {
 		return
-	} else if !response.AcceptNotChange(context, roundScoreId, isChanged) {
-		return
 	}
-
-	/*auto update player total score and round total score in rounds when update score*/
-	newScore = Scorefmt(newScore)
-	fmt.Printf("oldScore: %d\n", oldScore)
-	oldScore = Scorefmt(oldScore)
-	roundId, err := database.GetRoundIdByRoundScoreId(roundScoreId)
-	if response.ErrorInternalErrorTest(context, roundId, "Get Round id by roundScoreId", err) {
-		return
-	}
-	playerId, err := database.GetPlayerIdByRoundScoreId(roundScoreId)
-	if response.ErrorInternalErrorTest(context, playerId, "Get Player id by roundScoreId", err) {
-		return
-	}
-	if !UpdatePlayerTotalScoreWithOneScore(context, playerId, roundId, newScore-oldScore) {
-		return
-	}
-
+	RefreshPlayerTotalScore(context, data.PlayerId)
 	context.IndentedJSON(200, nil)
 }
 
