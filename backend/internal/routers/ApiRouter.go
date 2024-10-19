@@ -81,7 +81,6 @@ func competitionRouter(api *gin.RouterGroup) {
 		competitionssr.GET("/user/:userid/:head/:tail", endpoint.GetCompetitionsOfUser)
 		competitionssr.POST("/", endpoint.PostCompetition)
 		competitionssr.PATCH("/refresh/groups/players/rank/:id", endpoint.RefreshCompetitionRank)
-		competitionssr.PATCH("/refresh/groups/players/playertotalscore/:id", endpoint.RefreshCompetitionPlayerTotalScore)
 		competitionssr.PUT("/:id", endpoint.PutCompetition)
 		competitionssr.DELETE("/:id", endpoint.DeleteCompetition)
 		competitionssr.PATCH("/current-phase/plus/:id", endpoint.PutCompetitionCurrentPhasePlus)
