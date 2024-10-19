@@ -522,6 +522,7 @@ func UpdatePlayerTotalScoreWithOneScore(context *gin.Context, playerId uint, rou
 // Update one Player TotalScore By ID godoc
 //
 //	@Summary		Update one Player total score by id.
+//	@Description	Just in case api.
 //	@Description	Update one Player total score by id.
 //	@Tags			Player
 //	@Accept			json
@@ -563,7 +564,7 @@ func PutPlayerTotalScoreByplayerId(context *gin.Context) {
 //
 //	@Summary		Update one Player score by id.
 //	@Description	Update one Player score by id.
-//	@Description	Update doesn't change total score in player, round, roundend.
+//	@Description	Will auto update player total score.
 //	@Tags			Player
 //	@Accept			json
 //	@Produce		json
@@ -719,6 +720,18 @@ func RefreshPlayerTotalScore(context *gin.Context, playerId uint) {
 	}
 }
 
+// Refresh all player total scores by competition id godoc
+//
+//	@Summary		Refresh all player qualification total scores in a compeition by competition id.
+//	@Description	Refresh all player qualification total scores in a compeition by competition id.
+//	@Tags			Player
+//	@Accept			json
+//	@Produce		json
+//	@Param			competitionid	path		int									true	"Competition ID"
+//	@Success		200				{object}	response.Nill						"success"
+//	@Failure		400				{object}	response.ErrorIdResponse			"invalid competition id parameter, may not exist"
+//	@Failure		500				{object}	response.ErrorInternalErrorResponse	"internal db error / get competition / get groups / get players / update player total score"
+//	@Router			/player/refresh/totalscores/{competitionid} [patch]
 func RefreshPlayerTotalScoresByCompetitionId(context *gin.Context) {
 	competition_id := Convert2uint(context, "competitionid")
 	if response.ErrorIdTest(context, competition_id, database.GetCompetitionIsExist(competition_id), "Competition when refreshing player total scores") {

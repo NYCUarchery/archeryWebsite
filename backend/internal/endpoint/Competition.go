@@ -849,14 +849,3 @@ func PutCompetitionMixedEliminationActive(context *gin.Context) {
 	}
 	context.IndentedJSON(http.StatusOK, gin.H{"message": "Update Competition Mixed Elimination Active Success"})
 }
-
-// Refresh competition player total score godoc
-//
-//	@Summary		Refresh competition player total score by competition id.
-//	@Description	Refresh competition player total score by competition id.
-//	@Tags			Competition
-//	@Param			id	path		int									true	"Competition ID"
-//	@Success		200	{object}	response.Response					"success"
-//	@Failure		400	{object}	response.ErrorIdResponse			"invalid competition id parameter"
-//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"Get Competition with Groups Players Scores / Update Round Total Score / Update Player Total Score"
-//	@Router			/competition/refresh/groups/players/playertotalscore/{id} [patch]
