@@ -33,6 +33,18 @@ func GetConf(filePath string) (c Conf) {
 	return
 }
 
+func GetSQLDataFromFile(filepath string) []string {
+	sqlBytes, err := os.ReadFile(filepath)
+	if err != nil {
+		log.Println("fail to load "+filepath+": ", err)
+		os.Exit(1)
+	}
+	sqlString := string(sqlBytes)
+	requests := strings.Split(sqlString, ";")
+	requestArray := requests[:len(requests)-1]
+	return requestArray
+}
+
 /*讓我可以存取[]string型別的東西*/
 
 type Array []string
