@@ -1,5 +1,10 @@
-INSERT INTO `institutions` VALUES (1,'NYCU');
-INSERT INTO `users` VALUES (1,'Oatmeal','宋承諺','$2a$10$lyWVXpxcMakdZ0CawLLS7uf2IhEMaisMXBYZJihxaS8jPOJKaTr9y','fjewio',1,''),(2,'1A','吳柏橙','$2a$10$.bMCfQu9474cJlu/kuOOi.TOq8NP6300UOm9Jm3yKxKYXcbE4vfRa','fefew',1,''),(3,'1B','蕭邦聿','$2a$10$PrG3/DzCYU80nTlxksTTIuJNE8oVgGOjYvmec0NBpXjIN1GQ3EuFK','fewf',1,''),(4,'1C','李峻','$2a$10$rgqbdmTOLSWWW7EjtDSlT.H3G6PsQZu0QFvyecdrkULGYMdRfba6W','fewf432',1,''),(5,'1D','盧均祐','$2a$10$D2s64LppTW.JMJbO5yKQvOOxq9AVuI1C/90w0RaWtbO9mqOuxuyD6','fdsafdfdsa',1,''),(6,'2A','李庭寬','$2a$10$5jsOSDwXbIReZfSKeXQ5XeN12pelInn50tKlEIxe1bcXaeI678qoG','fewfqeeg',1,''),(7,'2B','陳宇靖','$2a$10$0zrAd6MS0wMAl.kfYDg74O5ze9BNieDyK0rNVglZkRUh242jjD/Hy','fewfewvreberw',1,''),(8,'2C','廖俊逸','$2a$10$7p65Hvg1KNpSBQp2r3YksujIgLrsS1jSrxCj4fVIbZvJtkU6xSVXW','ccccc',1,''),(9,'2D','林穎沛','$2a$10$h1cCCk.uDxUdF1jCx7SgDu5Ek5i8frWcLXIFGCHGH33MAG/fDFbv2','feqrwbwr',1,''),(10,'4B','湯傑麟','$2a$10$L6bhov/UGGLbQiS2xiv.NuLTXqdsCGbzOHVlvgBIS9P1j68HzGut.','reebrebwwe',1,'');
+/*
+This is the database schema for the archery competition system.
+
+The data is generated from 112學期寒假男反選拔賽. 
+*/
+INSERT INTO `institutions` VALUES (1,'Unassigned Institution'), (2,'NYCU');
+INSERT INTO `users` VALUES (1,'Oatmeal','宋承諺','$2a$10$lyWVXpxcMakdZ0CawLLS7uf2IhEMaisMXBYZJihxaS8jPOJKaTr9y','fjewio',2,''),(2,'1A','吳柏橙','$2a$10$.bMCfQu9474cJlu/kuOOi.TOq8NP6300UOm9Jm3yKxKYXcbE4vfRa','fefew',2,''),(3,'1B','蕭邦聿','$2a$10$PrG3/DzCYU80nTlxksTTIuJNE8oVgGOjYvmec0NBpXjIN1GQ3EuFK','fewf',2,''),(4,'1C','李峻','$2a$10$rgqbdmTOLSWWW7EjtDSlT.H3G6PsQZu0QFvyecdrkULGYMdRfba6W','fewf432',2,''),(5,'1D','盧均祐','$2a$10$D2s64LppTW.JMJbO5yKQvOOxq9AVuI1C/90w0RaWtbO9mqOuxuyD6','fdsafdfdsa',2,''),(6,'2A','李庭寬','$2a$10$5jsOSDwXbIReZfSKeXQ5XeN12pelInn50tKlEIxe1bcXaeI678qoG','fewfqeeg',2,''),(7,'2B','陳宇靖','$2a$10$0zrAd6MS0wMAl.kfYDg74O5ze9BNieDyK0rNVglZkRUh242jjD/Hy','fewfewvreberw',2,''),(8,'2C','廖俊逸','$2a$10$7p65Hvg1KNpSBQp2r3YksujIgLrsS1jSrxCj4fVIbZvJtkU6xSVXW','ccccc',2,''),(9,'2D','林穎沛','$2a$10$h1cCCk.uDxUdF1jCx7SgDu5Ek5i8frWcLXIFGCHGH33MAG/fDFbv2','feqrwbwr',2,''),(10,'4B','湯傑麟','$2a$10$L6bhov/UGGLbQiS2xiv.NuLTXqdsCGbzOHVlvgBIS9P1j68HzGut.','reebrebwwe',2,'');
 
 
 INSERT INTO `competitions` VALUES (1,'男反選拔','113年全大運','0001-02-28 23:59:00.000','0001-03-31 23:59:00.000',1,3,1,1,1,2,0,0,1,0,0,0,'test'),(2,'男反選拔','113年全大運','0001-02-28 23:59:00.000','0001-03-31 23:59:00.000',1,3,3,1,4,4,0,18,1,0,0,0,'test');
