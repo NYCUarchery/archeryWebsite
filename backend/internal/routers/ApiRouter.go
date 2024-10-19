@@ -46,6 +46,8 @@ func playerRouter(api *gin.RouterGroup) {
 		playerssr.PATCH("/roundscore/:roundscoreid", endpoint.PutPlayerScore)
 		playerssr.PATCH("/shootoffscore/:id", endpoint.PutPlayerShootoffScore)
 		playerssr.PATCH("/all-endscores/:endid", endpoint.PutPlayerAllEndScoresByEndId)
+
+		playerssr.PATCH("/refresh/totalscores/:competitionid", endpoint.RefreshPlayerTotalScoresByCompetitionId)
 		playerssr.DELETE("/:id", endpoint.DeletePlayer)
 
 		playerssr.GET("/dummy/:participantid", endpoint.GetDummyPlayerByParticipantId)
