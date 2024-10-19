@@ -862,21 +862,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Refresh competition player total score by competition id.
-     *
-     * @tags Competition
-     * @name RefreshGroupsPlayersPlayertotalscorePartialUpdate
-     * @summary Refresh competition player total score by competition id.
-     * @request PATCH:/competition/refresh/groups/players/playertotalscore/{id}
-     */
-    refreshGroupsPlayersPlayertotalscorePartialUpdate: (id: number, params: RequestParams = {}) =>
-      this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
-        path: `/competition/refresh/groups/players/playertotalscore/${id}`,
-        method: "PATCH",
-        ...params,
-      }),
-
-    /**
      * @description Refresh all player ranking of different groups in one Competition.
      *
      * @tags Competition
@@ -1727,11 +1712,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids. MatchScore ids and scores must be the same length
+     * @description Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids MatchScore ids and scores must be the same length
      *
      * @tags MatchEnd
      * @name MatchendScoresPartialUpdate
-     * @summary Update one MatchEnd scores.
+     * @summary Update one MatchEnd scores
      * @request PATCH:/matchresult/matchend/scores/{id}
      */
     matchendScoresPartialUpdate: (
@@ -2179,6 +2164,23 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
+     * @description Refresh all player qualification total scores in a compeition by competition id.
+     *
+     * @tags Player
+     * @name RefreshTotalscoresPartialUpdate
+     * @summary Refresh all player qualification total scores in a compeition by competition id.
+     * @request PATCH:/player/refresh/totalscores/{competitionid}
+     */
+    refreshTotalscoresPartialUpdate: (competitionid: number, params: RequestParams = {}) =>
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/player/refresh/totalscores/${competitionid}`,
+        method: "PATCH",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Just in case api. Create one RoundEnd by round id, IsComfirmed is false. Should not be used, just in case function, PostPlayer is used to create player, rounds, roundends, roundscores.
      *
      * @tags Player
@@ -2220,7 +2222,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Update one Player score by id. Update doesn't change total score in player, round, roundend.
+     * @description Update one Player score by id. Will auto update player total score.
      *
      * @tags Player
      * @name RoundscorePartialUpdate
@@ -2292,7 +2294,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Update one Player total score by id.
+     * @description Just in case api. Update one Player total score by id.
      *
      * @tags Player
      * @name TotalscorePartialUpdate
