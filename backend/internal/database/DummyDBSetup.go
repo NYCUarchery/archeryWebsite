@@ -27,15 +27,8 @@ func InitDummyData() {
 		os.Exit(1)
 	}
 	dir := filepath.Dir(filename)
-	sqlBytes, err := os.ReadFile(dummyDataPath)
-	if err != nil {
-		fmt.Println("fail to load dummyData.sql: ", err)
-		os.Exit(1)
-	}
-	sqlString := string(sqlBytes)
-	requests := strings.Split(sqlString, ";")
-	requests = requests[:len(requests)-1]
 	dummyDataPath := filepath.Join(dir, "../../assets/testData/dummyData_v1.sql")
+	requests := GetSQLDataFromFile(dummyDataPath)
 	for _, request := range requests {
 		result := DB.Exec(request)
 		if result.Error != nil {

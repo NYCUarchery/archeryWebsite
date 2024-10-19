@@ -12,6 +12,14 @@ import (
 
 var DB *gorm.DB
 
+func SetupDatabaseByMode(mode string) {
+	if mode == "test" {
+		TestDatabaseInitial()
+	} else {
+		DatabaseInitial()
+	}
+}
+
 func DatabaseInitial() {
 	connectDB()
 	DropTables()
@@ -57,14 +65,6 @@ func DropTables() {
 	log.Println("All tables are dropped")
 }
 
-func SetupDatabaseByMode(mode string) {
-	if mode == "test" {
-		TestDatabaseInitial()
-	} else {
-		DatabaseInitial()
-	}
-}
-
 func connectDB() {
 	DSN := GetConf("config/db.yaml")
 
@@ -83,6 +83,7 @@ func connectDB() {
 		fmt.Println("failed to connect database")
 		os.Exit(1)
 	}
+	log.Println("Database \"" + DSN.Database + "\" is connected")
 }
 
 func setInitialDataWithSeeder() {
