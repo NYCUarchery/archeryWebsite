@@ -19,15 +19,17 @@ import {
   DialogTitle,
   Dialog,
   DialogContent,
-  DialogActions,
   Button,
 } from "@mui/material";
 import { useState } from "react";
 import CircleSign from "@/components/CircleSign";
-import { useScoreColor } from "@/utils/useScoreColor";
+import { useScoreColors } from "@/utils/useScoreColor";
 import ScoreController from "@/components/ScoreController/ScoreController";
 import { DatabaseRoundEnd } from "@/types/Api";
+
 export default function Page({ params }: { params: { id: string } }) {
+  const colors = useScoreColors();
+
   const isSmall = useMediaQuery("(max-width:420px)");
   const queryClient = useQueryClient();
   const [selectedPlayer, setSelectedPlayer] = useState<{
@@ -116,7 +118,7 @@ export default function Page({ params }: { params: { id: string } }) {
                   key={`${roundIndex}-${endIndex}`}
                 >
                   {end!.round_scores!.map((score) => {
-                    const scoreColor = useScoreColor(score!.score!);
+                    const scoreColor = colors.get(score.score!)!;
                     return (
                       <CircleSign
                         backgroundColor={scoreColor.backgroundColor}
@@ -208,9 +210,9 @@ export default function Page({ params }: { params: { id: string } }) {
           >
             {selectedEnd ? (
               selectedEnd!.round_scores!.map((score) => {
-                const { textColor, backgroundColor } = useScoreColor(
+                const { textColor, backgroundColor } = colors.get(
                   score.score!
-                );
+                )!;
                 let text = score.score!.toString();
 
                 if (score.score === 0) text = "M";
