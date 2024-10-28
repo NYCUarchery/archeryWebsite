@@ -9,7 +9,7 @@ interface Props {
   isConfirmed: boolean;
   onDeleteScore: () => void;
   onSendScore: () => void;
-  onConfirm: () => void;
+  onConfirm?: () => void;
 }
 
 export default function ControllButtonGroup({
@@ -26,20 +26,24 @@ export default function ControllButtonGroup({
       variant="text"
       disableElevation
     >
-      <Button
-        color={isConfirmed ? "success" : "error"}
-        variant="contained"
-        id={isConfirmed ? "confirmed" : "unconfirmed"}
-        disableRipple={isConfirmed}
-        sx={{
-          height: "3rem",
-          fontSize: "1rem",
-          backgroundColor: isConfirmed ? "success.light" : "error.main",
-        }}
-        onClick={onConfirm}
-      >
-        {isConfirmed ? "已確認" : "確認"}
-      </Button>
+      {onConfirm !== undefined ? (
+        <Button
+          color={isConfirmed ? "success" : "error"}
+          variant="contained"
+          id={isConfirmed ? "confirmed" : "unconfirmed"}
+          disableRipple={isConfirmed}
+          sx={{
+            height: "3rem",
+            fontSize: "1rem",
+            backgroundColor: isConfirmed ? "success.light" : "error.main",
+          }}
+          onClick={onConfirm}
+        >
+          {isConfirmed ? "已確認" : "確認"}
+        </Button>
+      ) : (
+        <></>
+      )}
       <Button variant="contained" onClick={onSendScore}>
         送出
       </Button>

@@ -59,6 +59,10 @@ export const useScoreColor = (score: number) => {
       backgroundColor = palette.yellow_score.main;
       textColor = palette.yellow_score.contrastText;
       break;
+    case -1:
+      backgroundColor = palette.white_score.main;
+      textColor = palette.black_score.contrastText;
+      break;
     default:
       backgroundColor = palette.black_score.main;
       textColor = palette.black_score.contrastText;

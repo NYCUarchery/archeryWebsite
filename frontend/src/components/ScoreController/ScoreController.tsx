@@ -9,7 +9,7 @@ interface Props {
   onAddScore: (score: number) => void;
   onDeleteScore: () => void;
   onSendScore: () => void;
-  onConfirm: () => void;
+  onConfirm?: () => void;
 }
 
 export default function ScoreController({
@@ -40,6 +40,7 @@ export default function ScoreController({
         variant="text"
         disabled={selectedEnd?.is_confirmed}
         disableElevation
+        sx={{ flexWrap: "wrap" }}
       >
         {scoreButtons}
       </ButtonGroup>
