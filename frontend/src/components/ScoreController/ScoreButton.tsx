@@ -1,5 +1,5 @@
 import { Button } from "@mui/material";
-import { findLastScoreInEnd } from "../../../../../../../components/ScoreController/util";
+import { findLastScoreInEnd } from "./util";
 import { DatabaseRoundEnd } from "@/types/Api";
 
 const buttonColors = new Map([

@@ -1,7 +1,7 @@
 import ConfirmationSignal from "./ConfirmationSignal";
 import NameBar from "./NameBar";
 import ScoreBar from "./ScoreBar";
-import { extractScores } from "../util";
+import { extractScores } from "../../../../../../../components/ScoreController/util";
 import { Player } from "@/types/oldRef/Player";
 import { DatabaseRoundEnd } from "@/types/Api";
 

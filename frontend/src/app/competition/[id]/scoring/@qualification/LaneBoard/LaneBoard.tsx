@@ -1,7 +1,7 @@
 import LaneNumber from "./LaneNumber";
 import PlayerInfoBar from "./PlayerInfoBar/PlayerInfoBar";
 import { ToggleButtonGroup, ToggleButton, Box } from "@mui/material";
-import ScoreController from "./ScoreController/ScoreController";
+import ScoreController from "@/components/ScoreController/ScoreController";
 import TargetSigns from "./TargetSigns";
 import PreQualificationNote from "./PreQualificationNote";
 import useGetCompetitionWithGroups from "@/utils/QueryHooks/useGetCompetitionWithGroups";
