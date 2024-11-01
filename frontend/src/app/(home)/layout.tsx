@@ -1,5 +1,5 @@
 "use client";
-import Header from "./register/Header";
+import Header from "./Header";
 import { useState } from "react";
 import Sidebar from "./Sidebar";
 import { Box } from "@mui/material";

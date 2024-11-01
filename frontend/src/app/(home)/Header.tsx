@@ -10,7 +10,7 @@ import MenuItem from "@mui/material/MenuItem";
 import MenuList from "@mui/material/MenuList";
 
 import Popper from "@mui/material/Popper";
-import { ClickAwayListener } from "@mui/material";
+import { ClickAwayListener, Link } from "@mui/material";
 
 import { Button } from "@mui/material";
 import Card from "@mui/material/Card";
@@ -28,7 +28,11 @@ interface HeaderProps {
 
 const Header: FC<HeaderProps> = ({ setSideBarOpen }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const { data: user, isError: isUserError } = useGetCurrentUserDetail();
+  const {
+    data: user,
+    isError: isUserError,
+    isFetched: isUserFetched,
+  } = useGetCurrentUserDetail();
   const router = useRouter();
 
   const handleMenu = (event: MouseEvent<HTMLElement>) => {
@@ -39,6 +43,16 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen }) => {
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  const userLink = user?.real_name ? (
+    <Link href="/logout" color="#aaaaaa">
+      登出
+    </Link>
+  ) : (
+    <Link href="/login" color="#aaaaaa">
+      登入
+    </Link>
+  );
 
   return (
     <AppBar position="relative">
@@ -65,6 +79,16 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen }) => {
             Archery
           </Typography>
         </Button>
+        {isUserFetched ? (
+          <Typography
+            component="div"
+            sx={{ fontSize: "14px", ml: "auto", color: "#aaaaaa" }}
+          >
+            你是{user?.real_name ?? "訪客"} {userLink}
+          </Typography>
+        ) : (
+          <></>
+        )}
         <ClickAwayListener onClickAway={handleClose}>
           <>
             <IconButton
@@ -74,7 +98,7 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen }) => {
               aria-haspopup="true"
               onClick={handleMenu}
               color="inherit"
-              sx={{ ml: "auto" }}
+              sx={{ ml: isUserFetched ? "" : "auto" }}
             >
               <Avatar alt="Remy Sharp" sx={{ width: 24, height: 24 }} />
             </IconButton>
