@@ -13,17 +13,11 @@ import Paper from "@mui/material/Paper";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { useRouter } from "next/navigation";
 import { useGetUserId } from "@/utils/QueryHooks/useGetUserID";
 
 const Homepage = () => {
   const rows: any = [];
-  const router = useRouter();
-  const { isError: isUserError, isSuccess: isUserSuccess } = useGetUserId();
-
-  if (isUserError) {
-    router.push("/login");
-  }
+  const { isSuccess: isUserSuccess } = useGetUserId();
 
   return (
     <Card sx={{ p: 2, mt: 2, width: "600px" }}>
