@@ -20,7 +20,11 @@ export default function RootLayout({
         user={user}
         isUserFetched={isUserFetched}
       />
-      <Sidebar setSideBarOpen={setSidebarOpen} sideBarOpen={sidebarOpen} />
+      <Sidebar
+        setSideBarOpen={setSidebarOpen}
+        sideBarOpen={sidebarOpen}
+        uid={user?.id}
+      />
       <Box
         sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
       >
