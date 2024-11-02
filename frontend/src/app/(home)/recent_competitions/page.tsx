@@ -11,11 +11,13 @@ import { CompetitionList } from "@/components/CompetitionList";
 import { useQuery } from "react-query";
 import { apiClient } from "@/utils/ApiClient";
 import { DatabaseCompetition } from "@/types/Api";
+import { useGetUserId } from "@/utils/QueryHooks/useGetUserID";
 
 export default function RecentCompetitionPage() {
   const [page, setPage] = useState(1);
   const [startIndex, setStartIndex] = useState((page - 1) * 5);
   const [endIndex, setEndIndex] = useState(page * 5 - 1);
+  const { data: uid } = useGetUserId();
 
   const { data: competitions, isLoading: isLoadingCompetitions } = useQuery(
     "competitions",
@@ -56,7 +58,7 @@ export default function RecentCompetitionPage() {
         {isLoadingCompetitions || !competitions ? (
           <p>loading...</p>
         ) : (
-          <CompetitionList competitions={competitions} />
+          <CompetitionList competitions={competitions} uid={uid} />
         )}
 
         <Pagination
