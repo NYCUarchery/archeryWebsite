@@ -1315,32 +1315,6 @@ paths:
       summary: Update one Competition Qualification Active to be true by id.
       tags:
       - Competition
-  /competition/refresh/groups/players/playertotalscore/{id}:
-    patch:
-      description: Refresh competition player total score by competition id.
-      parameters:
-      - description: Competition ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      responses:
-        "200":
-          description: success
-          schema:
-            $ref: '#/definitions/response.Response'
-        "400":
-          description: invalid competition id parameter
-          schema:
-            $ref: '#/definitions/response.ErrorIdResponse'
-        "500":
-          description: Get Competition with Groups Players Scores / Update Round Total
-            Score / Update Player Total Score
-          schema:
-            $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Refresh competition player total score by competition id.
-      tags:
-      - Competition
   /competition/refresh/groups/players/rank/{id}:
     patch:
       consumes:
@@ -2553,7 +2527,7 @@ paths:
       consumes:
       - application/json
       description: |-
-        Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids.
+        Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids
         MatchScore ids and scores must be the same length
       parameters:
       - description: MatchEnd ID
@@ -2581,7 +2555,7 @@ paths:
           description: internal db failed for updating scores
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Update one MatchEnd scores.
+      summary: Update one MatchEnd scores
       tags:
       - MatchEnd
   /matchresult/matchend/totalscore/{id}:
@@ -3528,6 +3502,38 @@ paths:
       summary: Show one Player with player sets.
       tags:
       - Player
+  /player/refresh/totalscores/{competitionid}:
+    patch:
+      consumes:
+      - application/json
+      description: Refresh all player qualification total scores in a compeition by
+        competition id.
+      parameters:
+      - description: Competition ID
+        in: path
+        name: competitionid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success
+          schema:
+            $ref: '#/definitions/response.Nill'
+        "400":
+          description: invalid competition id parameter, may not exist
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / get competition / get groups / get players
+            / update player total score
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Refresh all player qualification total scores in a compeition by competition
+        id.
+      tags:
+      - Player
   /player/roundend:
     post:
       consumes:
@@ -3609,7 +3615,7 @@ paths:
       - application/json
       description: |-
         Update one Player score by id.
-        Update doesn't change total score in player, round, roundend.
+        Will auto update player total score.
       parameters:
       - description: RoundScore ID
         in: path
@@ -3733,7 +3739,9 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Update one Player total score by id.
+      description: |-
+        Just in case api.
+        Update one Player total score by id.
       parameters:
       - description: Player ID
         in: path
