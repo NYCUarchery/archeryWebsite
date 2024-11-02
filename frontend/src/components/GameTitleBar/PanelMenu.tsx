@@ -10,18 +10,22 @@ import { Participant } from "@/types/oldRef/Participant";
 type BoardNameSet = {
   id: string;
   name: string;
+  path: string;
 };
 
 const boardAbbreviations = new Map<string, string>([
   ["scoreboard", "分"],
   ["scoring", "記"],
   ["admin", "監"],
+  ["judge", "判"],
 ]);
 
 const boardNameSets: BoardNameSet[] = [
-  { id: "scoreboard", name: "分數榜" },
-  { id: "scoring", name: "紀錄分數" },
-  { id: "admin", name: "監控" },
+  { id: "home", name: "首頁", path: "/" },
+  { id: "scoreboard", name: "分數榜", path: "/scoreboard" },
+  { id: "scoring", name: "紀錄分數", path: "/scoring" },
+  { id: "admin", name: "監控", path: "/admin" },
+  { id: "judge", name: "裁判", path: "/admin/score-editing" },
 ];
 
 interface Props {
@@ -34,7 +38,6 @@ export default function PanelMenu({ panelName, participant }: Props) {
   const router = useRouter();
   const currentPath = usePathname();
   const currentPenalRootPath = prunePath(currentPath, 3);
-  const avaliableBoards: string[] = ["scoreboard", "scoring", "admin"];
 
   let indicatorCharacter: string = boardAbbreviations.get(panelName) as string;
 
@@ -46,13 +49,19 @@ export default function PanelMenu({ panelName, participant }: Props) {
   };
 
   const items = boardNameSets.map((set) => {
-    if (avaliableBoards.includes(set.id)) {
+    if (boardAbbreviations.has(set.id)) {
+      console.log(participant);
+      console.log(set.id);
+
       if (
         (participant === undefined || participant?.status === "pending") &&
         set.id !== "scoreboard"
       ) {
         return <></>;
-      } else if (participant?.role === "player" && set.id === "admin") {
+      } else if (
+        participant?.role === "player" &&
+        (set.id === "admin" || set.id === "judge")
+      ) {
         return <></>;
       } else if (participant?.role === "admin" && set.id === "scoring") {
         return <></>;
@@ -61,7 +70,7 @@ export default function PanelMenu({ panelName, participant }: Props) {
         <MenuItem
           key={set.id}
           onClick={() => {
-            router.push(currentPenalRootPath + "/" + set.id);
+            router.push(currentPenalRootPath + "/" + set.path);
             indicatorCharacter = boardAbbreviations.get(set.id) as string;
             handleClose();
           }}
@@ -70,6 +79,17 @@ export default function PanelMenu({ panelName, participant }: Props) {
         </MenuItem>
       );
     }
+    return (
+      <MenuItem
+        key={set.id}
+        onClick={() => {
+          router.push(set.path);
+          handleClose();
+        }}
+      >
+        {set.name}
+      </MenuItem>
+    );
   });
 
   return (
