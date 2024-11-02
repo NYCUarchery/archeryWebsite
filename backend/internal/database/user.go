@@ -35,6 +35,12 @@ func FindAllUsers() []User {
 	return users
 }
 
+func MoveUsersToNoInstitutionByInstitutionID(InstitutionID uint, NoInstitutionID uint) error {
+	err := DB.Model(&User{}).Where("institution_id = ?", InstitutionID).
+		Update("institution_id", NoInstitutionID).Error
+	return err
+}
+
 /* get one user data by ID*/
 func FindByUserID(userID uint) (User, error) {
 	var user User
