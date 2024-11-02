@@ -23,7 +23,7 @@ export default function Layout({
     isLoading: isLoadingCompetition,
   } = useGetCompetitionWithGroups(competitionId);
   const { data: participant, isLoading: isLoadingParticipant } =
-    useGetCurrentParticipentDetail(user?.id, competitionId);
+    useGetCurrentParticipentDetail(competitionId, user?.id);
 
   const { data: players, isLoading: isLoadingPlayer } =
     useGetPlayersByParticipant((participant as Participant)?.id, competitionId);

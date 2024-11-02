@@ -1,1 +1,4 @@
 node_modules
+.next
+playerwright-report
+test-results

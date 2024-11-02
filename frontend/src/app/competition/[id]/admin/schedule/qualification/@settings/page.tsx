@@ -36,9 +36,7 @@ export default function Page({ params }: { params: { id: string } }) {
   const { data: group, isSuccess: isGroupSuccess } = useQuery(
     ["groupinfoPlayersDetail", groupIndex],
     () =>
-      apiClient.groupInfo.groupinfoPlayersDetail(
-        competition?.groups![groupIndex].id
-      ),
+      apiClient.groupInfo.playersDetail(competition?.groups![groupIndex].id),
 
     {
       staleTime: 60000 * 30,
@@ -50,7 +48,7 @@ export default function Page({ params }: { params: { id: string } }) {
   const { data: qualification, isSuccess: isQualificationSuccess } = useQuery(
     ["qualificationPlayersDetail", groupIndex],
     () =>
-      apiClient.qualification.qualificationLanesPlayersDetail(
+      apiClient.qualification.lanesPlayersDetail(
         competition?.groups![groupIndex].id
       ),
     {
@@ -63,18 +61,14 @@ export default function Page({ params }: { params: { id: string } }) {
   );
   const { mutate: saveSettings } = useMutation(
     () =>
-      apiClient.qualification.qualificationWholeUpdate(qualification!.id, {
+      apiClient.qualification.qualificationUpdate(qualification!.id, {
         start_lane: startLane,
         end_lane: endLane,
         advancing_num: advancingNum,
       }),
     {
       onSuccess: () => {
-        queryClient.invalidateQueries([
-          "qualificationPlayersDetail",
-          groupIndex,
-        ]);
-        queryClient.invalidateQueries(["groupinfoPlayersDetail", groupIndex]);
+        queryClient.invalidateQueries(["qualificationLanes", groupIndex]);
       },
     }
   );
@@ -95,8 +89,8 @@ export default function Page({ params }: { params: { id: string } }) {
         startLane={startLane}
         endLane={endLane}
         lanesNum={competition.lanes_num}
-        setStartLane={setStartLane}
-        setEndLane={setEndLane}
+        setStartLane={(value: number) => dispatch(setStartLane(value))}
+        setEndLane={(value: number) => dispatch(setEndLane(value))}
       />
       <AdvancingNumSetter playersNum={group ? group.players.length : 0} />
 

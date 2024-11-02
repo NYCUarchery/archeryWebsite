@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { User } from "./data";
+import { loginUser, logoutUser, registerUser } from "./utils";
 
 const user = new User("我好醜");
 
@@ -8,27 +9,7 @@ test.describe("Home", () => {
     await page.goto("http://127.0.0.1/");
   });
   test("Register", async ({ page }) => {
-    await page.goto("http://127.0.0.1/");
-    await page.getByLabel("account of current user").click();
-    await page.getByRole("menuitem", { name: "登入" }).click();
-    await page.getByRole("button", { name: "沒有帳號嗎？" }).click();
-    await expect(
-      await page.getByRole("button", { name: "註冊" })
-    ).toBeVisible();
-    await page.getByLabel("帳號").click();
-    await page.getByLabel("帳號").fill(user.username);
-    await page.getByLabel("密碼", { exact: true }).click();
-    await page.getByLabel("密碼", { exact: true }).fill(user.password);
-    await page.getByLabel("確認密碼").click();
-    await page.getByLabel("確認密碼").fill(user.password);
-    await page.getByLabel("真實姓名").click();
-    await page.getByLabel("真實姓名").fill(user.name);
-    await page.getByLabel("電子郵件").click();
-    await page.getByLabel("電子郵件").fill(user.email);
-    await page.getByLabel("組織/學校").click();
-    await page.getByRole("option", { name: "NYCU" }).click();
-    await page.getByRole("button", { name: "註冊" }).click();
-    await expect(page.getByRole("button", { name: "註冊" })).not.toBeVisible();
+    await registerUser(page, user);
     await page.getByLabel("帳號").click();
     await page.getByLabel("帳號").fill(user.username);
     await page.getByLabel("密碼").fill(user.password);
@@ -36,11 +17,16 @@ test.describe("Home", () => {
     await expect(await page.getByText("公告欄")).toBeVisible();
   });
   test("login", async ({ page }) => {
-    await page.getByLabel("account of current user").click();
-    await page.getByRole("menuitem", { name: "登入" }).click();
-    await page.getByLabel("帳號").fill("Oatmeal");
-    await page.getByLabel("密碼").fill("Waaaaaaaa");
-    await page.getByRole("button", { name: "登入" }).click();
-    await expect(await page.getByText("公告欄")).toBeVisible();
+    await loginUser(page, new User("宋承諺", "Oatmeal", "Waaaaaaaa"));
+  });
+  test("apply to competition as player", async ({ page }) => {
+    await registerUser(page, user);
+    await loginUser(page, user);
+    await page.getByLabel("menu").click();
+    await page.getByRole("button", { name: "比賽" }).click();
+    await page.getByRole("button", { name: "近期比賽" }).click();
+    await page.getByRole("button", { name: "申請加入" }).nth(1).click();
+    await page.getByRole("button", { name: "申請為選手" }).click();
+    await logoutUser(page);
   });
 });

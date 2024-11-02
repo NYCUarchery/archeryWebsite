@@ -58,7 +58,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           value={4}
         />
         <LinkTab
-          href="/score_edition"
+          href="/score-editing"
           label="分數編輯"
           selected={tabValue === 5}
           currentPath={currentPath}

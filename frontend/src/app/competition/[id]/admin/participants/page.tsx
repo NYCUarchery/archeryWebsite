@@ -22,19 +22,31 @@ export default function Page({ params }: { params: { id: string } }) {
   const queryClient = useQueryClient();
   const { data: participants } = useQuery(
     ["participantCompetitionList", params.id],
-    () => apiClient.participant.participantCompetitionList(parseInt(params.id)),
+    () => apiClient.participant.competitionDetail(parseInt(params.id)),
     {
       select: (data) => data.data as unknown as Participant[],
       staleTime: Infinity,
     }
   );
   const { mutate: approveParticipant } = useMutation((id: number) =>
-    apiClient.participant.participantWholeUpdate(id, {
+    apiClient.participant.participantUpdate(id, {
       status: "approved",
     })
   );
   const { mutate: deleteParticipant } = useMutation((id: number) =>
     apiClient.participant.participantDelete(id)
+  );
+
+  const { mutate: createPlayer } = useMutation(
+    (id: number) => apiClient.player.playerCreate(id),
+    {
+      onError: (error, id) => {
+        alert(`
+        Player creation for participant ${id} failed.
+        Error: ${error}
+        `);
+      },
+    }
   );
 
   const [rowSelectionModel, setRowSelectionModel] =
@@ -45,14 +57,17 @@ export default function Page({ params }: { params: { id: string } }) {
       const config =
         i === rowSelectionModel.length - 1
           ? {
-              onSuccess: () =>
+              mudationKeys: ["participantApprove", rowSelectionModel[i]],
+              onSuccess: () => {
                 queryClient.invalidateQueries([
                   "participantCompetitionList",
                   params.id,
-                ]),
+                ]);
+              },
             }
           : {};
       approveParticipant(rowSelectionModel[i] as number, config);
+      createPlayer(rowSelectionModel[i] as number);
     }
     setRowSelectionModel([]);
   };

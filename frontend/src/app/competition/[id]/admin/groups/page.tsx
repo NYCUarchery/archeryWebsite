@@ -10,7 +10,7 @@ export default function Page({ params }: { params: { id: string } }) {
   const competitionId = parseInt(params.id);
   const { data: groups } = useQuery(
     ["competitionGroupsPlayersDetail", competitionId],
-    () => apiClient.competition.competitionGroupsPlayersDetail(competitionId),
+    () => apiClient.competition.groupsPlayersDetail(competitionId),
     {
       select: (data) => data.data.groups as unknown as Group[],
       staleTime: Infinity,

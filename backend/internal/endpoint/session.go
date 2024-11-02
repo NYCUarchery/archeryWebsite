@@ -17,13 +17,14 @@ type LoginInfo struct {
 // Login godoc
 //
 //	@Summary		login
-//	@Description	get a session
+//	@Description	Get a session.
 //	@Tags			Session
 //	@Accept			json
 //	@Produce		json
-//	@Param			LoginInfo	body	endpoint.LoginInfo	true "user_name, password"
-//	@Success		200			string	string
-//	@Failure		401			string	string
+//	@Param			LoginInfo	body		endpoint.LoginInfo						true	"user_name, password"
+//	@Success		200			{object}	response.Response						"success / already loginned"
+//	@Failure		400			{object}	response.ErrorReceiveDataFormatResponse	"invalid login info"
+//	@Failure		401			{object}	response.ErrorResponse					"user not found / incorrect password"
 //	@Router			/session [post]
 func Login(c *gin.Context) {
 	var loginInfo LoginInfo
@@ -57,7 +58,7 @@ func Login(c *gin.Context) {
 // Logout godoc
 //
 //	@Summary		logout
-//	@Description	delete the session
+//	@Description	Delete the session.
 //	@Tags			Session
 //	@Produce		json
 //	@Success		200	{object}	response.Response	"success"

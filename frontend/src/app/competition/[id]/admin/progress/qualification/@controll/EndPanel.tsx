@@ -37,7 +37,9 @@ export default function EndPanel({
 
   const { mutate: updataRank } = useMutation(
     () =>
-      apiClient.competition.competitionGroupsPlayersRankUpdate(competitionId),
+      apiClient.competition.refreshGroupsPlayersRankPartialUpdate(
+        competitionId
+      ),
     {
       onSuccess: () => {
         setSnackbarOpen(true);
@@ -53,7 +55,7 @@ export default function EndPanel({
   );
   const { mutate: currentEndPlus } = useMutation(
     () =>
-      apiClient.competition.competitionQualificationcurrentendplusUpdate(
+      apiClient.competition.qualificationCurrentEndPlusPartialUpdate(
         competitionId
       ),
     {
@@ -73,7 +75,7 @@ export default function EndPanel({
 
   const { mutate: currentEndMinus } = useMutation(
     () =>
-      apiClient.competition.competitionQualificationcurrentendminusUpdate(
+      apiClient.competition.qualificationCurrentEndMinusPartialUpdate(
         competitionId
       ),
     {

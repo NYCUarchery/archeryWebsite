@@ -18,6 +18,7 @@ import { ClickAwayListener } from "@mui/base/ClickAwayListener";
 interface SidebarProps {
   setSideBarOpen: Dispatch<SetStateAction<boolean>>;
   sideBarOpen: boolean;
+  uid?: number;
 }
 
 interface AssociativeArray {
@@ -26,19 +27,23 @@ interface AssociativeArray {
 
 interface sidebarItemProps {
   item: AssociativeArray;
+  uid?: number;
 }
 
-const SidebarItem: FC<sidebarItemProps> = ({ item }) => {
+const SidebarItem: FC<sidebarItemProps> = ({ item, uid }) => {
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
-  const subitemMap = (v: any, i: number) => (
-    <List key={i} component="div" disablePadding>
-      <ListItemButton sx={{ pl: 4 }} onClick={() => router.push(v.route)}>
-        <ListItemText primary={v.label} />
-      </ListItemButton>
-    </List>
-  );
+  const subitemMap = (v: any, i: number) => {
+    if (v.label === "我的比賽" && !uid) return null;
+    return (
+      <List key={i} component="div" disablePadding>
+        <ListItemButton sx={{ pl: 4 }} onClick={() => router.push(v.route)}>
+          <ListItemText primary={v.label} />
+        </ListItemButton>
+      </List>
+    );
+  };
 
   return (
     <Box>
@@ -61,7 +66,7 @@ const SidebarItem: FC<sidebarItemProps> = ({ item }) => {
   );
 };
 
-const Sidebar: FC<SidebarProps> = ({ sideBarOpen, setSideBarOpen }) => {
+const Sidebar: FC<SidebarProps> = ({ sideBarOpen, setSideBarOpen, uid }) => {
   const handleClose = () => {
     setSideBarOpen(false);
   };
@@ -110,7 +115,7 @@ const Sidebar: FC<SidebarProps> = ({ sideBarOpen, setSideBarOpen }) => {
         >
           <List>
             {menuItems.map((v, i) => (
-              <SidebarItem key={i} item={v} />
+              <SidebarItem key={i} item={v} uid={uid} />
             ))}
           </List>
         </Grow>

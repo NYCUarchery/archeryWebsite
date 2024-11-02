@@ -14,7 +14,7 @@ export default function useGetLaneConfirmations(
 ) {
   return useQuery(
     ["laneConfirmations", laneId, currentEndIndex],
-    () => apiClient.lane.laneScoresDetail(laneId),
+    () => apiClient.lane.scoresDetail(laneId),
     {
       staleTime: Infinity,
       select: (data) => {

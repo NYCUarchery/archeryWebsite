@@ -18,8 +18,8 @@ func TestAcceptDeleteSuccess(t *testing.T) {
 		expectedMessage string
 		expectedStatus  int
 	}{
-		{1, true, "\"test message\"", "if delete success", "{\n    \"message\": \"Delete ID(1): \\\"test message\\\" success\"\n}", 200},
-		{2, false, "\"test message\"", "if delete fail", "{\n    \"message\": \"Delete ID(2): \\\"test message\\\" fail\"\n}", 200},
+		{1, true, "\"test message\"", "if delete success", "{\n    \"message\": \"Delete ID(1): \\\"test message\\\" delete success\"\n}", 200},
+		{2, false, "\"test message\"", "if delete fail", "{\n    \"message\": \"Delete ID(2): \\\"test message\\\" delete failed\"\n}", 400},
 	}
 	Convey("TestAcceptDeleteSuccess", t, func() {
 		for _, tc := range tc {

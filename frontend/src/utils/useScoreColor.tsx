@@ -2,6 +2,20 @@ import { useTheme } from "@mui/material";
 
 export const useScoreColor = (score: number) => {
   const palette: any = useTheme().palette;
+  return getScoreColor(palette, score);
+};
+
+export const useScoreColors = () => {
+  const palette: any = useTheme().palette;
+  return new Map(
+    [11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, -1].map((score) => [
+      score,
+      getScoreColor(palette, score),
+    ])
+  );
+};
+
+const getScoreColor = (palette: any, score: number) => {
   let backgroundColor = "";
   let textColor = "";
 
@@ -58,6 +72,10 @@ export const useScoreColor = (score: number) => {
     case 11:
       backgroundColor = palette.yellow_score.main;
       textColor = palette.yellow_score.contrastText;
+      break;
+    case -1:
+      backgroundColor = palette.white_score.main;
+      textColor = palette.black_score.contrastText;
       break;
     default:
       backgroundColor = palette.black_score.main;

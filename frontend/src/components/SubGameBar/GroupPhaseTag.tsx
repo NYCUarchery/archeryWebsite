@@ -21,7 +21,6 @@ export default function GroupPhaseTag({
   if (groups === undefined || phases === undefined) {
     return <></>;
   }
-  console.log(phase, currentPhase);
 
   return (
     <Box

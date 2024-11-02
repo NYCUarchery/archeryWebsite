@@ -34,13 +34,14 @@ func IsGetLaneWPlayers(context *gin.Context, id uint) (bool, database.Lane) {
 
 // Get One Lane By ID godoc
 //
-//	@Summary		Show one Lane
-//	@Description	Get one Lane by id
+//	@Summary		Show one Lane.
+//	@Description	Get one Lane by id.
 //	@Tags			Lane
 //	@Produce		json
-//	@Param			id	path	int	true	"Lane ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			id	path		int										true	"Lane ID"
+//	@Success		200	{object}	database.Lane{players=response.Nill}	"success, return lane"
+//	@Failure		400	{object}	response.ErrorIdResponse				"invalid lane id"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse		"internal db error / Get Lane By Id"
 //	@Router			/lane/{id} [get]
 func GetLaneByID(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -53,13 +54,14 @@ func GetLaneByID(context *gin.Context) {
 
 // Get One Lane with players, rounds, roundends, roundscores By ID godoc
 //
-//	@Summary		Show one Lane with players, rounds, roundends, roundscores
-//	@Description	Get one Lane with players, rounds, roundends, roundscores by id
+//	@Summary		Show one Lane with players, rounds, roundends, roundscores.
+//	@Description	Get one Lane with players, rounds, roundends, roundscores by id.
 //	@Tags			Lane
 //	@Produce		json
-//	@Param			id	path	int	true	"Lane ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
+//	@Param			id	path		int																	true	"Lane ID"
+//	@Success		200	{object}	database.Lane{players=database.Player{player_sets=response.Nill}}	"success, return lane"
+//	@Failure		400	{object}	response.ErrorIdResponse											"invalid lane id"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse									"internal db error / Get Lane With Scores By Id"
 //	@Router			/lane/scores/{id} [get]
 func GetLaneWScoresByID(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -72,19 +74,20 @@ func GetLaneWScoresByID(context *gin.Context) {
 
 // Get All Lane By Competition ID godoc
 //
-//	@Summary		Show all Lane of a competition
-//	@Description	Get all Lane by competition id
+//	@Summary		Show all Lanes and related data of a competition.
+//	@Description	Get all Lanes and related data by competition id.
 //	@Tags			Lane
 //	@Produce		json
-//	@Param			id	path	int	true	"competition ID"
-//	@Success		200	string	string
-//	@Failure		400	string	string
-//	@Router			/lane/all/{id} [get]
+//	@Param			competitionid	path		int										true	"competition ID"
+//	@Success		200				{object}	[]database.Lane{players=response.Nill}	"succsess, return lanes"
+//	@Failure		400				{object}	response.ErrorIdResponse				"invalid competition id"
+//	@Failure		500				{object}	response.ErrorInternalErrorResponse		"internal db error / Get All Lane By Competition ID"
+//	@Router			/lane/all/{competitionid} [get]
 func GetAllLaneByCompetitionId(context *gin.Context) {
 	competitionId := Convert2uint(context, "competitionid")
 	var data []database.Lane
 	/*get data*/
-	data, err := database.GetAllLaneByCompetitionId(competitionId)
+	data, err := database.GetAllLanesByCompetitionId(competitionId)
 	if response.ErrorInternalErrorTest(context, competitionId, "Get All Lane By Competition ID", err) {
 		return
 	} else if len(data) == 0 {

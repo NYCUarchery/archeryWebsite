@@ -1,7 +1,7 @@
 import { Middleware, configureStore } from "@reduxjs/toolkit";
 import ReduxLogger from "redux-logger";
 import qualificationScheduleSlice from "app/competition/[id]/admin/schedule/qualification/qualificationScheduleSlice";
-import qualificationScoringSlice from "app/competition/[id]/scoring/@qualification/LaneBoard/qualificationScoringSlice";
+import qualificationScoringSlice from "app/competition/[id]/scoring/@qualification/qualificationScoringSlice";
 import scheduleSlice from "app/competition/[id]/admin/schedule/scheduleSlice";
 
 const store = configureStore({

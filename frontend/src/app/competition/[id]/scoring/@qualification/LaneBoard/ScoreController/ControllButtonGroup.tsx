@@ -2,16 +2,22 @@ import { Button } from "@mui/material";
 import ButtonGroup from "@mui/material/ButtonGroup";
 import { Backspace } from "@mui/icons-material";
 
-import { RoundEnd } from "@/types/oldRef/Player";
+import { DatabaseRoundEnd } from "@/types/Api";
 
 interface Props {
-  selectedEnd: RoundEnd;
+  selectedEnd: DatabaseRoundEnd;
   isConfirmed: boolean;
+  onDeleteScore: () => void;
+  onSendScore: () => void;
+  onConfirm: () => void;
 }
 
 export default function ControllButtonGroup({
   selectedEnd,
   isConfirmed,
+  onDeleteScore,
+  onSendScore,
+  onConfirm,
 }: Props) {
   return (
     <ButtonGroup
@@ -30,8 +36,12 @@ export default function ControllButtonGroup({
           fontSize: "1rem",
           backgroundColor: isConfirmed ? "success.light" : "error.main",
         }}
+        onClick={onConfirm}
       >
         {isConfirmed ? "已確認" : "確認"}
+      </Button>
+      <Button variant="contained" onClick={onSendScore}>
+        送出
       </Button>
       <Button
         startIcon={<Backspace />}
@@ -39,6 +49,7 @@ export default function ControllButtonGroup({
         color="error"
         variant="contained"
         sx={{ height: "3rem", fontSize: "1rem" }}
+        onClick={onDeleteScore}
       ></Button>
     </ButtonGroup>
   );
