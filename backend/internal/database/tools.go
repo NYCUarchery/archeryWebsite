@@ -20,7 +20,8 @@ type Conf struct {
 	Mode     string `yaml:"mode"`
 }
 
-func GetConf(filePath string) (c Conf) {
+func GetConf[T any](filePath string) *T {
+	var c T
 	yamlFile, err := os.ReadFile(filePath)
 	if err != nil {
 		log.Printf("yamlFile.Get err   #%v ", err)
@@ -30,7 +31,7 @@ func GetConf(filePath string) (c Conf) {
 	if err != nil {
 		log.Fatalf("Unmarshal: %v", err)
 	}
-	return
+	return &c
 }
 
 /*讓我可以存取[]string型別的東西*/

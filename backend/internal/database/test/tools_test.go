@@ -25,7 +25,7 @@ host: mysql
 port: 3306
 database: db
 mode: test`
-			configAnswer := Conf{
+			configAnswer := &Conf{
 				Username: "user",
 				Password: "password",
 				Host:     "mysql",
@@ -37,7 +37,7 @@ mode: test`
 			if err != nil {
 				panic(err)
 			}
-			result := GetConf(tempFile)
+			result := GetConf[Conf](tempFile)
 			So(result, ShouldResemble, configAnswer)
 		})
 		Convey("read file error should be log", func() {
@@ -46,13 +46,13 @@ mode: test`
 			filepath := tempDir + "/notExitFile.yaml"
 			log.SetOutput(&logOutput)
 
-			result := GetConf(filepath)
+			result := GetConf[Conf](filepath)
 			logMessage := logOutput.String()
 			t := time.Now()
 			formatTime := t.Format("2006/01/02 15:04:05") // special format
 			expectedLogMessage := formatTime + " yamlFile.Get err   #open " + filepath + ": no such file or directory \n"
 
-			So(result, ShouldResemble, Conf{})
+			So(result, ShouldResemble, &Conf{})
 			So(logMessage, ShouldEqual, expectedLogMessage)
 		})
 	})

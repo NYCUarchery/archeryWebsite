@@ -64,7 +64,7 @@ func SetupDatabaseByMode(mode string) {
 }
 
 func connectDB() {
-	DSN := GetConf("config/db.yaml")
+	DSN := GetConf[Conf]("config/db.yaml")
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify",
 		DSN.Username, DSN.Password, DSN.Host, DSN.Port, DSN.Database)

@@ -62,7 +62,7 @@ func connectTestDB() {
 	}
 	dir := filepath.Dir(filename)
 	testDataPath := filepath.Join(dir, "../../config/db.yaml")
-	DSN := GetConf(testDataPath)
+	DSN := GetConf[Conf](testDataPath)
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify",
 		DSN.Username, DSN.Password, DSN.Host, DSN.Port, DSN.Database)
