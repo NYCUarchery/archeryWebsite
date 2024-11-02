@@ -44,14 +44,14 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen, user, isUserFetched }) => {
   const userLink = user?.real_name ? (
     <Link
       onClick={() => router.push("/logout")}
-      sx={{ cursor: "pointer", color: "#aaaaaa" }}
+      sx={{ cursor: "pointer", color: "#aaaaaa", textDecoration: "underline" }}
     >
       登出
     </Link>
   ) : (
     <Link
       onClick={() => router.push("/login")}
-      sx={{ cursor: "pointer", color: "#aaaaaa" }}
+      sx={{ cursor: "pointer", color: "#aaaaaa", textDecoration: "underline" }}
     >
       登入
     </Link>
