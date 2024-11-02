@@ -126,6 +126,10 @@ func DeleteInstitution(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"result": "institution not found"})
 		return
 	}
+	if uint(id) == database.NoInstitutionID {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "cannot delete 'No Institution'"})
+		return
+	}
 
 	err = database.DeleteInstitutionByID(uint(id))
 	if err != nil {
