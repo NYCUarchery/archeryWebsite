@@ -24,7 +24,8 @@ func DatabaseInitial() {
 	connectDB()
 	DropTables()
 	setTables()
-	setInitialDataWithSeeder()
+	// setInitialDataWithSeeder()
+	CreateNoInstitution()
 }
 
 func setTables() {
