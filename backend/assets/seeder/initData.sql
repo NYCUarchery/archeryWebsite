@@ -1,2 +1,2 @@
 -- Create unassigned institution
-INSERT INTO `institutions` VALUES (1,'Unassigned Institution');
+INSERT INTO `institutions` VALUES (1,'No Institution');
