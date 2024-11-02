@@ -13,11 +13,11 @@ import Paper from "@mui/material/Paper";
 
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
-import { useGetUserId } from "@/utils/QueryHooks/useGetUserID";
+import { useGetCurrentUserDetail } from "@/utils/QueryHooks/useGetCurrentUserDetail";
 
 const Homepage = () => {
   const rows: any = [];
-  const { isSuccess: isUserSuccess } = useGetUserId();
+  const { data: user } = useGetCurrentUserDetail();
 
   return (
     <Card sx={{ p: 2, mt: 2, width: "600px" }}>
@@ -31,7 +31,7 @@ const Homepage = () => {
                 </Typography>
               </Box>
             </Grid>
-            {isUserSuccess ? <Grid>看到這個就是成功登入了呦～</Grid> : <></>}
+            {user ? <Grid>看到這個就是成功登入了呦～</Grid> : <></>}
           </Grid>
         </Box>
         <Box sx={{ mt: 2 }}>

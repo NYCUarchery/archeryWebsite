@@ -19,20 +19,17 @@ import Grow from "@mui/material/Grow";
 
 import Avatar from "@mui/material/Avatar";
 
-import { useGetCurrentUserDetail } from "@/utils/QueryHooks/useGetCurrentUserDetail";
 import { useRouter } from "next/navigation";
+import { DatabaseUser } from "@/types/Api";
 
 interface HeaderProps {
   setSideBarOpen: Dispatch<SetStateAction<boolean>>;
+  user?: DatabaseUser;
+  isUserFetched: boolean;
 }
 
-const Header: FC<HeaderProps> = ({ setSideBarOpen }) => {
+const Header: FC<HeaderProps> = ({ setSideBarOpen, user, isUserFetched }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const {
-    data: user,
-    isError: isUserError,
-    isFetched: isUserFetched,
-  } = useGetCurrentUserDetail();
   const router = useRouter();
 
   const handleMenu = (event: MouseEvent<HTMLElement>) => {
@@ -45,11 +42,17 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen }) => {
   };
 
   const userLink = user?.real_name ? (
-    <Link href="/logout" color="#aaaaaa">
+    <Link
+      onClick={() => router.push("/logout")}
+      sx={{ cursor: "pointer", color: "#aaaaaa" }}
+    >
       登出
     </Link>
   ) : (
-    <Link href="/login" color="#aaaaaa">
+    <Link
+      onClick={() => router.push("/login")}
+      sx={{ cursor: "pointer", color: "#aaaaaa" }}
+    >
       登入
     </Link>
   );
@@ -143,13 +146,13 @@ const Header: FC<HeaderProps> = ({ setSideBarOpen }) => {
                         <MenuItem
                           onClick={() => {
                             handleClose();
-                            if (isUserError) {
+                            if (!user) {
                               router.push("/login");
                               return;
                             } else router.push("/logout");
                           }}
                         >
-                          {isUserError ? "登入" : "登出"}
+                          {!user ? "登入" : "登出"}
                         </MenuItem>
                       </MenuList>
                     </Box>

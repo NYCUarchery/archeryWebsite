@@ -28,7 +28,12 @@ const LoginPage = () => {
     apiClient.session.sessionCreate,
     {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["currentUser"] });
+        queryClient.invalidateQueries({
+          queryKey: ["currentUserId"],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["currentUserDetail"],
+        });
         router.push("/");
       },
       onError: (error) => {
