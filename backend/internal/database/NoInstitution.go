@@ -17,4 +17,5 @@ func CreateNoInstitution() {
 
 // Stores the dynamic ID of "No Institution".
 // For users to access when they should be assigned to this.
-var NoInstitutionID uint
+// Note: The ID can be dynamic when CreateNoInstitution is called.
+var NoInstitutionID uint = 1
