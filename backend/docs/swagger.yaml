@@ -433,6 +433,13 @@ definitions:
       user_id:
         type: integer
     type: object
+  endpoint.PatchPlayerLaneOrder.UpdateLaneIdOrderData:
+    properties:
+      lane_id:
+        type: integer
+      order:
+        type: integer
+    type: object
   endpoint.PostCompetition.CompetitionPostData:
     properties:
       end_time:
@@ -2546,7 +2553,7 @@ paths:
       consumes:
       - application/json
       description: |-
-        Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids
+        Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids.
         MatchScore ids and scores must be the same length
       parameters:
       - description: MatchEnd ID
@@ -2574,7 +2581,7 @@ paths:
           description: internal db failed for updating scores
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Update one MatchEnd scores
+      summary: Update one MatchEnd scores.
       tags:
       - MatchEnd
   /matchresult/matchend/totalscore/{id}:
@@ -3013,7 +3020,9 @@ paths:
         "200":
           description: success, return participants of the competition and user
           schema:
-            $ref: '#/definitions/database.Participant'
+            items:
+              $ref: '#/definitions/database.Participant'
+            type: array
         "400":
           description: invalid user id / invalid competition id
           schema:
@@ -3276,7 +3285,7 @@ paths:
       parameters:
       - description: Player ID
         in: path
-        name: playerid
+        name: id
         required: true
         type: integer
       - description: UpdateGroupIdData
@@ -3344,6 +3353,49 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Update one Player isConfirmed by id.
+      tags:
+      - Player
+  /player/lane-order/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: Update one Player order and landID By by id.
+      parameters:
+      - description: Player ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Update LaneID & Order Data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.PatchPlayerLaneOrder.UpdateLaneIdOrderData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success, return player info
+          schema:
+            allOf:
+            - $ref: '#/definitions/database.Player'
+            - properties:
+                player_sets:
+                  $ref: '#/definitions/response.Nill'
+                rounds:
+                  $ref: '#/definitions/response.Nill'
+              type: object
+        "400":
+          description: invalid player id / invalid lane id / invalid order parameter
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error / updating player order / updating player
+            laneid / get player info
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update one Player order and landID By by id.
       tags:
       - Player
   /player/lane/{id}:
@@ -4370,5 +4422,4 @@ tags:
 - name: MatchEnd
 - name: MatchScore
 - name: Medal
-- name: OldLaneInfo
 - name: docs

@@ -11,11 +11,11 @@ import { apiClient } from "@/utils/ApiClient";
 
 interface Props {
   competitions: DatabaseCompetition[];
-  uid: number;
+  uid?: number;
 }
 interface CompetitionItemProps {
   competition: DatabaseCompetition;
-  uid: number;
+  uid?: number;
 }
 
 export const CompetitionList = ({ competitions, uid }: Props) => {
@@ -82,8 +82,9 @@ export const CompetitionItem = ({ competition, uid }: CompetitionItemProps) => {
         color="secondary"
         variant="contained"
         sx={{ ml: 2, mb: 2 }}
+        disabled={uid === undefined}
       >
-        申請加入
+        {uid === undefined ? "登入以加入比賽" : "申請加入"}
       </Button>
       <Dialog open={open} onClose={() => setOpen(false)}>
         <DialogActions>

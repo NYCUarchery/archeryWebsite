@@ -4,16 +4,13 @@ import { useState } from "react";
 import Grid from "@mui/material/Grid2";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
-// import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import Typography from "@mui/material/Typography";
 
-import ToCreateButton from "./ToCreateButton";
 import Pagination from "@mui/material/Pagination";
 import { CompetitionList } from "@/components/CompetitionList";
 import { useQuery } from "react-query";
 import { apiClient } from "@/utils/ApiClient";
 import { DatabaseCompetition } from "@/types/Api";
-import { useGetUserId } from "@/utils/QueryHooks/useGetUserID";
 
 export default function RecentCompetitionPage() {
   const [page, setPage] = useState(1);
@@ -28,7 +25,7 @@ export default function RecentCompetitionPage() {
       select: (data) => data.data as unknown as DatabaseCompetition[],
     }
   );
-  const { data: uid, isLoading: isLoadingUid } = useGetUserId();
+
   const handlePageChange = (
     _event: React.ChangeEvent<unknown>,
     value: number
@@ -48,7 +45,6 @@ export default function RecentCompetitionPage() {
             </Typography>
           </Grid>
         </Grid>
-        <ToCreateButton />
         <Pagination
           count={10}
           color="primary"
@@ -57,10 +53,10 @@ export default function RecentCompetitionPage() {
           sx={{ display: "flex", justifyContent: "center" }}
         />
         {competitions?.length === 0 && <h2>沒有更多比賽了喲 ;(</h2>}
-        {isLoadingCompetitions || isLoadingUid || !uid || !competitions ? (
+        {isLoadingCompetitions || !competitions ? (
           <p>loading...</p>
         ) : (
-          <CompetitionList competitions={competitions} uid={uid} />
+          <CompetitionList competitions={competitions} />
         )}
 
         <Pagination

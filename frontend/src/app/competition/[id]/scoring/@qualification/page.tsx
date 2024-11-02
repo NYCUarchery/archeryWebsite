@@ -122,7 +122,8 @@ export default function Page({ params }: { params: { id: string } }) {
       />
       <Snackbar
         open={successSnackbar}
-        autoHideDuration={6000}
+        autoHideDuration={5000}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
         onClose={handleClose}
       >
         <Alert onClose={handleClose} severity="success" sx={{ width: "100%" }}>
@@ -131,7 +132,8 @@ export default function Page({ params }: { params: { id: string } }) {
       </Snackbar>
       <Snackbar
         open={errorSnackbar}
-        autoHideDuration={6000}
+        autoHideDuration={5000}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
         onClose={handleClose}
       >
         <Alert onClose={handleClose} severity="error" sx={{ width: "100%" }}>

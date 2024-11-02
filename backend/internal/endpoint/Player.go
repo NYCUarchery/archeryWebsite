@@ -293,6 +293,14 @@ func IsUpdatePlayerLaneId(context *gin.Context, playerId uint, laneId uint) bool
 	return !response.ErrorInternalErrorTest(context, playerId, "Update Player laneId", err)
 }
 
+func IsUpdatePlayerOrder(context *gin.Context, playerId uint, order int) bool {
+	if response.ErrorIdTest(context, playerId, database.GetPlayerIsExist(playerId), "Player when updating order") {
+		return false
+	}
+	err := database.UpdatePlayerOrder(playerId, order)
+	return !response.ErrorInternalErrorTest(context, playerId, "Update Player order", err)
+}
+
 // Update one Player GroupId By ID godoc
 //
 //	@Summary		Update one Player groupId by id.
@@ -300,11 +308,11 @@ func IsUpdatePlayerLaneId(context *gin.Context, playerId uint, laneId uint) bool
 //	@Tags			Player
 //	@Accept			json
 //	@Produce		json
-//	@Param			playerid	path		int																true	"Player ID"
-//	@Param			groupid		body		endpoint.PutPlayerGroupId.UpdateGroupIdData						true	"UpdateGroupIdData"
-//	@Success		200			{object}	database.Player{rounds=response.Nill,player_sets=response.Nill}	"success, return player info"
-//	@Failure		400			{object}	response.ErrorIdResponse										"invalid player id / invalid group id parameter, may not exist"
-//	@Failure		500			{object}	response.ErrorInternalErrorResponse								"internal db error / updating player groupId / get player info / get unassigned lane id"
+//	@Param			id		path		int																true	"Player ID"
+//	@Param			groupid	body		endpoint.PutPlayerGroupId.UpdateGroupIdData						true	"UpdateGroupIdData"
+//	@Success		200		{object}	database.Player{rounds=response.Nill,player_sets=response.Nill}	"success, return player info"
+//	@Failure		400		{object}	response.ErrorIdResponse										"invalid player id / invalid group id parameter, may not exist"
+//	@Failure		500		{object}	response.ErrorInternalErrorResponse								"internal db error / updating player groupId / get player info / get unassigned lane id"
 //	@Router			/player/group/{id} [patch]
 func PutPlayerGroupId(context *gin.Context) {
 	type UpdateGroupIdData struct {
@@ -402,15 +410,47 @@ func PutPlayerOrder(context *gin.Context) {
 	if response.ErrorReceiveDataTest(context, playerId, "Update Player order", err) {
 		return
 	}
-	if response.ErrorIdTest(context, playerId, database.GetPlayerIsExist(playerId), "Player when updating order") {
+	if !IsUpdatePlayerOrder(context, playerId, order) {
 		return
 	}
 
-	err = database.UpdatePlayerOrder(playerId, order)
-	if response.ErrorInternalErrorTest(context, playerId, "Update Player order", err) {
+	isExist, data := IsGetOnlyPlayer(context, playerId)
+	if !isExist {
 		return
 	}
+	context.IndentedJSON(200, data)
+}
 
+// Update one Player LandID & Order By ID godoc
+//
+//	@Summary		Update one Player order and landID By by id.
+//	@Description	Update one Player order and landID By by id.
+//	@Tags			Player
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		int																true	"Player ID"
+//	@Param			data	body		endpoint.PatchPlayerLaneOrder.UpdateLaneIdOrderData				true	"Update LaneID & Order Data"
+//	@Success		200		{object}	database.Player{rounds=response.Nill,player_sets=response.Nill}	"success, return player info"
+//	@Failure		400		{object}	response.ErrorIdResponse										"invalid player id / invalid lane id / invalid order parameter"
+//	@Failure		500		{object}	response.ErrorInternalErrorResponse								"internal db error / updating player order / updating player laneid / get player info"
+//	@Router			/player/lane-order/{id} [patch]
+func PatchPlayerLaneOrder(context *gin.Context) {
+	type UpdateLaneIdOrderData struct {
+		LaneId uint `json:"lane_id"`
+		Order  int  `json:"order"`
+	}
+	playerId := Convert2uint(context, "id")
+	var updateLaneIdOrderData UpdateLaneIdOrderData
+	err := context.BindJSON(&updateLaneIdOrderData)
+	if response.ErrorReceiveDataTest(context, playerId, "Update Player laneId and order", err) {
+		return
+	}
+	if !IsUpdatePlayerLaneId(context, playerId, updateLaneIdOrderData.LaneId) {
+		return
+	}
+	if !IsUpdatePlayerOrder(context, playerId, updateLaneIdOrderData.Order) {
+		return
+	}
 	isExist, data := IsGetOnlyPlayer(context, playerId)
 	if !isExist {
 		return

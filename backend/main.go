@@ -36,7 +36,6 @@ import (
 //	@tag.name	MatchEnd
 //	@tag.name	MatchScore
 //	@tag.name	Medal
-//	@tag.name	OldLaneInfo
 //	@tag.name	docs
 
 // Set the test data into container(server) with FTP clis.

@@ -2698,14 +2698,14 @@ const docTemplate = `{
         },
         "/matchresult/matchend/scores/{id}": {
             "patch": {
-                "description": "Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids\nMatchScore ids and scores must be the same length",
+                "description": "Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids.\nMatchScore ids and scores must be the same length",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
                     "MatchEnd"
                 ],
-                "summary": "Update one MatchEnd scores",
+                "summary": "Update one MatchEnd scores.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -3323,7 +3323,10 @@ const docTemplate = `{
                     "200": {
                         "description": "success, return participants of the competition and user",
                         "schema": {
-                            "$ref": "#/definitions/database.Participant"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/database.Participant"
+                            }
                         }
                     },
                     "400": {
@@ -3745,7 +3748,7 @@ const docTemplate = `{
                     {
                         "type": "integer",
                         "description": "Player ID",
-                        "name": "playerid",
+                        "name": "id",
                         "in": "path",
                         "required": true
                     },
@@ -3842,6 +3845,74 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "internal db error for updating player isConfirmed",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/player/lane-order/{id}": {
+            "patch": {
+                "description": "Update one Player order and landID By by id.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Update one Player order and landID By by id.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Player ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update LaneID \u0026 Order Data",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.PatchPlayerLaneOrder.UpdateLaneIdOrderData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success, return player info",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Player"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "player_sets": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        },
+                                        "rounds": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "invalid player id / invalid lane id / invalid order parameter",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error / updating player order / updating player laneid / get player info",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -6225,6 +6296,17 @@ const docTemplate = `{
                 }
             }
         },
+        "endpoint.PatchPlayerLaneOrder.UpdateLaneIdOrderData": {
+            "type": "object",
+            "properties": {
+                "lane_id": {
+                    "type": "integer"
+                },
+                "order": {
+                    "type": "integer"
+                }
+            }
+        },
         "endpoint.PostCompetition.CompetitionPostData": {
             "type": "object",
             "properties": {
@@ -6713,9 +6795,6 @@ const docTemplate = `{
             "name": "Medal"
         },
         {
-            "name": "OldLaneInfo"
-        },
-        {
             "name": "docs"
         }
     ]
@@ -6724,7 +6803,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "127.0.0.1:80",
+	Host:             "localhost:80",
 	BasePath:         "/api/",
 	Schemes:          []string{},
 	Title:            "Gin swagger",

@@ -179,7 +179,7 @@ func GetParticipantByCompetitionId(context *gin.Context) {
 //	@Produce		json
 //	@Param			competitionid	path		int									true	"competition ID"
 //	@Param			userid			path		int									true	"user ID"
-//	@Success		200				{object}	database.Participant				"success, return participants of the competition and user"
+//	@Success		200				{object}	[]database.Participant				"success, return participants of the competition and user"
 //	@Failure		400				{object}	response.ErrorIdResponse			"invalid user id / invalid competition id"
 //	@Failure		500				{object}	response.ErrorInternalErrorResponse	"internal db error / Get participants by competition id and user id"
 //	@Router			/participant/competition/user/{competitionid}/{userid} [get]

@@ -13,9 +13,8 @@ export default function LogoutPage() {
     {
       onSuccess: () => {
         text = "登出成功";
-        queryClient.resetQueries({
-          queryKey: ["currentUser"],
-        });
+        queryClient.setQueryData(["currentUserDetail"], undefined);
+        queryClient.setQueryData(["currentUserId"], undefined);
         router.push("/");
       },
     }
