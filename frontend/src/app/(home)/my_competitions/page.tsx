@@ -10,14 +10,22 @@ import Pagination from "@mui/material/Pagination";
 import { CompetitionList } from "@/components/CompetitionList";
 import { useGetUserId } from "@/utils/QueryHooks/useGetUserID";
 import useGetUserCompetitions from "@/utils/QueryHooks/useGetUserCompetitions";
+import { useRouter } from "next/navigation";
+import ToCreateButton from "./ToCreateButton";
 
 export default function MyCompetitionPage() {
   const [page, setPage] = useState(1);
   const [startIndex, setStartIndex] = useState((page - 1) * 5);
   const [endIndex, setEndIndex] = useState(page * 5 - 1);
-  const { data: uid, isLoading: isUserIdLoading } = useGetUserId();
+  const { data: uid } = useGetUserId();
   const { data: competitions, isLoading: isLoadingCompetitions } =
     useGetUserCompetitions(uid as number, startIndex, endIndex);
+
+  const router = useRouter();
+
+  if (!uid) {
+    router.push("/recent_competitions");
+  }
 
   const handlePageChange = (
     _event: React.ChangeEvent<unknown>,
@@ -38,6 +46,7 @@ export default function MyCompetitionPage() {
             </Typography>
           </Grid>
         </Grid>
+        {uid ? <ToCreateButton /> : null}
         <Pagination
           count={10}
           color="primary"
@@ -46,7 +55,7 @@ export default function MyCompetitionPage() {
           sx={{ display: "flex", justifyContent: "center" }}
         />
         {competitions?.length === 0 && <h2>沒有更多比賽了喲 ;(</h2>}
-        {isLoadingCompetitions || isUserIdLoading || !uid || !competitions ? (
+        {isLoadingCompetitions || !competitions ? (
           <p>loading...</p>
         ) : (
           <CompetitionList competitions={competitions} uid={uid} />
