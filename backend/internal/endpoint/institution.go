@@ -131,7 +131,7 @@ func DeleteInstitution(c *gin.Context) {
 		return
 	}
 
-	database.MoveUsersToNoInstitutionByInstitutionID(uint(id), uint(database.NoInstitutionID))
+	database.MoveUsersToNoInstitutionByInstitutionID(uint(id))
 
 	err = database.DeleteInstitutionByID(uint(id))
 	if err != nil {

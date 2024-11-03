@@ -22,7 +22,6 @@ func SetupDatabaseByMode(mode string) {
 
 func DatabaseInitial() {
 	connectDB()
-	DropTables()
 	setTables()
 	// setInitialDataWithSeeder()
 	CreateNoInstitution()
