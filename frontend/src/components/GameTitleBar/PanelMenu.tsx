@@ -54,14 +54,14 @@ export default function PanelMenu({ panelName, participant }: Props) {
         (participant === undefined || participant?.status === "pending") &&
         set.id !== "scoreboard"
       ) {
-        return <></>;
+        return null;
       } else if (
         participant?.role === "player" &&
         (set.id === "admin" || set.id === "judge")
       ) {
-        return <></>;
+        return null;
       } else if (participant?.role === "admin" && set.id === "scoring") {
-        return <></>;
+        return null;
       }
       return (
         <MenuItem
