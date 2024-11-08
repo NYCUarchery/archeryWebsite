@@ -40,7 +40,7 @@ type NewParticipantInfo struct {
 //	@Produce		json
 //	@Param			NewParticipantInfo	body		endpoint.NewParticipantInfo				true	"role"
 //	@Success		200					{object}	database.Participant					"success, return participant"
-//	@Failure		400					{object}	response.ErrorReceiveDataFormatResponse	"invalid info / role is empty / participant exists / invalid user ID / invalid competition ID"
+//	@Failure		400					{object}	response.ErrorReceiveDataFormatResponse	"invalid info / role is not defined / participant exists / invalid user ID / invalid competition ID"
 //	@Failure		500					{object}	response.ErrorInternalErrorResponse		"db error"
 //	@Router			/participant [post]
 func PostParticipant(c *gin.Context) {
@@ -60,9 +60,8 @@ func PostParticipant(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "participant exists"})
 		return
 	}
-
-	if newParticipantInfo.Role == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"result": "role is empty"})
+	if pkg.EnsureRoleInGameRoleSet(pkg.StringToRole(newParticipantInfo.Role)) {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "role is not defined"})
 		return
 	}
 

@@ -34,6 +34,9 @@ type ModifyAccountPasswordInfo struct {
 //	@Description	Username cannot be empty or repeated.
 //	@Description	Password cannot be empty.
 //	@Description	Email cannot be empty or repeated.
+//	@Description	Institution id must exist.
+//	@Description	Realname and overview are optional.
+//	@Description	Role is set to User.
 //	@Tags			User
 //	@Accept			json
 //	@Produce		json
@@ -55,6 +58,7 @@ func Register(c *gin.Context) {
 	user.Email = registerInfo.Email
 	user.InstitutionID = registerInfo.InstitutionID
 	user.Overview = registerInfo.Overview
+	user.Role = pkg.RoleToString(pkg.RUser)
 	// no need to check id(it is auto created), realname, and overview
 	// name
 	if user.UserName == "" {

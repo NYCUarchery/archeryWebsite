@@ -111,7 +111,7 @@ func setDictator() {
 		os.Exit(1)
 	}
 	new_user = &User{
-		Role:     pkg.RDictator,
+		Role:     pkg.RoleToString(pkg.RDictator),
 		UserName: dictator_config.UserName,
 		RealName: "Dictator",
 		Password: pkg.EncryptPassword(dictator_config.Password),
