@@ -314,6 +314,8 @@ definitions:
         type: string
       real_name:
         type: string
+      role:
+        type: string
       user_name:
         type: string
     type: object
@@ -715,6 +717,12 @@ definitions:
         example: error description
         type: string
     type: object
+  response.ErrorUnauthorizedResponse:
+    properties:
+      error:
+        example: unauthorized
+        type: string
+    type: object
   response.Nill:
     type: object
   response.Response:
@@ -723,7 +731,7 @@ definitions:
         example: result description
         type: string
     type: object
-host: localhost:80
+host: 127.0.0.1:80
 info:
   contact:
     name: NYCUArchery
@@ -2553,7 +2561,7 @@ paths:
       consumes:
       - application/json
       description: |-
-        Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids.
+        Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids
         MatchScore ids and scores must be the same length
       parameters:
       - description: MatchEnd ID
@@ -2581,7 +2589,7 @@ paths:
           description: internal db failed for updating scores
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Update one MatchEnd scores.
+      summary: Update one MatchEnd scores
       tags:
       - MatchEnd
   /matchresult/matchend/totalscore/{id}:
@@ -2870,7 +2878,7 @@ paths:
           schema:
             $ref: '#/definitions/database.Participant'
         "400":
-          description: invalid info / role is empty / participant exists / invalid
+          description: invalid info / role is not defined / participant exists / invalid
             user ID / invalid competition ID
           schema:
             $ref: '#/definitions/response.ErrorReceiveDataFormatResponse'
@@ -3033,6 +3041,42 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show Participants By competition ID and user ID
+      tags:
+      - Participant
+  /participant/me/{competitionid}:
+    get:
+      description: |-
+        Get Participants By user id and competition id.
+        And update session gamerole.
+        Warnings: Something need to be modified in the future.
+        Warnings: Only take the first one temporarily, for player and dummy player assumption in one competition of a user.
+      parameters:
+      - description: Competition ID
+        in: path
+        name: competitionid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success, return the first participant, and update session gamerole
+          schema:
+            $ref: '#/definitions/database.Participant'
+        "400":
+          description: invalid competition id / invalid user id
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "401":
+          description: unauthorized
+          schema:
+            $ref: '#/definitions/response.ErrorUnauthorizedResponse'
+        "500":
+          description: get participants by competition id and user id
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Get Participants By user id and competition id, and update session
+        gamerole.
       tags:
       - Participant
   /participant/user/{userid}:
@@ -4247,6 +4291,9 @@ paths:
         Username cannot be empty or repeated.
         Password cannot be empty.
         Email cannot be empty or repeated.
+        Institution id must exist.
+        Realname and overview are optional.
+        Role is set to User.
       parameters:
       - description: nessary information for register
         in: body
