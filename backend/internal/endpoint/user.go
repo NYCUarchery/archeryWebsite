@@ -127,7 +127,7 @@ func ModifyInfo(c *gin.Context) {
 	if response.ErrorIdTest(c, userId, database.GetUserIsExist(userId), "user id when modify") {
 		return
 	}
-	if pkg.QuerySession(c, "id") != userId {
+	if pkg.QuerySession(c, "userid") != userId {
 		c.JSON(http.StatusForbidden, gin.H{"result": "cannot change other's info"})
 		return
 	}
@@ -197,7 +197,7 @@ func ModifyPassword(c *gin.Context) {
 	if response.ErrorIdTest(c, userId, database.GetUserIsExist(userId), "user id when modify password") {
 		return
 	}
-	if pkg.QuerySession(c, "id") != userId {
+	if pkg.QuerySession(c, "userid") != userId {
 		c.JSON(http.StatusForbidden, gin.H{"result": "cannot change other's password"})
 		return
 	}
@@ -248,7 +248,8 @@ func GetUserID(c *gin.Context) {
 		ID uint `json:"id"`
 	}
 	_ = ID{}
-	id := pkg.QuerySession(c, "id")
+	id := pkg.QuerySession(c, "userid")
+	pkg.PrintSession(c)
 	c.JSON(http.StatusOK, gin.H{"id": id})
 }
 
