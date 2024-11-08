@@ -10,9 +10,20 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
+
+func EnsureTestModeMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if gin.Mode() != gin.TestMode {
+			c.JSON(400, gin.H{"error": "Not in test mode"})
+			c.Abort()
+		}
+		c.Next()
+	}
+}
 
 func TestDatabaseInitial() {
 	connectTestDB()

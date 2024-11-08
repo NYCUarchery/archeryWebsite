@@ -213,7 +213,7 @@ func profileRouter(api *gin.RouterGroup) {
 }
 
 func testRelatedRouter(api *gin.RouterGroup) {
-	api.PUT("/restore", func(c *gin.Context) {
+	api.PUT("/restore", database.EnsureTestModeMiddleware(), func(c *gin.Context) {
 		database.TestDBRestore()
 		c.JSON(200, gin.H{"message": "Dummy database is restored"})
 	})
