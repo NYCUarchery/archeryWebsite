@@ -1,6 +1,7 @@
 package response
 
 import (
+	"backend/internal/pkg"
 	"fmt"
 	"net/http"
 
@@ -48,6 +49,15 @@ func ErrorInternalErrorTest(context *gin.Context, id uint, message string, err e
 	if err != nil {
 		errorMessage := fmt.Sprintf("%s need fix ID(%d) : %s", message, id, err.Error())
 		context.IndentedJSON(http.StatusInternalServerError, gin.H{"error": errorMessage})
+		return true
+	}
+	return false
+}
+
+// for unauthorized request
+func ErrorUnauthorized(context *gin.Context) bool {
+	if !pkg.IsAuthenticated(context) {
+		context.IndentedJSON(http.StatusUnauthorized, gin.H{"error": "unauthorized"})
 		return true
 	}
 	return false

@@ -13,6 +13,10 @@ type DeleteFailedResponse struct {
 	Message string `json:"message" example:"Delete ID(1) : sth delete failed"`
 }
 
+type ErrorUnauthorizedResponse struct {
+	Error string `json:"error" example:"unauthorized"`
+}
+
 type ErrorResponse struct {
 	Error string `json:"error" example:"error description"`
 }
