@@ -68,7 +68,7 @@ func SetupDatabaseByMode(mode string) {
 }
 
 func connectDB() {
-	DSN := GetConf[Conf]("config/db.yaml")
+	DSN := pkg.GetConf[Conf]("config/db.yaml")
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify",
 		DSN.Username, DSN.Password, DSN.Host, DSN.Port, DSN.Database)
@@ -97,7 +97,7 @@ func setDictator() {
 	config_path := "config/dictator.yaml"
 	old_user := User{}
 	new_user := &User{}
-	dictator_config := GetConf[dictatorConf](config_path)
+	dictator_config := pkg.GetConf[dictatorConf](config_path)
 	if dictator_config.UserName == "" {
 		log.Println("Dictator config is not set")
 		os.Exit(1)

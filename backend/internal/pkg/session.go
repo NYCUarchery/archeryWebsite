@@ -1,9 +1,9 @@
 package pkg
 
 import (
-	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
@@ -15,20 +15,30 @@ type SessionConf struct {
 	SessionKey string `yaml:"SessionKey"`
 }
 
-func getConf(c *SessionConf) {
-	yamlFile, err := ioutil.ReadFile("config/session.yaml")
+type SessionContents struct {
+	Username      string
+	UserId        uint
+	SystemRole    Role
+	ParticipantId uint
+	GameRole      Role
+}
+func GetConf[T any](filePath string) *T {
+	var c T
+	yamlFile, err := os.ReadFile(filePath)
 	if err != nil {
 		log.Printf("yamlFile.Get err   #%v ", err)
 	}
-	err = yaml.Unmarshal(yamlFile, c)
+
+	err = yaml.Unmarshal(yamlFile, &c)
 	if err != nil {
 		log.Fatalf("Unmarshal: %v", err)
 	}
+	return &c
 }
 
-func EnableCookieSessionMiddleware() gin.HandlerFunc {
+func EnableCookieSessionMiddleware(session_file string) gin.HandlerFunc {
 	var c SessionConf
-	getConf(&c)
+	c = *GetConf[SessionConf](session_file)
 	store := cookie.NewStore([]byte(c.SessionKey))
 	return sessions.Sessions("mysession", store)
 }
