@@ -131,7 +131,11 @@ func DeleteInstitution(c *gin.Context) {
 		return
 	}
 
-	database.MoveUsersToNoInstitutionByInstitutionID(uint(id))
+	err = database.MoveUsersToNoInstitutionByInstitutionID(uint(id))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"result": "DB error"})
+		return
+	}
 
 	err = database.DeleteInstitutionByID(uint(id))
 	if err != nil {
