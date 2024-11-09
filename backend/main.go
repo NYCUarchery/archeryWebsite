@@ -18,7 +18,7 @@ import (
 
 //	@license.name	no license yet
 
-//	@host	localhost:80
+//	@host	127.0.0.1:80
 //	@BasePath  /api/
 
 //	@tag.name	Session
