@@ -3241,7 +3241,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "invalid info / role is empty / participant exists / invalid user ID / invalid competition ID",
+                        "description": "invalid info / role is not defined / participant exists / invalid user ID / invalid competition ID",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorReceiveDataFormatResponse"
                         }
@@ -3343,6 +3343,53 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "internal db error / Get participants by competition id / Get user by id",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/participant/me/{competitionid}": {
+            "get": {
+                "description": "Get Participants By user id and competition id.\nAnd update session gamerole.\nWarnings: Something need to be modified in the future.\nWarnings: Only take the first one temporarily, for player and dummy player assumption in one competition of a user.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Participant"
+                ],
+                "summary": "Get Participants By user id and competition id, and update session gamerole.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Competition ID",
+                        "name": "competitionid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success, return the first participant, and update session gamerole",
+                        "schema": {
+                            "$ref": "#/definitions/database.Participant"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid competition id / invalid user id",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorUnauthorizedResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "get participants by competition id and user id",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -5405,7 +5452,7 @@ const docTemplate = `{
         },
         "/user": {
             "post": {
-                "description": "Add a user to db.\nUsername cannot be empty or repeated.\nPassword cannot be empty.\nEmail cannot be empty or repeated.",
+                "description": "Add a user to db.\nUsername cannot be empty or repeated.\nPassword cannot be empty.\nEmail cannot be empty or repeated.\nInstitution id must exist.\nRealname and overview are optional.\nRole is set to User.",
                 "consumes": [
                     "application/json"
                 ],
@@ -6117,6 +6164,9 @@ const docTemplate = `{
                 "real_name": {
                     "type": "string"
                 },
+                "role": {
+                    "type": "string"
+                },
                 "user_name": {
                     "type": "string"
                 }
@@ -6741,6 +6791,15 @@ const docTemplate = `{
                 }
             }
         },
+        "response.ErrorUnauthorizedResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "unauthorized"
+                }
+            }
+        },
         "response.Nill": {
             "type": "object"
         },
@@ -6809,7 +6868,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:80",
+	Host:             "127.0.0.1:80",
 	BasePath:         "/api/",
 	Schemes:          []string{},
 	Title:            "Gin swagger",
