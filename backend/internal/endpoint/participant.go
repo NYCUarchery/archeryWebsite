@@ -61,7 +61,7 @@ func PostParticipant(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "participant exists"})
 		return
 	}
-	if pkg.EnsureRoleInGameRoleSet(pkg.StringToRole(newParticipantInfo.Role)) {
+	if !pkg.EnsureRoleInGameRoleSet(pkg.StringToRole(newParticipantInfo.Role)) {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "role is not defined"})
 		return
 	}
