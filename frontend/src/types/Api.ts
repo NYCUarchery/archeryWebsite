@@ -176,6 +176,7 @@ export interface DatabaseUser {
   institution_id?: number;
   overview?: string;
   real_name?: string;
+  role?: string;
   user_name?: string;
 }
 
@@ -447,6 +448,11 @@ export interface ResponseErrorResponse {
   error?: string;
 }
 
+export interface ResponseErrorUnauthorizedResponse {
+  /** @example "unauthorized" */
+  error?: string;
+}
+
 export type ResponseNill = object;
 
 export interface ResponseResponse {
@@ -499,7 +505,7 @@ export class HttpClient<SecurityDataType = unknown> {
   private format?: ResponseType;
 
   constructor({ securityWorker, secure, format, ...axiosConfig }: ApiConfig<SecurityDataType> = {}) {
-    this.instance = axios.create({ ...axiosConfig, baseURL: axiosConfig.baseURL || "//localhost:80/api" });
+    this.instance = axios.create({ ...axiosConfig, baseURL: axiosConfig.baseURL || "//127.0.0.1:80/api" });
     this.secure = secure;
     this.format = format;
     this.securityWorker = securityWorker;
@@ -592,7 +598,7 @@ export class HttpClient<SecurityDataType = unknown> {
  * @title Gin swagger
  * @version 1.0
  * @license no license yet
- * @baseUrl //localhost:80/api
+ * @baseUrl //127.0.0.1:80/api
  * @contact NYCUArchery (https://github.com/NYCUarchery)
  *
  * Gin swagger
@@ -857,21 +863,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     qualificationIsactivePartialUpdate: (id: number, params: RequestParams = {}) =>
       this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/competition/qualification-isactive/${id}`,
-        method: "PATCH",
-        ...params,
-      }),
-
-    /**
-     * @description Refresh competition player total score by competition id.
-     *
-     * @tags Competition
-     * @name RefreshGroupsPlayersPlayertotalscorePartialUpdate
-     * @summary Refresh competition player total score by competition id.
-     * @request PATCH:/competition/refresh/groups/players/playertotalscore/{id}
-     */
-    refreshGroupsPlayersPlayertotalscorePartialUpdate: (id: number, params: RequestParams = {}) =>
-      this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
-        path: `/competition/refresh/groups/players/playertotalscore/${id}`,
         method: "PATCH",
         ...params,
       }),
@@ -1727,11 +1718,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids. MatchScore ids and scores must be the same length
+     * @description Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids MatchScore ids and scores must be the same length
      *
      * @tags MatchEnd
      * @name MatchendScoresPartialUpdate
-     * @summary Update one MatchEnd scores.
+     * @summary Update one MatchEnd scores
      * @request PATCH:/matchresult/matchend/scores/{id}
      */
     matchendScoresPartialUpdate: (
@@ -1890,6 +1881,25 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     competitionDetail: (competitionid: number, params: RequestParams = {}) =>
       this.request<EndpointParticipantWName[], ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/participant/competition/${competitionid}`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Get Participants By user id and competition id. And update session gamerole. Warnings: Something need to be modified in the future. Warnings: Only take the first one temporarily, for player and dummy player assumption in one competition of a user.
+     *
+     * @tags Participant
+     * @name GetParticipant
+     * @summary Get Participants By user id and competition id, and update session gamerole.
+     * @request GET:/participant/me/{competitionid}
+     */
+    getParticipant: (competitionid: number, params: RequestParams = {}) =>
+      this.request<
+        DatabaseParticipant,
+        ResponseErrorIdResponse | ResponseErrorUnauthorizedResponse | ResponseErrorInternalErrorResponse
+      >({
+        path: `/participant/me/${competitionid}`,
         method: "GET",
         format: "json",
         ...params,
@@ -2179,6 +2189,23 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
+     * @description Refresh all player qualification total scores in a compeition by competition id.
+     *
+     * @tags Player
+     * @name RefreshTotalscoresPartialUpdate
+     * @summary Refresh all player qualification total scores in a compeition by competition id.
+     * @request PATCH:/player/refresh/totalscores/{competitionid}
+     */
+    refreshTotalscoresPartialUpdate: (competitionid: number, params: RequestParams = {}) =>
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/player/refresh/totalscores/${competitionid}`,
+        method: "PATCH",
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Just in case api. Create one RoundEnd by round id, IsComfirmed is false. Should not be used, just in case function, PostPlayer is used to create player, rounds, roundends, roundscores.
      *
      * @tags Player
@@ -2220,7 +2247,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Update one Player score by id. Update doesn't change total score in player, round, roundend.
+     * @description Update one Player score by id. Will auto update player total score.
      *
      * @tags Player
      * @name RoundscorePartialUpdate
@@ -2292,7 +2319,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Update one Player total score by id.
+     * @description Just in case api. Update one Player total score by id.
      *
      * @tags Player
      * @name TotalscorePartialUpdate
@@ -2676,7 +2703,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
   };
   user = {
     /**
-     * @description Add a user to db. Username cannot be empty or repeated. Password cannot be empty. Email cannot be empty or repeated.
+     * @description Add a user to db. Username cannot be empty or repeated. Password cannot be empty. Email cannot be empty or repeated. Institution id must exist. Realname and overview are optional. Role is set to User.
      *
      * @tags User
      * @name UserCreate

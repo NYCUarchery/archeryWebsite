@@ -1,4 +1,5 @@
 config/db.yaml
 config/session.yaml
+config/dictator.yaml
 
 main

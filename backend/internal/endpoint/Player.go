@@ -522,6 +522,7 @@ func UpdatePlayerTotalScoreWithOneScore(context *gin.Context, playerId uint, rou
 // Update one Player TotalScore By ID godoc
 //
 //	@Summary		Update one Player total score by id.
+//	@Description	Just in case api.
 //	@Description	Update one Player total score by id.
 //	@Tags			Player
 //	@Accept			json
@@ -563,7 +564,7 @@ func PutPlayerTotalScoreByplayerId(context *gin.Context) {
 //
 //	@Summary		Update one Player score by id.
 //	@Description	Update one Player score by id.
-//	@Description	Update doesn't change total score in player, round, roundend.
+//	@Description	Will auto update player total score.
 //	@Tags			Player
 //	@Accept			json
 //	@Produce		json
@@ -594,35 +595,11 @@ func PutPlayerScore(context *gin.Context) {
 		return
 	}
 	/*update one score*/
-	newScore := data.Score
-	oldScore, err := database.GetPlayerScoreByRoundScoreId(roundScoreId)
-	if response.ErrorInternalErrorTest(context, roundScoreId, "Get Player score when update totalscore", err) {
-		return
-	}
-
-	err, isChanged := database.UpdatePlayerScore(roundScoreId, newScore)
+	err, _ = database.UpdatePlayerScore(roundScoreId, data.Score)
 	if response.ErrorInternalErrorTest(context, roundScoreId, "Update Player score", err) {
 		return
-	} else if !response.AcceptNotChange(context, roundScoreId, isChanged) {
-		return
 	}
-
-	/*auto update player total score and round total score in rounds when update score*/
-	newScore = Scorefmt(newScore)
-	fmt.Printf("oldScore: %d\n", oldScore)
-	oldScore = Scorefmt(oldScore)
-	roundId, err := database.GetRoundIdByRoundScoreId(roundScoreId)
-	if response.ErrorInternalErrorTest(context, roundId, "Get Round id by roundScoreId", err) {
-		return
-	}
-	playerId, err := database.GetPlayerIdByRoundScoreId(roundScoreId)
-	if response.ErrorInternalErrorTest(context, playerId, "Get Player id by roundScoreId", err) {
-		return
-	}
-	if !UpdatePlayerTotalScoreWithOneScore(context, playerId, roundId, newScore-oldScore) {
-		return
-	}
-
+	RefreshPlayerTotalScore(context, data.PlayerId)
 	context.IndentedJSON(200, nil)
 }
 
@@ -665,34 +642,6 @@ func PutPlayerShootoffScore(context *gin.Context) {
 		return
 	}
 	context.IndentedJSON(200, data)
-}
-
-func RefreshPlayerTotalScore(context *gin.Context, playerId uint) {
-	if response.ErrorIdTest(context, playerId, database.GetPlayerIsExist(playerId), "Player when updating total score") {
-		return
-	}
-	player, err := database.GetPlayerWScores(playerId)
-	if response.ErrorInternalErrorTest(context, playerId, "Get Player with scores", err) {
-		return
-	}
-	playerTotalScore := 0
-	for _, round := range player.Rounds {
-		totalScore := 0
-		for _, roundEnd := range round.RoundEnds {
-			for _, roundScore := range roundEnd.RoundScores {
-				totalScore += Scorefmt(roundScore.Score)
-			}
-		}
-		err, _ := database.UpdatePlayerRoundTotalScore(round.ID, totalScore)
-		if response.ErrorInternalErrorTest(context, round.ID, "Update Round total score", err) {
-			return
-		}
-		playerTotalScore += totalScore
-	}
-	err, _ = database.UpdatePlayerTotalScore(playerId, playerTotalScore)
-	if response.ErrorInternalErrorTest(context, playerId, "Update Player total score", err) {
-		return
-	}
 }
 
 // Update all scores of one end by end id godoc
@@ -740,6 +689,65 @@ func PutPlayerAllEndScoresByEndId(context *gin.Context) {
 	}
 	playerId, _ := database.GetPlayerIdByRoundEndId(endId)
 	RefreshPlayerTotalScore(context, playerId)
+	context.IndentedJSON(200, nil)
+}
+
+func RefreshPlayerTotalScore(context *gin.Context, playerId uint) {
+	if response.ErrorIdTest(context, playerId, database.GetPlayerIsExist(playerId), "Player when updating total score") {
+		return
+	}
+	player, err := database.GetPlayerWScores(playerId)
+	if response.ErrorInternalErrorTest(context, playerId, "Get Player with scores", err) {
+		return
+	}
+	playerTotalScore := 0
+	for _, round := range player.Rounds {
+		totalScore := 0
+		for _, roundEnd := range round.RoundEnds {
+			for _, roundScore := range roundEnd.RoundScores {
+				totalScore += Scorefmt(roundScore.Score)
+			}
+		}
+		err, _ := database.UpdatePlayerRoundTotalScore(round.ID, totalScore)
+		if response.ErrorInternalErrorTest(context, round.ID, "Update Round total score", err) {
+			return
+		}
+		playerTotalScore += totalScore
+	}
+	err, _ = database.UpdatePlayerTotalScore(playerId, playerTotalScore)
+	if response.ErrorInternalErrorTest(context, playerId, "Update Player total score", err) {
+		return
+	}
+}
+
+// Refresh all player total scores by competition id godoc
+//
+//	@Summary		Refresh all player qualification total scores in a compeition by competition id.
+//	@Description	Refresh all player qualification total scores in a compeition by competition id.
+//	@Tags			Player
+//	@Accept			json
+//	@Produce		json
+//	@Param			competitionid	path		int									true	"Competition ID"
+//	@Success		200				{object}	response.Nill						"success"
+//	@Failure		400				{object}	response.ErrorIdResponse			"invalid competition id parameter, may not exist"
+//	@Failure		500				{object}	response.ErrorInternalErrorResponse	"internal db error / get competition / get groups / get players / update player total score"
+//	@Router			/player/refresh/totalscores/{competitionid} [patch]
+func RefreshPlayerTotalScoresByCompetitionId(context *gin.Context) {
+	competition_id := Convert2uint(context, "competitionid")
+	if response.ErrorIdTest(context, competition_id, database.GetCompetitionIsExist(competition_id), "Competition when refreshing player total scores") {
+		return
+	}
+
+	competition, err := database.GetCompetitionWGroupsPlayers(competition_id)
+	if response.ErrorInternalErrorTest(context, competition_id, "Get Competition with groups and players", err) {
+		return
+	}
+
+	for _, group := range competition.Groups {
+		for _, player := range group.Players {
+			RefreshPlayerTotalScore(context, player.ID)
+		}
+	}
 	context.IndentedJSON(200, nil)
 }
 

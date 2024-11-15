@@ -1,0 +1,4 @@
+username: dictator_username
+password: 123456
+email: dictator_email
+overview: username, password, email cannot be empty
