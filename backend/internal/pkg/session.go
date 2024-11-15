@@ -31,8 +31,8 @@ var defaultSessionOptions = sessions.Options{
 	// MaxAge=0 means no 'Max-Age' attribute specified.
 	// MaxAge<0 means delete cookie now, equivalently 'Max-Age: 0'.
 	// MaxAge>0 means Max-Age attribute present and given in seconds.
-	MaxAge:   3600, // set to 1 hour
-	Secure:   true, // ture : using https
+	MaxAge:   3600 * 24 * 7, // set to 1 hour
+	// Secure:   true, // ture : using https
 	HttpOnly: true, // true : Don't allow JS to access the cookie
 }
 
@@ -59,7 +59,11 @@ func EnableCookieSessionMiddleware(session_file string) gin.HandlerFunc {
 
 func AuthSessionMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		PrintSession(c)
 		if !IsAuthenticated(c) {
+			println("AuthSessionMiddleware : not authenticated")
+			println("username : ", QuerySession(c, "username"))
+
 			print("username : ", QuerySession(c, "username"))
 			c.JSON(http.StatusUnauthorized, gin.H{"result": "not authenticated"})
 			c.Abort()
@@ -73,6 +77,7 @@ func IsAuthenticated(c *gin.Context) bool {
 	session := sessions.Default(c)
 	log.Println("isAuthenticated : ", session.Get("username"))
 	username := session.Get("username")
+	log.Println("username != nil : ", username != nil)
 	return username != nil
 }
 
