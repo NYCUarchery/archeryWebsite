@@ -16,7 +16,7 @@ import {
 } from "@mui/material";
 import { useAppSelector } from "store/hooks";
 import useGetPlayerSets from "@/utils/QueryHooks/useGetPlayerSets";
-import useGetEliminations from "@/utils/QueryHooks/useGetEliminations";
+import useGetElimination from "@/utils/QueryHooks/useGetElimination";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
@@ -34,7 +34,7 @@ export default function Page({
   const [playerSetId, setPlayerSetId] = useState<number | undefined>(undefined);
   const [setIdToDelete, setSetIdToDelete] = useState<number | null>(null);
   const groupIndex = useAppSelector((state) => state.schedule.groupIndex);
-  const { data: elimination } = useGetEliminations(
+  const { data: elimination } = useGetElimination(
     parseInt(params.id),
     groupIndex - 1, // 0 is unassigned group in the for the group menu.
     parseInt(params.teamSize)
