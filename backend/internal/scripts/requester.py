@@ -1,4 +1,5 @@
 import requests
+import csv
 
 class Requester:
     def __init__(self, base_url=""):
@@ -153,38 +154,68 @@ class Requester:
             print("exception:", e)
             return 0
 
+def read_user_csv(csv_path, competition_id):
+    """
+    the csv file be like
+    real_name, password, target
+    """
+    if type(csv_path) != str:
+        raise ValueError("csv_path must be a string")
+    if type(competition_id) != int:
+        raise ValueError("competition_id must be an integer")
+    file = open(csv_path, mode='r')
+    if file.closed:
+        print ("File is closed")
+
+    csv_reader = csv.reader(file)
+    user_data = []
+    for row in csv_reader:
+        user_data.append({
+            "real_name": row[0],
+            "password": row[1],
+            "user_name": f"{row[2]}{competition_id}",
+            "email": row[2],
+            "institution_id": 1,
+            "overview": row[2]
+        })
+    file.close()
+    return user_data
+
 if __name__ == "__main__":
     base_url = "http://127.0.0.1:80/api"
     session_name = "mysession"
-    user_name = "string"
-    password = "string"
+    ### You need to change the following variables
+    csv_path = "data.csv"
     competition_id = 1
+    ### You need to change the variables above
     
+    ## expect the csv file to have the following columns in the following order
+    ## real_name, password, target
+    """
+    And this program should transform the csv file into the following data structure
     user_data = {
-        "user_name": "test",
-        "real_name": "test",
-        "password": "test",
-        "email": "test",
+        "real_name": "real name",
+        "password": "password",
+        "user_name": "target||competition_id",
+        "email": "target",
         "institution_id": 1,
-        "overview": "test"
+        "overview": "target"
     }
+    """
     
     ## setup requester
     requester = Requester(base_url)
     requester.set_session_name(session_name)
     
-    ## login as one user
-    requester.login(user_name, password)
-    requester.user_me()
+    user_data = read_user_csv(csv_path, competition_id)
     
-    ## create all other users 
-    user_id = requester.create_user(**user_data)
-    
-    ## logout
-    requester.logout()
-    
-    ## login as other user to create participant
-    requester.login(user_data["user_name"], user_data["password"])
-    requester.user_me()
-    requester.create_participant(competition_id)
-    requester.logout()
+    for user in user_data:
+        print(user)
+        ## create users 
+        user_id = requester.create_user(**user)
+        
+        ## login as other user to create participant
+        requester.login(user["user_name"], user["password"])
+        requester.user_me()
+        requester.create_participant(competition_id)
+        requester.logout()
