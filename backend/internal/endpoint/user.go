@@ -69,6 +69,11 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "username exists"})
 		return
 	}
+	// real name
+	if user.RealName == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "empty realname"})
+		return
+	}
 	// password
 	plainPassword := user.Password
 	if plainPassword == "" {

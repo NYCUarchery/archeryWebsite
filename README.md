@@ -28,7 +28,25 @@ port: 3306
 database: db
 mode: dev # dev or test
 ```
-
+### Configurations
+- 後端有需要的設定檔都在`backend/config`裡面，目前有`db.yaml`、`dictator.yaml`、`session.yaml`。
+- 相對應的地方會有對應的example檔案，可以參考。
+- 每個config檔都是必要的。
+- 應該看起來像是以下結構：
+```shell
+ArcheryWebsite
+├── backend
+│   ├── assets
+│   │   ├── seeder
+│   │   └── testData
+│   ├── config
+│   │   ├── db.yaml
+│   │   ├── dictator.yaml
+└───└───└── session.yaml
+```
+- db.yaml: 資料庫的設定檔。
+- dictator.yaml: 用來設定唯一最高權限的設定檔。
+- session.yaml: 用來設定session token key的設定檔。
 ## API Reference
 
 如果更新了 gin swag 的註解，在運行前需要在 terminal 中輸入 swag init (應該會出現 doc 檔案)。

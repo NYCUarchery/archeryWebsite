@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
+	"runtime"
 	"time"
 
 	pkg "backend/internal/pkg"
@@ -14,9 +16,18 @@ import (
 
 var DB *gorm.DB
 
+func SetupDatabaseByMode(mode string) {
+	if mode == "test" {
+		TestDatabaseInitial()
+	} else {
+		DatabaseInitial()
+	}
+}
+
 func DatabaseInitial() {
 	connectDB()
 	setTables()
+	CreateNoInstitution()
 	setDictator()
 }
 
@@ -59,14 +70,6 @@ func DropTables() {
 	log.Println("All tables are dropped")
 }
 
-func SetupDatabaseByMode(mode string) {
-	if mode == "test" {
-		TestDatabaseInitial()
-	} else {
-		DatabaseInitial()
-	}
-}
-
 func connectDB() {
 	DSN := pkg.GetConf[Conf]("config/db.yaml")
 
@@ -85,6 +88,7 @@ func connectDB() {
 		fmt.Println("failed to connect database")
 		os.Exit(1)
 	}
+	log.Println("Database \"" + DSN.Database + "\" is connected")
 }
 
 func setDictator() {
@@ -94,7 +98,13 @@ func setDictator() {
 		Email    string `json:"email"`
 		Overview string `json:"overview"`
 	}
-	config_path := "config/dictator.yaml"
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		log.Println("Unable to get caller information for setDictator")
+		os.Exit(1)
+	}
+	dir := filepath.Dir(filename)
+	config_path := filepath.Join(dir, "../../config/dictator.yaml")
 	old_user := User{}
 	new_user := &User{}
 	dictator_config := pkg.GetConf[dictatorConf](config_path)
