@@ -98,7 +98,11 @@ func setDictator() {
 		Email    string `json:"email"`
 		Overview string `json:"overview"`
 	}
-	_, filename, _, _ := runtime.Caller(0)
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		log.Println("Unable to get caller information for setDictator")
+		os.Exit(1)
+	}
 	dir := filepath.Dir(filename)
 	config_path := filepath.Join(dir, "../../config/dictator.yaml")
 	old_user := User{}
@@ -117,13 +121,12 @@ func setDictator() {
 		os.Exit(1)
 	}
 	new_user = &User{
-		Role:          pkg.RoleToString(pkg.RDictator),
-		UserName:      dictator_config.UserName,
-		RealName:      "Dictator",
-		Password:      pkg.EncryptPassword(dictator_config.Password),
-		InstitutionID: NoInstitutionID,
-		Email:         dictator_config.Email,
-		Overview:      dictator_config.Overview,
+		Role:     pkg.RoleToString(pkg.RDictator),
+		UserName: dictator_config.UserName,
+		RealName: "Dictator",
+		Password: pkg.EncryptPassword(dictator_config.Password),
+		Email:    dictator_config.Email,
+		Overview: dictator_config.Overview,
 	}
 
 	old_user = FindByUsername(dictator_config.UserName)

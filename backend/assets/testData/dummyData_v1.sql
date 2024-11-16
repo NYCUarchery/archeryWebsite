@@ -9,7 +9,7 @@ INSERT INTO `users` VALUES (1,'Oatmeal','宋承諺','$2a$10$lyWVXpxcMakdZ0CawLLS
 
 
 INSERT INTO `competitions` VALUES (1,'男反選拔','113年全大運','0001-02-28 23:59:00.000','0001-03-31 23:59:00.000',1,3,1,1,1,2,0,0,1,0,0,0,'test'),(2,'男反選拔','113年全大運','0001-02-28 23:59:00.000','0001-03-31 23:59:00.000',1,3,3,1,4,4,0,18,1,0,0,0,'test');
-INSERT INTO `participants` VALUES (1,1,1,'admin','approved'),(2,2,1,'player','approved'),(3,3,1,'player','approved'),(4,4,1,'player','approved'),(5,5,1,'player','approved'),(6,6,1,'player','approved'),(7,7,1,'player','approved'),(8,8,1,'player','approved'),(9,9,1,'player','approved'),(10,1,2,'admin','approved'),(11,9,2,'player','approved'),(12,2,2,'player','approved'),(13,3,2,'player','approved'),(14,4,2,'player','approved'),(15,5,2,'player','approved'),(16,6,2,'player','approved'),(17,7,2,'player','approved'),(18,8,2,'player','approved'),(19,10,2,'player','approved');
+INSERT INTO `participants` VALUES (1,1,1,'admin','approved'),(2,2,1,'Player','approved'),(3,3,1,'Player','approved'),(4,4,1,'Player','approved'),(5,5,1,'Player','approved'),(6,6,1,'Player','approved'),(7,7,1,'Player','approved'),(8,8,1,'Player','approved'),(9,9,1,'Player','approved'),(10,1,2,'admin','approved'),(11,9,2,'Player','approved'),(12,2,2,'Player','approved'),(13,3,2,'Player','approved'),(14,4,2,'Player','approved'),(15,5,2,'Player','approved'),(16,6,2,'Player','approved'),(17,7,2,'Player','approved'),(18,8,2,'Player','approved'),(19,10,2,'Player','approved');
 
 INSERT INTO `groups` VALUES (1,1,'unassigned','','',-1),(2,1,'男反30公尺','30m','反曲弓',0),(3,2,'unassigned','','',-1),(4,2,'男反30公尺','30m','反曲弓',0);
 INSERT INTO `eliminations` VALUES (1,2,0,0,1),(2,4,0,0,1);

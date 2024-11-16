@@ -31,7 +31,7 @@ var defaultSessionOptions = sessions.Options{
 	// MaxAge=0 means no 'Max-Age' attribute specified.
 	// MaxAge<0 means delete cookie now, equivalently 'Max-Age: 0'.
 	// MaxAge>0 means Max-Age attribute present and given in seconds.
-	MaxAge: 3600 * 24, // set to 24 hour
+	MaxAge: 3600 * 24, // set to 1 day
 	// Secure:   true, // ture : using https
 	HttpOnly: true, // true : Don't allow JS to access the cookie
 }
