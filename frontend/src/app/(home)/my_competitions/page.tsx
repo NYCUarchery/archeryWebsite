@@ -12,18 +12,20 @@ import { useGetUserId } from "@/utils/QueryHooks/useGetUserID";
 import useGetUserCompetitions from "@/utils/QueryHooks/useGetUserCompetitions";
 import { useRouter } from "next/navigation";
 import ToCreateButton from "./ToCreateButton";
+import { useGetCurrentUserDetail } from "@/utils/QueryHooks/useGetCurrentUserDetail";
 
 export default function MyCompetitionPage() {
   const [page, setPage] = useState(1);
   const [startIndex, setStartIndex] = useState((page - 1) * 5);
   const [endIndex, setEndIndex] = useState(page * 5 - 1);
-  const { data: uid } = useGetUserId();
+  const { data: uid, isError: isUidError } = useGetUserId();
+  const { data: user } = useGetCurrentUserDetail();
   const { data: competitions, isLoading: isLoadingCompetitions } =
     useGetUserCompetitions(uid as number, startIndex, endIndex);
 
   const router = useRouter();
 
-  if (!uid) {
+  if (isUidError) {
     router.push("/recent_competitions");
   }
 
@@ -46,7 +48,7 @@ export default function MyCompetitionPage() {
             </Typography>
           </Grid>
         </Grid>
-        {uid ? <ToCreateButton /> : null}
+        {user?.role == "Dictator" ? <ToCreateButton /> : null}
         <Pagination
           count={10}
           color="primary"

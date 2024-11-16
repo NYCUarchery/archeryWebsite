@@ -79,7 +79,7 @@ func competitionRouter(api *gin.RouterGroup) {
 		competitionssr.GET("/groups/eliminations/:id", endpoint.GetCompetitionWGroupsElimintaionsByID)
 		competitionssr.GET("/current/:head/:tail", endpoint.GetCurrentCompetitions)
 		competitionssr.GET("/user/:userid/:head/:tail", endpoint.GetCompetitionsOfUser)
-		competitionssr.POST("/", endpoint.PostCompetition)
+		competitionssr.POST("/",pkg.RBACMiddleware(pkg.RoleSystem, pkg.RDictator), endpoint.PostCompetition)
 		competitionssr.PATCH("/refresh/groups/players/rank/:id", endpoint.RefreshCompetitionRank)
 		competitionssr.PUT("/:id", endpoint.PutCompetition)
 		competitionssr.DELETE("/:id", endpoint.DeleteCompetition)
