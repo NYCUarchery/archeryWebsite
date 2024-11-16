@@ -2,6 +2,7 @@ package endpoint
 
 import (
 	"backend/internal/database"
+	"backend/internal/pkg"
 	"backend/internal/response"
 	"fmt"
 	"net/http"
@@ -40,7 +41,7 @@ type NewParticipantInfo struct {
 //	@Produce		json
 //	@Param			NewParticipantInfo	body		endpoint.NewParticipantInfo				true	"role"
 //	@Success		200					{object}	database.Participant					"success, return participant"
-//	@Failure		400					{object}	response.ErrorReceiveDataFormatResponse	"invalid info / role is empty / participant exists / invalid user ID / invalid competition ID"
+//	@Failure		400					{object}	response.ErrorReceiveDataFormatResponse	"invalid info / role is not defined / participant exists / invalid user ID / invalid competition ID"
 //	@Failure		500					{object}	response.ErrorInternalErrorResponse		"db error"
 //	@Router			/participant [post]
 func PostParticipant(c *gin.Context) {
@@ -60,9 +61,8 @@ func PostParticipant(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "participant exists"})
 		return
 	}
-
-	if newParticipantInfo.Role == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"result": "role is empty"})
+	if pkg.EnsureRoleInGameRoleSet(pkg.StringToRole(newParticipantInfo.Role)) {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "role is not defined"})
 		return
 	}
 
@@ -107,6 +107,50 @@ func GetParticipantById(context *gin.Context) {
 		return
 	}
 	context.IndentedJSON(http.StatusOK, data)
+}
+
+// Get Participants By user id and competition id godoc
+//
+//	@Summary		Get Participants By user id and competition id, and update session gamerole.
+//	@Description	Get Participants By user id and competition id.
+//	@Description	And update session gamerole.
+//	@Description	Warnings: Something need to be modified in the future.
+//	@Description	Warnings: Only take the first one temporarily, for player and dummy player assumption in one competition of a user.
+//	@Tags			Participant
+//	@Produce		json
+//	@Param			competitionid	path		int									true	"Competition ID"
+//	@Success		200				{object}	database.Participant				"success, return the first participant, and update session gamerole"
+//	@Failure		400				{object}	response.ErrorIdResponse			"invalid competition id / invalid user id"
+//	@Failure		401				{object}	response.ErrorUnauthorizedResponse	"unauthorized"
+//	@Failure		500				{object}	response.ErrorInternalErrorResponse	"get participants by competition id and user id"
+//	@Router			/participant/me/{competitionid} [get]
+func GetParticipantWithSession(context *gin.Context) {
+	// Already Authenticated checked by AuthSessionMiddleware
+	compeitionId := Convert2uint(context, "competitionid")
+	userId := pkg.QuerySession(context, "userid").(uint)
+	newGameRole := pkg.RNone
+
+	if response.ErrorIdTest(context, compeitionId, database.GetCompetitionIsExist(compeitionId), "Competition ID when getting participants") {
+		return
+	}
+	if response.ErrorIdTest(context, userId, database.GetUserIsExist(userId), "User ID when getting participants") {
+		return
+	}
+
+	participants, err := database.GetParticipantByCompetitionIdUserId(compeitionId, userId)
+	if response.ErrorInternalErrorTest(context, compeitionId, "Get Participants by competition id and user id", err) {
+		return
+	}
+	if len(participants) == 0 {
+		response.ErrorReceiveDataTest(context, compeitionId, "Participant", fmt.Errorf("no participant found"))
+		return
+	}
+	participant := participants[0] // only take the first one temporarily, need to be modified in the future
+	newGameRole = pkg.StringToRole(participant.Role)
+	pkg.UpdateAuthSession(context, "gamerole", int(newGameRole))
+	pkg.UpdateAuthSession(context, "participantid", int(participant.ID))
+	pkg.PrintSession(context)
+	context.IndentedJSON(http.StatusOK, participant)
 }
 
 // Get Participants By user ID godoc

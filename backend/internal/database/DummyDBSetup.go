@@ -1,6 +1,7 @@
 package database
 
 import (
+	pkg "backend/internal/pkg"
 	"fmt"
 	"log"
 	"os"
@@ -8,16 +9,30 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
+
+func EnsureTestModeMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if gin.Mode() != gin.TestMode {
+			c.JSON(400, gin.H{"error": "Not in test mode"})
+			c.Abort()
+		}
+		c.Next()
+	}
+}
 
 func TestDatabaseInitial() {
 	connectTestDB()
 	DropTables()
 	setTables()
-	CreateNoInstitution()
 	InitDummyData()
+
+	CreateNoInstitution()
+	setDictator()
+
 	log.Println("Test database is initialized")
 }
 
@@ -28,7 +43,7 @@ func InitDummyData() {
 		os.Exit(1)
 	}
 	dir := filepath.Dir(filename)
-	dummyDataPath := filepath.Join(dir, "../../assets/testData/dummyData_v1.sql")
+	dummyDataPath := filepath.Join(dir, "../../assets/testData/dummyData_v2.sql")
 	requests := GetSQLDataFromFile(dummyDataPath)
 	for _, request := range requests {
 		result := DB.Exec(request)
@@ -44,6 +59,10 @@ func TestDBRestore() {
 	DropTables()
 	setTables()
 	InitDummyData()
+
+	CreateNoInstitution()
+	setDictator()
+
 	log.Println("Test database is restored")
 }
 
@@ -55,7 +74,7 @@ func connectTestDB() {
 	}
 	dir := filepath.Dir(filename)
 	testDataPath := filepath.Join(dir, "../../config/db.yaml")
-	DSN := GetConf(testDataPath)
+	DSN := pkg.GetConf[Conf](testDataPath)
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify",
 		DSN.Username, DSN.Password, DSN.Host, DSN.Port, DSN.Database)

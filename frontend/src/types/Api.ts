@@ -176,6 +176,7 @@ export interface DatabaseUser {
   institution_id?: number;
   overview?: string;
   real_name?: string;
+  role?: string;
   user_name?: string;
 }
 
@@ -447,6 +448,11 @@ export interface ResponseErrorResponse {
   error?: string;
 }
 
+export interface ResponseErrorUnauthorizedResponse {
+  /** @example "unauthorized" */
+  error?: string;
+}
+
 export type ResponseNill = object;
 
 export interface ResponseResponse {
@@ -499,7 +505,7 @@ export class HttpClient<SecurityDataType = unknown> {
   private format?: ResponseType;
 
   constructor({ securityWorker, secure, format, ...axiosConfig }: ApiConfig<SecurityDataType> = {}) {
-    this.instance = axios.create({ ...axiosConfig, baseURL: axiosConfig.baseURL || "//localhost:80/api" });
+    this.instance = axios.create({ ...axiosConfig, baseURL: axiosConfig.baseURL || "//127.0.0.1:80/api" });
     this.secure = secure;
     this.format = format;
     this.securityWorker = securityWorker;
@@ -592,7 +598,7 @@ export class HttpClient<SecurityDataType = unknown> {
  * @title Gin swagger
  * @version 1.0
  * @license no license yet
- * @baseUrl //localhost:80/api
+ * @baseUrl //127.0.0.1:80/api
  * @contact NYCUArchery (https://github.com/NYCUarchery)
  *
  * Gin swagger
@@ -1881,6 +1887,25 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
+     * @description Get Participants By user id and competition id. And update session gamerole. Warnings: Something need to be modified in the future. Warnings: Only take the first one temporarily, for player and dummy player assumption in one competition of a user.
+     *
+     * @tags Participant
+     * @name GetParticipant
+     * @summary Get Participants By user id and competition id, and update session gamerole.
+     * @request GET:/participant/me/{competitionid}
+     */
+    getParticipant: (competitionid: number, params: RequestParams = {}) =>
+      this.request<
+        DatabaseParticipant,
+        ResponseErrorIdResponse | ResponseErrorUnauthorizedResponse | ResponseErrorInternalErrorResponse
+      >({
+        path: `/participant/me/${competitionid}`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Get Participants By user ID.
      *
      * @tags Participant
@@ -2678,7 +2703,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
   };
   user = {
     /**
-     * @description Add a user to db. Username cannot be empty or repeated. Password cannot be empty. Email cannot be empty or repeated.
+     * @description Add a user to db. Username cannot be empty or repeated. Password cannot be empty. Email cannot be empty or repeated. Institution id must exist. Realname and overview are optional. Role is set to User.
      *
      * @tags User
      * @name UserCreate

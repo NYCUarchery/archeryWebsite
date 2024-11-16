@@ -2,6 +2,7 @@ package endpoint
 
 import (
 	"backend/internal/database"
+	pkg "backend/internal/pkg"
 	response "backend/internal/response"
 	"fmt"
 	"net/http"
@@ -379,7 +380,7 @@ func PostCompetition(context *gin.Context) {
 	var newParticipant database.Participant
 	newParticipant.UserID = newData.HostID
 	newParticipant.CompetitionID = newId
-	newParticipant.Role = "admin"
+	newParticipant.Role = pkg.RoleToString(pkg.RAdmin)
 	newParticipant.Status = "approved"
 	database.AddParticipant(&newParticipant)
 	/*return new data*/

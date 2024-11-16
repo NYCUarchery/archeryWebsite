@@ -34,6 +34,9 @@ type ModifyAccountPasswordInfo struct {
 //	@Description	Username cannot be empty or repeated.
 //	@Description	Password cannot be empty.
 //	@Description	Email cannot be empty or repeated.
+//	@Description	Institution id must exist.
+//	@Description	Realname and overview are optional.
+//	@Description	Role is set to User.
 //	@Tags			User
 //	@Accept			json
 //	@Produce		json
@@ -55,6 +58,7 @@ func Register(c *gin.Context) {
 	user.Email = registerInfo.Email
 	user.InstitutionID = registerInfo.InstitutionID
 	user.Overview = registerInfo.Overview
+	user.Role = pkg.RoleToString(pkg.RUser)
 	// no need to check id(it is auto created), realname, and overview
 	// name
 	if user.UserName == "" {
@@ -132,7 +136,7 @@ func ModifyInfo(c *gin.Context) {
 	if response.ErrorIdTest(c, userId, database.GetUserIsExist(userId), "user id when modify") {
 		return
 	}
-	if pkg.QuerySession(c, "id") != userId {
+	if pkg.QuerySession(c, "userid") != userId {
 		c.JSON(http.StatusForbidden, gin.H{"result": "cannot change other's info"})
 		return
 	}
@@ -202,7 +206,7 @@ func ModifyPassword(c *gin.Context) {
 	if response.ErrorIdTest(c, userId, database.GetUserIsExist(userId), "user id when modify password") {
 		return
 	}
-	if pkg.QuerySession(c, "id") != userId {
+	if pkg.QuerySession(c, "userid") != userId {
 		c.JSON(http.StatusForbidden, gin.H{"result": "cannot change other's password"})
 		return
 	}
@@ -253,7 +257,8 @@ func GetUserID(c *gin.Context) {
 		ID uint `json:"id"`
 	}
 	_ = ID{}
-	id := pkg.QuerySession(c, "id")
+	id := pkg.QuerySession(c, "userid")
+	pkg.PrintSession(c)
 	c.JSON(http.StatusOK, gin.H{"id": id})
 }
 

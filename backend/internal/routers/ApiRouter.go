@@ -195,13 +195,13 @@ func profileRouter(api *gin.RouterGroup) {
 	parssr := api.Group("/participant")
 	{
 		parssr.POST("/", pkg.AuthSessionMiddleware(), endpoint.PostParticipant)
+		parssr.GET("/me/:competitionid", pkg.AuthSessionMiddleware(), endpoint.GetParticipantWithSession)
 		parssr.GET("/:id", endpoint.GetParticipantById)
 		parssr.GET("/user/:userid", endpoint.GetParticipantByUserId)
 		parssr.GET("/competition/:competitionid", endpoint.GetParticipantByCompetitionId)
 		parssr.GET("/competition/user/:competitionid/:userid", endpoint.GetParticipantByCompetitionIdUserId)
 		parssr.PUT("/:id", endpoint.PutParticipant)
 		parssr.DELETE("/:id", endpoint.DeleteParticipantById)
-
 	}
 
 	insr := api.Group("/institution")
@@ -214,7 +214,7 @@ func profileRouter(api *gin.RouterGroup) {
 }
 
 func testRelatedRouter(api *gin.RouterGroup) {
-	api.PUT("/restore", func(c *gin.Context) {
+	api.PUT("/restore", database.EnsureTestModeMiddleware(), func(c *gin.Context) {
 		database.TestDBRestore()
 		c.JSON(200, gin.H{"message": "Dummy database is restored"})
 	})

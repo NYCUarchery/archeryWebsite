@@ -1,6 +1,9 @@
 package database
 
-import "log"
+import (
+	. "backend/internal/pkg"
+	"log"
+)
 
 type Participant struct {
 	ID            uint   `gorm:"primaryKey;autoIncrement" json:"id"`
@@ -81,6 +84,11 @@ func UpdateParticipant(ID uint, newdata Participant) (bool, error) {
 	result := DB.Model(&Participant{}).Where("id = ?", ID).Updates(&newdata)
 	isChanged := result.RowsAffected != 0
 	return isChanged, result.Error
+}
+
+func UpdateParticipantRole(ID uint, role Role) error {
+	result := DB.Model(&Participant{}).Where("id = ?", ID).Update("role", role)
+	return result.Error
 }
 
 func DeleteParticipant(ID uint) (bool, error) {

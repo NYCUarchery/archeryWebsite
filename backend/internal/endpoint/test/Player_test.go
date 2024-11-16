@@ -67,7 +67,7 @@ func (suite *PlayerTestSuite) TestUpdatePlayerScore() {
 
 	*/
 	r := SetUpRouter()
-	r.PUT("/api/player/roundscore/:id", PutPlayerScore)
+	r.PATCH("/api/player/roundscore/:roundscoreid", PutPlayerScore)
 
 	Convey("Test UpdatePlayerScore using BCC", suite.T(), func() {
 		testcases := []struct {
@@ -86,7 +86,7 @@ func (suite *PlayerTestSuite) TestUpdatePlayerScore() {
 			Convey(tc.testName, func() {
 				jsonValue, _ := json.Marshal(tc.data)
 				w := httptest.NewRecorder()
-				req, _ := http.NewRequest("PUT", "/api/player/roundscore/"+fmt.Sprint(tc.data.PlayerId), bytes.NewBuffer(jsonValue))
+				req, _ := http.NewRequest("PATCH", "/api/player/roundscore/"+fmt.Sprint(tc.data.PlayerId), bytes.NewBuffer(jsonValue))
 				r.ServeHTTP(w, req)
 				So(w.Code, ShouldEqual, tc.expectedCode)
 			})
