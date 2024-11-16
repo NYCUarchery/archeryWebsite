@@ -56,11 +56,11 @@ export default function PanelMenu({ panelName, participant }: Props) {
       ) {
         return null;
       } else if (
-        participant?.role === "player" &&
+        participant?.role === "Player" &&
         (set.id === "admin" || set.id === "judge")
       ) {
         return null;
-      } else if (participant?.role === "admin" && set.id === "scoring") {
+      } else if (participant?.role === "Admin" && set.id === "scoring") {
         return null;
       }
       return (
