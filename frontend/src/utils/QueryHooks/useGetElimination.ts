@@ -1,6 +1,6 @@
 import { useQuery } from "react-query";
 import { apiClient } from "../ApiClient";
-export default function useGetEliminations(
+export default function useGetElimination(
   id: number,
   groupIndex: number,
   teamSize: number

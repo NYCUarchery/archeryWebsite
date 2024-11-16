@@ -7,7 +7,7 @@ import useGetCompetitionGroupsWithPlayers from "@/utils/QueryHooks/useGetCompeti
 import { useMutation, useQueryClient } from "react-query";
 import { apiClient } from "@/utils/ApiClient";
 import { EndpointPostPlayerSetPlayerSetData } from "@/types/Api";
-import useGetEliminations from "@/utils/QueryHooks/useGetEliminations";
+import useGetElimination from "@/utils/QueryHooks/useGetElimination";
 
 type AutocompletePlayerValue = {
   label: string | undefined;
@@ -25,7 +25,7 @@ export default function Page({
   const { data: groups } = useGetCompetitionGroupsWithPlayers(
     parseInt(params.id)
   );
-  const { data: elimination } = useGetEliminations(
+  const { data: elimination } = useGetElimination(
     parseInt(params.id),
     groupIndex - 1, // 0 is unassigned group in the for the group menu.
     parseInt(params.teamSize)
