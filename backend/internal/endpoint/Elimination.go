@@ -289,8 +289,10 @@ func PostMatch(context *gin.Context) {
 		return
 	} else if len(data.PlayerSetIds) != 2 {
 		response.ErrorReceiveDataFormat(context, " player set ids should be 2")
+		return
 	} else if len(data.LaneNumbers) != 2 {
 		response.ErrorReceiveDataFormat(context, "lane numbers should be 2")
+		return
 	}
 	/*id existence*/
 	stage, err := database.GetStageById(data.StageId)

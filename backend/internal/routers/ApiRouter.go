@@ -140,6 +140,7 @@ func eliminationRouter(api *gin.RouterGroup) {
 		eliminationssr.POST("/stage", endpoint.PostStage)
 		eliminationssr.POST("/match", endpoint.PostMatch)
 
+		eliminationssr.PATCH("/match/playerset/:matchid", endpoint.PutMatchPlayerSetByMatchId)
 		eliminationssr.PATCH("/currentstage/plus/:id", endpoint.PutEliminationCurrentStagePlusById)
 		eliminationssr.PATCH("/currentstage/minus/:id", endpoint.PutEliminationCurrentStageMinusById)
 		eliminationssr.PATCH("/currentend/plus/:id", endpoint.PutEliminationCurrentEndPlusById)
