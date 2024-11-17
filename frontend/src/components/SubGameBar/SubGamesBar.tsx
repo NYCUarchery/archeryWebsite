@@ -3,12 +3,13 @@ import Box from "@mui/material/Box";
 import GroupMenu from "./GroupMenu";
 import PhaseMenu from "./PhaseMenu";
 import GroupPhaseTag from "./GroupPhaseTag";
-import { Competition, Group } from "@/types/oldRef/Competition";
+import { Group } from "@/types/oldRef/Competition";
 import { useSelectedLayoutSegment } from "next/navigation";
 import { Player } from "@/types/oldRef/Player";
+import { DatabaseCompetition } from "@/types/Api";
 
 interface Props {
-  competition?: Competition;
+  competition?: DatabaseCompetition;
   player?: Player;
   groups?: Group[];
   isLoading: boolean;
@@ -32,7 +33,7 @@ function SubGamesBar({ groups, isLoading, competition, player }: Props) {
           }}
         >
           <GroupMenu groups={groups as Group[]}></GroupMenu>
-          <PhaseMenu />
+          <PhaseMenu competition={competition!} />
         </Box>
       );
       break;

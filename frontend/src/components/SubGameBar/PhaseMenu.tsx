@@ -11,14 +11,29 @@ import {
 } from "@mui/material";
 
 import { usePathname, useRouter } from "next/navigation";
-import subtituteSegment from "@/utils/subtituteSegment";
 
-export default function PhaseMenu() {
+import { DatabaseCompetition } from "@/types/Api";
+
+interface Props {
+  competition: DatabaseCompetition;
+}
+
+export default function PhaseMenu({ competition }: Props) {
   const [open, setOpen] = useState(false);
   const currentPath = usePathname();
   const router = useRouter();
-  const phaseShown = currentPath.split("/")[5];
-  const items = Object.values(PhaseEnums);
+  const phaseShown = currentPath.split("/").slice(5, 7).join("/");
+  let items = Object.values(PhaseEnums);
+
+  if (!competition.mixed_elimination_is_active) {
+    items = items.filter((item) => item !== PhaseEnums.MixedElimination);
+  }
+  if (!competition.team_elimination_is_active) {
+    items = items.filter((item) => item !== PhaseEnums.TeamElimination);
+  }
+  if (!competition.elimination_is_active) {
+    items = items.filter((item) => item !== PhaseEnums.Elimination);
+  }
 
   return (
     <Accordion
@@ -67,7 +82,9 @@ export default function PhaseMenu() {
                   sx={{ justifyContent: "center", cursor: "pointer" }}
                   onClick={() => {
                     router.push(
-                      subtituteSegment(currentPath, 5, item.toLowerCase())
+                      currentPath.split("/").slice(0, 5).join("/") +
+                        "/" +
+                        item.toLowerCase()
                     );
                     setOpen(false);
                   }}
