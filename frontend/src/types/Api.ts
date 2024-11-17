@@ -339,6 +339,10 @@ export interface EndpointPutMatchEndsTotalScoresByIdMatchEndTotalScoresData {
   total_scores?: number;
 }
 
+export interface EndpointPutMatchPlayerSetByMatchIdPutMatchPlayerSetIdData {
+  player_set_ids?: number[];
+}
+
 export interface EndpointPutMatchResultIsWinnerByIdMatchResultIsWinnerData {
   is_winner?: boolean;
 }
@@ -505,7 +509,7 @@ export class HttpClient<SecurityDataType = unknown> {
   private format?: ResponseType;
 
   constructor({ securityWorker, secure, format, ...axiosConfig }: ApiConfig<SecurityDataType> = {}) {
-    this.instance = axios.create({ ...axiosConfig, baseURL: axiosConfig.baseURL || "//127.0.0.1:80/api" });
+    this.instance = axios.create({ ...axiosConfig, baseURL: axiosConfig.baseURL || "//localhost:80/api" });
     this.secure = secure;
     this.format = format;
     this.securityWorker = securityWorker;
@@ -598,7 +602,7 @@ export class HttpClient<SecurityDataType = unknown> {
  * @title Gin swagger
  * @version 1.0
  * @license no license yet
- * @baseUrl //127.0.0.1:80/api
+ * @baseUrl //localhost:80/api
  * @contact NYCUArchery (https://github.com/NYCUarchery)
  *
  * Gin swagger
@@ -1086,6 +1090,28 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         path: `/elimination/match`,
         method: "POST",
         body: Match,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update two MatchResult with two PlayerSetId in one Match by id
+     *
+     * @tags Elimination
+     * @name MatchPlayersetPartialUpdate
+     * @summary Update two MatchResult with two PlayerSetId in one Match
+     * @request PATCH:/elimination/match/playerset/{matchid}
+     */
+    matchPlayersetPartialUpdate: (
+      matchid: number,
+      PlayerSetId: EndpointPutMatchPlayerSetByMatchIdPutMatchPlayerSetIdData,
+      params: RequestParams = {},
+    ) =>
+      this.request<DatabaseMatch, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/elimination/match/playerset/${matchid}`,
+        method: "PATCH",
+        body: PlayerSetId,
         type: ContentType.Json,
         format: "json",
         ...params,

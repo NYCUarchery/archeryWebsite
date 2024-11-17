@@ -12,7 +12,7 @@
         },
         "version": "1.0"
     },
-    "host": "127.0.0.1:80",
+    "host": "localhost:80",
     "basePath": "/api/",
     "paths": {
         "/competition": {
@@ -1308,6 +1308,59 @@
                     },
                     "500": {
                         "description": "internal db error for Create Match, MatchResult, MatchEnd, MatchScore, or get Stage",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/elimination/match/playerset/{matchid}": {
+            "patch": {
+                "description": "Update two MatchResult with two PlayerSetId in one Match by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Elimination"
+                ],
+                "summary": "Update two MatchResult with two PlayerSetId in one Match",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Match ID",
+                        "name": "matchid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "PlayerSetId",
+                        "name": "PlayerSetId",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.PutMatchPlayerSetByMatchId.PutMatchPlayerSetIdData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success, return updated Match with new PlayerSetId",
+                        "schema": {
+                            "$ref": "#/definitions/database.Match"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid Match ID / invalid PlayerSetId / PlayerSetId should be 2",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error for Get Match when updating match player set / Update MatchResult PlayerSetId / Get Match when updating match player set",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -6557,6 +6610,17 @@
             "properties": {
                 "total_scores": {
                     "type": "integer"
+                }
+            }
+        },
+        "endpoint.PutMatchPlayerSetByMatchId.PutMatchPlayerSetIdData": {
+            "type": "object",
+            "properties": {
+                "player_set_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
                 }
             }
         },

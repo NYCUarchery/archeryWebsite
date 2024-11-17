@@ -1321,6 +1321,59 @@ const docTemplate = `{
                 }
             }
         },
+        "/elimination/match/playerset/{matchid}": {
+            "patch": {
+                "description": "Update two MatchResult with two PlayerSetId in one Match by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Elimination"
+                ],
+                "summary": "Update two MatchResult with two PlayerSetId in one Match",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Match ID",
+                        "name": "matchid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "PlayerSetId",
+                        "name": "PlayerSetId",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.PutMatchPlayerSetByMatchId.PutMatchPlayerSetIdData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success, return updated Match with new PlayerSetId",
+                        "schema": {
+                            "$ref": "#/definitions/database.Match"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid Match ID / invalid PlayerSetId / PlayerSetId should be 2",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error for Get Match when updating match player set / Update MatchResult PlayerSetId / Get Match when updating match player set",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/elimination/match/scores/{matchid}": {
             "get": {
                 "description": "Get one Match with matchResults, matchEnds, scores, playerSets, players by id",
@@ -6566,6 +6619,17 @@ const docTemplate = `{
                 }
             }
         },
+        "endpoint.PutMatchPlayerSetByMatchId.PutMatchPlayerSetIdData": {
+            "type": "object",
+            "properties": {
+                "player_set_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
         "endpoint.PutMatchResultIsWinnerById.matchResultIsWinnerData": {
             "type": "object",
             "properties": {
@@ -6868,7 +6932,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "127.0.0.1:80",
+	Host:             "localhost:80",
 	BasePath:         "/api/",
 	Schemes:          []string{},
 	Title:            "Gin swagger",

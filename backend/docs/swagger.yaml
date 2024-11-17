@@ -573,6 +573,13 @@ definitions:
       total_scores:
         type: integer
     type: object
+  endpoint.PutMatchPlayerSetByMatchId.PutMatchPlayerSetIdData:
+    properties:
+      player_set_ids:
+        items:
+          type: integer
+        type: array
+    type: object
   endpoint.PutMatchResultIsWinnerById.matchResultIsWinnerData:
     properties:
       is_winner:
@@ -731,7 +738,7 @@ definitions:
         example: result description
         type: string
     type: object
-host: 127.0.0.1:80
+host: localhost:80
 info:
   contact:
     name: NYCUArchery
@@ -1676,6 +1683,44 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Create one Match
+      tags:
+      - Elimination
+  /elimination/match/playerset/{matchid}:
+    patch:
+      consumes:
+      - application/json
+      description: Update two MatchResult with two PlayerSetId in one Match by id
+      parameters:
+      - description: Match ID
+        in: path
+        name: matchid
+        required: true
+        type: integer
+      - description: PlayerSetId
+        in: body
+        name: PlayerSetId
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.PutMatchPlayerSetByMatchId.PutMatchPlayerSetIdData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success, return updated Match with new PlayerSetId
+          schema:
+            $ref: '#/definitions/database.Match'
+        "400":
+          description: invalid Match ID / invalid PlayerSetId / PlayerSetId should
+            be 2
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: internal db error for Get Match when updating match player
+            set / Update MatchResult PlayerSetId / Get Match when updating match player
+            set
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Update two MatchResult with two PlayerSetId in one Match
       tags:
       - Elimination
   /elimination/match/scores/{matchid}:
