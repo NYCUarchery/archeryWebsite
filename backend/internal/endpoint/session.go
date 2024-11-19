@@ -51,7 +51,14 @@ func Login(c *gin.Context) {
 		return
 	}
 	// if all correct, save session
-	pkg.SaveAuthSession(c, user.ID, user.UserName)
+	var newSessionContents = pkg.SessionContents{
+		UserId:        user.ID,
+		Username:      user.UserName,
+		SystemRole:    pkg.StringToRole(user.Role),
+		ParticipantId: 0,
+		GameRole:      pkg.RNone,
+	}
+	pkg.SaveAuthSession(c, newSessionContents)
 	c.JSON(http.StatusOK, gin.H{"message": "success"})
 }
 

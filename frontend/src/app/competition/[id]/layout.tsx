@@ -7,6 +7,8 @@ import useGetCompetitionWithGroups from "@/utils/QueryHooks/useGetCompetitionWit
 import useGetCurrentParticipentDetail from "@/utils/QueryHooks/useGetCurrentParticipentDetail";
 import { useGetCurrentUserDetail } from "@/utils/QueryHooks/useGetCurrentUserDetail";
 import useGetPlayersByParticipant from "@/utils/QueryHooks/useGetPlayersByParticipant";
+import { useEffect } from "react";
+import { useQueryClient } from "react-query";
 
 export default function Layout({
   children,
@@ -16,6 +18,7 @@ export default function Layout({
   params: { id: string };
 }) {
   const { data: user } = useGetCurrentUserDetail();
+  const queryClient = useQueryClient();
   const competitionId = parseInt(params.id);
   const {
     data: competition,
@@ -27,6 +30,9 @@ export default function Layout({
 
   const { data: players, isLoading: isLoadingPlayer } =
     useGetPlayersByParticipant((participant as Participant)?.id, competitionId);
+  useEffect(() => {
+    queryClient.invalidateQueries("currentParticipent");
+  }, []);
 
   const isLoading =
     isLoadingCompetition || isLoadingParticipant || isLoadingPlayer;

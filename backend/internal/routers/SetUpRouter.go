@@ -7,7 +7,8 @@ import (
 )
 
 func SetUpRouter(router *gin.Engine, ip string, port string) {
-	router.Use(pkg.EnableCookieSessionMiddleware())
+	session_file := "config/session.yaml"
+	router.Use(pkg.EnableCookieSessionMiddleware(session_file))
 
 	api := router.Group("/api")
 	AddApiRouter(api)

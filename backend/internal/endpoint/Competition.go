@@ -2,6 +2,7 @@ package endpoint
 
 import (
 	"backend/internal/database"
+	pkg "backend/internal/pkg"
 	response "backend/internal/response"
 	"fmt"
 	"net/http"
@@ -379,7 +380,7 @@ func PostCompetition(context *gin.Context) {
 	var newParticipant database.Participant
 	newParticipant.UserID = newData.HostID
 	newParticipant.CompetitionID = newId
-	newParticipant.Role = "admin"
+	newParticipant.Role = pkg.RoleToString(pkg.RAdmin)
 	newParticipant.Status = "approved"
 	database.AddParticipant(&newParticipant)
 	/*return new data*/
@@ -848,54 +849,4 @@ func PutCompetitionMixedEliminationActive(context *gin.Context) {
 		}
 	}
 	context.IndentedJSON(http.StatusOK, gin.H{"message": "Update Competition Mixed Elimination Active Success"})
-}
-
-// Refresh competition player total score godoc
-//
-//	@Summary		Refresh competition player total score by competition id.
-//	@Description	Refresh competition player total score by competition id.
-//	@Tags			Competition
-//	@Param			id	path		int									true	"Competition ID"
-//	@Success		200	{object}	response.Response					"success"
-//	@Failure		400	{object}	response.ErrorIdResponse			"invalid competition id parameter"
-//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"Get Competition with Groups Players Scores / Update Round Total Score / Update Player Total Score"
-//	@Router			/competition/refresh/groups/players/playertotalscore/{id} [patch]
-func RefreshCompetitionPlayerTotalScore(context *gin.Context) {
-	id := Convert2uint(context, "id")
-	/*check data exist*/
-	if response.ErrorIdTest(context, id, database.GetCompetitionIsExist(id), "Competition") {
-		return
-	}
-	competition, err := database.GetCompetitionWGroupsPlayersScores(id)
-	if response.ErrorInternalErrorTest(context, id, "Get Competition with Groups Players Scores", err) {
-		return
-	}
-
-	/*update and check change*/
-	for _, group := range competition.Groups {
-		for _, player := range group.Players {
-			var newPlayerTotalScore int
-			for _, round := range player.Rounds {
-				var newRoundTotalScore int
-				for _, end := range round.RoundEnds {
-					for _, arrow := range end.RoundScores {
-						fmtScore := Scorefmt(arrow.Score)
-						newRoundTotalScore += fmtScore
-					}
-				}
-				newPlayerTotalScore += newRoundTotalScore
-				/*update round total score*/
-				err, _ := database.UpdatePlayerRoundTotalScore(round.ID, newRoundTotalScore)
-				if response.ErrorInternalErrorTest(context, id, "Update Round Total Score", err) {
-					return
-				}
-			}
-			/*update player total score*/
-			err, _ := database.UpdatePlayerTotalScore(player.ID, newPlayerTotalScore)
-			if response.ErrorInternalErrorTest(context, id, "Update Player Total Score", err) {
-				return
-			}
-		}
-	}
-	context.IndentedJSON(http.StatusOK, gin.H{"message": "Update Competition Recount Player Total Score Success"})
 }

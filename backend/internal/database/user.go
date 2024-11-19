@@ -1,11 +1,13 @@
 package database
 
 import (
+	. "backend/internal/pkg"
 	"log"
 )
 
 type User struct {
 	ID            uint   `gorm:"primaryKey;autoIncrement" json:"id"`
+	Role          string `gorm:"not null" json:"role"`
 	UserName      string `gorm:"unique;not null" json:"user_name"`
 	RealName      string `json:"real_name"`
 	Password      string `gorm:"not null" json:"-"`
@@ -33,6 +35,12 @@ func FindAllUsers() []User {
 	var users []User
 	DB.Find(&users)
 	return users
+}
+
+func MoveUsersToNoInstitutionByInstitutionID(InstitutionID uint) error {
+	err := DB.Model(&User{}).Where("institution_id = ?", InstitutionID).
+		Update("institution_id", NoInstitutionID).Error
+	return err
 }
 
 /* get one user data by ID*/
@@ -81,7 +89,7 @@ func CreateUser(user User) (User, error) {
 }
 
 /*delete user by ID*/
-func DeleteUser(userID string) bool {
+func DeleteUser(userID uint) bool {
 	user := User{}
 	result := DB.Where("id = ?", userID).Delete(&user)
 	log.Println(result)
@@ -89,9 +97,9 @@ func DeleteUser(userID string) bool {
 }
 
 /*updata user*/
-func UpdataUser(userID string, user User) User {
-	DB.Model(&user).Where("id = ?", userID).Updates(user)
-	return user
+func UpdataUser(userID uint, user User) (User, error) {
+	err := DB.Model(&user).Where("id = ?", userID).Updates(&user).Error
+	return user, err
 }
 
 func CheckEmailExistExclude(email string, uid uint) bool {
@@ -109,4 +117,15 @@ func GetUserIsExist(id uint) bool {
 	var user User
 	DB.Table("users").Where("id = ?", id).First(&user)
 	return user.ID != 0
+}
+
+func GetUserRole(id uint) (string, error) {
+	var user User
+	result := DB.Model(&User{}).Where(("id = ?"), id).First(&user)
+	return user.Role, result.Error
+}
+
+func UpdateUserRole(id uint, role Role) error {
+	result := DB.Model(&User{}).Where("id = ?", id).Update("role", role)
+	return result.Error
 }

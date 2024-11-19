@@ -7,8 +7,6 @@ import (
 	"log"
 	"os"
 	"strings"
-
-	"gopkg.in/yaml.v2"
 )
 
 type Conf struct {
@@ -20,17 +18,16 @@ type Conf struct {
 	Mode     string `yaml:"mode"`
 }
 
-func GetConf(filePath string) (c Conf) {
-	yamlFile, err := os.ReadFile(filePath)
+func GetSQLDataFromFile(filepath string) []string {
+	sqlBytes, err := os.ReadFile(filepath)
 	if err != nil {
-		log.Printf("yamlFile.Get err   #%v ", err)
+		log.Println("fail to load "+filepath+": ", err)
+		os.Exit(1)
 	}
-
-	err = yaml.Unmarshal(yamlFile, &c)
-	if err != nil {
-		log.Fatalf("Unmarshal: %v", err)
-	}
-	return
+	sqlString := string(sqlBytes)
+	requests := strings.Split(sqlString, ";")
+	requestArray := requests[:len(requests)-1]
+	return requestArray
 }
 
 /*讓我可以存取[]string型別的東西*/

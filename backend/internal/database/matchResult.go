@@ -135,6 +135,11 @@ func UpdateMatchEndById(id uint, data MatchEnd) (MatchEnd, error) {
 	return data, result.Error
 }
 
+func UpdateMatchResultPlayerSetIdById(id uint, playerSetId uint) error {
+	result := DB.Table("match_results").Where("id = ?", id).Update("player_set_id", playerSetId)
+	return result.Error
+}
+
 func UpdateMatchResultTotalPointsById(id uint, totalPoint int) error {
 	result := DB.Table("match_results").Where("id = ?", id).Update("total_points", totalPoint)
 	return result.Error

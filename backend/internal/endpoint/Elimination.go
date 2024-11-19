@@ -289,8 +289,10 @@ func PostMatch(context *gin.Context) {
 		return
 	} else if len(data.PlayerSetIds) != 2 {
 		response.ErrorReceiveDataFormat(context, " player set ids should be 2")
+		return
 	} else if len(data.LaneNumbers) != 2 {
 		response.ErrorReceiveDataFormat(context, "lane numbers should be 2")
+		return
 	}
 	/*id existence*/
 	stage, err := database.GetStageById(data.StageId)
@@ -353,6 +355,61 @@ func PostMatch(context *gin.Context) {
 	}
 	response.AcceptPrint(newData.ID, fmt.Sprint(newData), "Match")
 	context.IndentedJSON(200, newData)
+}
+
+// Put two playerset id for two matchresult in one match godoc
+//
+//	@Summary		Update two MatchResult with two PlayerSetId in one Match
+//	@Description	Update two MatchResult with two PlayerSetId in one Match by id
+//	@Tags			Elimination
+//	@Accept			json
+//	@Produce		json
+//	@Param			matchid		path		int															true	"Match ID"
+//	@Param			PlayerSetId	body		endpoint.PutMatchPlayerSetByMatchId.PutMatchPlayerSetIdData	true	"PlayerSetId"
+//	@Success		200			{object}	database.Match												"success, return updated Match with new PlayerSetId"
+//	@Failure		400			{object}	response.ErrorIdResponse									"invalid Match ID / invalid PlayerSetId / PlayerSetId should be 2"
+//	@Failure		500			{object}	response.ErrorInternalErrorResponse							"internal db error for Get Match when updating match player set / Update MatchResult PlayerSetId / Get Match when updating match player set"
+//	@Router			/elimination/match/playerset/{matchid} [patch]
+func PutMatchPlayerSetByMatchId(conetext *gin.Context) {
+	type PutMatchPlayerSetIdData struct {
+		PlayerSetIds []uint `json:"player_set_ids"`
+	}
+	var data PutMatchPlayerSetIdData
+	matchId := Convert2uint(conetext, "matchid")
+	/*check request data*/
+	err := conetext.BindJSON(&data)
+	if response.ErrorReceiveDataTest(conetext, 0, "PutMatchPlayerSetByMatchId", err) {
+		return
+	}
+	if len(data.PlayerSetIds) != 2 {
+		response.ErrorReceiveDataFormat(conetext, "PlayerSetId should be 2")
+		return
+	}
+
+	/*check id existence*/
+	match, err := database.GetMatchWScoresById(matchId)
+	if response.ErrorInternalErrorTest(conetext, matchId, "Get Match when updating match player set", err) {
+		return
+	}
+	if response.ErrorIdTest(conetext, data.PlayerSetIds[0], database.GetPlayerSetIsExist(data.PlayerSetIds[0]), "PlayerSet") {
+		return
+	}
+	if response.ErrorIdTest(conetext, data.PlayerSetIds[1], database.GetPlayerSetIsExist(data.PlayerSetIds[1]), "PlayerSet") {
+		return
+	}
+	/*update match result*/
+	for i := 0; i < 2; i++ {
+		matchResult := match.MatchResults[i]
+		err = database.UpdateMatchResultPlayerSetIdById(matchResult.ID, data.PlayerSetIds[i])
+		if response.ErrorInternalErrorTest(conetext, matchResult.ID, "Update MatchResult PlayerSetId", err) {
+			return
+		}
+	}
+	newMatch, err := database.GetMatchWScoresById(matchId)
+	if response.ErrorInternalErrorTest(conetext, matchId, "Get Match when updating match player set", err) {
+		return
+	}
+	conetext.IndentedJSON(200, newMatch)
 }
 
 // Put elimination current stage plus one by id

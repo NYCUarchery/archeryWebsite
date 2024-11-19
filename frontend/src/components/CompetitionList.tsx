@@ -47,7 +47,7 @@ export const CompetitionItem = ({ competition, uid }: CompetitionItemProps) => {
     apply({
       competition_id: competition.id,
       user_id: uid,
-      role: "player",
+      role: "Player",
     });
     setOpen(false);
   };
@@ -56,7 +56,7 @@ export const CompetitionItem = ({ competition, uid }: CompetitionItemProps) => {
     apply({
       competition_id: competition.id,
       user_id: uid,
-      role: "admin",
+      role: "Admin",
     });
     setOpen(false);
   };

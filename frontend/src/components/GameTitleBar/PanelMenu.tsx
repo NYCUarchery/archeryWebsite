@@ -50,21 +50,18 @@ export default function PanelMenu({ panelName, participant }: Props) {
 
   const items = boardNameSets.map((set) => {
     if (boardAbbreviations.has(set.id)) {
-      console.log(participant);
-      console.log(set.id);
-
       if (
         (participant === undefined || participant?.status === "pending") &&
         set.id !== "scoreboard"
       ) {
-        return <></>;
+        return null;
       } else if (
-        participant?.role === "player" &&
+        participant?.role === "Player" &&
         (set.id === "admin" || set.id === "judge")
       ) {
-        return <></>;
-      } else if (participant?.role === "admin" && set.id === "scoring") {
-        return <></>;
+        return null;
+      } else if (participant?.role === "Admin" && set.id === "scoring") {
+        return null;
       }
       return (
         <MenuItem

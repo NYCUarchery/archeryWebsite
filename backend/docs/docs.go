@@ -731,44 +731,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/competition/refresh/groups/players/playertotalscore/{id}": {
-            "patch": {
-                "description": "Refresh competition player total score by competition id.",
-                "tags": [
-                    "Competition"
-                ],
-                "summary": "Refresh competition player total score by competition id.",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Competition ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "success",
-                        "schema": {
-                            "$ref": "#/definitions/response.Response"
-                        }
-                    },
-                    "400": {
-                        "description": "invalid competition id parameter",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorIdResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Get Competition with Groups Players Scores / Update Round Total Score / Update Player Total Score",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/competition/refresh/groups/players/rank/{id}": {
             "patch": {
                 "description": "Refresh all player ranking of different groups in one Competition.",
@@ -1352,6 +1314,59 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "internal db error for Create Match, MatchResult, MatchEnd, MatchScore, or get Stage",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/elimination/match/playerset/{matchid}": {
+            "patch": {
+                "description": "Update two MatchResult with two PlayerSetId in one Match by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Elimination"
+                ],
+                "summary": "Update two MatchResult with two PlayerSetId in one Match",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Match ID",
+                        "name": "matchid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "PlayerSetId",
+                        "name": "PlayerSetId",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.PutMatchPlayerSetByMatchId.PutMatchPlayerSetIdData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success, return updated Match with new PlayerSetId",
+                        "schema": {
+                            "$ref": "#/definitions/database.Match"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid Match ID / invalid PlayerSetId / PlayerSetId should be 2",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error for Get Match when updating match player set / Update MatchResult PlayerSetId / Get Match when updating match player set",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -2698,14 +2713,14 @@ const docTemplate = `{
         },
         "/matchresult/matchend/scores/{id}": {
             "patch": {
-                "description": "Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids.\nMatchScore ids and scores must be the same length",
+                "description": "Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids\nMatchScore ids and scores must be the same length",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
                     "MatchEnd"
                 ],
-                "summary": "Update one MatchEnd scores.",
+                "summary": "Update one MatchEnd scores",
                 "parameters": [
                     {
                         "type": "integer",
@@ -3279,7 +3294,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "invalid info / role is empty / participant exists / invalid user ID / invalid competition ID",
+                        "description": "invalid info / role is not defined / participant exists / invalid user ID / invalid competition ID",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorReceiveDataFormatResponse"
                         }
@@ -3381,6 +3396,53 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "internal db error / Get participants by competition id / Get user by id",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/participant/me/{competitionid}": {
+            "get": {
+                "description": "Get Participants By user id and competition id.\nAnd update session gamerole.\nWarnings: Something need to be modified in the future.\nWarnings: Only take the first one temporarily, for player and dummy player assumption in one competition of a user.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Participant"
+                ],
+                "summary": "Get Participants By user id and competition id, and update session gamerole.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Competition ID",
+                        "name": "competitionid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success, return the first participant, and update session gamerole",
+                        "schema": {
+                            "$ref": "#/definitions/database.Participant"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid competition id / invalid user id",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorUnauthorizedResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "get participants by competition id and user id",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -4134,6 +4196,50 @@ const docTemplate = `{
                 }
             }
         },
+        "/player/refresh/totalscores/{competitionid}": {
+            "patch": {
+                "description": "Refresh all player qualification total scores in a compeition by competition id.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Player"
+                ],
+                "summary": "Refresh all player qualification total scores in a compeition by competition id.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Competition ID",
+                        "name": "competitionid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/response.Nill"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid competition id parameter, may not exist",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error / get competition / get groups / get players / update player total score",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/player/roundend": {
             "post": {
                 "description": "Just in case api.\nCreate one RoundEnd by round id, IsComfirmed is false.\nShould not be used, just in case function, PostPlayer is used to create player, rounds, roundends, roundscores.",
@@ -4240,7 +4346,7 @@ const docTemplate = `{
         },
         "/player/roundscore/{roundscoreid}": {
             "patch": {
-                "description": "Update one Player score by id.\nUpdate doesn't change total score in player, round, roundend.",
+                "description": "Update one Player score by id.\nWill auto update player total score.",
                 "consumes": [
                     "application/json"
                 ],
@@ -4441,7 +4547,7 @@ const docTemplate = `{
         },
         "/player/totalscore/{id}": {
             "patch": {
-                "description": "Update one Player total score by id.",
+                "description": "Just in case api.\nUpdate one Player total score by id.",
                 "consumes": [
                     "application/json"
                 ],
@@ -5399,7 +5505,7 @@ const docTemplate = `{
         },
         "/user": {
             "post": {
-                "description": "Add a user to db.\nUsername cannot be empty or repeated.\nPassword cannot be empty.\nEmail cannot be empty or repeated.",
+                "description": "Add a user to db.\nUsername cannot be empty or repeated.\nPassword cannot be empty.\nEmail cannot be empty or repeated.\nInstitution id must exist.\nRealname and overview are optional.\nRole is set to User.",
                 "consumes": [
                     "application/json"
                 ],
@@ -6111,6 +6217,9 @@ const docTemplate = `{
                 "real_name": {
                     "type": "string"
                 },
+                "role": {
+                    "type": "string"
+                },
                 "user_name": {
                     "type": "string"
                 }
@@ -6510,6 +6619,17 @@ const docTemplate = `{
                 }
             }
         },
+        "endpoint.PutMatchPlayerSetByMatchId.PutMatchPlayerSetIdData": {
+            "type": "object",
+            "properties": {
+                "player_set_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
         "endpoint.PutMatchResultIsWinnerById.matchResultIsWinnerData": {
             "type": "object",
             "properties": {
@@ -6732,6 +6852,15 @@ const docTemplate = `{
                 "error": {
                     "type": "string",
                     "example": "error description"
+                }
+            }
+        },
+        "response.ErrorUnauthorizedResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "unauthorized"
                 }
             }
         },

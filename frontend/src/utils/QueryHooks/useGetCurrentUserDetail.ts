@@ -4,7 +4,7 @@ import { apiClient } from "@/utils/ApiClient";
 import { useGetUserId } from "./useGetUserID";
 
 export function useGetCurrentUserDetail() {
-  const { data: id, isError, isFetching } = useGetUserId();
+  const { data: id, isError } = useGetUserId();
   const queryClient = useQueryClient();
 
   if (isError) {
@@ -15,7 +15,7 @@ export function useGetCurrentUserDetail() {
   return useQuery(["currentUserDetail"], () => apiClient.user.userDetail(id!), {
     select: (data) => data.data,
     retry: false,
-    enabled: !isFetching,
+    enabled: id !== undefined,
     staleTime: Infinity,
   });
 }
