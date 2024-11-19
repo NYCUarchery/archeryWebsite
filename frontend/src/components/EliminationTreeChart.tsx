@@ -161,6 +161,46 @@ export default function EliminationTreeChart({
       .attr("fill", "white")
       .text((d: HierarchyNode<TreeNode>) => getTextByNode(d, playerSets));
 
+    goldGroup
+      .append("g")
+      .attr("transform", `translate(${-labelWidth / 2 + labelWidth}, ${0})`)
+      .selectAll("rect")
+      .data(
+        goldMappedNodes.descendants().filter((d, i) => filterNoLaneNode(d, i))
+      )
+      .join("rect")
+      .attr("width", labelHeight)
+      .attr("height", labelHeight)
+      .attr("y", (d: HierarchyNode<TreeNode>) => d.x! - labelHeight / 2)
+      .attr("x", (d: HierarchyNode<TreeNode>) => width - d.y! - labelHeight)
+      .attr("fill", (d: HierarchyNode<TreeNode>) =>
+        getLaneNumberBackgroundColor(d)
+      );
+
+    goldGroup
+      .append("g")
+      .attr(
+        "transform",
+        `translate(${-labelWidth / 2 + labelWidth - labelHeight / 2}, ${
+          -labelHeight / 2
+        })`
+      )
+      .selectAll("text")
+      .data(
+        goldMappedNodes.descendants().filter((d, i) => filterNoLaneNode(d, i))
+      )
+      .join("text")
+      .attr("y", (d: HierarchyNode<TreeNode>) => d.x! + labelHeight / 2 + 2)
+      .attr("x", (d: HierarchyNode<TreeNode>) => width - d.y!)
+      .attr("fill", (d: HierarchyNode<TreeNode>) => getLaneNumberColor(d))
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .attr("font-weight", "bold")
+      .attr("font-size", "20px")
+      .text((d: HierarchyNode<TreeNode>) =>
+        d.data.result.lane_number!.toString()
+      );
+
     bronzeGroup
       .append("g")
       .attr(
@@ -175,8 +215,7 @@ export default function EliminationTreeChart({
       .attr("x", (d: HierarchyNode<TreeNode>) => bronzeWidth - d.y!)
       .attr("width", labelWidth)
       .attr("height", labelHeight)
-      .attr("fill", (_, i: number) => getBronzeTreeColor(i))
-      .classed("played", (d: any) => d.data.ascore || d.data.bscore);
+      .attr("fill", (_, i: number) => getBronzeTreeColor(i));
 
     bronzeGroup
       .append("g")
@@ -191,6 +230,46 @@ export default function EliminationTreeChart({
       .attr("x", (d: HierarchyNode<TreeNode>) => bronzeWidth - d.y! + 5)
       .attr("fill", "white")
       .text((d: HierarchyNode<TreeNode>) => getTextByNode(d, playerSets));
+
+    bronzeGroup
+      .append("g")
+      .attr("transform", `translate(${-labelWidth / 2 + labelWidth}, ${0})`)
+      .selectAll("rect")
+      .data(
+        bronzeMappedNodes.descendants().filter((d, i) => filterNoLaneNode(d, i))
+      )
+      .join("rect")
+      .attr("width", labelHeight)
+      .attr("height", labelHeight)
+      .attr("y", (d: HierarchyNode<TreeNode>) => d.x! - labelHeight / 2)
+      .attr("x", (d: HierarchyNode<TreeNode>) => width - d.y! - labelHeight)
+      .attr("fill", (d: HierarchyNode<TreeNode>) =>
+        getLaneNumberBackgroundColor(d)
+      );
+
+    bronzeGroup
+      .append("g")
+      .attr(
+        "transform",
+        `translate(${-labelWidth / 2 + labelWidth - labelHeight / 2}, ${
+          -labelHeight / 2
+        })`
+      )
+      .selectAll("text")
+      .data(
+        bronzeMappedNodes.descendants().filter((d, i) => filterNoLaneNode(d, i))
+      )
+      .join("text")
+      .attr("y", (d: HierarchyNode<TreeNode>) => d.x! + labelHeight / 2 + 2)
+      .attr("x", (d: HierarchyNode<TreeNode>) => width - d.y!)
+      .attr("fill", (d: HierarchyNode<TreeNode>) => getLaneNumberColor(d))
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .attr("font-weight", "bold")
+      .attr("font-size", "20px")
+      .text((d: HierarchyNode<TreeNode>) =>
+        d.data.result.lane_number!.toString()
+      );
 
     const silverNode = d3.hierarchy<TreeNode>(silverRoot);
     const silverGroup = svg
@@ -254,4 +333,24 @@ const getBronzeTreeColor = (index: number) => {
     return "#cd7f32";
   }
   return "#2056CC";
+};
+
+const getLaneNumberBackgroundColor = (d: HierarchyNode<TreeNode>) => {
+  const laneNumber = d.data.result.lane_number!;
+  if (laneNumber % 2 === 0) {
+    return "black";
+  }
+  return "#fff700";
+};
+
+const getLaneNumberColor = (d: HierarchyNode<TreeNode>) => {
+  const laneNumber = d.data.result.lane_number!;
+  if (laneNumber % 2 === 0) {
+    return "#fff700";
+  }
+  return "black";
+};
+
+const filterNoLaneNode = (d: HierarchyNode<TreeNode>, index: number) => {
+  return index !== 0 && d.data.result.lane_number !== undefined;
 };
