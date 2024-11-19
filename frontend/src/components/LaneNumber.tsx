@@ -1,7 +1,7 @@
 import { Box } from "@mui/material";
 
 interface LaneNumberProps {
-  laneNumber: number;
+  laneNumber?: number;
   width: string;
   height: string;
 }
@@ -9,7 +9,7 @@ interface LaneNumberProps {
 function LaneNumber({ laneNumber, width, height }: LaneNumberProps) {
   let color = "#fff700";
   let backgroundColor = "black";
-  if (laneNumber % 2 == 1) {
+  if (laneNumber != undefined && laneNumber % 2 == 1) {
     color = "black";
     backgroundColor = "#fff700";
   }
