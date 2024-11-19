@@ -156,6 +156,8 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
     }
   );
 
+  if (!eliminationDetail) return <Typography>Loading...</Typography>;
+
   const resetState = () => {
     setCreateMatchDialogOpen(false);
     setSetOption1(null);
@@ -264,6 +266,14 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
     });
   };
 
+  const canCreateStage = () => {
+    if (eliminationDetail?.stages?.length === 0) return true;
+    const stageNum = stages.length;
+    const advancingNum = eliminationDetail.stages![0].matchs!.length! * 2;
+    const maxStageNum = Math.floor(Math.log2(advancingNum));
+    return stageNum < maxStageNum;
+  };
+
   return (
     <Box>
       <Card sx={{ p: 2 }}>
@@ -271,7 +281,9 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
           <GroupMenu
             groupNames={groups?.map((group) => group.group_name!) ?? []}
           />
-          <Button onClick={handleCreateStage}>創建階段</Button>
+          <Button onClick={handleCreateStage} disabled={!canCreateStage()}>
+            創建階段
+          </Button>
         </Stack>
       </Card>
       <Card sx={{ p: 2, display: "flex" }}>
@@ -305,7 +317,7 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
                   >
                     <Stack direction="row">
                       <LaneNumber
-                        laneNumber={result1!.lane_number!}
+                        laneNumber={result1?.lane_number}
                         width="30px"
                         height="30px"
                       />
@@ -319,7 +331,7 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
                           justifyContent: "center",
                         }}
                       >
-                        <span>{set1!.set_name}</span>
+                        <span>{set1?.set_name}</span>
                         {result1?.is_winner ? (
                           <EmojiEventsIcon sx={{ color: "#eee700" }} />
                         ) : null}
@@ -332,7 +344,7 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
                     </Typography>
                     <Stack direction="row">
                       <LaneNumber
-                        laneNumber={result2!.lane_number!}
+                        laneNumber={result2?.lane_number}
                         width="30px"
                         height="30px"
                       />
@@ -346,7 +358,7 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
                           justifyContent: "center",
                         }}
                       >
-                        <span>{set2!.set_name}</span>
+                        <span>{set2?.set_name}</span>
                         {result2?.is_winner ? (
                           <EmojiEventsIcon sx={{ color: "#eee700" }} />
                         ) : null}

@@ -1,8 +1,8 @@
 export enum PhaseEnums {
   Qualification = "qualification",
-  Elimination = "elimination",
-  TeamElimination = "team-elimination",
-  MixedElimination = "mixed-elimination",
+  Elimination = "elimination/1",
+  TeamElimination = "elimination/3",
+  MixedElimination = "elimination/2",
 }
 
 export function getChinesePhaseName(phase: PhaseEnums) {
