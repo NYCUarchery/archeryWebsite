@@ -51,8 +51,8 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
   const [laneNumber2, setLaneNumber2] = useState<number>(0);
   const [createMatchDialogOpen, setCreateMatchDialogOpen] = useState(false);
   const [matchInfoDialogOpen, setMatchInfoDialogOpen] = useState(false);
-  const [selectedMatchId, setSelectedMatchId] = useState<number>();
-  const [selectedStageId, setSelectedStageId] = useState<number>();
+  const [selectedMatchId, setSelectedMatchId] = useState<number | null>(null);
+  const [selectedStageId, setSelectedStageId] = useState<number | null>(null);
 
   const { data: groups } = useGetCompetitionGroupsWithPlayers(
     parseInt(params.id)
@@ -156,6 +156,25 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
     }
   );
 
+  const { mutate: updatePlayerSets } = useMutation(
+    (data: { matchId: number; playerSetIds: { player_set_ids: number[] } }) =>
+      apiClient.elimination.matchPlayersetPartialUpdate(
+        data.matchId,
+        data.playerSetIds
+      ),
+    {
+      onSuccess: (_, variables) => {
+        const match = eliminationDetail?.stages
+          ?.flatMap((stage) => stage.matchs)
+          ?.find((match) => match!.id === variables.matchId);
+        match!.match_results![0].player_set_id =
+          variables.playerSetIds.player_set_ids[0];
+        match!.match_results![1].player_set_id =
+          variables.playerSetIds.player_set_ids[1];
+      },
+    }
+  );
+
   if (!eliminationDetail) return <Typography>Loading...</Typography>;
 
   const resetState = () => {
@@ -186,25 +205,29 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
     });
   };
 
-  const handleMatchInfoDialogOpen = (matchId: number, stageId: number) => {
-    const match = eliminationDetail?.stages
-      ?.find((stage) => stage.id === stageId)
-      ?.matchs?.find((match) => match.id === matchId);
-
-    const result1 = match?.match_results?.[0];
-    const result2 = match?.match_results?.[1];
-
-    const set1 = playerSets?.find((set) => set.id === result1?.player_set_id);
-    const set2 = playerSets?.find((set) => set.id === result2?.player_set_id);
-    setSet1Detail(set1!);
-    setSet2Detail(set2!);
-
-    setLaneNumber1(result1!.lane_number!);
-    setLaneNumber2(result2!.lane_number!);
-
+  const handleMatchInfoDialogOpen = (
+    matchId: number,
+    stageId: number,
+    set1: DatabasePlayerSet,
+    set2: DatabasePlayerSet
+  ) => {
     setSelectedMatchId(matchId);
     setSelectedStageId(stageId);
+    const option1 = playerSetOptions.find((option) => option.id === set1.id);
+    const option2 = playerSetOptions.find((option) => option.id === set2.id);
+    setSet1Detail(set1);
+    setSet2Detail(set2);
+    setSetOption1(option1!);
+    setSetOption2(option2!);
     setMatchInfoDialogOpen(true);
+  };
+
+  const handleMatchInfoDialogClose = () => {
+    setMatchInfoDialogOpen(false);
+    setSetOption1(null);
+    setSetOption2(null);
+    setSelectedMatchId(null);
+    setSelectedStageId(null);
   };
 
   const handleUpdateIsWinner = (matchResultId: number, isWinner: boolean) => {
@@ -311,7 +334,12 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
                 return (
                   <Paper
                     onClick={() =>
-                      handleMatchInfoDialogOpen(match.id!, stage.id!)
+                      handleMatchInfoDialogOpen(
+                        match.id!,
+                        stage.id!,
+                        set1!,
+                        set2!
+                      )
                     }
                     sx={{ cursor: "pointer", mb: 2, ml: 2, mr: 2 }}
                   >
@@ -448,7 +476,15 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
                       colSpan={parseInt(params.teamSize)}
                       align="center"
                     >
-                      {set1Detail?.set_name}
+                      <Autocomplete
+                        options={playerSetOptions}
+                        value={setOption1}
+                        onChange={(_, newValue) => setSetOption1(newValue)}
+                        renderInput={(params) => (
+                          <TextField {...params} label="選擇選手" />
+                        )}
+                        sx={{ width: "200px" }}
+                      />
                     </TableCell>
                     <TableCell align="center">贏家</TableCell>
                     <TableCell align="center">靶道</TableCell>
@@ -487,7 +523,15 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
                       colSpan={parseInt(params.teamSize)}
                       align="center"
                     >
-                      {set2Detail?.set_name}
+                      <Autocomplete
+                        options={playerSetOptions}
+                        value={setOption2}
+                        onChange={(_, newValue) => setSetOption2(newValue)}
+                        renderInput={(params) => (
+                          <TextField {...params} label="選擇選手" />
+                        )}
+                        sx={{ width: "200px" }}
+                      />
                     </TableCell>
                     <TableCell align="center">贏家</TableCell>
                     <TableCell align="center">靶道</TableCell>
@@ -521,10 +565,23 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
         </DialogContent>
 
         <DialogActions>
+          <Button
+            color="success"
+            onClick={() =>
+              updatePlayerSets({
+                matchId: selectedMatchId!,
+                playerSetIds: {
+                  player_set_ids: [setOption1!.id!, setOption2!.id!],
+                },
+              })
+            }
+          >
+            更新選手
+          </Button>
           <Button color="success" onClick={handleUpdateLaneNumber}>
             更新靶道
           </Button>
-          <Button color="info" onClick={() => setMatchInfoDialogOpen(false)}>
+          <Button color="info" onClick={handleMatchInfoDialogClose}>
             取消
           </Button>
         </DialogActions>
