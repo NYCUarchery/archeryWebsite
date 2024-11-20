@@ -36,8 +36,8 @@ func InitElimination() {
 
 func DropElimination() {
 	if DB.Migrator().HasTable(&Match{}) {
-		if err := DB.Migrator().DropTable(&Elimination{}); err != nil {
-			log.Println("Failed to drop Elimination:", err)
+		if err := DB.Migrator().DropTable(&Match{}); err != nil {
+			log.Println("Failed to drop Match:", err)
 			return
 		}
 	}
@@ -48,8 +48,8 @@ func DropElimination() {
 		}
 	}
 	if DB.Migrator().HasTable(&Elimination{}) {
-		if err := DB.Migrator().DropTable(&Match{}); err != nil {
-			log.Println("Failed to drop Match:", err)
+		if err := DB.Migrator().DropTable(&Elimination{}); err != nil {
+			log.Println("Failed to drop Elimination:", err)
 			return
 		}
 	}
