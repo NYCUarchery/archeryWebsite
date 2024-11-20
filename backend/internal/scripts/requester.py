@@ -163,7 +163,7 @@ def read_user_csv(csv_path, competition_id):
         raise ValueError("csv_path must be a string")
     if type(competition_id) != int:
         raise ValueError("competition_id must be an integer")
-    file = open(csv_path, mode='r')
+    file = open(csv_path, mode='r', encoding='utf-8')
     if file.closed:
         print ("File is closed")
 
