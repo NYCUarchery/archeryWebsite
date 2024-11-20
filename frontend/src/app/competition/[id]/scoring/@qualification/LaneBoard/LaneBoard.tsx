@@ -1,4 +1,4 @@
-import LaneNumber from "./LaneNumber";
+import LaneNumber from "@/components/LaneNumber";
 import PlayerInfoBar from "./PlayerInfoBar/PlayerInfoBar";
 import { ToggleButtonGroup, ToggleButton, Box } from "@mui/material";
 import ScoreController from "@/components/ScoreController/ScoreController";
@@ -62,7 +62,9 @@ export default function LaneBoard({
 
   return (
     <Box className="lane_board">
-      <LaneNumber laneNum={lane.lane_number} />
+      <Box sx={{ display: "flex", justifyContent: "center", width: "100%" }}>
+        <LaneNumber laneNumber={lane.lane_number} width="30px" height="30px" />
+      </Box>
       <TargetSigns orders={lane.players.map((p: any) => p.order)} />
       <ToggleButtonGroup
         className="player_button_group"
