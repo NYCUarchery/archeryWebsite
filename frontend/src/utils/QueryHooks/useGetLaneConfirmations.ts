@@ -20,9 +20,12 @@ export default function useGetLaneConfirmations(
       select: (data) => {
         const players = data.data.players as Player[];
         const confirmations: Confirmation[] = [];
+        const endIndex = currentEndIndex;
+        const roundIndex = Math.floor(endIndex / 6);
+        if (endIndex < 0 || players[0]?.rounds?.[roundIndex] == undefined) {
+          return confirmations;
+        }
         for (let i = 0; i < players.length; i++) {
-          const endIndex = currentEndIndex - 1;
-          const roundIndex = Math.floor(endIndex / 6);
           const end = players![i].rounds![roundIndex].round_ends![endIndex % 6];
           confirmations.push({
             endId: end.id,
