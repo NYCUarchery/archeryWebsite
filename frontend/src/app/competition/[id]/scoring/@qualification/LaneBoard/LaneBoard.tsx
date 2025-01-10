@@ -3,7 +3,6 @@ import PlayerInfoBar from "./PlayerInfoBar/PlayerInfoBar";
 import { ToggleButtonGroup, ToggleButton, Box } from "@mui/material";
 import ScoreController from "@/components/ScoreController/ScoreController";
 import TargetSigns from "./TargetSigns";
-import PreQualificationNote from "./PreQualificationNote";
 import useGetCompetitionWithGroups from "@/utils/QueryHooks/useGetCompetitionWithGroups";
 import { Player } from "@/types/oldRef/Player";
 import { LaneWithEnds } from "@/utils/QueryHooks/useGetCurrentEndWithLaneByPlayer";
@@ -56,14 +55,55 @@ export default function LaneBoard({
     );
   }
 
-  if (competition.qualification_current_end === 0) {
-    return <PreQualificationNote></PreQualificationNote>;
+  if (competition.qualification_current_end === -1) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <h1>還沒開始，我知道你很急但你先別急。</h1>
+      </div>
+    );
+  }
+
+  if (competition.qualification_current_end! >= competition.rounds_num! * 6) {
+    return (
+      <div style={{ display: "flex", justifyContent: "center" }}>
+        <h1>比賽結束</h1>
+      </div>
+    );
   }
 
   return (
     <Box className="lane_board">
-      <Box sx={{ display: "flex", justifyContent: "center", width: "100%" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          width: "100%",
+          color: "primary.main",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <span>
+            Round {Math.floor(competition.qualification_current_end! / 6) + 1}
+          </span>
+        </Box>
         <LaneNumber laneNumber={lane.lane_number} width="30px" height="30px" />
+        <Box
+          sx={{
+            display: "flex",
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          End {(competition.qualification_current_end! % 6) + 1}
+        </Box>
       </Box>
       <TargetSigns orders={lane.players.map((p: any) => p.order)} />
       <ToggleButtonGroup

@@ -2,6 +2,7 @@ import { Player, RoundEnd } from "@/types/oldRef/Player";
 import { apiClient } from "../ApiClient";
 import { useQuery } from "react-query";
 import { Lane } from "@/types/oldRef/Lane";
+import { DatabaseRoundEnd } from "@/types/Api";
 
 export interface LaneWithEnds extends Lane {
   ends: RoundEnd[];
@@ -18,10 +19,16 @@ export default function useGetCurrentEndWithLaneByPlayer(
       select: (data: any) => {
         const lane = data.data as Lane;
         lane.players.sort((a, b) => a.order - b.order);
-        const ends = [];
+        const ends: DatabaseRoundEnd[] = [];
+        const endIndex = currentEndIndex!;
+        const roundIndex = Math.floor(endIndex / 6);
+        if (
+          endIndex < 0 ||
+          lane.players[0]?.rounds?.[roundIndex] == undefined
+        ) {
+          return { ...lane, ends } as LaneWithEnds;
+        }
         for (let i = 0; i < lane.players.length; i++) {
-          const endIndex = currentEndIndex! - 1;
-          const roundIndex = Math.floor(endIndex / 6);
           const end =
             lane.players![i].rounds![roundIndex].round_ends![endIndex % 6];
           ends.push(end);
@@ -29,7 +36,7 @@ export default function useGetCurrentEndWithLaneByPlayer(
         return { ...lane, ends } as LaneWithEnds;
       },
       staleTime: Infinity,
-      enabled: !!player && !!currentEndIndex,
+      enabled: !!player,
     }
   );
 }
