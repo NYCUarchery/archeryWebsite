@@ -13,15 +13,54 @@ import useGetUserCompetitions from "@/utils/QueryHooks/useGetUserCompetitions";
 import { useRouter } from "next/navigation";
 import ToCreateButton from "./ToCreateButton";
 import { useGetCurrentUserDetail } from "@/utils/QueryHooks/useGetCurrentUserDetail";
+import NoticeSnackbars from "@/components/NoticeSnackbars";
+import { apiClient } from "@/utils/ApiClient";
+import { useMutation } from "react-query";
 
 export default function MyCompetitionPage() {
   const [page, setPage] = useState(1);
   const [startIndex, setStartIndex] = useState((page - 1) * 5);
   const [endIndex, setEndIndex] = useState(page * 5 - 1);
+  const [snackbarSuccess, setSnackbarSuccess] = useState(false);
+  const [snackbarError, setSnackbarError] = useState(false);
   const { data: uid, isError: isUidError } = useGetUserId();
   const { data: user } = useGetCurrentUserDetail();
   const { data: competitions, isLoading: isLoadingCompetitions } =
     useGetUserCompetitions(uid as number, startIndex, endIndex);
+
+  const { mutate: apply } = useMutation(
+    apiClient.participant.participantCreate,
+
+    {
+      onSuccess: () => {
+        setSnackbarSuccess(true);
+      },
+      onError: () => {
+        setSnackbarError(true);
+      },
+    }
+  );
+
+  const handlePlayeApplication = (competitionId: number) => {
+    apply({
+      competition_id: competitionId,
+      user_id: uid,
+      role: "Player",
+    });
+  };
+
+  const handleAdminApplication = (competitionId: number) => {
+    apply({
+      competition_id: competitionId,
+      user_id: uid,
+      role: "Admin",
+    });
+  };
+
+  const handleSnackbarsClose = () => {
+    setSnackbarSuccess(false);
+    setSnackbarError(false);
+  };
 
   const router = useRouter();
 
@@ -60,8 +99,20 @@ export default function MyCompetitionPage() {
         {isLoadingCompetitions || !competitions ? (
           <p>loading...</p>
         ) : (
-          <CompetitionList competitions={competitions} uid={uid} />
+          <CompetitionList
+            competitions={competitions}
+            uid={uid}
+            onPlayerApply={handlePlayeApplication}
+            onAdminApply={handleAdminApplication}
+          />
         )}
+        <NoticeSnackbars
+          isSuccess={snackbarSuccess}
+          successMessage="申請成功!"
+          isError={snackbarError}
+          errorMessage="申請失敗!可能是網路狀況不佳或是您已經在比賽內。"
+          onClose={handleSnackbarsClose}
+        />
 
         <Pagination
           count={10}
