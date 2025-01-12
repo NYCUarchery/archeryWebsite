@@ -58,7 +58,7 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
     parseInt(params.id)
   );
 
-  const groupIndex = useAppSelector((state) => state.schedule.groupIndex);
+  const groupIndex = useAppSelector((state) => state.progress.groupIndex);
   const { data: elimination } = useGetElimination(
     parseInt(params.id),
     groupIndex - 1, // 0 is unassigned group in the for the group menu.
