@@ -6,7 +6,6 @@ export default function useGetCompetitionWithGroups(id: number) {
     () => apiClient.competition.groupsDetail(id),
     {
       select: (data) => data.data,
-      staleTime: 60000 * 30,
     }
   );
 }
