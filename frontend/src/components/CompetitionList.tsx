@@ -5,26 +5,35 @@ import Card from "@mui/material/Card";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
 import { useState } from "react";
-import { useMutation } from "react-query";
 import { useRouter } from "next/navigation";
-import { apiClient } from "@/utils/ApiClient";
 
 interface Props {
   competitions: DatabaseCompetition[];
   uid?: number;
+  onPlayerApply?: (competitionId: number) => void;
+  onAdminApply?: (competitionId: number) => void;
 }
 interface CompetitionItemProps {
   competition: DatabaseCompetition;
   uid?: number;
+  onPlayerApply?: (competitionId: number) => void;
+  onAdminApply?: (competitionId: number) => void;
 }
 
-export const CompetitionList = ({ competitions, uid }: Props) => {
+export const CompetitionList = ({
+  competitions,
+  uid,
+  onPlayerApply,
+  onAdminApply,
+}: Props) => {
   return (
     <>
       {competitions?.map((competition: DatabaseCompetition) => (
         <CompetitionItem
           competition={competition}
           uid={uid}
+          onAdminApply={onAdminApply}
+          onPlayerApply={onPlayerApply}
           key={competition.id}
         />
       ))}
@@ -32,32 +41,27 @@ export const CompetitionList = ({ competitions, uid }: Props) => {
   );
 };
 
-export const CompetitionItem = ({ competition, uid }: CompetitionItemProps) => {
+export const CompetitionItem = ({
+  competition,
+  uid,
+  onPlayerApply,
+  onAdminApply,
+}: CompetitionItemProps) => {
   const [open, setOpen] = useState(false);
   const router = useRouter();
-  const { mutate: apply } = useMutation(
-    apiClient.participant.participantCreate
-  );
 
   const handleJoin = () => {
     setOpen(true);
   };
 
   const handlePlayeApplication = () => {
-    apply({
-      competition_id: competition.id,
-      user_id: uid,
-      role: "Player",
-    });
+    onPlayerApply?.(competition.id!);
+
     setOpen(false);
   };
 
   const handleAdminApplication = () => {
-    apply({
-      competition_id: competition.id,
-      user_id: uid,
-      role: "Admin",
-    });
+    onAdminApply?.(competition.id!);
     setOpen(false);
   };
 

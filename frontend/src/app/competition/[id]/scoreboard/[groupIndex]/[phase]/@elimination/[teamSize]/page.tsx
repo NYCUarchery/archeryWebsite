@@ -35,7 +35,6 @@ export default function Page({
   const advancingNum = eliminationDetail.stages![0].matchs!.length * 2;
 
   const expectStageNum = Math.ceil(Math.log2(advancingNum)) + 1;
-  console.log("expectStageNum", expectStageNum);
   const chartWidth = expectStageNum * 200;
 
   return (
