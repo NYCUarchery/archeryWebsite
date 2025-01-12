@@ -14,7 +14,7 @@ import {
   initEnds,
   setSelectedOrder,
 } from "./qualificationScoringSlice";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useMutation } from "react-query";
 import { apiClient } from "@/utils/ApiClient";
 import { EndToPatch, extractEnds } from "@/utils/extractEnds";
@@ -29,6 +29,7 @@ export default function Page({ params }: { params: { id: string } }) {
     (state) => state.qualificationScoring.selectedOrder
   );
   const ends = useAppSelector((state) => state.qualificationScoring.ends);
+  const oldEndsRef = useRef(ends);
   const { data: user } = useGetCurrentUserDetail();
   const competitionId = parseInt(params.id);
   const { data: competition } = useGetCompetitionWithGroups(competitionId);
@@ -77,6 +78,30 @@ export default function Page({ params }: { params: { id: string } }) {
       },
     }
   );
+
+  useEffect(() => {
+    if (oldEndsRef.current.length === 0) {
+      oldEndsRef.current = ends;
+      return;
+    }
+    const isEndScored = ends.some((end, index) => {
+      const oldLastScoreSlot = oldEndsRef.current[index].round_scores![5].score;
+      const newLastScoreSlot = end.round_scores![5].score;
+      if (oldLastScoreSlot !== -1) {
+        return false;
+      }
+
+      if (oldLastScoreSlot === -1 && newLastScoreSlot !== -1) {
+        return true;
+      }
+    });
+
+    if (isEndScored) {
+      sendScore(extractEnds(ends));
+    }
+
+    oldEndsRef.current = ends;
+  }, [ends]);
 
   const onSelectedOrderChange = (index: number) => {
     dispatch(setSelectedOrder(index));
@@ -127,7 +152,7 @@ export default function Page({ params }: { params: { id: string } }) {
         onClose={handleClose}
       >
         <Alert onClose={handleClose} severity="success" sx={{ width: "100%" }}>
-          送出成功d(`･∀･)b
+          已更新所有資料d(`･∀･)b
         </Alert>
       </Snackbar>
       <Snackbar
