@@ -3,6 +3,7 @@ import { apiClient } from "../ApiClient";
 import { useQuery } from "react-query";
 import { Lane } from "@/types/oldRef/Lane";
 import { DatabaseRoundEnd } from "@/types/Api";
+import { UseQueryOptions } from "react-query";
 
 export interface LaneWithEnds extends Lane {
   ends: RoundEnd[];
@@ -10,7 +11,8 @@ export interface LaneWithEnds extends Lane {
 
 export default function useGetCurrentEndWithLaneByPlayer(
   player: Player | undefined,
-  currentEndIndex: number | undefined
+  currentEndIndex: number | undefined,
+  onSuccess?: UseQueryOptions<LaneWithEnds, unknown>["onSuccess"]
 ) {
   return useQuery(
     ["currentEndWithLaneByPlayer", player?.id, currentEndIndex],
@@ -35,8 +37,8 @@ export default function useGetCurrentEndWithLaneByPlayer(
         }
         return { ...lane, ends } as LaneWithEnds;
       },
-      staleTime: Infinity,
       enabled: !!player,
+      onSuccess: onSuccess,
     }
   );
 }

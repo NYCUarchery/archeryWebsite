@@ -30,6 +30,7 @@ export default function Page({ params }: { params: { id: string } }) {
   );
   const ends = useAppSelector((state) => state.qualificationScoring.ends);
   const oldEndsRef = useRef(ends);
+  const isEndRefreshed = useRef(false);
   const { data: user } = useGetCurrentUserDetail();
   const competitionId = parseInt(params.id);
   const { data: competition } = useGetCompetitionWithGroups(competitionId);
@@ -43,7 +44,10 @@ export default function Page({ params }: { params: { id: string } }) {
   );
   const { data: lane } = useGetCurrentEndWithLaneByPlayer(
     players?.[0],
-    competition?.qualification_current_end
+    competition?.qualification_current_end,
+    () => {
+      isEndRefreshed.current = true;
+    }
   );
 
   const { mutate: sendScore } = useMutation(
@@ -80,6 +84,10 @@ export default function Page({ params }: { params: { id: string } }) {
   );
 
   useEffect(() => {
+    if (isEndRefreshed.current) {
+      isEndRefreshed.current = false;
+      return;
+    }
     if (oldEndsRef.current.length === 0) {
       oldEndsRef.current = ends;
       return;
