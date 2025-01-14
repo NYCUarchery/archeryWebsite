@@ -52,6 +52,17 @@ var roleMap = map[Role]string{
 
 var roleMapReverse = make(map[string]Role)
 
+// RBACMiddleware is a middleware to check if the user has the required role.
+//
+// Parameters:
+//   - roleType: Specifies the type of role
+//     e.g. RoleSystem or RoleGame.
+//   - roles: A variadic parameter to define allowed roles
+//     e.g. Guest, User, InstitutionAdmin, Pro, Dictator, Viewer, Player, Judge, Admin.
+//
+// Notes:
+//   - The default role is RNone.
+//   - Top roles are Dictator and Admin.
 func RBACMiddleware(roleType RoleType, roles ...Role) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		role := RNone
