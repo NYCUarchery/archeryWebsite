@@ -30,11 +30,11 @@ func TestRBACMiddleware(t *testing.T) {
 		{"invalid system role", RoleSystem,
 			[]Role{RNone},
 			[]Role{RNone},
-			403, "Require login"},
+			403, "Invalid system role"},
 		{"invalid game role", RoleGame,
 			[]Role{RNone},
 			[]Role{RNone},
-			403, "Require login"},
+			403, "Invalid game role"},
 
 		{"valid system RDictator role", RoleSystem,
 			[]Role{},
