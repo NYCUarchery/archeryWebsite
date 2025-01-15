@@ -3308,6 +3308,56 @@ const docTemplate = `{
                 }
             }
         },
+        "/participant/bulk/roles/status/{competitionid}": {
+            "patch": {
+                "description": "Patch Participants.\nOnly update role and status.\nRole type should be defined.\nParticipant should be in the competition.\nAdmin cannot be updated or added.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Participant"
+                ],
+                "summary": "Update Participants.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Competition ID",
+                        "name": "competitionid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Participant",
+                        "name": "Participant",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/endpoint.PutParticipantData"
+                            }
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success, return processedNum, successNum, failNum, errorData",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.PatchParticipantsReturnData"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid competition id / data length is 0",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/participant/competition/user/{competitionid}/{userid}": {
             "get": {
                 "description": "Get Participants By competition ID and user ID",
@@ -3560,7 +3610,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/endpoint.PutParticipant.PutParticipantData"
+                            "$ref": "#/definitions/endpoint.PutParticipantData"
                         }
                     }
                 ],
@@ -6405,6 +6455,37 @@ const docTemplate = `{
                 }
             }
         },
+        "endpoint.PatchParticipantsErrorDataType": {
+            "type": "object",
+            "properties": {
+                "errorMessage": {
+                    "type": "string"
+                },
+                "putParticipantData": {
+                    "$ref": "#/definitions/endpoint.PutParticipantData"
+                }
+            }
+        },
+        "endpoint.PatchParticipantsReturnData": {
+            "type": "object",
+            "properties": {
+                "errorData": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/endpoint.PatchParticipantsErrorDataType"
+                    }
+                },
+                "failNum": {
+                    "type": "integer"
+                },
+                "processedNum": {
+                    "type": "integer"
+                },
+                "successNum": {
+                    "type": "integer"
+                }
+            }
+        },
         "endpoint.PatchPlayerLaneOrder.UpdateLaneIdOrderData": {
             "type": "object",
             "properties": {
@@ -6678,9 +6759,12 @@ const docTemplate = `{
                 }
             }
         },
-        "endpoint.PutParticipant.PutParticipantData": {
+        "endpoint.PutParticipantData": {
             "type": "object",
             "properties": {
+                "id": {
+                    "type": "integer"
+                },
                 "role": {
                     "type": "string"
                 },
@@ -6932,7 +7016,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:80",
+	Host:             "127.0.0.1:80",
 	BasePath:         "/api/",
 	Schemes:          []string{},
 	Title:            "Gin swagger",

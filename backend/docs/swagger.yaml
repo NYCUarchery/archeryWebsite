@@ -435,6 +435,26 @@ definitions:
       user_id:
         type: integer
     type: object
+  endpoint.PatchParticipantsErrorDataType:
+    properties:
+      errorMessage:
+        type: string
+      putParticipantData:
+        $ref: '#/definitions/endpoint.PutParticipantData'
+    type: object
+  endpoint.PatchParticipantsReturnData:
+    properties:
+      errorData:
+        items:
+          $ref: '#/definitions/endpoint.PatchParticipantsErrorDataType'
+        type: array
+      failNum:
+        type: integer
+      processedNum:
+        type: integer
+      successNum:
+        type: integer
+    type: object
   endpoint.PatchPlayerLaneOrder.UpdateLaneIdOrderData:
     properties:
       lane_id:
@@ -610,8 +630,10 @@ definitions:
       player_set_id:
         type: integer
     type: object
-  endpoint.PutParticipant.PutParticipantData:
+  endpoint.PutParticipantData:
     properties:
+      id:
+        type: integer
       role:
         type: string
       status:
@@ -738,7 +760,7 @@ definitions:
         example: result description
         type: string
     type: object
-host: localhost:80
+host: 127.0.0.1:80
 info:
   contact:
     name: NYCUArchery
@@ -2978,7 +3000,7 @@ paths:
         name: Participant
         required: true
         schema:
-          $ref: '#/definitions/endpoint.PutParticipant.PutParticipantData'
+          $ref: '#/definitions/endpoint.PutParticipantData'
       produces:
       - application/json
       responses:
@@ -2995,6 +3017,44 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Update one Participant.
+      tags:
+      - Participant
+  /participant/bulk/roles/status/{competitionid}:
+    patch:
+      consumes:
+      - application/json
+      description: |-
+        Patch Participants.
+        Only update role and status.
+        Role type should be defined.
+        Participant should be in the competition.
+        Admin cannot be updated or added.
+      parameters:
+      - description: Competition ID
+        in: path
+        name: competitionid
+        required: true
+        type: integer
+      - description: Participant
+        in: body
+        name: Participant
+        required: true
+        schema:
+          items:
+            $ref: '#/definitions/endpoint.PutParticipantData'
+          type: array
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: success, return processedNum, successNum, failNum, errorData
+          schema:
+            $ref: '#/definitions/endpoint.PatchParticipantsReturnData'
+        "400":
+          description: invalid competition id / data length is 0
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+      summary: Update Participants.
       tags:
       - Participant
   /participant/competition/{competitionid}:
