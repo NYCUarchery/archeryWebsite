@@ -27,6 +27,22 @@ type NewParticipantInfo struct {
 	Role          string `json:"role"`
 }
 
+type PutParticipantData struct {
+	ID     uint   `json:"id"`
+	Role   string `json:"role"`
+	Status string `json:"status"`
+}
+type PatchParticipantsErrorDataType struct {
+	ErrorMessage       string             `json:"errorMessage"`
+	PutParticipantData PutParticipantData `json:"putParticipantData"`
+}
+type PatchParticipantsReturnData struct {
+	ProcessedNum int                              `json:"processedNum"`
+	SuccessNum   int                              `json:"successNum"`
+	FailNum      int                              `json:"failNum"`
+	ErrorData    []PatchParticipantsErrorDataType `json:"errorData"`
+}
+
 //JSON
 
 // PostParticipant godoc
@@ -250,18 +266,13 @@ func GetParticipantByCompetitionIdUserId(context *gin.Context) {
 //	@Tags			Participant
 //	@Accept			json
 //	@Produce		json
-//	@Param			id			path		int											true	"Participant ID"
-//	@Param			Participant	body		endpoint.PutParticipant.PutParticipantData	true	"Participant"
-//	@Success		200			{object}	database.Participant						"success, return updated participant"
-//	@Failure		400			{object}	response.ErrorIdResponse					"invalid participant id"
-//	@Failure		500			{object}	response.ErrorInternalErrorResponse			"internal db error / Update Participant"
+//	@Param			id			path		int									true	"Participant ID"
+//	@Param			Participant	body		endpoint.PutParticipantData			true	"Participant"
+//	@Success		200			{object}	database.Participant				"success, return updated participant"
+//	@Failure		400			{object}	response.ErrorIdResponse			"invalid participant id"
+//	@Failure		500			{object}	response.ErrorInternalErrorResponse	"internal db error / Update Participant"
 //	@Router			/participant/{id} [put]
 func PutParticipant(context *gin.Context) {
-	type PutParticipantData struct {
-		Role   string `json:"role"`
-		Status string `json:"status"`
-	}
-	_ = PutParticipantData{}
 	var data database.Participant
 	err := context.BindJSON(&data)
 	id := Convert2uint(context, "id")
@@ -285,6 +296,85 @@ func PutParticipant(context *gin.Context) {
 	}
 	response.AcceptPrint(id, fmt.Sprint(newdata), "Participant")
 	context.IndentedJSON(http.StatusOK, newdata)
+}
+
+// Update Participants godoc
+//
+//	@Summary		Update Participants.
+//	@Description	Patch Participants.
+//	@Description	Only update role and status.
+//	@Description	Role type should be defined.
+//	@Description	Participant should be in the competition.
+//	@Description	Admin cannot be updated or added.
+//	@Tags			Participant
+//	@Accept			json
+//	@Produce		json
+//	@Param			competitionid	path		int																								true	"Competition ID"
+//	@Param			Participant		body		[]endpoint.PutParticipantData																	true	"Participant"
+//	@Success		200				{object}	endpoint.PatchParticipantsReturnData{int, int, int, []endpoint.PatchParticipantsErrorDataType}	"success, return processedNum, successNum, failNum, errorData"
+//	@Failure		400				{object}	response.ErrorIdResponse																		"invalid competition id / data length is 0"
+//	@Router			/participant/bulk/roles/status/{competitionid} [patch]
+func PatchParticipants(context *gin.Context) {
+	var data []PutParticipantData
+	var returnData = PatchParticipantsReturnData{0, 0, 0, []PatchParticipantsErrorDataType{}}
+	err := context.BindJSON(&data)
+	competitionid := Convert2uint(context, "competitionid")
+	if response.ErrorReceiveDataTest(context, 0, "Put Participants", err) {
+		return
+	}
+	if response.ErrorIdTest(context, competitionid, database.GetCompetitionIsExist(competitionid), "Competition ID when updating participants") {
+		return
+	}
+	if len(data) == 0 {
+		response.ErrorReceiveDataTest(context, 0, "Put Participants", fmt.Errorf("no data received"))
+		return
+	}
+
+	for _, d := range data {
+		if !database.GetParticipantIsExistWithCompetitionID(d.ID, competitionid) {
+			returnData.FailNum++
+			returnData.ErrorData = append(returnData.ErrorData, PatchParticipantsErrorDataType{"invalid participant id | participant not in competition", d})
+			returnData.ProcessedNum++
+			continue
+		}
+		oldparticipant, err := database.GetParticipant(d.ID)
+		if err != nil {
+			returnData.FailNum++
+			returnData.ErrorData = append(returnData.ErrorData, PatchParticipantsErrorDataType{"internal db error to get participant", d})
+			returnData.ProcessedNum++
+			continue
+		}
+		if oldparticipant.Role == "Admin" {
+			returnData.FailNum++
+			returnData.ErrorData = append(returnData.ErrorData, PatchParticipantsErrorDataType{"Admin cannot be updated", d})
+			returnData.ProcessedNum++
+			continue
+		}
+		if d.Role == "Admin" {
+			returnData.FailNum++
+			returnData.ErrorData = append(returnData.ErrorData, PatchParticipantsErrorDataType{"Admin cannot be added", d})
+			returnData.ProcessedNum++
+			continue
+		}
+		if !pkg.EnsureRoleInGameRoleSet(pkg.StringToRole(d.Role)) {
+			returnData.FailNum++
+			returnData.ErrorData = append(returnData.ErrorData, PatchParticipantsErrorDataType{"role is not defined", d})
+			returnData.ProcessedNum++
+			continue
+		}
+		var par database.Participant = database.Participant{Role: d.Role, Status: d.Status}
+		_, err = database.UpdateParticipant(d.ID, par)
+		if response.ErrorInternalErrorTest(context, d.ID, "Update Participant", err) {
+			returnData.FailNum++
+			errorMessage := fmt.Sprintf("internal db error: %v", err)
+			returnData.ErrorData = append(returnData.ErrorData, PatchParticipantsErrorDataType{errorMessage, d})
+			returnData.ProcessedNum++
+			continue
+		}
+		returnData.SuccessNum++
+		returnData.ProcessedNum++
+	}
+	context.IndentedJSON(http.StatusOK, returnData)
 }
 
 // Delete Participant by id godoc
