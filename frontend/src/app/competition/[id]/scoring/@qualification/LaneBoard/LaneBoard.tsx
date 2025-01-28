@@ -113,6 +113,7 @@ export default function LaneBoard({
         value={selectedOrder}
         onChange={handleOnChange}
         exclusive
+        sx={{ marginButtom: "1rem" }}
       >
         {playerInfos}
       </ToggleButtonGroup>
