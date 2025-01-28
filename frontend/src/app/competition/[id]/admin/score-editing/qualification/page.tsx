@@ -20,12 +20,14 @@ import {
   Dialog,
   DialogContent,
   Button,
+  Tab,
 } from "@mui/material";
 import { useState } from "react";
 import CircleSign from "@/components/CircleSign";
 import { useScoreColors } from "@/utils/useScoreColor";
 import ScoreController from "@/components/ScoreController/ScoreController";
 import { DatabaseRoundEnd } from "@/types/Api";
+import ScoreCircle from "@/components/ScoreCircle";
 
 export default function Page({ params }: { params: { id: string } }) {
   const colors = useScoreColors();
@@ -107,35 +109,64 @@ export default function Page({ params }: { params: { id: string } }) {
     player
       ?.rounds!.map((round, roundIndex) => {
         return round!.round_ends!.map((end, endIndex) => {
+          let roundTotalRow = <></>;
+          if (endIndex === 5) {
+            roundTotalRow = (
+              <TableRow key={`${roundIndex}-total`}>
+                <TableCell align="center" colSpan={1}>{`${
+                  roundIndex + 1
+                }`}</TableCell>
+                <TableCell align="center" colSpan={isSmall ? 3 : 6}></TableCell>
+                <TableCell align="center" colSpan={1}>
+                  {round.total_score}
+                </TableCell>
+                <TableCell align="center" colSpan={1}></TableCell>
+              </TableRow>
+            );
+          }
+
+          const endTotal = end!.round_scores!.reduce((acc, score) => {
+            if (score.score === 11) {
+              acc += 10;
+            } else if (score.score === -1) {
+            } else {
+              acc += score.score!;
+            }
+            return acc;
+          }, 0);
           return (
-            <TableRow key={`${roundIndex}-${endIndex}`}>
-              <TableCell align="center" colSpan={1}>{`${roundIndex + 1}-${
-                endIndex + 1
-              }`}</TableCell>
-              <TableCell align="center" colSpan={isSmall ? 3 : 6}>
-                <Box
-                  sx={{ display: "flex", justifyContent: "space-around" }}
-                  key={`${roundIndex}-${endIndex}`}
-                >
-                  {end!.round_scores!.map((score) => {
-                    const scoreColor = colors.get(score.score!)!;
-                    return (
-                      <CircleSign
-                        backgroundColor={scoreColor.backgroundColor}
-                        color={scoreColor.textColor}
-                        diameter={20}
-                        text={score!.score!.toString()}
-                      />
-                    );
-                  })}
-                </Box>
-              </TableCell>
-              <TableCell align="center" colSpan={1}>
-                <IconButton onClick={() => handleOpenScoreDialog(end)}>
-                  <EditIcon />
-                </IconButton>
-              </TableCell>
-            </TableRow>
+            <>
+              <TableRow key={`${roundIndex}-${endIndex}`}>
+                <TableCell align="center" colSpan={1}>{`${roundIndex + 1}-${
+                  endIndex + 1
+                }`}</TableCell>
+                <TableCell align="center" colSpan={isSmall ? 3 : 6}>
+                  <Box
+                    sx={{ display: "flex", justifyContent: "space-around" }}
+                    key={`${roundIndex}-${endIndex}`}
+                  >
+                    {end!.round_scores!.map((score) => {
+                      return (
+                        <ScoreCircle
+                          key={score.id}
+                          score={score.score!}
+                          diameter={25}
+                        />
+                      );
+                    })}
+                  </Box>
+                </TableCell>
+                <TableCell align="center" colSpan={1}>
+                  {endTotal}
+                </TableCell>
+                <TableCell align="center" colSpan={1}>
+                  <IconButton onClick={() => handleOpenScoreDialog(end)}>
+                    <EditIcon />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+              {roundTotalRow}
+            </>
           );
         });
       })
@@ -191,6 +222,9 @@ export default function Page({ params }: { params: { id: string } }) {
                 分數
               </TableCell>
               <TableCell align="center" colSpan={1}>
+                小計
+              </TableCell>
+              <TableCell align="center" colSpan={1}>
                 操作
               </TableCell>
             </TableRow>
@@ -210,21 +244,12 @@ export default function Page({ params }: { params: { id: string } }) {
           >
             {selectedEnd ? (
               selectedEnd!.round_scores!.map((score) => {
-                const { textColor, backgroundColor } = colors.get(
-                  score.score!
-                )!;
-                let text = score.score!.toString();
-
-                if (score.score === 0) text = "M";
-                else if (score.score === 11) text = "X";
-                else if (score.score === -1) text = " ";
                 return (
-                  <CircleSign
-                    text={text}
-                    backgroundColor={backgroundColor}
-                    color={textColor}
-                    diameter={30}
-                  ></CircleSign>
+                  <ScoreCircle
+                    key={score.id}
+                    score={score.score!}
+                    diameter={25}
+                  />
                 );
               })
             ) : (
