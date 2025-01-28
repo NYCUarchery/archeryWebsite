@@ -20,18 +20,13 @@ import {
   Dialog,
   DialogContent,
   Button,
-  Tab,
 } from "@mui/material";
 import { useState } from "react";
-import CircleSign from "@/components/CircleSign";
-import { useScoreColors } from "@/utils/useScoreColor";
 import ScoreController from "@/components/ScoreController/ScoreController";
 import { DatabaseRoundEnd } from "@/types/Api";
 import ScoreCircle from "@/components/ScoreCircle";
 
 export default function Page({ params }: { params: { id: string } }) {
-  const colors = useScoreColors();
-
   const isSmall = useMediaQuery("(max-width:420px)");
   const queryClient = useQueryClient();
   const [selectedPlayer, setSelectedPlayer] = useState<{
@@ -128,8 +123,7 @@ export default function Page({ params }: { params: { id: string } }) {
           const endTotal = end!.round_scores!.reduce((acc, score) => {
             if (score.score === 11) {
               acc += 10;
-            } else if (score.score === -1) {
-            } else {
+            } else if (score.score !== -1) {
               acc += score.score!;
             }
             return acc;
