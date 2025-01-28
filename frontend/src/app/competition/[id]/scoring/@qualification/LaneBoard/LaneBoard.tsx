@@ -49,7 +49,7 @@ export default function LaneBoard({
     const end = ends[i];
     if (player === undefined) continue;
     playerInfos.push(
-      <ToggleButton value={player.order} key={i} className="player_button">
+      <ToggleButton value={player.order} key={i} sx={{ height: "350px" }}>
         <PlayerInfoBar player={player} end={end}></PlayerInfoBar>
       </ToggleButton>
     );
