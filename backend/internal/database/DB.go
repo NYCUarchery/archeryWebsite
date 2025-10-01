@@ -17,7 +17,7 @@ import (
 var DB *gorm.DB
 
 func SetupDatabaseByMode(mode string) {
-	if mode == "test" {
+	if mode == "test" || mode == "dev" {
 		TestDatabaseInitial()
 	} else {
 		DatabaseInitial()

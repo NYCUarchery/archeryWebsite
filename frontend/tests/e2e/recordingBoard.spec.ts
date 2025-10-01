@@ -4,22 +4,22 @@ import resetDB from "./resetDB";
 test.describe("Recording Board", () => {
   test.beforeEach(async ({ page }) => {
     await resetDB();
-    await page.goto("http://localhost/Login");
-    await page.getByLabel("帳號").fill("1C");
-    await page.getByLabel("密碼").fill("1c1c1c1c");
-
-    await expect(
-      await page.getByRole("button", { name: "登入" })
-    ).not.toBeDisabled();
-    await page.getByRole("button", { name: "登入" }).click();
+    await page.goto("http://127.0.0.1/login");
+    await page.getByLabel('帳號').click();
+    await page.getByLabel('帳號').fill('1C');
+    await page.getByLabel('密碼').fill('1c1c1c1c');
+    await Promise.all([
+      page.waitForURL("http://127.0.0.1/**"),
+      page.getByRole("button", { name: "登入" }).click(),
+    ]);
     await expect(await page.getByText("公告欄")).toBeVisible();
-    await page.goto("http://localhost/scoring/2");
+    await page.goto("http://127.0.0.1/competition/2/scoreboard/0/qualification");
     await page.getByRole("button", { name: "分" }).click();
     await page.getByRole("menuitem", { name: "紀錄分數" }).click();
   });
 
   test("Pre competiion prompt", async ({ page }) => {
-    await page.goto("http://localhost/scoring/1");
+    await page.goto("http://127.0.0.1/competition/1/scoreboard/0/qualification");
     await page.getByRole("button", { name: "分" }).click();
     await page.getByRole("menuitem", { name: "紀錄分數" }).click();
     await expect(
@@ -42,14 +42,10 @@ test.describe("Recording Board", () => {
   test("Score editing", async ({ page }) => {
     await unconfirm(page);
 
+    await page.goto("http://127.0.0.1/competition/2/scoring");
     await page.getByRole("button", { name: "- 李峻 9 9 9 7 6" }).click();
     for (let i = 0; i < 6; i++) {
-      await page
-        .locator("div")
-        .filter({ hasText: /^確認$/ })
-        .getByRole("button")
-        .nth(1)
-        .click();
+      await page.locator('div').filter({ hasText: /^確認送出$/ }).getByRole('button').nth(2).click();
     }
     await expect(page.getByRole("button", { name: "- 李峻" })).toBeVisible();
     await page.getByRole("button", { name: "9", exact: true }).click();
@@ -78,9 +74,9 @@ test.describe("Recording Board", () => {
       for (const name of names) {
         await page.getByRole("button", { name: name }).click();
         await page.getByRole("button", { name: "確認" }).click();
-        name.replace("-", "✔");
+        const confirmedName = name.replace("-", "✔");
         await expect(
-          await page.getByRole("button", { name: name })
+          await page.getByRole("button", { name: confirmedName })
         ).toBeVisible();
       }
     }
@@ -90,19 +86,14 @@ test.describe("Recording Board", () => {
       await unconfirm(page);
       await page.getByRole("button", { name: "- 吳柏橙 9 9 8 7 6" }).click();
       for (let i = 0; i < 6; i++) {
-        await page
-          .locator("div")
-          .filter({ hasText: /^確認$/ })
-          .getByRole("button")
-          .nth(1)
-          .click();
+        await page.locator('div').filter({ hasText: /^確認送出$/ }).getByRole('button').nth(2).click();
       }
 
       for (let i = 0; i < 3; i++) {
         await page.getByRole("button", { name: "6", exact: true }).click();
       }
-
-      await page.goto("http://localhost/");
+      await page.getByRole('button', { name: '送出' }).click();
+      await page.goto("http://127.0.0.1/");
       await page.getByLabel("account of current user").click();
       await page.getByRole("menuitem", { name: "登出" }).click();
       await page.getByLabel("account of current user").click();
@@ -111,7 +102,7 @@ test.describe("Recording Board", () => {
       await page.getByLabel("密碼").fill("1b1b1b1b");
       await page.getByRole("button", { name: "登入" }).click();
       await expect(await page.getByText("公告欄")).toBeVisible();
-      await page.goto("http://localhost/scoring/2");
+      await page.goto("http://127.0.0.1/competition/2/scoreboard/0/qualification");
       await page.getByRole("button", { name: "分" }).click();
       await page.getByRole("menuitem", { name: "紀錄分數" }).click();
       await expect(
@@ -127,7 +118,7 @@ test.describe("Recording Board", () => {
 
     await unconfirm(adminPage, true);
     adminPage.getByRole("tab", { name: "進度" }).click();
-    page.goto("http://localhost/scoring/2");
+    await page.goto("http://127.0.0.1/competition/2/scoreboard/0/qualification");
     await page.getByRole("button", { name: "分" }).click();
     await page.getByRole("menuitem", { name: "紀錄分數" }).click();
     let users = [
@@ -162,12 +153,7 @@ test.describe("Recording Board", () => {
       user.scores = shuffleArray(user.scores);
       await page.getByRole("button", { name: user.buttonName }).click();
       for (let j = 0; j < 6; j++) {
-        await page
-          .locator("div")
-          .filter({ hasText: /^確認$/ })
-          .getByRole("button")
-          .nth(1)
-          .click();
+        await page.locator('div').filter({ hasText: /^確認送出$/ }).getByRole('button').nth(2).click();
       }
       for (let j = 0; j < 6; j++) {
         await page
@@ -180,7 +166,7 @@ test.describe("Recording Board", () => {
       await expect(
         page.getByText(user.rowName).getByText(user.totalScore.toString())
       ).toBeVisible();
-      await page.goto("http://localhost/scoring/2");
+      await page.goto("http://127.0.0.1/competition/2/scoreboard/0/qualification");
       await page.getByRole("button", { name: "分" }).click();
       await page.getByRole("menuitem", { name: "紀錄分數" }).click();
     }
@@ -188,7 +174,7 @@ test.describe("Recording Board", () => {
 });
 
 async function unconfirm(page, adminOnly = false) {
-  await page.goto("http://localhost/");
+  await page.goto("http://127.0.0.1/");
   if (!adminOnly) {
     await page.getByLabel("account of current user").click();
     await page.getByRole("menuitem", { name: "登出" }).click();
@@ -199,7 +185,7 @@ async function unconfirm(page, adminOnly = false) {
   await page.getByLabel("密碼").fill("Waaaaaaaa");
   await page.getByRole("button", { name: "登入" }).click();
   await expect(await page.getByText("公告欄")).toBeVisible();
-  await page.goto("http://localhost/scoring/2");
+  await page.goto("http://127.0.0.1/competition/2/scoreboard/0/qualification");
   await page.getByRole("button", { name: "分" }).click();
   await page.getByRole("menuitem", { name: "監控" }).click();
   await page.getByRole("tab", { name: "進度" }).click();
@@ -208,15 +194,15 @@ async function unconfirm(page, adminOnly = false) {
   await page.getByText("1A").click();
   await page.getByText("1D").click();
   if (adminOnly) return;
-  await page.goto("http://localhost/");
+  await page.goto("http://127.0.0.1/");
   await page.getByLabel("account of current user").click();
   await page.getByRole("menuitem", { name: "登出" }).click();
-  await page.goto("http://localhost/Login");
+  await page.goto("http://127.0.0.1/login");
   await page.getByLabel("帳號").fill("1C");
   await page.getByLabel("密碼").fill("1c1c1c1c");
   await page.getByRole("button", { name: "登入" }).click();
   await expect(await page.getByText("公告欄")).toBeVisible();
-  await page.goto("http://localhost/scoring/2");
+  await page.goto("http://127.0.0.1/competition/2/scoreboard/0/qualification");
   await page.getByRole("button", { name: "分" }).click();
   await page.getByRole("menuitem", { name: "紀錄分數" }).click();
 }

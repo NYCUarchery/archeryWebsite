@@ -28,6 +28,10 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+    viewport: null,                  // 放開固定 viewport，跟隨實際視窗
+    launchOptions: {
+      args: ['--start-maximized'],   // 讓瀏覽器啟動就最大化
+    },
   },
 
   /* Configure projects for major browsers */
