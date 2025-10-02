@@ -1,4 +1,5 @@
-import ScoreBlock from "./ScoreBlock";
+import Box from "@mui/material/Box";
+import ScoreCircle from "@/components/ScoreCircle";
 
 interface Props {
   scores: number[];
@@ -7,8 +8,22 @@ interface Props {
 export default function ScoreBar(props: Props) {
   const scoreBlocks = [];
   for (let i = 0; i < props.scores.length; i++) {
-    scoreBlocks.push(<ScoreBlock key={i} score={props.scores[i]}></ScoreBlock>);
+    scoreBlocks.push(
+      <ScoreCircle key={i} score={props.scores[i]}></ScoreCircle>
+    );
   }
 
-  return <div className="score_bar">{scoreBlocks}</div>;
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "space-around",
+        alignItems: "center",
+        height: "100%",
+      }}
+    >
+      {scoreBlocks}
+    </Box>
+  );
 }

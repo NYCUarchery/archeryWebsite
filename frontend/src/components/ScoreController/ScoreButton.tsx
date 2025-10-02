@@ -51,8 +51,7 @@ export default function ScoreButton({ end, score, onAddScore }: Props) {
       color={buttonColor as unknown as undefined}
       sx={{
         boxShadow: "none",
-        borderRadius: "0px",
-        width: "20%",
+        width: "100%",
         height: "3rem",
         fontSize: "1rem",
       }}
