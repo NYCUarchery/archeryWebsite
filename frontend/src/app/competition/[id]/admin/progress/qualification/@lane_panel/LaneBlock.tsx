@@ -73,7 +73,13 @@ export default function LaneBlock({
         );
       }
       tempSignals.push(
-        <TableCell align="center" width={"25%"} height={30} key={i}>
+        <TableCell
+          align="center"
+          width={"25%"}
+          height={30}
+          key={i}
+          sx={{ paddingLeft: 0, paddingRight: 0 }}
+        >
           {signal}
         </TableCell>
       );
@@ -82,8 +88,8 @@ export default function LaneBlock({
   }, [confirmations]);
 
   return (
-    <TableContainer component={Paper} sx={{ overflow: "clip" }}>
-      <Table aria-label="simple table" size="small">
+    <TableContainer component={Paper} sx={{ overflow: "hidden" }}>
+      <Table aria-label="simple table" size="small" sx={{ tableLayout: "fixed" }}>
         <TableHead>
           <TableRow>
             <TableCell colSpan={4} align="center">

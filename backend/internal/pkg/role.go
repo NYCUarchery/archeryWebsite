@@ -52,18 +52,53 @@ var roleMap = map[Role]string{
 
 var roleMapReverse = make(map[string]Role)
 
+// RBACMiddleware is a middleware to check if the user has the required role.
+//
+// Parameters:
+//   - roleType: Specifies the type of role
+//     e.g. RoleSystem or RoleGame.
+//   - roles: A variadic parameter to define allowed roles
+//     e.g. Guest, User, InstitutionAdmin, Pro, Dictator, Viewer, Player, Judge, Admin.
+//
+// Notes:
+//   - The default role is RNone.
+//   - Top roles are Dictator and Admin.
 func RBACMiddleware(roleType RoleType, roles ...Role) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		role := RNone
+		var query interface{}
 		if roleType == RoleSystem {
-			role = Role(QuerySession(c, "systemrole").(int))
+			query = QuerySession(c, "systemrole")
+			if query == nil || query == RNone {
+				role = RNone
+			} else { // query != nil
+				role = Role(query.(int))
+				if !EnsureRoleInSystemRoleSet(role) {
+					c.JSON(http.StatusForbidden, gin.H{"error": "Invalid system role"})
+					c.Abort()
+					return
+				}
+
+			}
 		} else if roleType == RoleGame {
-			role = Role(QuerySession(c, "gamerole").(int))
-		} else {
+			query = QuerySession(c, "gamerole")
+			if query == nil || query == RNone {
+				role = RNone
+			} else { // query != nil
+				role = Role(query.(int))
+				if !EnsureRoleInGameRoleSet(role) {
+					c.JSON(http.StatusForbidden, gin.H{"error": "Invalid game role"})
+					c.Abort()
+					return
+				}
+
+			}
+		} else { // roleType != RoleSystem && roleType != RoleGame
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Invalid role type"})
 			c.Abort()
 			return
 		}
+
 		if role == RNone {
 			c.JSON(http.StatusForbidden, gin.H{"error": "Require login"})
 			c.Abort()

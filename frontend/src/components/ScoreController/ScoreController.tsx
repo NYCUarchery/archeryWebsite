@@ -1,4 +1,4 @@
-import { ButtonGroup } from "@mui/material";
+import Grid from "@mui/material/Grid2";
 import ScoreButton from "./ScoreButton";
 import ControllButtonGroup from "./ControllButtonGroup";
 import { DatabaseRoundEnd } from "@/types/Api";
@@ -24,26 +24,22 @@ export default function ScoreController({
 
   for (let i = 0; i < possibleScores.length; i++) {
     scoreButtons.push(
-      <ScoreButton
-        key={i}
-        score={possibleScores[i]}
-        end={selectedEnd}
-        onAddScore={onAddScore}
-      ></ScoreButton>
+      <Grid size={3} style={{ display: "flex", justifyContent: "center" }}>
+        <ScoreButton
+          key={i}
+          score={possibleScores[i]}
+          end={selectedEnd}
+          onAddScore={onAddScore}
+        ></ScoreButton>
+      </Grid>
     );
   }
 
   return (
     <>
-      <ButtonGroup
-        className="score_button_group"
-        variant="text"
-        disabled={selectedEnd?.is_confirmed}
-        disableElevation
-        sx={{ flexWrap: "wrap" }}
-      >
+      <Grid container spacing={1} sx={{ mt: 2, mb: 2 }}>
         {scoreButtons}
-      </ButtonGroup>
+      </Grid>
       <ControllButtonGroup
         selectedEnd={selectedEnd}
         isConfirmed={selectedEnd?.is_confirmed ?? false}

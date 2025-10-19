@@ -6,6 +6,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.dev
     restart: unless-stopped
+    volumes:
+      - frontend-node-modules:/app/node_modules
     develop:
       watch:
         - action: sync
@@ -17,6 +19,8 @@ services:
             - .next/
   mysql:
     image: mysql:8
+    volumes:
+      - mysql-data:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: testdb
@@ -43,3 +47,7 @@ services:
     depends_on:
       - frontend
       - backend
+
+volumes:
+  frontend-node-modules:
+  mysql-data:
