@@ -1,6 +1,7 @@
 package endpoint
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -47,6 +48,7 @@ type ModifyAccountPasswordInfo struct {
 //	@Router			/user [post]
 func Register(c *gin.Context) {
 	var registerInfo AccountInfo
+	const overviewStringLimitation = 3000
 	var user database.User
 	if err := c.ShouldBindJSON(&registerInfo); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "invalid info"})
@@ -59,14 +61,13 @@ func Register(c *gin.Context) {
 	user.InstitutionID = registerInfo.InstitutionID
 	user.Overview = registerInfo.Overview
 	user.Role = pkg.RoleToString(pkg.RUser)
-	// no need to check id(it is auto created), realname, and overview
-	// name
+	// user name
 	if user.UserName == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "empty username"})
 		return
 	}
 	if database.GetUserNameIsExist(user.UserName) {
-		c.JSON(http.StatusBadRequest, gin.H{"result": "username exists"})
+		c.JSON(http.StatusBadRequest, gin.H{"result": "username repeated"})
 		return
 	}
 	// real name
@@ -87,7 +88,12 @@ func Register(c *gin.Context) {
 		return
 	}
 	if database.GetEmailIsExist(user.Email) {
-		c.JSON(http.StatusBadRequest, gin.H{"result": "email exists"})
+		c.JSON(http.StatusBadRequest, gin.H{"result": "email repeated"})
+		return
+	}
+	if len(user.Overview) >= overviewStringLimitation {
+		m := fmt.Sprintf("overview string lenght over limit %d", overviewStringLimitation)
+		c.JSON(http.StatusBadRequest, gin.H{"result": m})
 		return
 	}
 
