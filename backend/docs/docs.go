@@ -5505,7 +5505,7 @@ const docTemplate = `{
         },
         "/user": {
             "post": {
-                "description": "Add a user to db.\nUsername cannot be empty or repeated.\nPassword cannot be empty.\nEmail cannot be empty or repeated.\nInstitution id must exist.\nRealname and overview are optional.\nRole is set to User.",
+                "description": "Add a user to db.\nUsername cannot be empty or repeated.\nEmail cannot be empty or repeated.\nPassword cannot be empty.\nRealname cannot be empty.\nInstitution id must exist.\nOverview is optional.\nOverview limited to 3000 chars.\nRole is set to User.",
                 "consumes": [
                     "application/json"
                 ],
@@ -5518,7 +5518,7 @@ const docTemplate = `{
                 "summary": "Register a user.",
                 "parameters": [
                     {
-                        "description": "nessary information for register",
+                        "description": "necessary information for register",
                         "name": "AccountInfo",
                         "in": "body",
                         "required": true,
