@@ -23,6 +23,7 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import ScoreController from "@/components/ScoreController/ScoreController";
+import { extractScores } from "@/components/ScoreController/util";
 import { DatabaseRoundEnd } from "@/types/Api";
 import ScoreCircle from "@/components/ScoreCircle";
 
@@ -253,11 +254,13 @@ export default function Page({ params }: { params: { id: string } }) {
         </DialogContent>
         <Box sx={{ width: "100%" }}>
           <ScoreController
-            selectedEnd={selectedEnd!}
+            scores={extractScores(selectedEnd ?? undefined)}
+            isConfirmed={selectedEnd?.is_confirmed ?? false}
+            maximumArrowCount={selectedEnd?.round_scores?.length ?? 6}
             possibleScores={[11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]}
             onAddScore={onAddscore}
             onDeleteScore={onDeleteScore}
-            onSendScore={handleSaveScores}
+            onSave={handleSaveScores}
           />
         </Box>
         <Button onClick={handleCloseScoreDialog} color="error">

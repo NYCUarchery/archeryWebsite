@@ -1,6 +1,4 @@
 import { Button } from "@mui/material";
-import { findLastScoreInEnd } from "./util";
-import { DatabaseRoundEnd } from "@/types/Api";
 
 const buttonColors = new Map([
   [0, "black_score"],
@@ -17,17 +15,16 @@ const buttonColors = new Map([
   [11, "yellow_score"],
 ]);
 
+// 泛型分數按鈕：僅依 score 與外部算好的 disabled 決定顯示與可用性
 interface Props {
-  end: DatabaseRoundEnd;
   score: number;
+  disabled: boolean;
   onAddScore: (score: number) => void;
 }
 
-export default function ScoreButton({ end, score, onAddScore }: Props) {
+export default function ScoreButton({ score, disabled, onAddScore }: Props) {
   let content = "";
   const buttonColor = buttonColors.get(score) as string;
-
-  const lastScore = findLastScoreInEnd(end);
 
   switch (score) {
     case 0:
@@ -42,9 +39,7 @@ export default function ScoreButton({ end, score, onAddScore }: Props) {
 
   return (
     <Button
-      disabled={
-        end === undefined || end?.is_confirmed || lastScore === undefined
-      }
+      disabled={disabled}
       id={score.toString()}
       onClick={() => onAddScore(score)}
       variant="contained"

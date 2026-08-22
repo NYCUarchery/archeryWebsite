@@ -2,21 +2,22 @@ import { Button } from "@mui/material";
 import ButtonGroup from "@mui/material/ButtonGroup";
 import { Backspace } from "@mui/icons-material";
 
-import { DatabaseRoundEnd } from "@/types/Api";
-
+// 泛型控制鈕群：刪除/送出/確認鈕之可用性由外部算好傳入
 interface Props {
-  selectedEnd: DatabaseRoundEnd;
   isConfirmed: boolean;
+  canDelete: boolean;
+  isSaving: boolean;
   onDeleteScore: () => void;
-  onSendScore: () => void;
+  onSave: () => void;
   onConfirm?: () => void;
 }
 
 export default function ControllButtonGroup({
-  selectedEnd,
   isConfirmed,
+  canDelete,
+  isSaving,
   onDeleteScore,
-  onSendScore,
+  onSave,
   onConfirm,
 }: Props) {
   return (
@@ -44,12 +45,12 @@ export default function ControllButtonGroup({
       ) : (
         <></>
       )}
-      <Button variant="contained" onClick={onSendScore}>
+      <Button variant="contained" disabled={isSaving} onClick={onSave}>
         送出
       </Button>
       <Button
         startIcon={<Backspace />}
-        disabled={selectedEnd === undefined || selectedEnd?.is_confirmed}
+        disabled={!canDelete}
         color="error"
         variant="contained"
         sx={{ height: "3rem", fontSize: "1rem" }}

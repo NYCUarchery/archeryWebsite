@@ -2,6 +2,7 @@ import { Middleware, configureStore } from "@reduxjs/toolkit";
 import ReduxLogger from "redux-logger";
 import qualificationScheduleSlice from "app/competition/[id]/admin/schedule/qualification/qualificationScheduleSlice";
 import qualificationScoringSlice from "app/competition/[id]/scoring/@qualification/qualificationScoringSlice";
+import eliminationScoringSlice from "app/competition/[id]/scoring/@elimination/eliminationScoringSlice";
 import scheduleSlice from "app/competition/[id]/admin/schedule/scheduleSlice";
 import progressSlice from "app/competition/[id]/admin/progress/progressSlice";
 
@@ -9,6 +10,7 @@ const store = configureStore({
   reducer: {
     qualificationSchedule: qualificationScheduleSlice,
     qualificationScoring: qualificationScoringSlice,
+    eliminationScoring: eliminationScoringSlice,
     schedule: scheduleSlice,
     progress: progressSlice,
   },
