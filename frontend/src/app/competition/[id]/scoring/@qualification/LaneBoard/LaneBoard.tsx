@@ -2,6 +2,7 @@ import LaneNumber from "@/components/LaneNumber";
 import PlayerInfoBar from "./PlayerInfoBar/PlayerInfoBar";
 import { ToggleButtonGroup, ToggleButton, Box } from "@mui/material";
 import ScoreController from "@/components/ScoreController/ScoreController";
+import { extractScores } from "@/components/ScoreController/util";
 import TargetSigns from "./TargetSigns";
 import useGetCompetitionWithGroups from "@/utils/QueryHooks/useGetCompetitionWithGroups";
 import { Player } from "@/types/oldRef/Player";
@@ -118,12 +119,17 @@ export default function LaneBoard({
         {playerInfos}
       </ToggleButtonGroup>
       <ScoreController
-        selectedEnd={selectedEnd}
+        scores={extractScores(selectedEnd)}
+        isConfirmed={selectedEnd?.is_confirmed ?? false}
+        // 尚未選中任何選手（selectedEnd 為 undefined）時，容量設為 0 使 isFull 恆真，
+        // 讓分數鈕維持停用，還原「未選選手不可記分」的舊行為（避免 dispatch 到不存在的 end 而 crash）。
+        maximumArrowCount={selectedEnd ? 6 : 0}
         possibleScores={[11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]} // TODO: get possible scores from "server"
         onAddScore={onAddScore}
         onDeleteScore={onDeleteScore}
-        onSendScore={onSendScore}
+        onSave={onSendScore}
         onConfirm={onConfirm}
+        isSaving={false}
       ></ScoreController>
     </Box>
   );
