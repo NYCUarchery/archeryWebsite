@@ -354,6 +354,15 @@ func PutMatchEndsScoresById(context *gin.Context) {
 			return
 		}
 	}
+	/*已確認局禁止改分，避免竄改已定案的比賽結果；僅拒改，不進行任何重算*/
+	matchEnd, err := database.GetMatchEndById(matchEndId)
+	if response.ErrorInternalErrorTest(context, matchEndId, "Get MatchEnd when updating scores", err) {
+		return
+	}
+	if matchEnd.IsConfirmed {
+		response.ErrorReceiveDataFormat(context, "MatchEnd already confirmed, cannot update scores")
+		return
+	}
 	/*update data*/
 	err = database.UpdateMatchEndsTotalScoresById(matchEndId, data.TotalScore)
 	if response.ErrorInternalErrorTest(context, matchEndId, "Update MatchEnd totalScores when updating scores", err) {

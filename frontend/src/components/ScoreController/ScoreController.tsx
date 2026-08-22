@@ -1,25 +1,35 @@
 import Grid from "@mui/material/Grid2";
 import ScoreButton from "./ScoreButton";
 import ControllButtonGroup from "./ControllButtonGroup";
-import { DatabaseRoundEnd } from "@/types/Api";
 
+// 泛型 ScoreController：不依賴 DatabaseRoundEnd，僅依 scores/isConfirmed 等基本資料顯示
 interface Props {
-  selectedEnd: DatabaseRoundEnd;
+  scores: number[]; // 含 -1 佔位之分數陣列；顯示與停用據此
+  isConfirmed: boolean;
+  maximumArrowCount: number; // 該局容量（3/4/6）
   possibleScores: number[];
   onAddScore: (score: number) => void;
   onDeleteScore: () => void;
-  onSendScore: () => void;
+  onSave: () => void;
   onConfirm?: () => void;
+  isSaving?: boolean;
 }
 
 export default function ScoreController({
-  selectedEnd,
+  scores,
+  isConfirmed,
+  maximumArrowCount,
   possibleScores,
   onAddScore,
   onDeleteScore,
-  onSendScore,
+  onSave,
   onConfirm,
+  isSaving = false,
 }: Props) {
+  const filledCount = scores.filter((s) => s !== -1).length;
+  const isFull = filledCount >= maximumArrowCount;
+  const canDelete = !isConfirmed && filledCount > 0;
+
   const scoreButtons = [];
 
   for (let i = 0; i < possibleScores.length; i++) {
@@ -28,7 +38,7 @@ export default function ScoreController({
         <ScoreButton
           key={i}
           score={possibleScores[i]}
-          end={selectedEnd}
+          disabled={isConfirmed || isFull}
           onAddScore={onAddScore}
         ></ScoreButton>
       </Grid>
@@ -41,10 +51,11 @@ export default function ScoreController({
         {scoreButtons}
       </Grid>
       <ControllButtonGroup
-        selectedEnd={selectedEnd}
-        isConfirmed={selectedEnd?.is_confirmed ?? false}
+        isConfirmed={isConfirmed}
+        canDelete={canDelete}
+        isSaving={isSaving}
         onDeleteScore={onDeleteScore}
-        onSendScore={onSendScore}
+        onSave={onSave}
         onConfirm={onConfirm}
       ></ControllButtonGroup>
     </>
