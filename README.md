@@ -69,6 +69,36 @@ database: db
 mode: dev # dev or test
 ```
 
+## Development Seeder
+
+後端另有三個可重複執行的開發資料情境；它們**不會**隨一般 server 啟動而執行。先建立 `backend/config/db.yaml` 與 `dictator.yaml`，再於 `backend` 目錄執行：
+
+```bash
+go run ./cmd/seeder -scenario registered
+go run ./cmd/seeder -scenario qualification_finished
+go run ./cmd/seeder -scenario elimination_finished
+# 或一次建立全部
+go run ./cmd/seeder -scenario all
+```
+
+- 每個情境各建一場賽事；重跑以 `Competition.Script` 的 seeder marker 偵測，已存在的情境完全不改寫。
+- 三場賽事的 `HostID` 都會查詢資料庫中 ID 最小、`Role=Dictator` 的 user，不假定其 ID。
+- 每場賽事含 1 個 unassigned group 與 3 個正式項目（項目 = 正式 Group，各有獨立 Qualification、排名與個人對抗賽）：
+  - 公開男子反曲弓組：靶道 1-4
+  - 公開女子反曲弓組：靶道 5-8
+  - 新人反曲弓組：靶道 9-12
+- 每個項目 8 位選手、4 條不重疊靶道、每靶道 2 人（order 1 與 2）；靶道 0 保留為 unassigned lane。
+- `registered`：主辦人為 approved Admin，24 位選手皆為 approved Player，各項目已有 Player／Round／End／箭位列，但箭值仍為 `-1`、RoundEnd 未 confirmed。
+- `qualification_finished`：另有各項目完成的排名賽、項目內獨立名次 1-8、資格賽啟用狀態。
+- `elimination_finished`：各項目另有完整個人對抗賽（8 強 4 場、4 強 2 場、冠軍賽與銅牌戰各 1 場）、結果、箭位及獎牌；末階段第一場為冠軍賽，與前端 `parseStagesToTree` 的讀取順序一致。
+- seeder 建立的登入帳號為 `seeder.archer.01` 至 `seeder.archer.24`，密碼皆為 `archery-seed-password`；僅可在 `db.yaml` 的 `dev` 或 `test` mode 使用，其他 mode 一律拒絕執行。
+
+可在可丟棄的 test DB 驗證資料不變量與冪等性：
+
+```bash
+SEEDER_INTEGRATION_TEST=1 go test ./internal/seeder -run TestSeedScenarioInvariants
+```
+
 ## Run E2E Test
 
 你需要先下載前端的packages跟安裝Playwright的使用的瀏覽器。
