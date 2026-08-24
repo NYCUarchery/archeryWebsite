@@ -21,20 +21,21 @@ export default function Page({
 }) {
   const queryClient = useQueryClient();
   const groupIndex = useAppSelector((state) => state.schedule.groupIndex);
+  const competitionId = parseInt(params.id);
+  const teamSize = parseInt(params.teamSize);
   const [setName, setSetName] = useState<string>("");
-  const { data: groups } = useGetCompetitionGroupsWithPlayers(
-    parseInt(params.id)
-  );
+  const { data: groups } =
+    useGetCompetitionGroupsWithPlayers(competitionId);
   const { data: elimination } = useGetElimination(
-    parseInt(params.id),
+    competitionId,
     groupIndex - 1, // 0 is unassigned group in the for the group menu.
-    parseInt(params.teamSize)
+    teamSize
   );
   const [selectedPlayers, setSelectedPlayers] = useState<
     AutocompletePlayerValue[]
-  >(Array(parseInt(params.teamSize)));
+  >(Array(teamSize));
   const [inputValues, setInputValues] = useState<string[]>(
-    Array(parseInt(params.teamSize)).fill("")
+    Array(teamSize).fill("")
   );
   const { mutate: createPlayerSet } = useMutation(
     (data: EndpointPostPlayerSetPlayerSetData) => {
@@ -100,7 +101,7 @@ export default function Page({
     <Box sx={{ width: "100%" }}>
       <GroupMenu groupNames={groups?.map((group) => group.group_name!) ?? []} />
       <Button onClick={handleReranking}>更新排名</Button>
-      {Array(parseInt(params.teamSize))
+      {Array(teamSize)
         .fill(null)
         .map((_, index) => {
           return (
