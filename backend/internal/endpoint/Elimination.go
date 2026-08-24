@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func validateEliminationProgress(elimination database.Elimination, currentStage int, currentEnd int) error {
@@ -277,6 +278,8 @@ func PostElimination(context *gin.Context) {
 //	@Param			Stage	body		endpoint.PostStage.PostStageData		true	"Stage"
 //	@Success		200		{object}	database.Stage{matchs=response.Nill}	"success, return one Stage with new id"
 //	@Failure		400		{object}	response.ErrorIdResponse				"invalid elimination ID, maybe not exist"
+//	@Failure		403		{object}	response.ErrorResponse				"competition admin required"
+//	@Failure		409		{object}	response.ErrorResponse				"complete bracket is locked"
 //	@Failure		500		{object}	response.ErrorInternalErrorResponse		"internal db error for Create Stage"
 //	@Router			/elimination/stage [post]
 func PostStage(context *gin.Context) {
@@ -291,8 +294,18 @@ func PostStage(context *gin.Context) {
 	} else if response.ErrorIdTest(context, data.EliminationId, database.GetEliminationIsExist(data.EliminationId), "elimintion when creating stage") {
 		return
 	}
-	data, err = database.CreateStage(data)
-	if response.ErrorInternalErrorTest(context, 0, "Create Stage", err) {
+	elimination, err := database.GetOnlyEliminationById(data.EliminationId)
+	if response.ErrorInternalErrorTest(context, data.EliminationId, "Get Elimination when creating stage", err) {
+		return
+	}
+	if !requireEliminationCompetitionAdmin(context, elimination) {
+		return
+	}
+	err = withManualBracketMutation(data.EliminationId, func(tx *gorm.DB, _ database.Elimination) error {
+		return tx.Create(&data).Error
+	})
+	if err != nil {
+		writeBracketError(context, err)
 		return
 	}
 	id := data.ID
@@ -314,6 +327,8 @@ func PostStage(context *gin.Context) {
 //	@Param			Match	body		endpoint.PostMatch.MatchData		true	"Match"
 //	@Success		200		{object}	database.Match						"success, return one Match with new id"
 //	@Failure		400		{object}	response.ErrorIdResponse			"invalid stage ID, maybe not exist, or player set id should be 2, lane numbers should be 2"
+//	@Failure		403		{object}	response.ErrorResponse				"competition admin required"
+//	@Failure		409		{object}	response.ErrorResponse				"complete bracket is locked"
 //	@Failure		500		{object}	response.ErrorInternalErrorResponse	"internal db error for Create Match, MatchResult, MatchEnd, MatchScore, or get Stage"
 //	@Router			/elimination/match [post]
 func PostMatch(context *gin.Context) {
@@ -356,43 +371,29 @@ func PostMatch(context *gin.Context) {
 	if response.ErrorInternalErrorTest(context, eliminationId, "Get Elimination when creating match", err) {
 		return
 	}
-	teamSize := elimination.TeamSize
-	/*create match*/
-	var match database.Match
-	match.StageId = data.StageId
-	match, err = database.CreateMatch(match)
-	if response.ErrorInternalErrorTest(context, 0, "Create Match", err) {
+	if !requireEliminationCompetitionAdmin(context, elimination) {
 		return
 	}
-	/*create two matchResults */
-	for i := 0; i < 2; i++ {
-		var matchResult database.MatchResult
-		matchResult.MatchId = match.ID
-		matchResult.PlayerSetId = data.PlayerSetIds[i]
-		matchResult.LaneNumber = data.LaneNumbers[i]
-		matchResult.ShootOffScore = -1
-		newMatchResult, err := database.CreateMatchResult(matchResult)
-		if response.ErrorInternalErrorTest(context, newMatchResult.ID, "Create MatchResult when creating match", err) {
-			return
+	var newData database.Match
+	err = withManualBracketMutation(eliminationId, func(tx *gorm.DB, lockedElimination database.Elimination) error {
+		playerSetID0 := data.PlayerSetIds[0]
+		playerSetID1 := data.PlayerSetIds[1]
+		created, err := createBracketMatch(tx, data.StageId, [2]*uint{&playerSetID0, &playerSetID1}, lockedElimination.TeamSize)
+		if err != nil {
+			return err
 		}
-		response.AcceptPrint(newMatchResult.ID, fmt.Sprint(newMatchResult), "MatchResult")
-		/*create matchEnd*/
-		var loopTime int
-		if teamSize == 1 {
-			loopTime = 5
-		} else {
-			loopTime = 4
-		}
-		for j := 0; j < loopTime; j++ {
-			success := PostMatchEndByMatchResultId(context, newMatchResult.ID, teamSize)
-			if !success {
-				return
+		for resultIndex := range created.Results {
+			if err := tx.Model(&database.MatchResult{}).Where("id = ?", created.Results[resultIndex].ID).Update("lane_number", data.LaneNumbers[resultIndex]).Error; err != nil {
+				return err
 			}
 		}
-	}
-	/*get new data*/
-	newData, err := database.GetMatchWScoresById(match.ID)
-	if response.ErrorInternalErrorTest(context, 0, "Get Match with scores when creating match", err) {
+		return tx.Preload("MatchResults", func(query *gorm.DB) *gorm.DB { return query.Order("id asc") }).
+			Preload("MatchResults.MatchEnds", func(query *gorm.DB) *gorm.DB { return query.Order("id asc") }).
+			Preload("MatchResults.MatchEnds.MatchScores", func(query *gorm.DB) *gorm.DB { return query.Order("id asc") }).
+			First(&newData, created.Match.ID).Error
+	})
+	if err != nil {
+		writeBracketError(context, err)
 		return
 	}
 	response.AcceptPrint(newData.ID, fmt.Sprint(newData), "Match")
@@ -411,6 +412,8 @@ func PostMatch(context *gin.Context) {
 //	@Success		200			{object}	database.Match												"success, return updated Match with new PlayerSetId"
 //	@Failure		400			{object}	response.ErrorIdResponse									"invalid Match ID / invalid PlayerSetId / PlayerSetId should be 2"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse							"internal db error for Get Match when updating match player set / Update MatchResult PlayerSetId / Get Match when updating match player set"
+//	@Failure		403	{object}	response.ErrorResponse	"competition admin required"
+//	@Failure		409	{object}	response.ErrorResponse	"complete bracket is locked"
 //	@Router			/elimination/match/playerset/{matchid} [patch]
 func PutMatchPlayerSetByMatchId(conetext *gin.Context) {
 	type PutMatchPlayerSetIdData struct {
@@ -433,22 +436,52 @@ func PutMatchPlayerSetByMatchId(conetext *gin.Context) {
 	if response.ErrorInternalErrorTest(conetext, matchId, "Get Match when updating match player set", err) {
 		return
 	}
-	if response.ErrorIdTest(conetext, data.PlayerSetIds[0], database.GetPlayerSetIsExist(data.PlayerSetIds[0]), "PlayerSet") {
+	stage, err := database.GetStageById(match.StageId)
+	if response.ErrorInternalErrorTest(conetext, match.StageId, "Get Stage when updating match player set", err) {
 		return
 	}
-	if response.ErrorIdTest(conetext, data.PlayerSetIds[1], database.GetPlayerSetIsExist(data.PlayerSetIds[1]), "PlayerSet") {
+	elimination, err := database.GetOnlyEliminationById(stage.EliminationId)
+	if response.ErrorInternalErrorTest(conetext, stage.EliminationId, "Get Elimination when updating match player set", err) {
 		return
 	}
-	/*update match result*/
-	for i := 0; i < 2; i++ {
-		matchResult := match.MatchResults[i]
-		err = database.UpdateMatchResultPlayerSetIdById(matchResult.ID, data.PlayerSetIds[i])
-		if response.ErrorInternalErrorTest(conetext, matchResult.ID, "Update MatchResult PlayerSetId", err) {
+	if !requireEliminationCompetitionAdmin(conetext, elimination) {
+		return
+	}
+	for _, playerSetID := range data.PlayerSetIds {
+		isExist, playerSet := IsGetPlayerSetById(conetext, playerSetID)
+		if !isExist {
+			return
+		}
+		if playerSet.EliminationId != elimination.ID {
+			response.ErrorReceiveDataFormat(conetext, "player set id should be in the same elimination")
 			return
 		}
 	}
-	newMatch, err := database.GetMatchWScoresById(matchId)
-	if response.ErrorInternalErrorTest(conetext, matchId, "Get Match when updating match player set", err) {
+	if len(match.MatchResults) != 2 {
+		response.ErrorReceiveDataFormat(conetext, "match should have exactly two results")
+		return
+	}
+	var newMatch database.Match
+	err = withManualBracketMutation(elimination.ID, func(tx *gorm.DB, _ database.Elimination) error {
+		var results []database.MatchResult
+		if err := tx.Where("match_id = ?", matchId).Order("id asc").Find(&results).Error; err != nil {
+			return err
+		}
+		if len(results) != 2 {
+			return errBracketConflict
+		}
+		for resultIndex := range results {
+			if err := tx.Model(&database.MatchResult{}).Where("id = ?", results[resultIndex].ID).Update("player_set_id", data.PlayerSetIds[resultIndex]).Error; err != nil {
+				return err
+			}
+		}
+		return tx.Preload("MatchResults", func(query *gorm.DB) *gorm.DB { return query.Order("id asc") }).
+			Preload("MatchResults.MatchEnds", func(query *gorm.DB) *gorm.DB { return query.Order("id asc") }).
+			Preload("MatchResults.MatchEnds.MatchScores", func(query *gorm.DB) *gorm.DB { return query.Order("id asc") }).
+			First(&newMatch, matchId).Error
+	})
+	if err != nil {
+		writeBracketError(conetext, err)
 		return
 	}
 	conetext.IndentedJSON(200, newMatch)

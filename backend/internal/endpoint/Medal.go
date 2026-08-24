@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func IsGetMedalById(context *gin.Context, id uint) (bool, database.Medal) {
@@ -90,6 +91,8 @@ func GetMedalInfoByEliminationId(context *gin.Context) {
 //	@Success		200			{object}	nil												"success, return nil"
 //	@Failure		400			{object}	response.ErrorIdResponse						"invalid medal id / invalid playerset id / elimination id of medal and playerset is not same"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse				"internal db error / Get Medal By Id / Get Player Set By Id / Update Medal PLayer Set Id"
+//	@Failure		403	{object}	response.ErrorResponse	"competition admin required"
+//	@Failure		409	{object}	response.ErrorResponse	"complete bracket medals are finalized automatically"
 //	@Router			/medal/playersetid/{id} [patch]
 func PutMedalPlayerSetIdById(context *gin.Context) {
 	type RequestBody struct {
@@ -114,9 +117,29 @@ func PutMedalPlayerSetIdById(context *gin.Context) {
 		response.ErrorReceiveDataFormat(context, errorMessage)
 		return
 	}
-
-	err = database.UpdateMedalPlayerSetId(id, requestBody.PlayerSetId)
-	if response.ErrorInternalErrorTest(context, id, "Update medal player set id", err) {
+	elimination, err := database.GetOnlyEliminationById(medal.EliminationId)
+	if response.ErrorInternalErrorTest(context, medal.EliminationId, "Get elimination when updating medal", err) {
+		return
+	}
+	if !requireEliminationCompetitionAdmin(context, elimination) {
+		return
+	}
+	err = withManualBracketMutation(medal.EliminationId, func(tx *gorm.DB, _ database.Elimination) error {
+		var medalCount int64
+		if err := tx.Model(&database.Medal{}).Where("id = ? AND elimination_id = ?", id, medal.EliminationId).Count(&medalCount).Error; err != nil {
+			return err
+		}
+		var playerSetCount int64
+		if err := tx.Model(&database.PlayerSet{}).Where("id = ? AND elimination_id = ?", requestBody.PlayerSetId, medal.EliminationId).Count(&playerSetCount).Error; err != nil {
+			return err
+		}
+		if medalCount != 1 || playerSetCount != 1 {
+			return gorm.ErrRecordNotFound
+		}
+		return tx.Model(&database.Medal{}).Where("id = ?", id).Update("player_set_id", requestBody.PlayerSetId).Error
+	})
+	if err != nil {
+		writeBracketError(context, err)
 		return
 	}
 	context.IndentedJSON(http.StatusOK, nil)

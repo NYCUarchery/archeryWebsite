@@ -7,9 +7,12 @@ import (
 )
 
 type MatchResult struct {
-	ID            uint        `json:"id"        gorm:"primary_key"`
-	MatchId       uint        `json:"match_id"`
-	PlayerSetId   uint        `json:"player_set_id"`
+	ID      uint `json:"id"        gorm:"primary_key"`
+	MatchId uint `json:"match_id"`
+	// PlayerSetId is nil for an as-yet unknown bracket slot.  Zero cannot
+	// represent that state because it is also a valid Go uint default and used
+	// by older rows without a foreign-key constraint.
+	PlayerSetId   *uint       `json:"player_set_id,omitempty"`
 	TotalPoints   int         `json:"total_points"`
 	ShootOffScore int         `json:"shoot_off_score"`
 	IsWinner      bool        `json:"is_winner"`

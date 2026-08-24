@@ -156,6 +156,10 @@ definitions:
       player_set:
         $ref: '#/definitions/database.PlayerSet'
       player_set_id:
+        description: |-
+          PlayerSetId is nil for an as-yet unknown bracket slot.  Zero cannot
+          represent that state because it is also a valid Go uint default and used
+          by older rows without a foreign-key constraint.
         type: integer
       shoot_off_score:
         type: integer
@@ -333,6 +337,32 @@ definitions:
         type: string
       user_name:
         type: string
+    type: object
+  endpoint.BracketAdvanceResponse:
+    properties:
+      changed:
+        type: boolean
+      elimination_id:
+        type: integer
+      finalized:
+        type: boolean
+      source_stage_id:
+        type: integer
+      target_stage_id:
+        type: integer
+    type: object
+  endpoint.BracketInitResponse:
+    properties:
+      bracket_size:
+        type: integer
+      created:
+        type: boolean
+      elimination_id:
+        type: integer
+      entrant_count:
+        type: integer
+      stage_count:
+        type: integer
     type: object
   endpoint.CompetitionWGroupsQuaEliData:
     properties:
@@ -1616,6 +1646,42 @@ paths:
       summary: Show only one Elimination
       tags:
       - Elimination
+  /elimination/bracket/{id}:
+    post:
+      description: Creates a standard seeded bracket, including stages, gold and bronze
+        finals, match results, ends, and scores. Requires a competition Admin.
+      parameters:
+      - description: Elimination ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/endpoint.BracketInitResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Initialize an elimination bracket
+      tags:
+      - Elimination
   /elimination/currentend/minus/{id}:
     patch:
       description: Update one Elimination current end minus one by id
@@ -1761,6 +1827,14 @@ paths:
             be 2, lane numbers should be 2
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: complete bracket is locked
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db error for Create Match, MatchResult, MatchEnd,
             MatchScore, or get Stage
@@ -1798,6 +1872,14 @@ paths:
             be 2
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: complete bracket is locked
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db error for Get Match when updating match player
             set / Update MatchResult PlayerSetId / Get Match when updating match player
@@ -1990,11 +2072,51 @@ paths:
           description: invalid elimination ID, maybe not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: complete bracket is locked
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db error for Create Stage
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Create one Stage
+      tags:
+      - Elimination
+  /elimination/stage/advance/{stageid}:
+    post:
+      description: Propagates completed winners to the following stage, routes semi-final
+        losers to bronze, or assigns final medals. Requires a competition Admin.
+      parameters:
+      - description: Source stage ID
+        in: path
+        name: stageid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/endpoint.BracketAdvanceResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Advance an elimination stage
       tags:
       - Elimination
   /elimination/stages/matches/{id}:
@@ -2533,6 +2655,14 @@ paths:
           description: invalid match result ID, maybe not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: complete bracket is locked
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db failed for deleting match result
           schema:
@@ -2604,6 +2734,14 @@ paths:
           description: invalid match result ID, maybe not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: winner is locked after advancement
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db failed for updating isWinner
           schema:
@@ -2670,6 +2808,14 @@ paths:
           description: invalid match result ID, maybe not exist
           schema:
             $ref: '#/definitions/response.ErrorReceiveDataResponse'
+        "403":
+          description: competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: complete bracket is locked
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db failed for creating matchEnd, creating matchScores
           schema:
@@ -3000,6 +3146,14 @@ paths:
             medal and playerset is not same
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: complete bracket medals are finalized automatically
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db error / Get Medal By Id / Get Player Set By Id
             / Update Medal PLayer Set Id
@@ -3125,6 +3279,10 @@ paths:
           description: invalid participant id
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: target competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db error / Update Participant
           schema:
