@@ -30,7 +30,7 @@ interface VariantConfig {
   phase: number;
   teamSize: number;
   capacity: number; // 該局箭數上限（每方每局）
-  teamSizeLabel: string; // MatchHeader 顯示之類型名稱
+  teamSizeLabel: string; // 隊伍規模對應之類型名稱（記分板已不顯示，僅供 fixture 自我描述）
 }
 
 const VARIANT_CONFIG: Record<EliminationVariant, VariantConfig> = {
