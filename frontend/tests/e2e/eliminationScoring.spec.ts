@@ -10,7 +10,8 @@ import {
 const ALL_SCORE_LABELS = ["X", "10", "9", "8", "7", "6", "5", "4", "3", "2", "1", "M"];
 
 async function gotoEliminationScoring(page: Page, competitionId: number) {
-  await page.goto(`http://127.0.0.1/competition/${competitionId}/scoring`);
+  const baseUrl = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1";
+  await page.goto(`${baseUrl}/competition/${competitionId}/scoring`);
 }
 
 // 分數鈕：以按鈕文字（X/M/數字）精確比對，避免 "1" 誤配到 "10"。
@@ -28,9 +29,29 @@ function selectorGroup(page: Page) {
   return page.locator(".match_result_button_group");
 }
 
-// 等待記分板就緒（雙方資料已載入、可看到類型標籤）。
+// 某一方之切換鈕：鈕內含隊名、波總分與各箭 ScoreCircle（仿資格賽 PlayerInfoBar）。
+function sideButton(page: Page, setName: string) {
+  return selectorGroup(page)
+    .locator(".match_result_button")
+    .filter({ hasText: setName });
+}
+
+// 某一方鈕內之各箭分數文字（DESC 排列；未填格之 ScoreCircle 顯示 "-1"）。
+async function sideScoreLabels(page: Page, setName: string): Promise<string[]> {
+  const labels = await sideButton(page, setName)
+    .locator(".match_score_bar > *")
+    .allTextContents();
+  return labels.map((label) => label.trim());
+}
+
+// 某一方鈕內之波總分。
+function sideTotal(page: Page, setName: string) {
+  return sideButton(page, setName).locator(".match_total_score");
+}
+
+// 等待記分板就緒（雙方資料已載入、可看到雙方切換鈕）。
 async function waitReady(page: Page, fixture: EliminationFixture) {
-  await expect(page.getByText(fixture.teamSizeLabel)).toBeVisible();
+  await expect(sideButton(page, fixture.setNameMine)).toBeVisible();
 }
 
 test.describe("Elimination Scoring Board", () => {
@@ -54,8 +75,10 @@ test.describe("Elimination Scoring Board", () => {
     for (let i = 0; i < 5; i++) {
       await scoreButton(page, "9").click({ force: true });
     }
-    await expect(page.getByText("本局箭值：9 / 9 / 9")).toBeVisible();
-    await expect(page.getByText("局總分：27")).toBeVisible();
+    await expect
+      .poll(() => sideScoreLabels(page, fixture.setNameMine))
+      .toEqual(["9", "9", "9"]);
+    await expect(sideTotal(page, fixture.setNameMine)).toHaveText("27");
   });
 
   test("混雙賽：第 4 箭後不能再輸入", async ({ page }) => {
@@ -71,7 +94,9 @@ test.describe("Elimination Scoring Board", () => {
       await expect(scoreButton(page, label)).toBeDisabled();
     }
     await scoreButton(page, "8").click({ force: true });
-    await expect(page.getByText("本局箭值：8 / 8 / 8 / 8")).toBeVisible();
+    await expect
+      .poll(() => sideScoreLabels(page, fixture.setNameMine))
+      .toEqual(["8", "8", "8", "8"]);
   });
 
   test("團體賽：第 6 箭後不能再輸入", async ({ page }) => {
@@ -87,9 +112,9 @@ test.describe("Elimination Scoring Board", () => {
       await expect(scoreButton(page, label)).toBeDisabled();
     }
     await scoreButton(page, "7").click({ force: true });
-    await expect(
-      page.getByText("本局箭值：7 / 7 / 7 / 7 / 7 / 7")
-    ).toBeVisible();
+    await expect
+      .poll(() => sideScoreLabels(page, fixture.setNameMine))
+      .toEqual(["7", "7", "7", "7", "7", "7"]);
 
     // 團體賽全員姓名應完整顯示。
     await expect(page.getByText("我方選手1、我方選手2、我方選手3")).toBeVisible();
@@ -107,8 +132,10 @@ test.describe("Elimination Scoring Board", () => {
     await scoreButton(page, "10").click();
     await scoreButton(page, "8").click();
 
-    await expect(page.getByText("本局箭值：10 / 8 / 7")).toBeVisible();
-    await expect(page.getByText("局總分：25")).toBeVisible();
+    await expect
+      .poll(() => sideScoreLabels(page, fixture.setNameMine))
+      .toEqual(["10", "8", "7"]);
+    await expect(sideTotal(page, fixture.setNameMine)).toHaveText("25");
 
     // 填滿容量（3 箭）應自動觸發存分。
     await expect.poll(() => handles.savedScoreRequests.length).toBe(1);
@@ -130,7 +157,9 @@ test.describe("Elimination Scoring Board", () => {
     // 重新整理後，資料重新自（已更新的）伺服器狀態載入，順序仍應遞減。
     await page.reload();
     await waitReady(page, fixture);
-    await expect(page.getByText("本局箭值：10 / 8 / 7")).toBeVisible();
+    await expect
+      .poll(() => sideScoreLabels(page, fixture.setNameMine))
+      .toEqual(["10", "8", "7"]);
   });
 
   test("存分：手動送出時 payload 含正確 match_score_ids/scores/total_scores 且 id↔score 對應，未滿容量不會自動存", async ({
@@ -202,7 +231,10 @@ test.describe("Elimination Scoring Board", () => {
     await selectorGroup(page)
       .getByRole("button", { name: fixture.setNameOpponent })
       .click();
-    await expect(page.getByText("本局尚未確認")).toBeVisible();
+    // 對手側未被自動確認：控制鈕群仍顯示可按之「確認」而非「已確認」。
+    await expect(
+      controlGroup(page).getByRole("button", { name: "確認", exact: true })
+    ).toBeVisible();
     await expect(scoreButton(page, "9")).toBeEnabled();
   });
 
@@ -219,16 +251,18 @@ test.describe("Elimination Scoring Board", () => {
 
     await expect(page.getByText("儲存分數失敗，請稍後再試")).toBeVisible();
     // 失敗時應保留本地已輸入之分數，不回滾（第 3 格仍為未填之 "-"）。
-    await expect(page.getByText("本局箭值：9 / 9 / -")).toBeVisible();
+    await expect
+      .poll(() => sideScoreLabels(page, fixture.setNameMine))
+      .toEqual(["9", "9", "-1"]);
   });
 
-  test("錯誤狀態：確認失敗時仍可編輯本局分數", async ({ page }) => {
+  test("錯誤狀態：確認失敗時仍可編輯本波分數", async ({ page }) => {
     const fixture = buildEliminationFixture("individual");
     const handles = await registerEliminationRoutes(page, fixture);
     await gotoEliminationScoring(page, fixture.competitionId);
     await waitReady(page, fixture);
 
-    // 確認前必須先讓本局分數成功存過一次（否則會被前端「尚未儲存不可確認」之守衛擋下，
+    // 確認前必須先讓本波分數成功存過一次（否則會被前端「尚未儲存不可確認」之守衛擋下，
     // 根本不會呼叫確認 API），故先手動存分成功，再讓確認 API 本身失敗。
     await scoreButton(page, "9").click();
     await scoreButton(page, "9").click();
@@ -241,7 +275,9 @@ test.describe("Elimination Scoring Board", () => {
 
     // 確認失敗，isConfirmed 仍為 false，應仍可新增分數（證明未被鎖定）。
     await scoreButton(page, "7").click();
-    await expect(page.getByText("本局箭值：9 / 9 / 7")).toBeVisible();
+    await expect
+      .poll(() => sideScoreLabels(page, fixture.setNameMine))
+      .toEqual(["9", "9", "7"]);
   });
 
   test("找不到對局：顯示明確中文提示", async ({ page }) => {
@@ -250,5 +286,22 @@ test.describe("Elimination Scoring Board", () => {
     await gotoEliminationScoring(page, fixture.competitionId);
 
     await expect(page.getByText("目前尚未安排您的對局。")).toBeVisible();
+  });
+
+  test("輪詢：每兩秒依賽事 phase 離開並返回對抗賽畫面", async ({ page }) => {
+    const fixture = buildEliminationFixture("individual");
+    const routes = await registerEliminationRoutes(page, fixture);
+    await gotoEliminationScoring(page, fixture.competitionId);
+    await waitReady(page, fixture);
+
+    routes.setCompetitionPhase(0);
+    await expect(sideButton(page, fixture.setNameMine)).not.toBeVisible({
+      timeout: 3500,
+    });
+
+    routes.setCompetitionPhase(1);
+    await expect(sideButton(page, fixture.setNameMine)).toBeVisible({
+      timeout: 3500,
+    });
   });
 });
