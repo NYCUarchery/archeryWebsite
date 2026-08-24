@@ -17,6 +17,8 @@ func TestControlRoutesAreRegistered(t *testing.T) {
 	}
 
 	for _, route := range []string{
+		"POST /api/elimination/bracket/:id",
+		"POST /api/elimination/stage/advance/:stageid",
 		"PATCH /api/competition/current-phase/:id",
 		"PATCH /api/competition/current-phase/plus/:id",
 		"PATCH /api/competition/current-phase/minus/:id",

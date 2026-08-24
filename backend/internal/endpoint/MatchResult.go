@@ -7,6 +7,8 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 func IsGetMatchResult(context *gin.Context, id uint) (bool, database.MatchResult) {
@@ -118,6 +120,8 @@ func PostMatchEndByMatchResultId(context *gin.Context, matchResultId uint, teams
 //	@Success		200				{object}	response.Response					"success, return nil"
 //	@Failure		400				{object}	response.ErrorReceiveDataResponse	"invalid match result ID, maybe not exist"
 //	@Failure		500				{object}	response.ErrorInternalErrorResponse	"internal db failed for creating matchEnd, creating matchScores"
+//	@Failure		403	{object}	response.ErrorResponse	"competition admin required"
+//	@Failure		409	{object}	response.ErrorResponse	"complete bracket is locked"
 //	@Router			/matchresult/matchend [post]
 func PostMatchEnd(context *gin.Context) {
 	type matchEndData struct {
@@ -131,9 +135,57 @@ func PostMatchEnd(context *gin.Context) {
 	} else if response.ErrorIdTest(context, data.MatchResultId, database.GetMatchResultIsExist(data.MatchResultId), "MatchResult when creating matchEnd") {
 		return
 	}
-	/*create matchend*/
-	isCreated := PostMatchEndByMatchResultId(context, data.MatchResultId, data.TeamSize)
-	if !isCreated {
+	var relation struct {
+		EliminationID uint
+	}
+	err = database.DB.Table("match_results").
+		Select("stages.elimination_id AS elimination_id").
+		Joins("JOIN matches ON matches.id = match_results.match_id").
+		Joins("JOIN stages ON stages.id = matches.stage_id").
+		Where("match_results.id = ?", data.MatchResultId).
+		Take(&relation).Error
+	if response.ErrorInternalErrorTest(context, data.MatchResultId, "Get elimination when creating MatchEnd", err) {
+		return
+	}
+	elimination, err := database.GetOnlyEliminationById(relation.EliminationID)
+	if response.ErrorInternalErrorTest(context, relation.EliminationID, "Get elimination when creating MatchEnd", err) {
+		return
+	}
+	if !requireEliminationCompetitionAdmin(context, elimination) {
+		return
+	}
+	err = withManualBracketMutation(relation.EliminationID, func(tx *gorm.DB, lockedElimination database.Elimination) error {
+		if data.TeamSize != lockedElimination.TeamSize {
+			return fmt.Errorf("unsupported elimination team_size %d", data.TeamSize)
+		}
+		var resultCount int64
+		if err := tx.Table("match_results").
+			Joins("JOIN matches ON matches.id = match_results.match_id").
+			Joins("JOIN stages ON stages.id = matches.stage_id").
+			Where("match_results.id = ? AND stages.elimination_id = ?", data.MatchResultId, relation.EliminationID).
+			Count(&resultCount).Error; err != nil {
+			return err
+		}
+		if resultCount != 1 {
+			return gorm.ErrRecordNotFound
+		}
+		matchEnd := database.MatchEnd{MatchResultId: data.MatchResultId, TotalScore: 0, IsConfirmed: false}
+		if err := tx.Create(&matchEnd).Error; err != nil {
+			return err
+		}
+		_, arrowsPerEnd, err := matchEndsAndArrows(data.TeamSize)
+		if err != nil {
+			return err
+		}
+		for index := 0; index < arrowsPerEnd; index++ {
+			if err := tx.Create(&database.MatchScore{MatchEndId: matchEnd.ID, Score: -1}).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		writeBracketError(context, err)
 		return
 	}
 	context.IndentedJSON(200, nil)
@@ -230,6 +282,8 @@ func PutMatchResultShootOffScoreById(context *gin.Context) {
 //	@Success		200			{object}	response.Nill												"success, return nil"
 //	@Failure		400			{object}	response.ErrorIdResponse									"invalid match result ID, maybe not exist"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse							"internal db failed for updating isWinner"
+//	@Failure		403	{object}	response.ErrorResponse	"competition admin required"
+//	@Failure		409	{object}	response.ErrorResponse	"winner is locked after advancement"
 //	@Router			/matchresult/iswinner/{id} [patch]
 func PutMatchResultIsWinnerById(context *gin.Context) {
 	type matchResultIsWinnerData struct {
@@ -244,8 +298,50 @@ func PutMatchResultIsWinnerById(context *gin.Context) {
 	} else if response.ErrorReceiveDataTest(context, id, "MatchResult when updating isWinner", err) {
 		return
 	}
-	err = database.UpdateMatchResultIsWinnerById(id, data.IsWinner)
-	if response.ErrorInternalErrorTest(context, id, "Update MatchResult isWinner", err) {
+	var relation struct {
+		EliminationID uint
+	}
+	err = database.DB.Table("match_results").
+		Select("stages.elimination_id AS elimination_id").
+		Joins("JOIN matches ON matches.id = match_results.match_id").
+		Joins("JOIN stages ON stages.id = matches.stage_id").
+		Where("match_results.id = ?", id).
+		Scan(&relation).Error
+	if response.ErrorInternalErrorTest(context, id, "Get elimination when updating isWinner", err) {
+		return
+	}
+	elimination, err := database.GetOnlyEliminationById(relation.EliminationID)
+	if response.ErrorInternalErrorTest(context, relation.EliminationID, "Get elimination when updating isWinner", err) {
+		return
+	}
+	if !requireEliminationCompetitionAdmin(context, elimination) {
+		return
+	}
+	err = database.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&elimination, relation.EliminationID).Error; err != nil {
+			return err
+		}
+		var playerSets []database.PlayerSet
+		if err := tx.Where("elimination_id = ?", relation.EliminationID).Find(&playerSets).Error; err != nil {
+			return err
+		}
+		bracket, err := loadBracket(tx, relation.EliminationID)
+		if err != nil {
+			return err
+		}
+		if validateBracketEntrants(playerSets) == nil && bracketStageMatchShapeIsComplete(bracket, nextPowerOfTwo(len(playerSets))) {
+			locked, err := bracketWinnerMutationIsLocked(tx, bracket, relation.EliminationID, id)
+			if err != nil {
+				return err
+			}
+			if locked {
+				return errBracketLocked
+			}
+		}
+		return tx.Model(&database.MatchResult{}).Where("id = ?", id).Update("is_winner", data.IsWinner).Error
+	})
+	if err != nil {
+		writeBracketError(context, err)
 		return
 	}
 	response.AcceptPrint(id, fmt.Sprint(data), "MatchResult isWinner")
@@ -468,14 +564,61 @@ func PutMatchScoreScoreById(context *gin.Context) {
 //	@Success		200	{object}	response.Nill						"success, return nil"
 //	@Failure		400	{object}	response.ErrorIdResponse			"invalid match result ID, maybe not exist"
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db failed for deleting match result"
+//	@Failure		403	{object}	response.ErrorResponse	"competition admin required"
+//	@Failure		409	{object}	response.ErrorResponse	"complete bracket is locked"
 //	@Router			/matchresult/{id} [delete]
 func DeleteMatchResultById(context *gin.Context) {
 	id := Convert2uint(context, "id")
 	if response.ErrorIdTest(context, id, database.GetMatchResultIsExist(id), "MatchResult") {
 		return
 	}
-	err := database.DeleteMatchResultById(id)
-	if response.ErrorInternalErrorTest(context, id, "Delete MatchResult", err) {
+	var relation struct {
+		EliminationID uint
+	}
+	err := database.DB.Table("match_results").
+		Select("stages.elimination_id AS elimination_id").
+		Joins("JOIN matches ON matches.id = match_results.match_id").
+		Joins("JOIN stages ON stages.id = matches.stage_id").
+		Where("match_results.id = ?", id).
+		Take(&relation).Error
+	if response.ErrorInternalErrorTest(context, id, "Get elimination when deleting MatchResult", err) {
+		return
+	}
+	elimination, err := database.GetOnlyEliminationById(relation.EliminationID)
+	if response.ErrorInternalErrorTest(context, relation.EliminationID, "Get elimination when deleting MatchResult", err) {
+		return
+	}
+	if !requireEliminationCompetitionAdmin(context, elimination) {
+		return
+	}
+	err = withManualBracketMutation(relation.EliminationID, func(tx *gorm.DB, _ database.Elimination) error {
+		var resultCount int64
+		if err := tx.Table("match_results").
+			Joins("JOIN matches ON matches.id = match_results.match_id").
+			Joins("JOIN stages ON stages.id = matches.stage_id").
+			Where("match_results.id = ? AND stages.elimination_id = ?", id, relation.EliminationID).
+			Count(&resultCount).Error; err != nil {
+			return err
+		}
+		if resultCount != 1 {
+			return gorm.ErrRecordNotFound
+		}
+		var endIDs []uint
+		if err := tx.Model(&database.MatchEnd{}).Where("match_result_id = ?", id).Pluck("id", &endIDs).Error; err != nil {
+			return err
+		}
+		if len(endIDs) > 0 {
+			if err := tx.Where("match_end_id IN ?", endIDs).Delete(&database.MatchScore{}).Error; err != nil {
+				return err
+			}
+		}
+		if err := tx.Where("match_result_id = ?", id).Delete(&database.MatchEnd{}).Error; err != nil {
+			return err
+		}
+		return tx.Delete(&database.MatchResult{}, id).Error
+	})
+	if err != nil {
+		writeBracketError(context, err)
 		return
 	}
 	response.AcceptPrint(id, fmt.Sprint(id), "MatchResult")
