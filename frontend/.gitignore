@@ -31,3 +31,5 @@ dist-ssr
 # Next
 .next/
 .env
+# TypeScript incremental build cache
+tsconfig.tsbuildinfo
