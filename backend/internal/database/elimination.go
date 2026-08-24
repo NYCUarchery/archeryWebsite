@@ -261,6 +261,19 @@ func UpdateEliminationCurrentEndMinus(id uint) error {
 	return result.Error
 }
 
+// UpdateEliminationProgress changes stage and end in one database statement so
+// the player display never observes a partially-updated progress value.
+// Callers must validate the selected stage and end before updating.
+func UpdateEliminationProgress(id uint, currentStage uint, currentEnd uint) error {
+	result := DB.Model(&Elimination{}).
+		Where("id = ?", id).
+		Updates(map[string]interface{}{
+			"current_stage": currentStage,
+			"current_end":   currentEnd,
+		})
+	return result.Error
+}
+
 func DeleteElimination(id uint) (bool, error) {
 	result := DB.Delete(&Elimination{}, "id =?", id)
 	isChanged := result.RowsAffected != 0
