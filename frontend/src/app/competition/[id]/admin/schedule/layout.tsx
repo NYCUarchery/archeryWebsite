@@ -19,7 +19,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       >
         <LinkTab
           href="/activation"
-          label="賽程開啟"
+          label="賽程控制"
           selected={tabValue === 0}
           currentPath={currentPath}
           setTabValue={setTabValue}
