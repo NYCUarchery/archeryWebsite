@@ -103,8 +103,11 @@ func GetEliminationWPlayerSetsById(id uint) (Elimination, error) {
 func GetEliminationWStagesMatchesById(id uint) (Elimination, error) {
 	var data Elimination
 	result := DB.
-		Preload("Stages.Matchs", func(*gorm.DB) *gorm.DB {
-			return DB.Order("id asc")
+		Preload("Stages", func(tx *gorm.DB) *gorm.DB {
+			return tx.Order("id asc")
+		}).
+		Preload("Stages.Matchs", func(tx *gorm.DB) *gorm.DB {
+			return tx.Order("id asc")
 		}).
 		Model(&Elimination{}).
 		Where("id = ?", id).
@@ -115,8 +118,20 @@ func GetEliminationWStagesMatchesById(id uint) (Elimination, error) {
 func GetEliminationWScoresById(id uint) (Elimination, error) {
 	var data Elimination
 	result := DB.
-		Preload("Stages.Matchs.MatchResults.MatchEnds.MatchScores", func(*gorm.DB) *gorm.DB {
-			return DB.Order("id asc")
+		Preload("Stages", func(tx *gorm.DB) *gorm.DB {
+			return tx.Order("id asc")
+		}).
+		Preload("Stages.Matchs", func(tx *gorm.DB) *gorm.DB {
+			return tx.Order("id asc")
+		}).
+		Preload("Stages.Matchs.MatchResults", func(tx *gorm.DB) *gorm.DB {
+			return tx.Order("id asc")
+		}).
+		Preload("Stages.Matchs.MatchResults.MatchEnds", func(tx *gorm.DB) *gorm.DB {
+			return tx.Order("id asc")
+		}).
+		Preload("Stages.Matchs.MatchResults.MatchEnds.MatchScores", func(tx *gorm.DB) *gorm.DB {
+			return tx.Order("id asc")
 		}).
 		Model(&Elimination{}).
 		Where("id = ?", id).
@@ -149,16 +164,25 @@ func GetEliminationTeamSizeByMatchResultId(matchResultId uint) (int, error) {
 func GetEliminationById(id uint) (Elimination, error) {
 	var data Elimination
 	result := DB.
-		Preload("PlayerSets", func(*gorm.DB) *gorm.DB {
-			return DB.Order("`rank` asc").
+		Preload("PlayerSets", func(tx *gorm.DB) *gorm.DB {
+			return tx.Order("`rank` asc").
 				Preload("Players")
 		}).
 		Preload("Medals").
-		Preload("Stages.Matchs.MatchResults", func(*gorm.DB) *gorm.DB {
-			return DB.Order("id asc").
-				Preload("MatchEnds.MatchScores", func(*gorm.DB) *gorm.DB {
-					return DB.Order("score DESC")
-				})
+		Preload("Stages", func(tx *gorm.DB) *gorm.DB {
+			return tx.Order("id asc")
+		}).
+		Preload("Stages.Matchs", func(tx *gorm.DB) *gorm.DB {
+			return tx.Order("id asc")
+		}).
+		Preload("Stages.Matchs.MatchResults", func(tx *gorm.DB) *gorm.DB {
+			return tx.Order("id asc")
+		}).
+		Preload("Stages.Matchs.MatchResults.MatchEnds", func(tx *gorm.DB) *gorm.DB {
+			return tx.Order("id asc")
+		}).
+		Preload("Stages.Matchs.MatchResults.MatchEnds.MatchScores", func(tx *gorm.DB) *gorm.DB {
+			return tx.Order("score DESC")
 		}).
 		Model(&Elimination{}).
 		Where("id = ?", id).
@@ -178,12 +202,14 @@ func GetStageById(id uint) (Stage, error) {
 func GetMatchWScoresById(id uint) (Match, error) {
 	var data Match
 	result := DB.
-		Preload("MatchResults", func(*gorm.DB) *gorm.DB {
-			return DB.Order("id asc").
-				Preload("PlayerSet").
-				Preload("MatchEnds.MatchScores", func(*gorm.DB) *gorm.DB {
-					return DB.Order("score DESC")
-				})
+		Preload("MatchResults", func(tx *gorm.DB) *gorm.DB {
+			return tx.Order("id asc").Preload("PlayerSet")
+		}).
+		Preload("MatchResults.MatchEnds", func(tx *gorm.DB) *gorm.DB {
+			return tx.Order("id asc")
+		}).
+		Preload("MatchResults.MatchEnds.MatchScores", func(tx *gorm.DB) *gorm.DB {
+			return tx.Order("score DESC")
 		}).
 		Model(&Match{}).
 		Where("id = ?", id).
