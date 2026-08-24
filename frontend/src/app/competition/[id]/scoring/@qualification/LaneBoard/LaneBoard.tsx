@@ -4,16 +4,15 @@ import { ToggleButtonGroup, ToggleButton, Box } from "@mui/material";
 import ScoreController from "@/components/ScoreController/ScoreController";
 import { extractScores } from "@/components/ScoreController/util";
 import TargetSigns from "./TargetSigns";
-import useGetCompetitionWithGroups from "@/utils/QueryHooks/useGetCompetitionWithGroups";
 import { Player } from "@/types/oldRef/Player";
 import { LaneWithEnds } from "@/utils/QueryHooks/useGetCurrentEndWithLaneByPlayer";
-import { DatabaseRoundEnd } from "@/types/Api";
+import { DatabaseCompetition, DatabaseRoundEnd } from "@/types/Api";
 
 interface Props {
   player: Player;
   lane: LaneWithEnds;
   ends: DatabaseRoundEnd[];
-  competitionId: number;
+  competition: DatabaseCompetition;
   selectedOrder: number;
   onSelectedOrderChange: (index: number) => void;
   onAddScore: (score: number) => void;
@@ -25,7 +24,7 @@ export default function LaneBoard({
   player,
   lane,
   ends,
-  competitionId,
+  competition,
   selectedOrder,
   onSelectedOrderChange,
   onAddScore,
@@ -33,7 +32,6 @@ export default function LaneBoard({
   onSendScore,
   onConfirm,
 }: Props) {
-  const { data: competition } = useGetCompetitionWithGroups(competitionId);
   const selectedEnd =
     ends[lane.players.findIndex((p) => p.order === selectedOrder)];
 

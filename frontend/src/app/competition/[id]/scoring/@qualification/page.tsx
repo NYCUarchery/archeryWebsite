@@ -4,7 +4,7 @@ import useGetCurrentParticipentDetail from "@/utils/QueryHooks/useGetCurrentPart
 import { useGetCurrentUserDetail } from "@/utils/QueryHooks/useGetCurrentUserDetail";
 import { Participant } from "@/types/oldRef/Participant";
 import useGetCurrentEndWithLaneByPlayer from "@/utils/QueryHooks/useGetCurrentEndWithLaneByPlayer";
-import useGetCompetitionWithGroups from "@/utils/QueryHooks/useGetCompetitionWithGroups";
+import useGetCompetitionProgress from "@/utils/QueryHooks/useGetCompetitionProgress";
 import LaneBoard from "./LaneBoard/LaneBoard";
 import { useAppDispatch, useAppSelector } from "store/hooks";
 import {
@@ -33,7 +33,7 @@ export default function Page({ params }: { params: { id: string } }) {
   const isEndRefreshed = useRef(false);
   const { data: user } = useGetCurrentUserDetail();
   const competitionId = parseInt(params.id);
-  const { data: competition } = useGetCompetitionWithGroups(competitionId);
+  const { data: competition } = useGetCompetitionProgress(competitionId);
   const { data: participant } = useGetCurrentParticipentDetail(
     competitionId,
     user?.id
@@ -137,7 +137,7 @@ export default function Page({ params }: { params: { id: string } }) {
     setErrorSnackbar(false);
   };
 
-  if (!players || !lane) return <></>;
+  if (!competition || !players || !lane) return <></>;
 
   return (
     <>
@@ -145,7 +145,7 @@ export default function Page({ params }: { params: { id: string } }) {
         player={players[0]}
         lane={lane}
         ends={ends}
-        competitionId={competitionId}
+        competition={competition}
         selectedOrder={selectedOrder}
         onSelectedOrderChange={onSelectedOrderChange}
         onAddScore={onAddScore}
