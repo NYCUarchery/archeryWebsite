@@ -31,6 +31,16 @@ func DatabaseInitial() {
 	setDictator()
 }
 
+// DatabaseInitialForSeeder prepares the schema needed by the development
+// seeder. Unlike DatabaseInitial it never updates an existing Dictator user.
+// This keeps an explicit seeding command from overwriting application data.
+func DatabaseInitialForSeeder() {
+	connectDB()
+	setTables()
+	CreateNoInstitution()
+	ensureDictatorForSeeder()
+}
+
 func setTables() {
 	InitUser()
 	InitInstitution()
@@ -149,4 +159,51 @@ func setDictator() {
 		os.Exit(1)
 	}
 	log.Println("Dictator is updated")
+}
+
+func ensureDictatorForSeeder() {
+	type dictatorConf struct {
+		UserName string `json:"username"`
+		Password string `json:"password"`
+		Email    string `json:"email"`
+		Overview string `json:"overview"`
+	}
+	_, filename, _, ok := runtime.Caller(0)
+	if !ok {
+		log.Println("Unable to get caller information for seeder Dictator setup")
+		os.Exit(1)
+	}
+	configPath := filepath.Join(filepath.Dir(filename), "../../config/dictator.yaml")
+	dictatorConfig := pkg.GetConf[dictatorConf](configPath)
+	if dictatorConfig.UserName == "" || dictatorConfig.Password == "" || dictatorConfig.Email == "" {
+		log.Println("Dictator config is not set")
+		os.Exit(1)
+	}
+
+	oldUser := FindByUsername(dictatorConfig.UserName)
+	if oldUser.ID != 0 {
+		if oldUser.Role != pkg.RoleToString(pkg.RDictator) {
+			log.Println("Dictator username is occupied by a non-Dictator user; refusing to modify it")
+			os.Exit(1)
+		}
+		if pkg.Compare(oldUser.Password, dictatorConfig.Password) != nil {
+			log.Println("Dictator password is unmatch, cannot seed without changing existing Dictator")
+			os.Exit(1)
+		}
+		log.Println("Dictator already exists; seeder left it unchanged")
+		return
+	}
+	newUser := User{
+		Role:     pkg.RoleToString(pkg.RDictator),
+		UserName: dictatorConfig.UserName,
+		RealName: "Dictator",
+		Password: pkg.EncryptPassword(dictatorConfig.Password),
+		Email:    dictatorConfig.Email,
+		Overview: dictatorConfig.Overview,
+	}
+	if _, err := CreateUser(newUser); err != nil {
+		log.Println("Failed to create Dictator for seeder")
+		os.Exit(1)
+	}
+	log.Println("Dictator is created for seeder")
 }

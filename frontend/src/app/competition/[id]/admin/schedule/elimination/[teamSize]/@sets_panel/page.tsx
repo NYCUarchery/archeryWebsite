@@ -145,8 +145,8 @@ export default function Page({
                 </TableRow>
               </TableHead>
               <TableBody>
-                {playerSet?.players
-                  ?.sort((a, b) => a.rank! - b.rank!)
+                {[...(playerSet?.players ?? [])]
+                  .sort((a, b) => a.rank! - b.rank!)
                   .map((player) => {
                     return (
                       <TableRow key={player.id}>
