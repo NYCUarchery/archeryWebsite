@@ -602,6 +602,7 @@ func GetAllCompetition(c *gin.Context) {
 //	@Param			id	path		int									true	"Competition ID"
 //	@Success		200	{object}	response.Response					"success"
 //	@Failure		400	{object}	response.ErrorIdResponse			"invalid competition id parameter"
+//	@Failure		403	{object}	response.ErrorResponse				"target competition admin required"
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse	"Update Competition CurrentPhase Plus"
 //	@Router			/competition/current-phase/plus/{id} [patch]
 func PutCompetitionCurrentPhasePlus(context *gin.Context) {
@@ -609,6 +610,9 @@ func PutCompetitionCurrentPhasePlus(context *gin.Context) {
 	/*check data exist*/
 	isExist, _ := IsGetOnlyCompetition(context, id)
 	if !isExist {
+		return
+	}
+	if !requireCompetitionAdmin(context, id) {
 		return
 	}
 	/*update and check change*/
@@ -627,6 +631,7 @@ func PutCompetitionCurrentPhasePlus(context *gin.Context) {
 //	@Param			id	path		int									true	"Competition ID"
 //	@Success		200	{object}	response.Response					"success"
 //	@Failure		400	{object}	response.ErrorIdResponse			"invalid competition id parameter"
+//	@Failure		403	{object}	response.ErrorResponse				"target competition admin required"
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse	"Update Competition CurrentPhase Minus"
 //	@Router			/competition/current-phase/minus/{id} [patch]
 func PutCompetitionCurrentPhaseMinus(context *gin.Context) {
@@ -636,12 +641,109 @@ func PutCompetitionCurrentPhaseMinus(context *gin.Context) {
 	if !isExist {
 		return
 	}
+	if !requireCompetitionAdmin(context, id) {
+		return
+	}
 	/*update and check change*/
 	err := database.UpdateCompetitionCurrentPhaseMinus(id)
 	if response.ErrorInternalErrorTest(context, id, "Update Competition CurrentPhase Minus", err) {
 		return
 	}
 	context.IndentedJSON(http.StatusOK, gin.H{"message": "Update Competition CurrentPhase Minus Success"})
+}
+
+func isCompetitionPhaseActive(competition database.Competition, currentPhase int) bool {
+	switch currentPhase {
+	case 0:
+		return competition.QualificationIsActive
+	case 1:
+		return competition.EliminationIsActive
+	case 2:
+		return competition.TeamEliminationIsActive
+	case 3:
+		return competition.MixedEliminationIsActive
+	default:
+		return false
+	}
+}
+
+func requireCompetitionAdmin(context *gin.Context, competitionID uint) bool {
+	userID, ok := pkg.QuerySession(context, "userid").(uint)
+	if !ok || userID == 0 {
+		context.JSON(http.StatusForbidden, gin.H{"error": "Require login"})
+		return false
+	}
+
+	participants, err := database.GetParticipantByCompetitionIdUserId(competitionID, userID)
+	if response.ErrorInternalErrorTest(context, competitionID, "Check competition admin", err) {
+		return false
+	}
+	if hasCompetitionAdmin(participants) {
+		return true
+	}
+
+	context.JSON(http.StatusForbidden, gin.H{"error": "Competition admin required"})
+	return false
+}
+
+func hasCompetitionAdmin(participants []database.Participant) bool {
+	for _, participant := range participants {
+		if pkg.StringToRole(participant.Role) == pkg.RAdmin {
+			return true
+		}
+	}
+	return false
+}
+
+// Update Competition current phase directly godoc
+//
+//	@Summary		Set one Competition player-facing current phase.
+//	@Description	Set current phase to qualification (0), individual elimination (1), team elimination (2), or mixed elimination (3). The selected phase must be active.
+//	@Tags			Competition
+//	@Accept			json
+//	@Produce		json
+//	@Param			id			path	int	true	"Competition ID"
+//	@Param			CurrentPhase	body	endpoint.PutCompetitionCurrentPhase.CurrentPhaseData	true	"Current phase"
+//	@Success		200	{object}	database.Competition{groups=response.Nill,participants=response.Nill}	"updated competition"
+//	@Failure		400	{object}	response.ErrorReceiveDataResponse	"invalid competition ID, phase, or inactive phase"
+//	@Failure		403	{object}	response.ErrorResponse			"target competition admin required"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error"
+//	@Router			/competition/current-phase/{id} [patch]
+func PutCompetitionCurrentPhase(context *gin.Context) {
+	type CurrentPhaseData struct {
+		CurrentPhase *int `json:"current_phase"`
+	}
+
+	var data CurrentPhaseData
+	id := Convert2uint(context, "id")
+	if err := context.BindJSON(&data); response.ErrorReceiveDataTest(context, id, "Competition current phase", err) {
+		return
+	}
+	if data.CurrentPhase == nil || *data.CurrentPhase < 0 || *data.CurrentPhase > 3 {
+		response.ErrorReceiveDataFormat(context, "current_phase must be between 0 and 3")
+		return
+	}
+
+	isExist, competition := IsGetOnlyCompetition(context, id)
+	if !isExist {
+		return
+	}
+	if !requireCompetitionAdmin(context, id) {
+		return
+	}
+	if !isCompetitionPhaseActive(competition, *data.CurrentPhase) {
+		response.ErrorReceiveDataFormat(context, "requested current_phase is not active")
+		return
+	}
+	if err := database.UpdateCompetitionCurrentPhase(id, *data.CurrentPhase); response.ErrorInternalErrorTest(context, id, "Update Competition CurrentPhase", err) {
+		return
+	}
+
+	isExist, competition = IsGetOnlyCompetition(context, id)
+	if !isExist {
+		return
+	}
+	context.IndentedJSON(http.StatusOK, competition)
 }
 
 // Update Competition Qualification currentEnd ++ godoc

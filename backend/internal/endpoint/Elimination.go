@@ -3,10 +3,52 @@ package endpoint
 import (
 	"backend/internal/database"
 	response "backend/internal/response"
+	"errors"
 	"fmt"
 
 	"github.com/gin-gonic/gin"
 )
+
+func validateEliminationProgress(elimination database.Elimination, currentStage int, currentEnd int) error {
+	if currentStage < 0 || currentStage >= len(elimination.Stages) {
+		return errors.New("current_stage must identify an existing stage")
+	}
+	if len(elimination.Stages[currentStage].Matchs) == 0 {
+		return errors.New("current_stage must contain at least one match")
+	}
+	if currentEnd < 0 {
+		return errors.New("current_end must not be negative")
+	}
+
+	maxEnd := -1
+	switch elimination.TeamSize {
+	case 1:
+		maxEnd = 4
+	case 2, 3:
+		maxEnd = 3
+	default:
+		return errors.New("elimination team_size must be 1, 2, or 3")
+	}
+	if currentEnd > maxEnd {
+		return fmt.Errorf("current_end must be between 0 and %d for team_size %d", maxEnd, elimination.TeamSize)
+	}
+	return nil
+}
+
+func progressEndForStage(elimination database.Elimination, currentStage int, currentEnd int) int {
+	if uint(currentStage) != elimination.CurrentStage {
+		return 0
+	}
+	return currentEnd
+}
+
+func requireEliminationCompetitionAdmin(context *gin.Context, elimination database.Elimination) bool {
+	group, err := database.GetGroupInfoById(elimination.GroupId)
+	if response.ErrorInternalErrorTest(context, elimination.GroupId, "Get elimination group", err) {
+		return false
+	}
+	return requireCompetitionAdmin(context, group.CompetitionId)
+}
 
 func IsGetEliminationById(context *gin.Context) (bool, database.Elimination) {
 	id := Convert2uint(context, "id")
@@ -420,12 +462,16 @@ func PutMatchPlayerSetByMatchId(conetext *gin.Context) {
 //	@Param			id	path		int									true	"Elimination ID"
 //	@Success		200	{object}	response.Nill						"success, return one Elimination with new current stage"
 //	@Failure		400	{object}	response.ErrorIdResponse			"invalid Elimination ID, maybe not exist"
+//	@Failure		403	{object}	response.ErrorResponse				"target competition admin required"
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error for Update Elimination CurrentStage"
 //	@Router			/elimination/currentstage/plus/{id} [patch]
 func PutEliminationCurrentStagePlusById(context *gin.Context) {
 	id := Convert2uint(context, "id")
-	isExist, _ := IsGetEliminationById(context)
+	isExist, elimination := IsGetEliminationById(context)
 	if !isExist {
+		return
+	}
+	if !requireEliminationCompetitionAdmin(context, elimination) {
 		return
 	}
 	error := database.UpdateEliminationCurrentStagePlus(id)
@@ -443,12 +489,16 @@ func PutEliminationCurrentStagePlusById(context *gin.Context) {
 //	@Param			id	path		int									true	"Elimination ID"
 //	@Success		200	{object}	response.Nill						"success, return one Elimination with new current stage"
 //	@Failure		400	{object}	response.ErrorIdResponse			"invalid Elimination ID, maybe not exist"
+//	@Failure		403	{object}	response.ErrorResponse				"target competition admin required"
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error for Update Elimination CurrentStage"
 //	@Router			/elimination/currentstage/minus/{id} [patch]
 func PutEliminationCurrentStageMinusById(context *gin.Context) {
 	id := Convert2uint(context, "id")
-	isExist, _ := IsGetEliminationById(context)
+	isExist, elimination := IsGetEliminationById(context)
 	if !isExist {
+		return
+	}
+	if !requireEliminationCompetitionAdmin(context, elimination) {
 		return
 	}
 	error := database.UpdateEliminationCurrentStageMinus(id)
@@ -466,12 +516,16 @@ func PutEliminationCurrentStageMinusById(context *gin.Context) {
 //	@Param			id	path		int									true	"Elimination ID"
 //	@Success		200	{object}	response.Nill						"success, return one Elimination with new current end"
 //	@Failure		400	{object}	response.ErrorIdResponse			"invalid Elimination ID, maybe not exist"
+//	@Failure		403	{object}	response.ErrorResponse				"target competition admin required"
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error for Update Elimination CurrentStage"
 //	@Router			/elimination/currentend/plus/{id} [patch]
 func PutEliminationCurrentEndPlusById(context *gin.Context) {
 	id := Convert2uint(context, "id")
-	isExist, _ := IsGetEliminationById(context)
+	isExist, elimination := IsGetEliminationById(context)
 	if !isExist {
+		return
+	}
+	if !requireEliminationCompetitionAdmin(context, elimination) {
 		return
 	}
 	error := database.UpdateEliminationCurrentEndPlus(id)
@@ -489,12 +543,16 @@ func PutEliminationCurrentEndPlusById(context *gin.Context) {
 //	@Param			id	path		int									true	"Elimination ID"
 //	@Success		200	{object}	response.Nill						"success, return one Elimination with new current end"
 //	@Failure		400	{object}	response.ErrorIdResponse			"invalid Elimination ID, maybe not exist"
+//	@Failure		403	{object}	response.ErrorResponse				"target competition admin required"
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error for Update Elimination CurrentStage"
 //	@Router			/elimination/currentend/minus/{id} [patch]
 func PutEliminationCurrentEndMinusById(context *gin.Context) {
 	id := Convert2uint(context, "id")
-	isExist, _ := IsGetEliminationById(context)
+	isExist, elimination := IsGetEliminationById(context)
 	if !isExist {
+		return
+	}
+	if !requireEliminationCompetitionAdmin(context, elimination) {
 		return
 	}
 	error := database.UpdateEliminationCurrentEndMinus(id)
@@ -502,6 +560,60 @@ func PutEliminationCurrentEndMinusById(context *gin.Context) {
 		return
 	}
 	context.IndentedJSON(200, nil)
+}
+
+// Update elimination progress directly godoc
+//
+//	@Summary		Set one Elimination current stage and end.
+//	@Description	Set stage and end atomically. Stages are zero-based in creation order and must contain a match. Individual eliminations allow ends 0 through 4; team and mixed eliminations allow ends 0 through 3. Moving to another stage resets current_end to 0.
+//	@Tags			Elimination
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path	int	true	"Elimination ID"
+//	@Param			Progress	body	endpoint.PutEliminationProgress.ProgressData	true	"Elimination progress"
+//	@Success		200	{object}	database.Elimination{player_sets=response.Nill,stages=response.Nill,medals=response.Nill}	"updated elimination"
+//	@Failure		400	{object}	response.ErrorReceiveDataResponse	"invalid elimination ID, stage, or end"
+//	@Failure		403	{object}	response.ErrorResponse			"target competition admin required"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error"
+//	@Router			/elimination/progress/{id} [patch]
+func PutEliminationProgress(context *gin.Context) {
+	type ProgressData struct {
+		CurrentStage *int `json:"current_stage"`
+		CurrentEnd   *int `json:"current_end"`
+	}
+
+	var data ProgressData
+	id := Convert2uint(context, "id")
+	if err := context.BindJSON(&data); response.ErrorReceiveDataTest(context, id, "Elimination progress", err) {
+		return
+	}
+
+	isExist, elimination := IsGetEliminationWStagesMatchesById(context)
+	if !isExist {
+		return
+	}
+	if !requireEliminationCompetitionAdmin(context, elimination) {
+		return
+	}
+	if data.CurrentStage == nil || data.CurrentEnd == nil {
+		response.ErrorReceiveDataFormat(context, "current_stage and current_end are required")
+		return
+	}
+	if err := validateEliminationProgress(elimination, *data.CurrentStage, *data.CurrentEnd); err != nil {
+		response.ErrorReceiveDataFormat(context, err.Error())
+		return
+	}
+
+	currentEnd := progressEndForStage(elimination, *data.CurrentStage, *data.CurrentEnd)
+	if err := database.UpdateEliminationProgress(id, uint(*data.CurrentStage), uint(currentEnd)); response.ErrorInternalErrorTest(context, id, "Update Elimination progress", err) {
+		return
+	}
+
+	isExist, elimination = IsGetEliminationById(context)
+	if !isExist {
+		return
+	}
+	context.IndentedJSON(200, elimination)
 }
 
 // Delete Elimination godoc
