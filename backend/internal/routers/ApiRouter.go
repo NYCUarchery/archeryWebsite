@@ -79,12 +79,13 @@ func competitionRouter(api *gin.RouterGroup) {
 		competitionssr.GET("/groups/eliminations/:id", endpoint.GetCompetitionWGroupsElimintaionsByID)
 		competitionssr.GET("/current/:head/:tail", endpoint.GetCurrentCompetitions)
 		competitionssr.GET("/user/:userid/:head/:tail", endpoint.GetCompetitionsOfUser)
-		competitionssr.POST("/",pkg.RBACMiddleware(pkg.RoleSystem, pkg.RDictator), endpoint.PostCompetition)
+		competitionssr.POST("/", pkg.RBACMiddleware(pkg.RoleSystem, pkg.RDictator), endpoint.PostCompetition)
 		competitionssr.PATCH("/refresh/groups/players/rank/:id", endpoint.RefreshCompetitionRank)
 		competitionssr.PUT("/:id", endpoint.PutCompetition)
 		competitionssr.DELETE("/:id", endpoint.DeleteCompetition)
 		competitionssr.PATCH("/current-phase/plus/:id", endpoint.PutCompetitionCurrentPhasePlus)
 		competitionssr.PATCH("/current-phase/minus/:id", endpoint.PutCompetitionCurrentPhaseMinus)
+		competitionssr.PATCH("/current-phase/:id", endpoint.PutCompetitionCurrentPhase)
 		competitionssr.PATCH("/qualification-current-end/plus/:id", endpoint.PutCompetitionQualificationCurrentEndPlus)
 		competitionssr.PATCH("/qualification-current-end/minus/:id", endpoint.PutCompetitionQualificationCurrentEndMinus)
 		competitionssr.PATCH("/qualification-isactive/:id", endpoint.PutCompetitionQualificationActive)
@@ -145,6 +146,7 @@ func eliminationRouter(api *gin.RouterGroup) {
 		eliminationssr.PATCH("/currentstage/minus/:id", endpoint.PutEliminationCurrentStageMinusById)
 		eliminationssr.PATCH("/currentend/plus/:id", endpoint.PutEliminationCurrentEndPlusById)
 		eliminationssr.PATCH("/currentend/minus/:id", endpoint.PutEliminationCurrentEndMinusById)
+		eliminationssr.PATCH("/progress/:id", endpoint.PutEliminationProgress)
 		eliminationssr.DELETE("/:id", endpoint.DeleteElimination)
 	}
 }

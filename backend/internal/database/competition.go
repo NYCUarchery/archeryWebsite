@@ -243,6 +243,15 @@ func UpdateCompetitionCurrentPhaseMinus(ID uint) error {
 	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("current_phase", gorm.Expr("current_phase - ?", 1))
 	return result.Error
 }
+
+// UpdateCompetitionCurrentPhase sets the player-facing phase directly.
+// Callers must validate that the requested phase is active before updating.
+func UpdateCompetitionCurrentPhase(ID uint, currentPhase int) error {
+	result := DB.Model(&Competition{}).
+		Where("id = ?", ID).
+		UpdateColumn("current_phase", currentPhase)
+	return result.Error
+}
 func UpdateCompetitionQualificationCurrentEndPlus(ID uint) error {
 	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("qualification_current_end", gorm.Expr("qualification_current_end + ?", 1))
 	return result.Error
