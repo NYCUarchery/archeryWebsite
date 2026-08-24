@@ -1,5 +1,6 @@
 "use client";
 import {
+  Alert,
   Autocomplete,
   Box,
   Button,
@@ -37,6 +38,7 @@ import {
 } from "@/types/Api";
 import LaneNumber from "@/components/LaneNumber";
 import EliminationProgressControl from "./EliminationProgressControl";
+import { isCompleteEliminationBracket } from "@/utils/eliminationBracket";
 
 interface PlayerSetOption {
   id: number;
@@ -58,6 +60,7 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
   const [selectedMatchId, setSelectedMatchId] = useState<number | null>(null);
   const [selectedStageId, setSelectedStageId] = useState<number | null>(null);
   const [progressError, setProgressError] = useState<string | null>(null);
+  const [advanceError, setAdvanceError] = useState<string | null>(null);
 
   const {
     data: competition,
@@ -91,6 +94,7 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
     })) ?? [];
 
   const stages = eliminationDetail?.stages ?? [];
+  const bracketExists = isCompleteEliminationBracket(eliminationDetail?.stages);
 
   const { mutate: createStage } = useMutation(
     (data: EndpointPostStagePostStageData) =>
@@ -114,6 +118,37 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
           elimination?.elimination_id,
         ]);
         resetState();
+      },
+    }
+  );
+
+  const { mutate: advanceStage, isLoading: isStageAdvancing } = useMutation(
+    (stageId: number) => apiClient.elimination.stageAdvanceCreate(stageId),
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries([
+          "eliminationDetail",
+          elimination?.elimination_id,
+        ]);
+        queryClient.invalidateQueries([
+          "competitionEliminations",
+          competitionId,
+        ]);
+        queryClient.invalidateQueries([
+          "eliminationProgress",
+          elimination?.elimination_id,
+        ]);
+        queryClient.invalidateQueries([
+          "playerSets",
+          elimination?.elimination_id,
+        ]);
+        setAdvanceError(null);
+      },
+      onError: (error: any) => {
+        setAdvanceError(
+          error?.response?.data?.error ??
+            "依賽果推進對抗賽失敗，請確認本階段賽果後再試。"
+        );
       },
     }
   );
@@ -413,10 +448,21 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
           <GroupMenu
             groupNames={groups?.map((group) => group.group_name!) ?? []}
           />
-          <Button onClick={handleCreateStage} disabled={!canCreateStage()}>
-            創建階段
-          </Button>
+          {!bracketExists && (
+            <Button onClick={handleCreateStage} disabled={!canCreateStage()}>
+              創建階段
+            </Button>
+          )}
         </Stack>
+        {advanceError && (
+          <Alert
+            severity="error"
+            sx={{ mt: 1 }}
+            onClose={() => setAdvanceError(null)}
+          >
+            {advanceError}
+          </Alert>
+        )}
       </Card>
       <Box
         sx={{
@@ -437,20 +483,31 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
               width: "max-content",
             }}
           >
-            {stages.map((stage) => {
+            {stages.map((stage, stageIndex) => {
+              const isFinalStage = stageIndex === stages.length - 1;
               return (
                 <Paper
                   key={stage.id}
                   sx={{ width: "300px", flexShrink: 0 }}
                 >
+                  {!bracketExists && (
+                    <Button
+                      onClick={() => {
+                        setSelectedStageId(stage.id!);
+                        setCreateMatchDialogOpen(true);
+                      }}
+                      sx={{ width: "100%" }}
+                    >
+                      創建對抗組
+                    </Button>
+                  )}
                   <Button
-                    onClick={() => {
-                      setSelectedStageId(stage.id!);
-                      setCreateMatchDialogOpen(true);
-                    }}
-                    sx={{ width: "100%" }}
+                    variant="outlined"
+                    disabled={!stage.id || isStageAdvancing}
+                    onClick={() => advanceStage(stage.id!)}
+                    sx={{ width: "100%", mb: 1 }}
                   >
-                    創建對抗組
+                    {isFinalStage ? "依結果結算獎牌" : "依結果填入下一階段"}
                   </Button>
                   {stage.matchs?.map((match) => {
                     const result1 = match.match_results?.[0];
@@ -464,15 +521,23 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
                     return (
                       <Paper
                         key={match.id}
-                        onClick={() =>
-                          handleMatchInfoDialogOpen(
-                            match.id!,
-                            stage.id!,
-                            set1!,
-                            set2!
-                          )
+                        onClick={
+                          set1 && set2
+                            ? () =>
+                                handleMatchInfoDialogOpen(
+                                  match.id!,
+                                  stage.id!,
+                                  set1,
+                                  set2
+                                )
+                            : undefined
                         }
-                        sx={{ cursor: "pointer", mb: 2, ml: 2, mr: 2 }}
+                        sx={{
+                          cursor: set1 && set2 ? "pointer" : "default",
+                          mb: 2,
+                          ml: 2,
+                          mr: 2,
+                        }}
                       >
                         <Stack direction="row">
                           <LaneNumber
@@ -698,19 +763,21 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
         </DialogContent>
 
         <DialogActions>
-          <Button
-            color="success"
-            onClick={() =>
-              updatePlayerSets({
-                matchId: selectedMatchId!,
-                playerSetIds: {
-                  player_set_ids: [setOption1!.id!, setOption2!.id!],
-                },
-              })
-            }
-          >
-            更新選手
-          </Button>
+          {!bracketExists && (
+            <Button
+              color="success"
+              onClick={() =>
+                updatePlayerSets({
+                  matchId: selectedMatchId!,
+                  playerSetIds: {
+                    player_set_ids: [setOption1!.id!, setOption2!.id!],
+                  },
+                })
+              }
+            >
+              更新選手
+            </Button>
+          )}
           <Button color="success" onClick={handleUpdateLaneNumber}>
             更新靶道
           </Button>
