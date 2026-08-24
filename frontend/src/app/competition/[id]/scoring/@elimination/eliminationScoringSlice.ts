@@ -8,7 +8,7 @@ export interface LocalMatchScore {
   score: number;
 }
 
-// 本地一方（一 MatchResult 的目前局視圖 + 概要資訊）。
+// 本地一方（一 MatchResult 的目前波視圖 + 概要資訊）。
 export interface LocalMatchResult {
   matchResultId: number;
   playerSetId: number;
@@ -18,9 +18,9 @@ export interface LocalMatchResult {
   totalPoints: number;
   currentMatchEndId: number; // 目前 MatchEnd id
   isConfirmed: boolean; // 目前 MatchEnd 的 is_confirmed
-  capacity: number; // = match_scores.length（該局實際容量，硬上限以此為準）
+  capacity: number; // = match_scores.length（該波實際容量，硬上限以此為準）
   scores: LocalMatchScore[]; // 依 score DESC 排、-1 殿後
-  totalScores: number; // 目前局總分（Scorefmt 折算後加總）
+  totalScores: number; // 目前波總分（Scorefmt 折算後加總）
   dirty: boolean; // 本地是否有尚未成功存分的編輯（true 表示與伺服器不同步，不得確認）
 }
 
@@ -42,7 +42,7 @@ const initialState: EliminationScoringState = {
   saveError: null,
 };
 
-// 依隊伍規模換算每局「預期」箭數：1 個人→3、2 混雙→4、3 團體→6。
+// 依隊伍規模換算每波「預期」箭數：1 個人→3、2 混雙→4、3 團體→6。
 // 僅供校驗用（capacity 與預期不符時 console.warn），實際硬上限一律以 capacity 為準。
 export function expectedArrows(teamSize: number): number {
   switch (teamSize) {
@@ -71,7 +71,7 @@ function sortScoresDesc(scores: LocalMatchScore[]): LocalMatchScore[] {
   return [...scores].sort((a, b) => b.score - a.score);
 }
 
-// 依排序後的 scores 重算目前局總分（Scorefmt 折算後加總）。
+// 依排序後的 scores 重算目前波總分（Scorefmt 折算後加總）。
 function sumTotalScores(scores: LocalMatchScore[]): number {
   return scores.reduce((sum, s) => sum + scorefmt(s.score), 0);
 }
@@ -110,7 +110,7 @@ export const eliminationScoringSlice = createSlice({
       action.payload.matchResults.forEach((mr) => {
         if (mr.capacity !== expected) {
           console.warn(
-            `對抗賽局容量(${mr.capacity})與隊伍規模(${action.payload.teamSize})預期箭數(${expected})不符，仍以容量為硬上限`
+            `對抗賽波容量(${mr.capacity})與隊伍規模(${action.payload.teamSize})預期箭數(${expected})不符，仍以容量為硬上限`
           );
         }
       });

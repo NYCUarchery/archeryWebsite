@@ -150,7 +150,7 @@ export default function Page({ params }: { params: { id: string } }) {
       onSuccess: ({ matchResultId, scores, totalScores }) => {
         dispatch(setSaving(false));
         dispatch(setSaveError(null));
-        // 存分成功不改 is_confirmed/total_points/is_winner/current_end，僅回填本局分數。
+        // 存分成功不改 is_confirmed/total_points/is_winner/current_end，僅回填本波分數。
         isLocalRefreshRef.current = true;
         dispatch(
           replaceSavedMatchEnd({ matchResultId, scores, totalScores })
@@ -179,7 +179,7 @@ export default function Page({ params }: { params: { id: string } }) {
     {
       onSuccess: (matchResultId) => {
         dispatch(markConfirmed(matchResultId));
-        setSnackbar({ open: true, severity: "success", message: "已確認本局" });
+        setSnackbar({ open: true, severity: "success", message: "已確認本波" });
       },
       onError: () => {
         setSnackbar({
