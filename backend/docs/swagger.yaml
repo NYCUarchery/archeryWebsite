@@ -4342,13 +4342,15 @@ paths:
       description: |-
         Add a user to db.
         Username cannot be empty or repeated.
-        Password cannot be empty.
         Email cannot be empty or repeated.
+        Password cannot be empty.
+        Realname cannot be empty.
         Institution id must exist.
-        Realname and overview are optional.
+        Overview is optional.
+        Overview limited to 3000 chars.
         Role is set to User.
       parameters:
-      - description: nessary information for register
+      - description: necessary information for register
         in: body
         name: AccountInfo
         required: true

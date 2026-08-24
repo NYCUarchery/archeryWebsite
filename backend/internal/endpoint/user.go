@@ -1,6 +1,7 @@
 package endpoint
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -32,21 +33,24 @@ type ModifyAccountPasswordInfo struct {
 //	@Summary		Register a user.
 //	@Description	Add a user to db.
 //	@Description	Username cannot be empty or repeated.
-//	@Description	Password cannot be empty.
 //	@Description	Email cannot be empty or repeated.
+//	@Description	Password cannot be empty.
+//	@Description	Realname cannot be empty.
 //	@Description	Institution id must exist.
-//	@Description	Realname and overview are optional.
+//	@Description	Overview is optional.
+//	@Description	Overview limited to 3000 chars.
 //	@Description	Role is set to User.
 //	@Tags			User
 //	@Accept			json
 //	@Produce		json
-//	@Param			AccountInfo	body		endpoint.AccountInfo	true	"nessary information for register"
+//	@Param			AccountInfo	body		endpoint.AccountInfo	true	"necessary information for register"
 //	@Success		200			{object}	database.User			"a user object"
 //	@Failure		400			{object}	response.Response		"username/email exists | empty username/password/email/institutionID | invalid info"
 //	@Failure		500			{object}	response.Response		"db error"
 //	@Router			/user [post]
 func Register(c *gin.Context) {
 	var registerInfo AccountInfo
+	const overviewStringLimitation = 3000
 	var user database.User
 	if err := c.ShouldBindJSON(&registerInfo); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "invalid info"})
@@ -59,14 +63,13 @@ func Register(c *gin.Context) {
 	user.InstitutionID = registerInfo.InstitutionID
 	user.Overview = registerInfo.Overview
 	user.Role = pkg.RoleToString(pkg.RUser)
-	// no need to check id(it is auto created), realname, and overview
-	// name
+	// user name
 	if user.UserName == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "empty username"})
 		return
 	}
 	if database.GetUserNameIsExist(user.UserName) {
-		c.JSON(http.StatusBadRequest, gin.H{"result": "username exists"})
+		c.JSON(http.StatusBadRequest, gin.H{"result": "username repeated"})
 		return
 	}
 	// real name
@@ -87,7 +90,12 @@ func Register(c *gin.Context) {
 		return
 	}
 	if database.GetEmailIsExist(user.Email) {
-		c.JSON(http.StatusBadRequest, gin.H{"result": "email exists"})
+		c.JSON(http.StatusBadRequest, gin.H{"result": "email repeated"})
+		return
+	}
+	if len(user.Overview) >= overviewStringLimitation {
+		m := fmt.Sprintf("overview string lenght over limit %d", overviewStringLimitation)
+		c.JSON(http.StatusBadRequest, gin.H{"result": m})
 		return
 	}
 
