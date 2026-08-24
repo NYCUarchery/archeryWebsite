@@ -32,11 +32,14 @@ func TestIsCompetitionPhaseActive(t *testing.T) {
 }
 
 func TestHasCompetitionAdmin(t *testing.T) {
-	if hasCompetitionAdmin([]database.Participant{{Role: "Player"}, {Role: "Judge"}}) {
+	if hasCompetitionAdmin([]database.Participant{{Role: "Player", Status: "approved"}, {Role: "Judge", Status: "approved"}}) {
 		t.Error("non-admin participants must not receive competition control access")
 	}
-	if !hasCompetitionAdmin([]database.Participant{{Role: "Player"}, {Role: "Admin"}}) {
+	if !hasCompetitionAdmin([]database.Participant{{Role: "Player", Status: "approved"}, {Role: "Admin", Status: "approved"}}) {
 		t.Error("target competition admin must receive competition control access")
+	}
+	if hasCompetitionAdmin([]database.Participant{{Role: "Admin", Status: "pending"}}) {
+		t.Error("pending admin participant must not receive competition control access")
 	}
 }
 
