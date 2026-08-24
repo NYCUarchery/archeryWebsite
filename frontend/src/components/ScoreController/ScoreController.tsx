@@ -13,6 +13,7 @@ interface Props {
   onSave: () => void;
   onConfirm?: () => void;
   isSaving?: boolean;
+  canConfirm?: boolean; // false 表示尚未選定記分對象，確認鈕停用
 }
 
 export default function ScoreController({
@@ -25,6 +26,7 @@ export default function ScoreController({
   onSave,
   onConfirm,
   isSaving = false,
+  canConfirm = true,
 }: Props) {
   const filledCount = scores.filter((s) => s !== -1).length;
   const isFull = filledCount >= maximumArrowCount;
@@ -54,6 +56,7 @@ export default function ScoreController({
         isConfirmed={isConfirmed}
         canDelete={canDelete}
         isSaving={isSaving}
+        canConfirm={canConfirm}
         onDeleteScore={onDeleteScore}
         onSave={onSave}
         onConfirm={onConfirm}
