@@ -25,7 +25,7 @@ import { useState } from "react";
 import ScoreController from "@/components/ScoreController/ScoreController";
 import { extractScores } from "@/components/ScoreController/util";
 import { DatabaseRoundEnd } from "@/types/Api";
-import ScoreCircle from "@/components/ScoreCircle";
+import ScoreBlock from "@/components/ScoreBlock";
 
 export default function Page({ params }: { params: { id: string } }) {
   const isSmall = useMediaQuery("(max-width:420px)");
@@ -142,11 +142,7 @@ export default function Page({ params }: { params: { id: string } }) {
                   >
                     {end!.round_scores!.map((score) => {
                       return (
-                        <ScoreCircle
-                          key={score.id}
-                          score={score.score!}
-                          diameter={25}
-                        />
+                        <ScoreBlock key={score.id} score={score.score!} />
                       );
                     })}
                   </Box>
@@ -240,11 +236,7 @@ export default function Page({ params }: { params: { id: string } }) {
             {selectedEnd ? (
               selectedEnd!.round_scores!.map((score) => {
                 return (
-                  <ScoreCircle
-                    key={score.id}
-                    score={score.score!}
-                    diameter={25}
-                  />
+                  <ScoreBlock key={score.id} score={score.score!} />
                 );
               })
             ) : (
