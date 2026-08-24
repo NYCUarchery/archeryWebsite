@@ -32,9 +32,7 @@ export default function EliminationScoringStates({ status }: Props) {
       case "stageOutOfRange":
         return "目前對抗賽階段資料異常（階段超出範圍）。";
       case "endOutOfRange":
-        return "目前對抗賽局數資料異常（局數超出範圍）。";
-      case "finished":
-        return "對抗賽已結束。";
+        return "目前對抗賽波數資料異常（波數超出範圍）。";
       case "error":
         return status.message;
     }

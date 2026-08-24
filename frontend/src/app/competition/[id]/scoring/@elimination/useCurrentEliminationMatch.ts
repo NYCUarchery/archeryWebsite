@@ -8,10 +8,12 @@ import {
 } from "@/types/Api";
 import { useGetCurrentUserDetail } from "@/utils/QueryHooks/useGetCurrentUserDetail";
 import useGetCompetitionWithGroups from "@/utils/QueryHooks/useGetCompetitionWithGroups";
+import useGetCompetitionProgress from "@/utils/QueryHooks/useGetCompetitionProgress";
 import useGetCurrentParticipentDetail from "@/utils/QueryHooks/useGetCurrentParticipentDetail";
 import useGetCompetitionGroupsWithPlayers from "@/utils/QueryHooks/useGetCompetitionGroupsWithPlayers";
 import useGetEliminationIdByGroupId from "@/utils/QueryHooks/useGetEliminationIdByGroupId";
 import useGetEliminationDetail from "@/utils/QueryHooks/useGetEliminationDetail";
+import useGetEliminationProgress from "@/utils/QueryHooks/useGetEliminationProgress";
 
 // 對抗賽定位結果之判別式狀態；ready 才附完整資料。
 export type EliminationMatchStatus =
@@ -26,7 +28,6 @@ export type EliminationMatchStatus =
   | { kind: "bye" } // 選手輪空（Match 僅一方 / 對手缺）
   | { kind: "stageOutOfRange" } // current_stage 越界
   | { kind: "endOutOfRange" } // current_end 越界
-  | { kind: "finished" } // 對抗賽已完成（medals 已定 對應本 set）
   | { kind: "error"; message: string; retry: () => void }
   | { kind: "ready"; data: EliminationMatchData };
 
@@ -67,6 +68,9 @@ export default function useCurrentEliminationMatch(
   competitionId: number
 ): EliminationMatchStatus {
   const userQuery = useGetCurrentUserDetail();
+  // current_phase 與啟用旗標會由管理員在記分期間切換，故必須輪詢輕量 competition。
+  // groups 仍由既有詳情快取提供，避免反覆下載不會變動的關聯資料。
+  const competitionProgressQuery = useGetCompetitionProgress(competitionId);
   const competitionQuery = useGetCompetitionWithGroups(competitionId);
   const participantQuery = useGetCurrentParticipentDetail(
     competitionId,
@@ -79,7 +83,7 @@ export default function useCurrentEliminationMatch(
     ?.flatMap((group) => group.players ?? [])
     .find((player) => player.participant_id === participantQuery.data?.id);
 
-  const phase = competitionQuery.data?.current_phase;
+  const phase = competitionProgressQuery.data?.current_phase;
   const teamSize = mapPhaseToTeamSize(phase);
 
   const eliminationIdQuery = useGetEliminationIdByGroupId(
@@ -90,18 +94,28 @@ export default function useCurrentEliminationMatch(
   const eliminationDetailQuery = useGetEliminationDetail(
     eliminationIdQuery.data
   );
+  // full detail 用於籤表與比分；此輕量查詢只決定目前 stage/end，絕不可用它覆寫 slice。
+  const eliminationProgressQuery = useGetEliminationProgress(
+    eliminationIdQuery.data
+  );
 
   const retryAll = () => {
     userQuery.refetch();
+    competitionProgressQuery.refetch();
     competitionQuery.refetch();
     participantQuery.refetch();
     groupsWithPlayersQuery.refetch();
     eliminationIdQuery.refetch();
     eliminationDetailQuery.refetch();
+    eliminationProgressQuery.refetch();
   };
 
   // --- 依序檢查各階段的載入 / 失敗狀態 ---
-  if (userQuery.isLoading || competitionQuery.isLoading) {
+  if (
+    userQuery.isLoading ||
+    competitionProgressQuery.isLoading ||
+    competitionQuery.isLoading
+  ) {
     return { kind: "loading" };
   }
   if (userQuery.isError) {
@@ -110,10 +124,10 @@ export default function useCurrentEliminationMatch(
   if (!userQuery.data) {
     return { kind: "notLoggedIn" };
   }
-  if (competitionQuery.isError) {
+  if (competitionProgressQuery.isError || competitionQuery.isError) {
     return { kind: "error", message: "無法取得賽事資料", retry: retryAll };
   }
-  if (!competitionQuery.data) {
+  if (!competitionProgressQuery.data || !competitionQuery.data) {
     return { kind: "error", message: "找不到賽事資料", retry: retryAll };
   }
 
@@ -125,10 +139,10 @@ export default function useCurrentEliminationMatch(
 
   const phaseIsActive =
     phase === 1
-      ? competitionQuery.data.elimination_is_active
+      ? competitionProgressQuery.data.elimination_is_active
       : phase === 2
-        ? competitionQuery.data.team_elimination_is_active
-        : competitionQuery.data.mixed_elimination_is_active;
+        ? competitionProgressQuery.data.team_elimination_is_active
+        : competitionProgressQuery.data.mixed_elimination_is_active;
   if (!phaseIsActive) {
     return { kind: "phaseInactive" };
   }
@@ -177,6 +191,17 @@ export default function useCurrentEliminationMatch(
     return { kind: "error", message: "找不到對抗賽資料", retry: retryAll };
   }
 
+  if (eliminationProgressQuery.isLoading) {
+    return { kind: "loading" };
+  }
+  if (eliminationProgressQuery.isError || !eliminationProgressQuery.data) {
+    return {
+      kind: "error",
+      message: "無法取得對抗賽目前進度",
+      retry: retryAll,
+    };
+  }
+
   const group = competitionQuery.data.groups?.find(
     (g) => g.id === myPlayer.group_id
   );
@@ -192,16 +217,8 @@ export default function useCurrentEliminationMatch(
   }
   const myPlayerSetId = myPlayerSet.id;
 
-  // 已產生 medals 對應本 set：對抗賽（至少本選手這條路徑）已完成。
-  const alreadyMedaled = elimination.medals?.some(
-    (medal) => medal.player_set_id === myPlayerSetId
-  );
-  if (alreadyMedaled) {
-    return { kind: "finished" };
-  }
-
   // current_stage 越界檢查。DatabaseStage 未提供可辨識序欄位，僅能以陣列位置對應。
-  const currentStageIndex = elimination.current_stage;
+  const currentStageIndex = eliminationProgressQuery.data.current_stage;
   const stages = elimination.stages;
   if (
     currentStageIndex === undefined ||
@@ -239,7 +256,7 @@ export default function useCurrentEliminationMatch(
     return { kind: "bye" };
   }
 
-  const currentEndIndex = elimination.current_end;
+  const currentEndIndex = eliminationProgressQuery.data.current_end;
   if (currentEndIndex === undefined) {
     return { kind: "endOutOfRange" };
   }
@@ -259,7 +276,11 @@ export default function useCurrentEliminationMatch(
     kind: "ready",
     data: {
       competitionId,
-      elimination,
+      elimination: {
+        ...elimination,
+        current_stage: currentStageIndex,
+        current_end: currentEndIndex,
+      },
       teamSize,
       group,
       currentStage,

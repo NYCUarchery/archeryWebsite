@@ -177,12 +177,13 @@ export function buildEliminationFixture(
     total_scores: 0,
   };
 
+  // 真實端點 /elimination/stages/scores/medals/{id} 不 preload match_results[].player_set，
+  // 故 fixture 亦只給 player_set_id，隊名／成員由 elimination.player_sets 反查。
   const myMatchResult: DatabaseMatchResult = {
     id: MY_MATCH_RESULT_ID,
     is_winner: false,
     lane_number: 3,
     match_id: MATCH_ID,
-    player_set: myPlayerSet,
     player_set_id: MY_PLAYER_SET_ID,
     shoot_off_score: 0,
     total_points: 0,
@@ -193,7 +194,6 @@ export function buildEliminationFixture(
     is_winner: false,
     lane_number: 5,
     match_id: MATCH_ID,
-    player_set: opponentPlayerSet,
     player_set_id: OPPONENT_PLAYER_SET_ID,
     shoot_off_score: 0,
     total_points: 0,
@@ -315,6 +315,7 @@ export interface EliminationRouteHandles {
   forbiddenRequests: RecordedRequest[];
   setScoresShouldFail(shouldFail: boolean): void;
   setConfirmShouldFail(shouldFail: boolean): void;
+  setCompetitionPhase(phase: number): void;
   // 取得目前「伺服器端」某 MatchEnd 之狀態（PATCH 後會更新），供測試斷言持久化結果。
   getMatchEndState(matchEndId: number): DatabaseMatchEnd | undefined;
 }
@@ -357,6 +358,9 @@ export async function registerEliminationRoutes(
   const serverElimination: DatabaseElimination = JSON.parse(
     JSON.stringify(fixture.elimination)
   );
+  const serverCompetition: DatabaseCompetition = JSON.parse(
+    JSON.stringify(fixture.competition)
+  );
 
   const savedScoreRequests: RecordedRequest[] = [];
   const confirmRequests: RecordedRequest[] = [];
@@ -384,7 +388,16 @@ export async function registerEliminationRoutes(
     await route.fulfill({
       status: 200,
       contentType: "application/json",
-      body: JSON.stringify(fixture.competition),
+      body: JSON.stringify(serverCompetition),
+    });
+  });
+
+  // 記分頁每兩秒輪詢此輕量端點，以同步 current_phase 與資格賽波次。
+  await page.route(`**/competition/${fixture.competitionId}`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify(serverCompetition),
     });
   });
 
@@ -432,6 +445,21 @@ export async function registerEliminationRoutes(
       });
     }
   );
+
+  // current_stage/current_end 採輕量輪詢；完整籤表與分數仍由上方端點提供。
+  await page.route(`**/elimination/${fixture.eliminationId}`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        id: serverElimination.id,
+        group_id: serverElimination.group_id,
+        team_size: serverElimination.team_size,
+        current_stage: serverElimination.current_stage,
+        current_end: serverElimination.current_end,
+      }),
+    });
+  });
 
   await page.route("**/matchresult/matchend/scores/*", async (route) => {
     const request = route.request();
@@ -497,6 +525,9 @@ export async function registerEliminationRoutes(
     },
     setConfirmShouldFail: (shouldFail: boolean) => {
       confirmShouldFail = shouldFail;
+    },
+    setCompetitionPhase: (phase: number) => {
+      serverCompetition.current_phase = phase;
     },
     getMatchEndState: (matchEndId: number) => findMatchEndById(serverElimination, matchEndId),
   };

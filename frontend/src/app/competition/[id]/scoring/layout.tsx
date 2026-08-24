@@ -1,7 +1,7 @@
 "use client";
 
 import { Box } from "@mui/material";
-import useGetCompetitionWithGroups from "@/utils/QueryHooks/useGetCompetitionWithGroups";
+import useGetCompetitionProgress from "@/utils/QueryHooks/useGetCompetitionProgress";
 
 // 依 competition.current_phase 分流：0 → 資格賽 slot；1/2/3 → 對抗賽 slot。
 // 其餘（載入中／取不到資料／未知 phase）一律顯示明確中文提示，不得回空內容。
@@ -19,7 +19,7 @@ export default function Layout({
     data: competition,
     isLoading,
     isError,
-  } = useGetCompetitionWithGroups(competitionId);
+  } = useGetCompetitionProgress(competitionId);
 
   let content: React.ReactNode;
   if (isLoading) {
