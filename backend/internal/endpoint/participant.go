@@ -254,6 +254,7 @@ func GetParticipantByCompetitionIdUserId(context *gin.Context) {
 //	@Param			Participant	body		endpoint.PutParticipant.PutParticipantData	true	"Participant"
 //	@Success		200			{object}	database.Participant						"success, return updated participant"
 //	@Failure		400			{object}	response.ErrorIdResponse					"invalid participant id"
+//	@Failure		403			{object}	response.ErrorResponse						"target competition admin required"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse			"internal db error / Update Participant"
 //	@Router			/participant/{id} [put]
 func PutParticipant(context *gin.Context) {
@@ -261,17 +262,20 @@ func PutParticipant(context *gin.Context) {
 		Role   string `json:"role"`
 		Status string `json:"status"`
 	}
-	_ = PutParticipantData{}
-	var data database.Participant
+	var data PutParticipantData
 	err := context.BindJSON(&data)
 	id := Convert2uint(context, "id")
 	if response.ErrorReceiveDataTest(context, id, "Participant", err) {
 		return
 	}
-	if response.ErrorIdTest(context, id, database.GetParticipantIsExist(id), "Participant") {
+	isExist, participant := IsGetParticipant(context, id)
+	if !isExist {
 		return
 	}
-	success, err := database.UpdateParticipant(id, data)
+	if !requireCompetitionAdmin(context, participant.CompetitionID) {
+		return
+	}
+	success, err := database.UpdateParticipant(id, database.Participant{Role: data.Role, Status: data.Status})
 	if response.ErrorInternalErrorTest(context, id, "Update Participant", err) {
 		return
 	} else if !success {

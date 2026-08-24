@@ -688,7 +688,7 @@ func requireCompetitionAdmin(context *gin.Context, competitionID uint) bool {
 
 func hasCompetitionAdmin(participants []database.Participant) bool {
 	for _, participant := range participants {
-		if pkg.StringToRole(participant.Role) == pkg.RAdmin {
+		if participant.Status == "approved" && pkg.StringToRole(participant.Role) == pkg.RAdmin {
 			return true
 		}
 	}
