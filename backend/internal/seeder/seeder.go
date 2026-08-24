@@ -530,7 +530,10 @@ func createFinishedMatch(tx *gorm.DB, stageID uint, first, second database.Playe
 			if winner == (endNumber%2 == 0) {
 				total = 30
 			}
-			end := database.MatchEnd{MatchResultId: result.ID, TotalScore: total, IsConfirmed: true}
+			// Scores are complete, but every end stays unconfirmed so the
+			// elimination scoring screens can be exercised on filled in data
+			// that still needs a referee confirmation.
+			end := database.MatchEnd{MatchResultId: result.ID, TotalScore: total, IsConfirmed: false}
 			if err := tx.Create(&end).Error; err != nil {
 				return fmt.Errorf("create match end: %w", err)
 			}
@@ -1033,7 +1036,8 @@ func assertItemPlayerSets(db *gorm.DB, elimination database.Elimination, players
 }
 
 // assertFinishedMatch checks one match: its two results, its single winner, and
-// that points, ends and arrows all agree.
+// that points, ends and arrows all agree. Every end keeps its scores while
+// staying unconfirmed, matching what createFinishedMatch writes.
 func assertFinishedMatch(db *gorm.DB, matchID uint, first, second database.PlayerSet, winnerIndex int) error {
 	var results []database.MatchResult
 	if err := db.Where("match_id = ?", matchID).Order("id ASC").Find(&results).Error; err != nil {
@@ -1074,8 +1078,8 @@ func assertFinishedMatch(db *gorm.DB, matchID uint, first, second database.Playe
 		}
 		wonEnds := 0
 		for _, end := range ends {
-			if !end.IsConfirmed {
-				return fmt.Errorf("end %d is not confirmed", end.ID)
+			if end.IsConfirmed {
+				return fmt.Errorf("end %d must stay unconfirmed", end.ID)
 			}
 			if end.TotalScore != 30 && end.TotalScore != 24 {
 				return fmt.Errorf("end %d has unexpected total %d", end.ID, end.TotalScore)
