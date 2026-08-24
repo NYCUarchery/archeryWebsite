@@ -1,21 +1,22 @@
 import { DatabaseStage, DatabaseMatchResult } from "@/types/Api";
+import { isCompleteEliminationBracket } from "./eliminationBracket";
 
 export interface TreeNode {
   result: DatabaseMatchResult;
 
   children: TreeNode[];
 }
-export function parseStagesToTree(stages: DatabaseStage[]) {
+export function parseStagesToTree(stages: DatabaseStage[] | undefined) {
   // the number of matches of the first stage should be the power of 2
-
-  const advancingNum = stages[0].matchs!.length;
-  if (Math.log2(advancingNum) % 1 !== 0) {
-    return { goldRoot: undefined, bronzeRoot: undefined };
+  if (!isCompleteEliminationBracket(stages)) {
+    return { goldRoot: undefined, silverRoot: undefined, bronzeRoot: undefined };
   }
 
-  const stageLength = stages.length;
+  const completeStages = stages ?? [];
 
-  const final = stages[stageLength - 1];
+  const stageLength = completeStages.length;
+
+  const final = completeStages[stageLength - 1];
 
   const goldRoot: TreeNode = {
     result: getWinner(final.matchs?.[0]?.match_results ?? []),
@@ -44,7 +45,7 @@ export function parseStagesToTree(stages: DatabaseStage[]) {
 
   const matchResultsToTreefy: DatabaseMatchResult[] = [];
 
-  for (let i = stages[0].matchs!.length * 2; i >= 4; i /= 2) {
+  for (let i = completeStages[0].matchs!.length * 2; i >= 4; i /= 2) {
     for (let j = 0; j < i; j++) {
       matchResultsToTreefy.push({});
     }
@@ -57,7 +58,7 @@ export function parseStagesToTree(stages: DatabaseStage[]) {
   let matchResultsCounter = 0;
 
   for (let i = 0; i < stageLength - 1; i++) {
-    const stage = stages[i];
+    const stage = completeStages[i];
 
     for (let j = stage.matchs!.length - 1; j >= 0; j--) {
       matchResultsToTreefy[matchResultsCounter] =
