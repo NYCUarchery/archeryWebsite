@@ -34,7 +34,7 @@ export default function EliminationTreeChart({
   useEffect(() => {
     if (!goldRoot || !silverRoot || !bronzeRoot) return;
 
-    d3.select("svg").selectAll("*").remove();
+    d3.select(svgRef.current).selectAll("*").remove();
     const svg = d3
       .select(svgRef.current)
       .attr("width", width + margin.left + margin.right + labelWidth)
@@ -290,10 +290,10 @@ export default function EliminationTreeChart({
       .append("text")
       .attr("fill", "white")
       .text(getTextByNode(silverNode, playerSets));
-  }, [goldRoot]);
+  }, [goldRoot, silverRoot, bronzeRoot, playerSets, width, height, labelWidth, labelHeight]);
 
   if (!goldRoot || !silverRoot || !bronzeRoot)
-    return <Typography>Loading...</Typography>;
+    return <Typography>尚無完整對抗樹。</Typography>;
 
   return (
     <svg ref={svgRef} width={width} height={height} overflow="visible"></svg>
@@ -304,12 +304,13 @@ function getTextByNode(
   node: HierarchyNode<TreeNode>,
   playerSets: DatabasePlayerSet[]
 ) {
-  if (node.data.result.player_set_id === undefined) {
+  if (!node.data.result.player_set_id) {
     return "";
   }
 
   const set = playerSets.find((ps) => ps.id === node.data.result.player_set_id);
-  const setText = `No.${set?.rank} ${set?.set_name}`;
+  if (!set) return "";
+  const setText = `No.${set.rank} ${set.set_name}`;
 
   return setText;
 }
@@ -336,7 +337,7 @@ const getBronzeTreeColor = (index: number) => {
 };
 
 const getLaneNumberBackgroundColor = (d: HierarchyNode<TreeNode>) => {
-  const laneNumber = d.data.result.lane_number!;
+  const laneNumber = d.data.result.lane_number ?? 0;
   if (laneNumber % 2 === 0) {
     return "black";
   }
@@ -344,7 +345,7 @@ const getLaneNumberBackgroundColor = (d: HierarchyNode<TreeNode>) => {
 };
 
 const getLaneNumberColor = (d: HierarchyNode<TreeNode>) => {
-  const laneNumber = d.data.result.lane_number!;
+  const laneNumber = d.data.result.lane_number ?? 0;
   if (laneNumber % 2 === 0) {
     return "#fff700";
   }
@@ -352,5 +353,5 @@ const getLaneNumberColor = (d: HierarchyNode<TreeNode>) => {
 };
 
 const filterNoLaneNode = (d: HierarchyNode<TreeNode>, index: number) => {
-  return index !== 0 && d.data.result.lane_number !== undefined;
+  return index !== 0 && (d.data.result.lane_number ?? 0) > 0;
 };

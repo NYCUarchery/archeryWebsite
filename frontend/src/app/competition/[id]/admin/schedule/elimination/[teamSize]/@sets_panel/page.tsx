@@ -22,6 +22,8 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { apiClient } from "@/utils/ApiClient";
 import useGetPlayerSetDetail from "@/utils/QueryHooks/useGetPlayerSetDetail";
+import useGetEliminationDetail from "@/utils/QueryHooks/useGetEliminationDetail";
+import { isCompleteEliminationBracket } from "@/utils/eliminationBracket";
 
 export default function Page({
   params,
@@ -52,6 +54,10 @@ export default function Page({
   );
   const { data: playerSets, isFetching: isPlayerSetFetching } =
     useGetPlayerSets(elimination?.elimination_id);
+  const { data: eliminationDetail } = useGetEliminationDetail(
+    elimination?.elimination_id
+  );
+  const bracketExists = isCompleteEliminationBracket(eliminationDetail?.stages);
   const { data: playerSet } = useGetPlayerSetDetail(playerSetId);
   const handleDelete = () => {
     deletePlayerSet(setIdToDelete!);
@@ -85,14 +91,16 @@ export default function Page({
                     {set.set_name}
                   </TableCell>
                   <TableCell>
-                    <IconButton
-                      onClick={() => {
-                        setDeleteDialogOpen(true);
-                        setSetIdToDelete(set.id!);
-                      }}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
+                    {!bracketExists && (
+                      <IconButton
+                        onClick={() => {
+                          setDeleteDialogOpen(true);
+                          setSetIdToDelete(set.id!);
+                        }}
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    )}
                   </TableCell>
                 </TableRow>
               );

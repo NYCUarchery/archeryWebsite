@@ -253,7 +253,7 @@ export default function useCurrentEliminationMatch(
     !opponent ||
     opponent.player_set_id === undefined
   ) {
-    return { kind: "bye" };
+    return currentStageIndex === 0 ? { kind: "bye" } : { kind: "noMatch" };
   }
 
   const currentEndIndex = eliminationProgressQuery.data.current_end;

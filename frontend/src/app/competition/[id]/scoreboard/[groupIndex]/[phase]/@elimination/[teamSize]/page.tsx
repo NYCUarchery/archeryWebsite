@@ -4,13 +4,14 @@ import { parseStagesToTree } from "@/utils/parseStagesToTree";
 import useGetElimination from "@/utils/QueryHooks/useGetElimination";
 import useGetEliminationDetail from "@/utils/QueryHooks/useGetEliminationDetail";
 import { Box, Typography } from "@mui/material";
+import { isCompleteEliminationBracket } from "@/utils/eliminationBracket";
 
 export default function Page({
   params,
 }: {
   params: { id: string; groupIndex: string; teamSize: string };
 }) {
-  const windowWidth = window?.innerWidth ?? 0;
+  const windowWidth = typeof window === "undefined" ? 0 : window.innerWidth;
   const teamSize = parseInt(params.teamSize);
   const competitionId = parseInt(params.id);
   const groupIndex = parseInt(params.groupIndex);
@@ -28,11 +29,14 @@ export default function Page({
   if (!elimination || !eliminationDetail)
     return <Typography>Loading...</Typography>;
 
-  const { goldRoot, silverRoot, bronzeRoot } = parseStagesToTree(
-    eliminationDetail.stages!
-  );
+  const stages = eliminationDetail.stages ?? [];
+  if (!isCompleteEliminationBracket(stages)) {
+    return <Typography>尚未建立完整對抗樹。</Typography>;
+  }
 
-  const advancingNum = eliminationDetail.stages![0].matchs!.length * 2;
+  const { goldRoot, silverRoot, bronzeRoot } = parseStagesToTree(stages);
+
+  const advancingNum = stages[0].matchs!.length * 2;
 
   const expectStageNum = Math.ceil(Math.log2(advancingNum)) + 1;
   const chartWidth = expectStageNum * 200;
@@ -50,8 +54,8 @@ export default function Page({
           goldRoot={goldRoot}
           silverRoot={silverRoot}
           bronzeRoot={bronzeRoot}
-          playerSets={eliminationDetail.player_sets!}
-          height={eliminationDetail.stages![0].matchs!.length * 100}
+          playerSets={eliminationDetail.player_sets ?? []}
+          height={stages[0].matchs!.length * 100}
           width={chartWidth}
         />
       </Box>

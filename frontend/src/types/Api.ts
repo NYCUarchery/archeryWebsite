@@ -189,6 +189,22 @@ export interface EndpointAccountInfo {
   user_name?: string;
 }
 
+export interface EndpointBracketAdvanceResponse {
+  changed?: boolean;
+  elimination_id?: number;
+  finalized?: boolean;
+  source_stage_id?: number;
+  target_stage_id?: number;
+}
+
+export interface EndpointBracketInitResponse {
+  bracket_size?: number;
+  created?: boolean;
+  elimination_id?: number;
+  entrant_count?: number;
+  stage_count?: number;
+}
+
 export interface EndpointCompetitionWGroupsQuaEliData {
   competition_id?: number;
   group_data?: EndpointGroupData[];
@@ -1063,6 +1079,22 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
+     * @description Creates a standard seeded bracket, including stages, gold and bronze finals, match results, ends, and scores. Requires a competition Admin.
+     *
+     * @tags Elimination
+     * @name BracketCreate
+     * @summary Initialize an elimination bracket
+     * @request POST:/elimination/bracket/{id}
+     */
+    bracketCreate: (id: number, params: RequestParams = {}) =>
+      this.request<EndpointBracketInitResponse, ResponseErrorResponse>({
+        path: `/elimination/bracket/${id}`,
+        method: "POST",
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Update one Elimination current end minus one by id
      *
      * @tags Elimination
@@ -1174,7 +1206,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/elimination/match
      */
     matchCreate: (Match: EndpointPostMatchMatchData, params: RequestParams = {}) =>
-      this.request<DatabaseMatch, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<
+        DatabaseMatch,
+        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/elimination/match`,
         method: "POST",
         body: Match,
@@ -1196,7 +1231,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       PlayerSetId: EndpointPutMatchPlayerSetByMatchIdPutMatchPlayerSetIdData,
       params: RequestParams = {},
     ) =>
-      this.request<DatabaseMatch, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<
+        DatabaseMatch,
+        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/elimination/match/playerset/${matchid}`,
         method: "PATCH",
         body: PlayerSetId,
@@ -1281,12 +1319,28 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         DatabaseStage & {
           matchs?: ResponseNill;
         },
-        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
       >({
         path: `/elimination/stage`,
         method: "POST",
         body: Stage,
         type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Propagates completed winners to the following stage, routes semi-final losers to bronze, or assigns final medals. Requires a competition Admin.
+     *
+     * @tags Elimination
+     * @name StageAdvanceCreate
+     * @summary Advance an elimination stage
+     * @request POST:/elimination/stage/advance/{stageid}
+     */
+    stageAdvanceCreate: (stageid: number, params: RequestParams = {}) =>
+      this.request<EndpointBracketAdvanceResponse, ResponseErrorResponse>({
+        path: `/elimination/stage/advance/${stageid}`,
+        method: "POST",
         format: "json",
         ...params,
       }),
@@ -1658,7 +1712,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       MatchResult: EndpointPutMatchResultIsWinnerByIdMatchResultIsWinnerData,
       params: RequestParams = {},
     ) =>
-      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse>({
         path: `/matchresult/iswinner/${id}`,
         method: "PATCH",
         body: MatchResult,
@@ -1785,7 +1839,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request DELETE:/matchresult/{id}
      */
     matchresultDelete: (id: number, params: RequestParams = {}) =>
-      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse>({
         path: `/matchresult/${id}`,
         method: "DELETE",
         ...params,
@@ -1801,7 +1855,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/matchresult/matchend
      */
     matchendCreate: (matchEndData: EndpointPostMatchEndMatchEndData, params: RequestParams = {}) =>
-      this.request<ResponseResponse, ResponseErrorReceiveDataResponse | ResponseErrorInternalErrorResponse>({
+      this.request<
+        ResponseResponse,
+        ResponseErrorReceiveDataResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/matchresult/matchend`,
         method: "POST",
         body: matchEndData,
@@ -1925,7 +1982,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       PlayerSetId: EndpointPutMedalPlayerSetIdByIdRequestBody,
       params: RequestParams = {},
     ) =>
-      this.request<void, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<void, ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse>({
         path: `/medal/playersetid/${id}`,
         method: "PATCH",
         body: PlayerSetId,
@@ -2064,7 +2121,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       Participant: EndpointPutParticipantPutParticipantData,
       params: RequestParams = {},
     ) =>
-      this.request<DatabaseParticipant, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<
+        DatabaseParticipant,
+        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/participant/${id}`,
         method: "PUT",
         body: Participant,
