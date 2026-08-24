@@ -3,11 +3,50 @@ package endpoint
 import (
 	"backend/internal/database"
 	"backend/internal/response"
+	"errors"
 
 	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
+
+var errPlayerSetMutationLocked = errors.New("player sets cannot change after bracket initialization")
+
+// withPlayerSetMutationLock serializes seed mutations with bracket creation by
+// locking the same elimination row. The stage check and mutation therefore
+// cannot race with PostEliminationBracket.
+func withPlayerSetMutationLock(eliminationID uint, mutation func(*gorm.DB) error) error {
+	return database.DB.Transaction(func(tx *gorm.DB) error {
+		var elimination database.Elimination
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&elimination, eliminationID).Error; err != nil {
+			return err
+		}
+		var stageCount int64
+		if err := tx.Model(&database.Stage{}).Where("elimination_id = ?", eliminationID).Count(&stageCount).Error; err != nil {
+			return err
+		}
+		if stageCount > 0 {
+			return errPlayerSetMutationLocked
+		}
+		return mutation(tx)
+	})
+
+}
+
+func writePlayerSetMutationError(context *gin.Context, id uint, action string, err error) bool {
+	if err == nil {
+		return false
+	}
+	if errors.Is(err, errPlayerSetMutationLocked) {
+		context.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		return true
+	}
+	response.ErrorInternalErrorTest(context, id, action, err)
+	return true
+}
 
 func IsGetPlayerSetById(context *gin.Context, id uint) (bool, database.PlayerSet) {
 	var playerSet database.PlayerSet
@@ -158,22 +197,21 @@ func PostPlayerSet(context *gin.Context) {
 		playerSet.TotalScore += player.TotalScore
 	}
 	/*create player set*/
-	playerSet, err = database.CreatePlayerSet(playerSet)
-	if err != nil {
-		response.ErrorInternalErrorTest(context, playerSet.ID, "create player set", err)
-		return
-	}
-	/*create player set match table*/
-	for _, playerId := range data.PlayerIds {
-		var playerSetMatchTable database.PlayerSetMatchTable
-		playerSetMatchTable.PlayerId = playerId
-		playerSetMatchTable.PlayerSetId = playerSet.ID
-		newMatchTable, err := database.CreatePlayerSetMatchTable(playerSetMatchTable)
-		if err != nil {
-			response.ErrorInternalErrorTest(context, playerSet.ID, "create player set match table when create player set", err)
-			return
+	err = withPlayerSetMutationLock(data.EliminationId, func(tx *gorm.DB) error {
+		if err := tx.Create(&playerSet).Error; err != nil {
+			return err
 		}
-		response.AcceptPrint(playerId, fmt.Sprint(newMatchTable), "create player set match table")
+		for _, playerID := range data.PlayerIds {
+			playerSetMatchTable := database.PlayerSetMatchTable{PlayerId: playerID, PlayerSetId: playerSet.ID}
+			if err := tx.Create(&playerSetMatchTable).Error; err != nil {
+				return err
+			}
+			response.AcceptPrint(playerID, fmt.Sprint(playerSetMatchTable), "create player set match table")
+		}
+		return nil
+	})
+	if writePlayerSetMutationError(context, data.EliminationId, "create player set", err) {
+		return
 	}
 	response.AcceptPrint(playerSet.ID, fmt.Sprint(playerSet), "create player set")
 	context.IndentedJSON(200, playerSet)
@@ -235,18 +273,30 @@ func PutPlayerSetName(context *gin.Context) {
 //	@Failure		500				{object}	response.ErrorInternalErrorResponse	"internal db error / Get Elimination Player Set Id Rank Order By Id / Update Player Set Rank"
 //	@Router			/playerset/preranking/{eliminationid} [patch]
 func PutPlayerSetPreRankingByEliminationId(context *gin.Context) {
-	var yourResultStruct []database.ResultStruct
 	eliminationId := Convert2uint(context, "eliminationid")
-	yourResultStruct, err := database.GetEliminationPlayerSetIdRankOrderById(eliminationId)
-	if response.ErrorInternalErrorTest(context, eliminationId, "get elimination player set id rank order by id", err) {
+	if response.ErrorIdTest(context, eliminationId, database.GetEliminationIsExist(eliminationId), "elimination when ranking player sets") {
 		return
 	}
-	for index, resultStruct := range yourResultStruct {
-		err := database.UpdatePlayerSetRank(resultStruct.PlayerSetId, index+1)
-		fmt.Printf("rank: %d, player set id: %d, TotalScore %d, allTenUpCnt: %d, XCnt %d \n", index+1, resultStruct.PlayerSetId, resultStruct.AllTotalScore, resultStruct.AllTenUpCnt, resultStruct.AllXCnt)
-		if response.ErrorInternalErrorTest(context, resultStruct.PlayerSetId, "update player set rank", err) {
-			return
+	err := withPlayerSetMutationLock(eliminationId, func(tx *gorm.DB) error {
+		var yourResultStruct []database.ResultStruct
+		if err := tx.Table("(SELECT player_sets.id AS player_set_id, player_set_match_tables.player_id FROM player_sets JOIN player_set_match_tables ON player_sets.id = player_set_match_tables.player_set_id WHERE player_sets.elimination_id = ?) AS A", eliminationId).
+			Select("A.player_set_id, SUM(C.total_score) AS all_total_score, SUM(C.x_cnt) AS all_x_cnt, SUM(C.ten_up_cnt) AS all_ten_up_cnt").
+			Joins("JOIN (SELECT players.id AS player_id, players.total_score, SUM(IF(round_scores.score = 11, 1, 0)) AS x_cnt, SUM(IF(round_scores.score >= 10, 1, 0)) AS ten_up_cnt FROM players JOIN (SELECT DISTINCT player_set_match_tables.player_id FROM player_sets JOIN player_set_match_tables ON player_sets.id = player_set_match_tables.player_set_id WHERE player_sets.elimination_id = ?) AS B ON players.id = B.player_id JOIN rounds ON players.id = rounds.player_id JOIN round_ends ON rounds.id = round_ends.round_id JOIN round_scores ON round_ends.id = round_scores.round_end_id GROUP BY players.id, players.total_score) AS C ON A.player_id = C.player_id", eliminationId).
+			Group("A.player_set_id").
+			Order("all_total_score DESC, all_ten_up_cnt DESC, all_x_cnt DESC").
+			Scan(&yourResultStruct).Error; err != nil {
+			return err
 		}
+		for index, resultStruct := range yourResultStruct {
+			if err := tx.Model(&database.PlayerSet{}).Where("id = ?", resultStruct.PlayerSetId).UpdateColumn("rank", index+1).Error; err != nil {
+				return err
+			}
+			fmt.Printf("rank: %d, player set id: %d, TotalScore %d, allTenUpCnt: %d, XCnt %d \n", index+1, resultStruct.PlayerSetId, resultStruct.AllTotalScore, resultStruct.AllTenUpCnt, resultStruct.AllXCnt)
+		}
+		return nil
+	})
+	if writePlayerSetMutationError(context, eliminationId, "update player set rank", err) {
+		return
 	}
 	context.IndentedJSON(200, nil)
 }
@@ -267,15 +317,16 @@ func DeletePlayerSet(context *gin.Context) {
 	if !isExist {
 		return
 	}
-	/*delete player set match table*/
-	_, err := database.DeletePlayerSetMatchTableByPlayerSetId(id)
-	if response.ErrorInternalErrorTest(context, id, "delete player set match tables by player set id", err) {
-		return
-	}
-
-	/*delete player set*/
-	isChanged, err := database.DeletePlayerSetById(id)
-	if response.ErrorInternalErrorTest(context, id, "delete player set", err) {
+	isChanged := false
+	err := withPlayerSetMutationLock(playerSet.EliminationId, func(tx *gorm.DB) error {
+		if err := tx.Where("player_set_id = ?", id).Delete(&database.PlayerSetMatchTable{}).Error; err != nil {
+			return err
+		}
+		result := tx.Where("id = ?", id).Delete(&database.PlayerSet{})
+		isChanged = result.RowsAffected != 0
+		return result.Error
+	})
+	if writePlayerSetMutationError(context, id, "delete player set", err) {
 		return
 	}
 	response.AcceptPrint(id, fmt.Sprint(playerSet), "delete player set")

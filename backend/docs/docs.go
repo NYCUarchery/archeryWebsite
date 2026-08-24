@@ -1209,6 +1209,59 @@ const docTemplate = `{
                 }
             }
         },
+        "/elimination/bracket/{id}": {
+            "post": {
+                "description": "Creates a standard seeded bracket, including stages, gold and bronze finals, match results, ends, and scores. Requires a competition Admin.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Elimination"
+                ],
+                "summary": "Initialize an elimination bracket",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Elimination ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.BracketInitResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/elimination/currentend/minus/{id}": {
             "patch": {
                 "description": "Update one Elimination current end minus one by id",
@@ -1422,6 +1475,18 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
+                    "403": {
+                        "description": "competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "complete bracket is locked",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "internal db error for Create Match, MatchResult, MatchEnd, MatchScore, or get Stage",
                         "schema": {
@@ -1473,6 +1538,18 @@ const docTemplate = `{
                         "description": "invalid Match ID / invalid PlayerSetId / PlayerSetId should be 2",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "complete bracket is locked",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
@@ -1778,10 +1855,69 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
+                    "403": {
+                        "description": "competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "complete bracket is locked",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "internal db error for Create Stage",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/elimination/stage/advance/{stageid}": {
+            "post": {
+                "description": "Propagates completed winners to the following stage, routes semi-final losers to bronze, or assigns final medals. Requires a competition Admin.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Elimination"
+                ],
+                "summary": "Advance an elimination stage",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Source stage ID",
+                        "name": "stageid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.BracketAdvanceResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -2743,6 +2879,18 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
+                    "403": {
+                        "description": "competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "winner is locked after advancement",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "internal db failed for updating isWinner",
                         "schema": {
@@ -2837,6 +2985,18 @@ const docTemplate = `{
                         "description": "invalid match result ID, maybe not exist",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorReceiveDataResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "complete bracket is locked",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
@@ -3308,6 +3468,18 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
+                    "403": {
+                        "description": "competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "complete bracket is locked",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "internal db failed for deleting match result",
                         "schema": {
@@ -3397,6 +3569,18 @@ const docTemplate = `{
                         "description": "invalid medal id / invalid playerset id / elimination id of medal and playerset is not same",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "complete bracket medals are finalized automatically",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
@@ -3762,6 +3946,12 @@ const docTemplate = `{
                         "description": "invalid participant id",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "target competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
@@ -6161,6 +6351,7 @@ const docTemplate = `{
                     "$ref": "#/definitions/database.PlayerSet"
                 },
                 "player_set_id": {
+                    "description": "PlayerSetId is nil for an as-yet unknown bracket slot.  Zero cannot\nrepresent that state because it is also a valid Go uint default and used\nby older rows without a foreign-key constraint.",
                     "type": "integer"
                 },
                 "shoot_off_score": {
@@ -6432,6 +6623,46 @@ const docTemplate = `{
                 },
                 "user_name": {
                     "type": "string"
+                }
+            }
+        },
+        "endpoint.BracketAdvanceResponse": {
+            "type": "object",
+            "properties": {
+                "changed": {
+                    "type": "boolean"
+                },
+                "elimination_id": {
+                    "type": "integer"
+                },
+                "finalized": {
+                    "type": "boolean"
+                },
+                "source_stage_id": {
+                    "type": "integer"
+                },
+                "target_stage_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "endpoint.BracketInitResponse": {
+            "type": "object",
+            "properties": {
+                "bracket_size": {
+                    "type": "integer"
+                },
+                "created": {
+                    "type": "boolean"
+                },
+                "elimination_id": {
+                    "type": "integer"
+                },
+                "entrant_count": {
+                    "type": "integer"
+                },
+                "stage_count": {
+                    "type": "integer"
                 }
             }
         },

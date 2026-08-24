@@ -138,7 +138,9 @@ func eliminationRouter(api *gin.RouterGroup) {
 		eliminationssr.GET("/match/scores/:matchid", endpoint.GetMatchWScoresById)
 
 		eliminationssr.POST("/", endpoint.PostElimination)
+		eliminationssr.POST("/bracket/:id", endpoint.PostEliminationBracket)
 		eliminationssr.POST("/stage", endpoint.PostStage)
+		eliminationssr.POST("/stage/advance/:stageid", endpoint.PostEliminationStageAdvance)
 		eliminationssr.POST("/match", endpoint.PostMatch)
 
 		eliminationssr.PATCH("/match/playerset/:matchid", endpoint.PutMatchPlayerSetByMatchId)

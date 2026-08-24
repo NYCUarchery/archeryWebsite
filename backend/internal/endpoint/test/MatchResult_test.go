@@ -47,7 +47,8 @@ func setupMatchEndWithScores(isConfirmed bool) (database.MatchEnd, []database.Ma
 	stage, _ := database.CreateStage(database.Stage{EliminationId: elimination.ID})
 	match, _ := database.CreateMatch(database.Match{StageId: stage.ID})
 	playerSet, _ := database.CreatePlayerSet(database.PlayerSet{EliminationId: elimination.ID, SetName: "test set"})
-	matchResult, _ := database.CreateMatchResult(database.MatchResult{MatchId: match.ID, PlayerSetId: playerSet.ID})
+	playerSetID := playerSet.ID
+	matchResult, _ := database.CreateMatchResult(database.MatchResult{MatchId: match.ID, PlayerSetId: &playerSetID})
 	matchEnd, _ := database.CreateMatchEnd(database.MatchEnd{MatchResultId: matchResult.ID, TotalScore: 0, IsConfirmed: isConfirmed})
 
 	var matchScores []database.MatchScore

@@ -512,9 +512,10 @@ func createFinishedMatch(tx *gorm.DB, stageID uint, first, second database.Playe
 	sets := []database.PlayerSet{first, second}
 	for index, playerSet := range sets {
 		winner := index == winnerIndex
+		playerSetID := playerSet.ID
 		result := database.MatchResult{
 			MatchId:       match.ID,
-			PlayerSetId:   playerSet.ID,
+			PlayerSetId:   &playerSetID,
 			TotalPoints:   map[bool]int{true: 6, false: 4}[winner],
 			ShootOffScore: -1,
 			IsWinner:      winner,
@@ -1049,7 +1050,7 @@ func assertFinishedMatch(db *gorm.DB, matchID uint, first, second database.Playe
 	expectedSets := []database.PlayerSet{first, second}
 	winnerCount := 0
 	for index, result := range results {
-		if result.PlayerSetId != expectedSets[index].ID {
+		if result.PlayerSetId == nil || *result.PlayerSetId != expectedSets[index].ID {
 			return fmt.Errorf("result %d must score player set %d, got %d", index+1, expectedSets[index].ID, result.PlayerSetId)
 		}
 		if result.LaneNumber != index+1 {
@@ -1117,7 +1118,7 @@ func assertMatchWinnerIs(db *gorm.DB, matchID, expectedPlayerSetID uint) error {
 	if err := db.Where("match_id = ? AND is_winner = ?", matchID, true).First(&result).Error; err != nil {
 		return fmt.Errorf("find winner of match %d: %w", matchID, err)
 	}
-	if result.PlayerSetId != expectedPlayerSetID {
+	if result.PlayerSetId == nil || *result.PlayerSetId != expectedPlayerSetID {
 		return fmt.Errorf("expected player set %d to win match %d, got %d", expectedPlayerSetID, matchID, result.PlayerSetId)
 	}
 	return nil
