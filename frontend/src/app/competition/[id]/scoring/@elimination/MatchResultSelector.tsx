@@ -1,5 +1,5 @@
 import { ToggleButtonGroup, ToggleButton, Box, Typography } from "@mui/material";
-import ScoreCircle from "@/components/ScoreCircle";
+import ScoreBlock from "@/components/ScoreBlock";
 import { LocalMatchResult } from "./eliminationScoringSlice";
 
 interface Props {
@@ -9,7 +9,7 @@ interface Props {
 }
 
 // 仿資格賽 ToggleButtonGroup + PlayerInfoBar：於雙方 MatchResult 間切換（value = matchResultId），
-// 鈕內直接以 ScoreCircle 呈現本波各箭分數與波總分。確認狀態由下方 ControllButtonGroup 顯示，此處不重覆。
+// 鈕內直接以 ScoreBlock 呈現本波各箭分數與波總分。確認狀態由下方 ControllButtonGroup 顯示，此處不重覆。
 export default function MatchResultSelector({
   matchResults,
   selectedMatchResultIdentifier,
@@ -66,7 +66,7 @@ export default function MatchResultSelector({
               }}
             >
               {mr.scores.map((s) => (
-                <ScoreCircle key={s.id} score={s.score} />
+                <ScoreBlock key={s.id} score={s.score} />
               ))}
             </Box>
           </Box>

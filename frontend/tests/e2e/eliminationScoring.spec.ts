@@ -29,14 +29,14 @@ function selectorGroup(page: Page) {
   return page.locator(".match_result_button_group");
 }
 
-// 某一方之切換鈕：鈕內含隊名、波總分與各箭 ScoreCircle（仿資格賽 PlayerInfoBar）。
+// 某一方之切換鈕：鈕內含隊名、波總分與各箭 ScoreBlock（仿資格賽 PlayerInfoBar）。
 function sideButton(page: Page, setName: string) {
   return selectorGroup(page)
     .locator(".match_result_button")
     .filter({ hasText: setName });
 }
 
-// 某一方鈕內之各箭分數文字（DESC 排列；未填格之 ScoreCircle 顯示 "-1"）。
+// 某一方鈕內之各箭分數文字（DESC 排列；未填格之 ScoreBlock 顯示 "-1"）。
 async function sideScoreLabels(page: Page, setName: string): Promise<string[]> {
   const labels = await sideButton(page, setName)
     .locator(".match_score_bar > *")
