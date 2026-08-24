@@ -318,6 +318,15 @@ export interface EndpointPutCompetitionCompetitionPutData {
   title?: string;
 }
 
+export interface EndpointPutCompetitionCurrentPhaseCurrentPhaseData {
+  current_phase?: number;
+}
+
+export interface EndpointPutEliminationProgressProgressData {
+  current_end?: number;
+  current_stage?: number;
+}
+
 export interface EndpointPutGroupInfoGroupData {
   bow_type?: string;
   group_index?: number;
@@ -664,7 +673,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PATCH:/competition/current-phase/minus/{id}
      */
     currentPhaseMinusPartialUpdate: (id: number, params: RequestParams = {}) =>
-      this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<
+        ResponseResponse,
+        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/competition/current-phase/minus/${id}`,
         method: "PATCH",
         ...params,
@@ -679,9 +691,42 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PATCH:/competition/current-phase/plus/{id}
      */
     currentPhasePlusPartialUpdate: (id: number, params: RequestParams = {}) =>
-      this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<
+        ResponseResponse,
+        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/competition/current-phase/plus/${id}`,
         method: "PATCH",
+        ...params,
+      }),
+
+    /**
+     * @description Set current phase to qualification (0), individual elimination (1), team elimination (2), or mixed elimination (3). The selected phase must be active.
+     *
+     * @tags Competition
+     * @name CurrentPhasePartialUpdate
+     * @summary Set one Competition player-facing current phase.
+     * @request PATCH:/competition/current-phase/{id}
+     */
+    currentPhasePartialUpdate: (
+      id: number,
+      CurrentPhase: EndpointPutCompetitionCurrentPhaseCurrentPhaseData,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        DatabaseCompetition & {
+          groups?: ResponseNill;
+          participants?: ResponseNill;
+        },
+        | ResponseErrorReceiveDataResponse
+        | ResponseErrorResponse
+        | ResponseErrorInternalErrorResponse
+      >({
+        path: `/competition/current-phase/${id}`,
+        method: "PATCH",
+        body: CurrentPhase,
+        type: ContentType.Json,
+        format: "json",
         ...params,
       }),
 
@@ -1026,7 +1071,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PATCH:/elimination/currentend/minus/{id}
      */
     currentendMinusPartialUpdate: (id: number, params: RequestParams = {}) =>
-      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<
+        ResponseNill,
+        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/elimination/currentend/minus/${id}`,
         method: "PATCH",
         ...params,
@@ -1041,7 +1089,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PATCH:/elimination/currentend/plus/{id}
      */
     currentendPlusPartialUpdate: (id: number, params: RequestParams = {}) =>
-      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<
+        ResponseNill,
+        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/elimination/currentend/plus/${id}`,
         method: "PATCH",
         ...params,
@@ -1056,7 +1107,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PATCH:/elimination/currentstage/minus/{id}
      */
     currentstageMinusPartialUpdate: (id: number, params: RequestParams = {}) =>
-      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<
+        ResponseNill,
+        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/elimination/currentstage/minus/${id}`,
         method: "PATCH",
         ...params,
@@ -1071,9 +1125,43 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PATCH:/elimination/currentstage/plus/{id}
      */
     currentstagePlusPartialUpdate: (id: number, params: RequestParams = {}) =>
-      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<
+        ResponseNill,
+        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/elimination/currentstage/plus/${id}`,
         method: "PATCH",
+        ...params,
+      }),
+
+    /**
+     * @description Set stage and end atomically. Stages are zero-based in creation order and must contain a match. Individual eliminations allow ends 0 through 4; team and mixed eliminations allow ends 0 through 3. Moving to another stage resets current_end to 0.
+     *
+     * @tags Elimination
+     * @name ProgressPartialUpdate
+     * @summary Set one Elimination current stage and end.
+     * @request PATCH:/elimination/progress/{id}
+     */
+    progressPartialUpdate: (
+      id: number,
+      Progress: EndpointPutEliminationProgressProgressData,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        DatabaseElimination & {
+          medals?: ResponseNill;
+          player_sets?: ResponseNill;
+          stages?: ResponseNill;
+        },
+        | ResponseErrorReceiveDataResponse
+        | ResponseErrorResponse
+        | ResponseErrorInternalErrorResponse
+      >({
+        path: `/elimination/progress/${id}`,
+        method: "PATCH",
+        body: Progress,
+        type: ContentType.Json,
+        format: "json",
         ...params,
       }),
 
