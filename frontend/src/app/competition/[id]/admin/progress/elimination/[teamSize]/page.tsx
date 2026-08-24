@@ -23,6 +23,7 @@ import { useMutation, useQueryClient } from "react-query";
 import { useState } from "react";
 
 import useGetCompetitionGroupsWithPlayers from "@/utils/QueryHooks/useGetCompetitionGroupsWithPlayers";
+import useGetCompetitionWithGroups from "@/utils/QueryHooks/useGetCompetitionWithGroups";
 import useGetElimination from "@/utils/QueryHooks/useGetElimination";
 import useGetEliminationDetail from "@/utils/QueryHooks/useGetEliminationDetail";
 
@@ -35,6 +36,7 @@ import {
   DatabasePlayerSet,
 } from "@/types/Api";
 import LaneNumber from "@/components/LaneNumber";
+import EliminationProgressControl from "./EliminationProgressControl";
 
 interface PlayerSetOption {
   id: number;
@@ -43,6 +45,8 @@ interface PlayerSetOption {
 
 function Page({ params }: { params: { id: string; teamSize: string } }) {
   const queryClient = useQueryClient();
+  const competitionId = parseInt(params.id);
+  const teamSize = parseInt(params.teamSize);
   const [setOption1, setSetOption1] = useState<PlayerSetOption | null>(null);
   const [setOption2, setSetOption2] = useState<PlayerSetOption | null>(null);
   const [set1Detail, setSet1Detail] = useState<DatabasePlayerSet | null>(null);
@@ -53,20 +57,31 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
   const [matchInfoDialogOpen, setMatchInfoDialogOpen] = useState(false);
   const [selectedMatchId, setSelectedMatchId] = useState<number | null>(null);
   const [selectedStageId, setSelectedStageId] = useState<number | null>(null);
+  const [progressError, setProgressError] = useState<string | null>(null);
 
-  const { data: groups } = useGetCompetitionGroupsWithPlayers(
-    parseInt(params.id)
-  );
+  const {
+    data: competition,
+    isLoading: isCompetitionLoading,
+    isError: isCompetitionError,
+  } = useGetCompetitionWithGroups(competitionId);
+  const { data: groups } =
+    useGetCompetitionGroupsWithPlayers(competitionId);
 
   const groupIndex = useAppSelector((state) => state.progress.groupIndex);
-  const { data: elimination } = useGetElimination(
-    parseInt(params.id),
+  const {
+    data: elimination,
+    isLoading: isEliminationLoading,
+    isError: isEliminationError,
+  } = useGetElimination(
+    competitionId,
     groupIndex - 1, // 0 is unassigned group in the for the group menu.
-    parseInt(params.teamSize)
+    teamSize
   );
-  const { data: eliminationDetail } = useGetEliminationDetail(
-    elimination?.elimination_id
-  );
+  const {
+    data: eliminationDetail,
+    isLoading: isEliminationDetailLoading,
+    isError: isEliminationDetailError,
+  } = useGetEliminationDetail(elimination?.elimination_id);
   const playerSets = eliminationDetail?.player_sets;
 
   const playerSetOptions: PlayerSetOption[] =
@@ -99,6 +114,49 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
           elimination?.elimination_id,
         ]);
         resetState();
+      },
+    }
+  );
+
+  const {
+    mutate: setEliminationProgress,
+    isLoading: isProgressUpdating,
+  } = useMutation(
+    ({
+      currentStage,
+      currentEnd,
+    }: {
+      currentStage: number;
+      currentEnd: number;
+    }) => {
+      if (elimination?.elimination_id === undefined) {
+        throw new Error("Elimination 尚未建立");
+      }
+      return apiClient.elimination.progressPartialUpdate(
+        elimination.elimination_id,
+        {
+          current_stage: currentStage,
+          current_end: currentEnd,
+        }
+      );
+    },
+    {
+      onSuccess: () => {
+        queryClient.invalidateQueries([
+          "eliminationDetail",
+          elimination?.elimination_id,
+        ]);
+        queryClient.invalidateQueries([
+          "competitionEliminations",
+          competitionId,
+        ]);
+        queryClient.invalidateQueries([
+          "eliminationProgress",
+          elimination?.elimination_id,
+        ]);
+      },
+      onError: () => {
+        setProgressError("更新對抗賽進度失敗，請稍後再試。");
       },
     }
   );
@@ -175,7 +233,58 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
     }
   );
 
-  if (!eliminationDetail) return <Typography>Loading...</Typography>;
+  const isPhaseActive =
+    teamSize === 1
+      ? competition?.elimination_is_active
+      : teamSize === 3
+        ? competition?.team_elimination_is_active
+        : teamSize === 2
+          ? competition?.mixed_elimination_is_active
+          : false;
+
+  const progressControl = (
+    <EliminationProgressControl
+      elimination={eliminationDetail}
+      teamSize={teamSize}
+      isPhaseActive={isPhaseActive}
+      isLoading={
+        isCompetitionLoading ||
+        isEliminationLoading ||
+        isEliminationDetailLoading
+      }
+      isError={
+        isCompetitionError || isEliminationError || isEliminationDetailError
+      }
+      isUpdating={isProgressUpdating}
+      errorMessage={progressError}
+      onDismissError={() => setProgressError(null)}
+      onChange={(currentStage, currentEnd) =>
+        setEliminationProgress({ currentStage, currentEnd })
+      }
+    />
+  );
+
+  if (!eliminationDetail) {
+    return (
+      <Box>
+        <Card sx={{ p: 2 }}>
+          <GroupMenu
+            groupNames={groups?.map((group) => group.group_name!) ?? []}
+          />
+        </Card>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "280px minmax(0, 1fr)" },
+            gap: 2,
+            mt: 2,
+          }}
+        >
+          <Card sx={{ p: 2, alignSelf: "start" }}>{progressControl}</Card>
+        </Box>
+      </Box>
+    );
+  }
 
   const resetState = () => {
     setCreateMatchDialogOpen(false);
@@ -309,96 +418,120 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
           </Button>
         </Stack>
       </Card>
-      <Card sx={{ p: 2, display: "flex" }}>
-        {stages.map((stage) => {
-          return (
-            <Paper sx={{ width: "300px" }}>
-              <Button
-                onClick={() => {
-                  setSelectedStageId(stage.id!);
-                  setCreateMatchDialogOpen(true);
-                }}
-                sx={{ width: "100%" }}
-              >
-                創建對抗組
-              </Button>
-              {stage.matchs?.map((match) => {
-                const result1 = match.match_results?.[0];
-                const result2 = match.match_results?.[1];
-                const set1 = playerSets?.find(
-                  (set) => set.id === result1?.player_set_id
-                );
-                const set2 = playerSets?.find(
-                  (set) => set.id === result2?.player_set_id
-                );
-                return (
-                  <Paper
-                    onClick={() =>
-                      handleMatchInfoDialogOpen(
-                        match.id!,
-                        stage.id!,
-                        set1!,
-                        set2!
-                      )
-                    }
-                    sx={{ cursor: "pointer", mb: 2, ml: 2, mr: 2 }}
+      <Box
+        sx={{
+          display: "grid",
+          gridTemplateColumns: { xs: "1fr", md: "280px minmax(0, 1fr)" },
+          gap: 2,
+          mt: 2,
+          alignItems: "start",
+        }}
+      >
+        <Card sx={{ p: 2 }}>{progressControl}</Card>
+        <Card sx={{ p: 2, minWidth: 0, overflowX: "auto" }}>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 2,
+              minWidth: "100%",
+              width: "max-content",
+            }}
+          >
+            {stages.map((stage) => {
+              return (
+                <Paper
+                  key={stage.id}
+                  sx={{ width: "300px", flexShrink: 0 }}
+                >
+                  <Button
+                    onClick={() => {
+                      setSelectedStageId(stage.id!);
+                      setCreateMatchDialogOpen(true);
+                    }}
+                    sx={{ width: "100%" }}
                   >
-                    <Stack direction="row">
-                      <LaneNumber
-                        laneNumber={result1?.lane_number}
-                        width="30px"
-                        height="30px"
-                      />
-                      <Typography
-                        sx={{
-                          flexGrow: 1,
-                          lineHeight: "30px",
-                          fontWeight: "bold",
-                          mr: "30px",
-                          display: "flex",
-                          justifyContent: "center",
-                        }}
+                    創建對抗組
+                  </Button>
+                  {stage.matchs?.map((match) => {
+                    const result1 = match.match_results?.[0];
+                    const result2 = match.match_results?.[1];
+                    const set1 = playerSets?.find(
+                      (set) => set.id === result1?.player_set_id
+                    );
+                    const set2 = playerSets?.find(
+                      (set) => set.id === result2?.player_set_id
+                    );
+                    return (
+                      <Paper
+                        key={match.id}
+                        onClick={() =>
+                          handleMatchInfoDialogOpen(
+                            match.id!,
+                            stage.id!,
+                            set1!,
+                            set2!
+                          )
+                        }
+                        sx={{ cursor: "pointer", mb: 2, ml: 2, mr: 2 }}
                       >
-                        <span>{set1?.set_name}</span>
-                        {result1?.is_winner ? (
-                          <EmojiEventsIcon sx={{ color: "#eee700" }} />
-                        ) : null}
-                      </Typography>
-                    </Stack>
-                    <Typography
-                      sx={{ textAlign: "center", fontWeight: "bold" }}
-                    >
-                      vs.
-                    </Typography>
-                    <Stack direction="row">
-                      <LaneNumber
-                        laneNumber={result2?.lane_number}
-                        width="30px"
-                        height="30px"
-                      />
-                      <Typography
-                        sx={{
-                          flexGrow: 1,
-                          lineHeight: "30px",
-                          fontWeight: "bold",
-                          mr: "30px",
-                          display: "flex",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <span>{set2?.set_name}</span>
-                        {result2?.is_winner ? (
-                          <EmojiEventsIcon sx={{ color: "#eee700" }} />
-                        ) : null}
-                      </Typography>
-                    </Stack>
-                  </Paper>
-                );
-              })}
-            </Paper>
-          );
-        })}
-      </Card>
+                        <Stack direction="row">
+                          <LaneNumber
+                            laneNumber={result1?.lane_number}
+                            width="30px"
+                            height="30px"
+                          />
+                          <Typography
+                            sx={{
+                              flexGrow: 1,
+                              lineHeight: "30px",
+                              fontWeight: "bold",
+                              mr: "30px",
+                              display: "flex",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <span>{set1?.set_name}</span>
+                            {result1?.is_winner ? (
+                              <EmojiEventsIcon sx={{ color: "#eee700" }} />
+                            ) : null}
+                          </Typography>
+                        </Stack>
+                        <Typography
+                          sx={{ textAlign: "center", fontWeight: "bold" }}
+                        >
+                          vs.
+                        </Typography>
+                        <Stack direction="row">
+                          <LaneNumber
+                            laneNumber={result2?.lane_number}
+                            width="30px"
+                            height="30px"
+                          />
+                          <Typography
+                            sx={{
+                              flexGrow: 1,
+                              lineHeight: "30px",
+                              fontWeight: "bold",
+                              mr: "30px",
+                              display: "flex",
+                              justifyContent: "center",
+                            }}
+                          >
+                            <span>{set2?.set_name}</span>
+                            {result2?.is_winner ? (
+                              <EmojiEventsIcon sx={{ color: "#eee700" }} />
+                            ) : null}
+                          </Typography>
+                        </Stack>
+                      </Paper>
+                    );
+                  })}
+                </Paper>
+              );
+            })}
+          </Box>
+        </Card>
+      </Box>
       <Dialog open={createMatchDialogOpen}>
         <DialogTitle>創建對抗組</DialogTitle>
         <DialogContent>

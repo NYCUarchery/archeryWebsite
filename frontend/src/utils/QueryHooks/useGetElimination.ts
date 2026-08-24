@@ -10,7 +10,7 @@ export default function useGetElimination(
     () => apiClient.competition.groupsEliminationsDetail(id),
     {
       select: (data) => {
-        return data.data.group_data![groupIndex].elimination_data!.find(
+        return data.data.group_data?.[groupIndex]?.elimination_data?.find(
           (elimination) => elimination.team_size === teamSize
         );
       },
