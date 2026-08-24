@@ -54,6 +54,12 @@ func GetParticipantIsExist(id uint) bool {
 	return data.ID != 0
 }
 
+func GetParticipantIsExistWithCompetitionID(participantId uint, competitionId uint) bool {
+	var data Participant
+	DB.Model(&Participant{}).Where("id = ? AND competition_id = ?", participantId, competitionId).First(&data)
+	return data.ID != 0
+}
+
 func GetParticipant(ID uint) (Participant, error) {
 	var data Participant
 	result := DB.Model(&Participant{}).Where("id = ?", ID).First(&data)

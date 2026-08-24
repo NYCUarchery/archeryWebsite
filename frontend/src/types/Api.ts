@@ -254,6 +254,18 @@ export interface EndpointParticipantWName {
   user_id?: number;
 }
 
+export interface EndpointPatchParticipantsErrorDataType {
+  errorMessage?: string;
+  putParticipantData?: EndpointPutParticipantData;
+}
+
+export interface EndpointPatchParticipantsReturnData {
+  errorData?: EndpointPatchParticipantsErrorDataType[];
+  failNum?: number;
+  processedNum?: number;
+  successNum?: number;
+}
+
 export interface EndpointPatchPlayerLaneOrderUpdateLaneIdOrderData {
   lane_id?: number;
   order?: number;
@@ -367,7 +379,8 @@ export interface EndpointPutMedalPlayerSetIdByIdRequestBody {
   player_set_id?: number;
 }
 
-export interface EndpointPutParticipantPutParticipantData {
+export interface EndpointPutParticipantData {
+  id?: number;
   role?: string;
   status?: string;
 }
@@ -509,7 +522,7 @@ export class HttpClient<SecurityDataType = unknown> {
   private format?: ResponseType;
 
   constructor({ securityWorker, secure, format, ...axiosConfig }: ApiConfig<SecurityDataType> = {}) {
-    this.instance = axios.create({ ...axiosConfig, baseURL: axiosConfig.baseURL || "//localhost:80/api" });
+    this.instance = axios.create({ ...axiosConfig, baseURL: axiosConfig.baseURL || "//127.0.0.1:80/api" });
     this.secure = secure;
     this.format = format;
     this.securityWorker = securityWorker;
@@ -602,7 +615,7 @@ export class HttpClient<SecurityDataType = unknown> {
  * @title Gin swagger
  * @version 1.0
  * @license no license yet
- * @baseUrl //localhost:80/api
+ * @baseUrl //127.0.0.1:80/api
  * @contact NYCUArchery (https://github.com/NYCUarchery)
  *
  * Gin swagger
@@ -1881,6 +1894,28 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
+     * @description Patch Participants. Only update role and status. Role type should be defined. Participant should be in the competition. Admin cannot be updated or added.
+     *
+     * @tags Participant
+     * @name BulkRolesStatusPartialUpdate
+     * @summary Update Participants.
+     * @request PATCH:/participant/bulk/roles/status/{competitionid}
+     */
+    bulkRolesStatusPartialUpdate: (
+      competitionid: number,
+      Participant: EndpointPutParticipantData[],
+      params: RequestParams = {},
+    ) =>
+      this.request<EndpointPatchParticipantsReturnData, ResponseErrorIdResponse>({
+        path: `/participant/bulk/roles/status/${competitionid}`,
+        method: "PATCH",
+        body: Participant,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Get Participants By competition ID and user ID
      *
      * @tags Participant
@@ -1971,11 +2006,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Update one Participant.
      * @request PUT:/participant/{id}
      */
-    participantUpdate: (
-      id: number,
-      Participant: EndpointPutParticipantPutParticipantData,
-      params: RequestParams = {},
-    ) =>
+    participantUpdate: (id: number, Participant: EndpointPutParticipantData, params: RequestParams = {}) =>
       this.request<DatabaseParticipant, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/participant/${id}`,
         method: "PUT",
