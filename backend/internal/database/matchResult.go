@@ -93,8 +93,11 @@ func GetMatchResultWScoresById(id uint) (MatchResult, error) {
 	var data MatchResult
 	result := DB.
 		Preload("PlayerSet").
-		Preload("MatchEnds.MatchScores", func(*gorm.DB) *gorm.DB {
-			return DB.Order("score DESC")
+		Preload("MatchEnds", func(tx *gorm.DB) *gorm.DB {
+			return tx.Order("id asc")
+		}).
+		Preload("MatchEnds.MatchScores", func(tx *gorm.DB) *gorm.DB {
+			return tx.Order("score DESC")
 		}).
 		Model(&MatchResult{}).
 		Where("id = ?", id).
