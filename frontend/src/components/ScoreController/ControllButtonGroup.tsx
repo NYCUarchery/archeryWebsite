@@ -7,6 +7,7 @@ interface Props {
   isConfirmed: boolean;
   canDelete: boolean;
   isSaving: boolean;
+  canConfirm?: boolean; // false 表示尚未選定記分對象，確認鈕停用並改為提示文字
   onDeleteScore: () => void;
   onSave: () => void;
   onConfirm?: () => void;
@@ -16,6 +17,7 @@ export default function ControllButtonGroup({
   isConfirmed,
   canDelete,
   isSaving,
+  canConfirm = true,
   onDeleteScore,
   onSave,
   onConfirm,
@@ -31,16 +33,22 @@ export default function ControllButtonGroup({
         <Button
           color={isConfirmed ? "success" : "error"}
           variant="contained"
-          id={isConfirmed ? "confirmed" : "unconfirmed"}
+          id={
+            !canConfirm ? "no-selection" : isConfirmed ? "confirmed" : "unconfirmed"
+          }
+          disabled={!canConfirm}
           disableRipple={isConfirmed}
           sx={{
             height: "3rem",
             fontSize: "1rem",
-            backgroundColor: isConfirmed ? "success.light" : "error.main",
+            // 停用時交還 MUI 預設灰底，避免紅底誤導使用者以為可按。
+            ...(canConfirm && {
+              backgroundColor: isConfirmed ? "success.light" : "error.main",
+            }),
           }}
           onClick={onConfirm}
         >
-          {isConfirmed ? "已確認" : "確認"}
+          {!canConfirm ? "請選取選手" : isConfirmed ? "已確認" : "確認"}
         </Button>
       ) : (
         <></>
@@ -59,12 +67,3 @@ export default function ControllButtonGroup({
     </ButtonGroup>
   );
 }
-// function invalidateLaneWithPlayerScoresQuery(
-//   queryClient: QueryClient,
-//   selectedPlayer: Player
-// ) {
-//   queryClient.invalidateQueries([
-//     "laneWithPlayersScores",
-//     selectedPlayer.lane_id,
-//   ]);
-// }
