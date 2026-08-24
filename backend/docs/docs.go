@@ -153,6 +153,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
+                    "403": {
+                        "description": "target competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Update Competition CurrentPhase Minus",
                         "schema": {
@@ -191,8 +197,88 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
+                    "403": {
+                        "description": "target competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "Update Competition CurrentPhase Plus",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/competition/current-phase/{id}": {
+            "patch": {
+                "description": "Set current phase to qualification (0), individual elimination (1), team elimination (2), or mixed elimination (3). The selected phase must be active.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "Set one Competition player-facing current phase.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Current phase",
+                        "name": "CurrentPhase",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.PutCompetitionCurrentPhase.CurrentPhaseData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "updated competition",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Competition"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "groups": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        },
+                                        "participants": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "invalid competition ID, phase, or inactive phase",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorReceiveDataResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "target competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -1152,6 +1238,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
+                    "403": {
+                        "description": "target competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "internal db error for Update Elimination CurrentStage",
                         "schema": {
@@ -1188,6 +1280,12 @@ const docTemplate = `{
                         "description": "invalid Elimination ID, maybe not exist",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "target competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
@@ -1228,6 +1326,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
+                    "403": {
+                        "description": "target competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "internal db error for Update Elimination CurrentStage",
                         "schema": {
@@ -1264,6 +1368,12 @@ const docTemplate = `{
                         "description": "invalid Elimination ID, maybe not exist",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "target competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
@@ -1479,6 +1589,83 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "internal db error for Get Elimination",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/elimination/progress/{id}": {
+            "patch": {
+                "description": "Set stage and end atomically. Stages are zero-based in creation order and must contain a match. Individual eliminations allow ends 0 through 4; team and mixed eliminations allow ends 0 through 3. Moving to another stage resets current_end to 0.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Elimination"
+                ],
+                "summary": "Set one Elimination current stage and end.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Elimination ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Elimination progress",
+                        "name": "Progress",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.PutEliminationProgress.ProgressData"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "updated elimination",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/database.Elimination"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "medals": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        },
+                                        "player_sets": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        },
+                                        "stages": {
+                                            "$ref": "#/definitions/response.Nill"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "invalid elimination ID, stage, or end",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorReceiveDataResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "target competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "internal db error",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -6566,6 +6753,25 @@ const docTemplate = `{
                 }
             }
         },
+        "endpoint.PutCompetitionCurrentPhase.CurrentPhaseData": {
+            "type": "object",
+            "properties": {
+                "current_phase": {
+                    "type": "integer"
+                }
+            }
+        },
+        "endpoint.PutEliminationProgress.ProgressData": {
+            "type": "object",
+            "properties": {
+                "current_end": {
+                    "type": "integer"
+                },
+                "current_stage": {
+                    "type": "integer"
+                }
+            }
+        },
         "endpoint.PutGroupInfo.GroupData": {
             "type": "object",
             "properties": {
@@ -6932,7 +7138,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:80",
+	Host:             "127.0.0.1:80",
 	BasePath:         "/api/",
 	Schemes:          []string{},
 	Title:            "Gin swagger",

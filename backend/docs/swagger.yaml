@@ -539,6 +539,18 @@ definitions:
       title:
         type: string
     type: object
+  endpoint.PutCompetitionCurrentPhase.CurrentPhaseData:
+    properties:
+      current_phase:
+        type: integer
+    type: object
+  endpoint.PutEliminationProgress.ProgressData:
+    properties:
+      current_end:
+        type: integer
+      current_stage:
+        type: integer
+    type: object
   endpoint.PutGroupInfo.GroupData:
     properties:
       bow_type:
@@ -738,7 +750,7 @@ definitions:
         example: result description
         type: string
     type: object
-host: localhost:80
+host: 127.0.0.1:80
 info:
   contact:
     name: NYCUArchery
@@ -934,6 +946,54 @@ paths:
       summary: update one Competition
       tags:
       - Competition
+  /competition/current-phase/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: Set current phase to qualification (0), individual elimination
+        (1), team elimination (2), or mixed elimination (3). The selected phase must
+        be active.
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Current phase
+        in: body
+        name: CurrentPhase
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.PutCompetitionCurrentPhase.CurrentPhaseData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: updated competition
+          schema:
+            allOf:
+            - $ref: '#/definitions/database.Competition'
+            - properties:
+                groups:
+                  $ref: '#/definitions/response.Nill'
+                participants:
+                  $ref: '#/definitions/response.Nill'
+              type: object
+        "400":
+          description: invalid competition ID, phase, or inactive phase
+          schema:
+            $ref: '#/definitions/response.ErrorReceiveDataResponse'
+        "403":
+          description: target competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: internal db error
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Set one Competition player-facing current phase.
+      tags:
+      - Competition
   /competition/current-phase/minus/{id}:
     patch:
       description: Update one Competition currentPhase -- by id.
@@ -952,6 +1012,10 @@ paths:
           description: invalid competition id parameter
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: target competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: Update Competition CurrentPhase Minus
           schema:
@@ -977,6 +1041,10 @@ paths:
           description: invalid competition id parameter
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: target competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: Update Competition CurrentPhase Plus
           schema:
@@ -1566,6 +1634,10 @@ paths:
           description: invalid Elimination ID, maybe not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: target competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db error for Update Elimination CurrentStage
           schema:
@@ -1591,6 +1663,10 @@ paths:
           description: invalid Elimination ID, maybe not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: target competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db error for Update Elimination CurrentStage
           schema:
@@ -1616,6 +1692,10 @@ paths:
           description: invalid Elimination ID, maybe not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: target competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db error for Update Elimination CurrentStage
           schema:
@@ -1641,6 +1721,10 @@ paths:
           description: invalid Elimination ID, maybe not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: target competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db error for Update Elimination CurrentStage
           schema:
@@ -1790,6 +1874,57 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Elimination with player sets
+      tags:
+      - Elimination
+  /elimination/progress/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: Set stage and end atomically. Stages are zero-based in creation
+        order and must contain a match. Individual eliminations allow ends 0 through
+        4; team and mixed eliminations allow ends 0 through 3. Moving to another stage
+        resets current_end to 0.
+      parameters:
+      - description: Elimination ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Elimination progress
+        in: body
+        name: Progress
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.PutEliminationProgress.ProgressData'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: updated elimination
+          schema:
+            allOf:
+            - $ref: '#/definitions/database.Elimination'
+            - properties:
+                medals:
+                  $ref: '#/definitions/response.Nill'
+                player_sets:
+                  $ref: '#/definitions/response.Nill'
+                stages:
+                  $ref: '#/definitions/response.Nill'
+              type: object
+        "400":
+          description: invalid elimination ID, stage, or end
+          schema:
+            $ref: '#/definitions/response.ErrorReceiveDataResponse'
+        "403":
+          description: target competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: internal db error
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Set one Elimination current stage and end.
       tags:
       - Elimination
   /elimination/scores/{id}:
