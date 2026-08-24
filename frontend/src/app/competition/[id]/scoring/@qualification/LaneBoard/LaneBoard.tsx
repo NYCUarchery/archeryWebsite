@@ -127,6 +127,7 @@ export default function LaneBoard({
         onDeleteScore={onDeleteScore}
         onSave={onSendScore}
         onConfirm={onConfirm}
+        canConfirm={selectedEnd !== undefined}
         isSaving={false}
       ></ScoreController>
     </Box>
