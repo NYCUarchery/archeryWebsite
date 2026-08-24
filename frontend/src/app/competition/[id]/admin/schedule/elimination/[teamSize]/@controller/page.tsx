@@ -67,13 +67,12 @@ export default function Page({
   );
 
   const group = groups?.[groupIndex];
-  const playerOptions =
-    group?.players
-      ?.sort((a, b) => a.rank! - b.rank!)
-      .map((player) => ({
-        value: player!.id,
-        label: player!.name + " rank: " + player!.rank,
-      })) ?? [];
+  const playerOptions = [...(group?.players ?? [])]
+    .sort((a, b) => a.rank! - b.rank!)
+    .map((player) => ({
+      value: player!.id,
+      label: player!.name + " rank: " + player!.rank,
+    }));
 
   const handleCreatePlayerSet = () => {
     const playerIds = selectedPlayers.map((player) => player?.value);
