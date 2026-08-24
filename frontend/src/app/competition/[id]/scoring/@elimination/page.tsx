@@ -4,7 +4,7 @@ import { useMutation } from "react-query";
 import { Snackbar, Alert } from "@mui/material";
 import { apiClient } from "@/utils/ApiClient";
 import { useAppDispatch, useAppSelector } from "store/hooks";
-import { DatabaseMatchResult } from "@/types/Api";
+import { DatabaseMatchResult, DatabasePlayerSet } from "@/types/Api";
 import useCurrentEliminationMatch from "./useCurrentEliminationMatch";
 import {
   initializeMatchResults,
@@ -26,18 +26,25 @@ import EliminationScoringBoard from "./EliminationScoringBoard";
 // 轉換為 slice 所需的 LocalMatchResult[]（見契約 §3 末段之轉換規則）。
 function toLocalMatchResults(
   matchResults: DatabaseMatchResult[],
-  currentEndIndex: number
+  currentEndIndex: number,
+  playerSets: DatabasePlayerSet[]
 ): LocalMatchResult[] {
   return matchResults.flatMap((matchResult) => {
     const matchEnd = matchResult.match_ends?.[currentEndIndex];
     if (
       matchResult.id === undefined ||
-      matchResult.player_set?.id === undefined ||
+      matchResult.player_set_id === undefined ||
       matchEnd?.id === undefined
     ) {
       // 缺必要欄位者略過（防禦性；正常情境下 useCurrentEliminationMatch 已確保邊界）。
       return [];
     }
+
+    // /elimination/stages/scores/medals/{id} 不 preload match_results[].player_set，
+    // 故隊名與成員一律以 player_set_id 反查 elimination.player_sets（已含 Players）。
+    const playerSet =
+      playerSets.find((ps) => ps.id === matchResult.player_set_id) ??
+      matchResult.player_set;
 
     const scores: LocalMatchScore[] = (matchEnd.match_scores ?? [])
       .filter((ms): ms is { id: number; score?: number } => ms.id !== undefined)
@@ -46,11 +53,9 @@ function toLocalMatchResults(
 
     const local: LocalMatchResult = {
       matchResultId: matchResult.id,
-      playerSetId: matchResult.player_set.id,
-      setName: matchResult.player_set.set_name ?? "",
-      memberNames: (matchResult.player_set.players ?? []).map(
-        (p) => p.name ?? ""
-      ),
+      playerSetId: matchResult.player_set_id,
+      setName: playerSet?.set_name ?? "",
+      memberNames: (playerSet?.players ?? []).map((p) => p.name ?? ""),
       isWinner: matchResult.is_winner ?? false,
       totalPoints: matchResult.total_points ?? 0,
       currentMatchEndId: matchEnd.id,
@@ -105,7 +110,8 @@ export default function Page({ params }: { params: { id: string } }) {
       initializeMatchResults({
         matchResults: toLocalMatchResults(
           status.data.matchResults,
-          status.data.currentEndIndex
+          status.data.currentEndIndex,
+          status.data.elimination.player_sets ?? []
         ),
         currentEndIndex: status.data.currentEndIndex,
         teamSize: status.data.teamSize,
