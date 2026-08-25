@@ -21,6 +21,7 @@ func TestControlRoutesAreRegistered(t *testing.T) {
 		"PATCH /api/groupinfo/players/ranking/:groupId",
 		"POST /api/elimination/bracket/:id",
 		"POST /api/elimination/stage/advance/:stageid",
+		"POST /api/playerset/elimination/:eliminationid/auto",
 		"PATCH /api/competition/current-phase/:id",
 		"PATCH /api/competition/current-phase/plus/:id",
 		"PATCH /api/competition/current-phase/minus/:id",
