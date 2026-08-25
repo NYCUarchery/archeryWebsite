@@ -100,6 +100,8 @@ func groupInfoRouter(api *gin.RouterGroup) {
 	{
 		groupinfossr.GET("/:id", endpoint.GetGroupInfoByID)
 		groupinfossr.GET("/players/:id", endpoint.GetGroupInfoWPlayersByID)
+		groupinfossr.GET("/players/ranking/:groupId", endpoint.GetGroupPlayerRanking)
+		groupinfossr.PATCH("/players/ranking/:groupId", endpoint.UpdateGroupPlayerRanking)
 		groupinfossr.POST("/", endpoint.PostGroupInfo)
 		groupinfossr.PUT("/:id", endpoint.PutGroupInfo)
 		groupinfossr.PATCH("/ordering", endpoint.PutGroupInfoOrdering)
