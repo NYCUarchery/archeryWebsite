@@ -6,8 +6,6 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.dev
     restart: unless-stopped
-    volumes:
-      - frontend-node-modules:/app/node_modules
     develop:
       watch:
         - action: sync
@@ -17,6 +15,12 @@ services:
             - .git
             - node_modules/
             - .next/
+            - package.json
+            - package-lock.json
+        - action: rebuild
+          path: ./frontend/package.json
+        - action: rebuild
+          path: ./frontend/package-lock.json
   mysql:
     image: mysql:8
     volumes:
@@ -49,5 +53,4 @@ services:
       - backend
 
 volumes:
-  frontend-node-modules:
   mysql-data:
