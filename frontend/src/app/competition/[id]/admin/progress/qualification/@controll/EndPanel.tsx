@@ -17,9 +17,12 @@ import {
 import { useMutation, useQueryClient } from "react-query";
 import { apiClient } from "@/utils/ApiClient";
 import { useState } from "react";
+import { Competition } from "@/types/oldRef/Competition";
+import RankingDialog from "./RankingDialog";
 
 interface Props {
   competitionId: number;
+  competition: Competition;
   currentEndIndex: number;
   roundNum: number;
 }
@@ -27,13 +30,34 @@ export default function EndPanel({
   currentEndIndex,
   roundNum,
   competitionId,
+  competition,
 }: Props) {
   const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
   const [snackbarMessage, setSnackbarMessage] = useState<string>("");
   const [snackbarColor, setSnackbarColor] = useState<"success" | "error">(
     "success"
   );
+  const [rankingDialogOpen, setRankingDialogOpen] = useState(false);
   const queryClient = useQueryClient();
+
+  const showNotification = (
+    message: string,
+    severity: "success" | "error"
+  ) => {
+    setSnackbarMessage(message);
+    setSnackbarColor(severity);
+    setSnackbarOpen(true);
+  };
+
+  const invalidateRankingViews = () => {
+    queryClient.invalidateQueries(["competitionWithGroups", competitionId]);
+    queryClient.invalidateQueries(["competitionGroupsPlayersDetail", competitionId]);
+    queryClient.invalidateQueries(["groupPlayersRanking"]);
+    queryClient.invalidateQueries(["groupinfoPlayersDetail"]);
+    queryClient.invalidateQueries(["qualificationPlayersDetail"]);
+    queryClient.invalidateQueries(["qualification"]);
+    queryClient.invalidateQueries(["qualificationLanes"]);
+  };
 
   const { mutate: updataRank } = useMutation(
     () =>
@@ -42,14 +66,11 @@ export default function EndPanel({
       ),
     {
       onSuccess: () => {
-        setSnackbarOpen(true);
-        setSnackbarMessage("更新排名成功");
-        setSnackbarColor("success");
+        invalidateRankingViews();
+        showNotification("自動更新排名成功", "success");
       },
       onError: () => {
-        setSnackbarOpen(true);
-        setSnackbarMessage("更新排名失敗");
-        setSnackbarColor("error");
+        showNotification("自動更新排名失敗", "error");
       },
     }
   );
@@ -95,9 +116,10 @@ export default function EndPanel({
 
   return (
     <>
-      <Button variant="contained" onClick={() => updataRank()}>
-        更新排名
-      </Button>
+      <ButtonGroup variant="contained">
+        <Button onClick={() => updataRank()}>自動更新排名</Button>
+        <Button onClick={() => setRankingDialogOpen(true)}>手動調整排名</Button>
+      </ButtonGroup>
       <ButtonGroup>
         <Button
           disabled={currentEndIndex < 0}
@@ -181,6 +203,12 @@ export default function EndPanel({
           {snackbarMessage}
         </Alert>
       </Snackbar>
+      <RankingDialog
+        competition={competition}
+        onClose={() => setRankingDialogOpen(false)}
+        onNotification={showNotification}
+        open={rankingDialogOpen}
+      />
     </>
   );
 }
