@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -14,6 +15,32 @@ import (
 )
 
 var errPlayerSetMutationLocked = errors.New("player sets cannot change after bracket initialization")
+
+var (
+	errAutoPlayerSetsInvalidCount         = errors.New("count must be between 4 and the number of ranked players")
+	errAutoPlayerSetsInvalidAdvancingNum  = errors.New("qualification advancing_num must be between 4 and the number of ranked players")
+	errAutoPlayerSetsInvalidRanks         = errors.New("ranked players must use a continuous rank sequence starting at 1")
+	errAutoPlayerSetsQualificationMissing = errors.New("qualification for the elimination group does not exist")
+	errAutoPlayerSetsTeamSize             = errors.New("auto player set creation only supports individual eliminations")
+	errAutoPlayerSetsConflict             = errors.New("existing player sets are incompatible with the requested ranked players")
+)
+
+// AutoCreatePlayerSetsRequest accepts an optional number of top qualification
+// players.  Omitting Count uses the qualification's advancing_num.
+type AutoCreatePlayerSetsRequest struct {
+	Count *int `json:"count"`
+}
+
+// AutoCreatePlayerSetsResponse reports both newly created and reused sets so
+// callers can refresh their normal elimination/player-set views without
+// guessing whether a retry made another write.
+type AutoCreatePlayerSetsResponse struct {
+	EliminationID  uint                 `json:"elimination_id"`
+	RequestedCount int                  `json:"requested_count"`
+	CreatedCount   int                  `json:"created_count"`
+	ReusedCount    int                  `json:"reused_count"`
+	PlayerSets     []database.PlayerSet `json:"player_sets"`
+}
 
 // withPlayerSetMutationLock serializes seed mutations with bracket creation by
 // locking the same elimination row. The stage check and mutation therefore
@@ -104,6 +131,178 @@ func GetAllPlayerSetsByEliminationId(context *gin.Context) {
 	}
 	response.AcceptPrint(id, fmt.Sprint(data), "get player sets by elimination id")
 	context.IndentedJSON(200, data)
+}
+
+// AutoCreateIndividualPlayerSets creates or safely reuses the one-player
+// PlayerSets for the leading saved qualification ranks.  It intentionally does
+// not recalculate qualification rankings: an administrator must first persist
+// the intended order.
+//
+//	@Summary		Auto-create individual elimination player sets
+//	@Description	Creates one PlayerSet per saved qualification rank. Count defaults to the qualification advancing_num. Requires a competition Admin.
+//	@Tags			PlayerSet
+//	@Accept			json
+//	@Produce		json
+//	@Param			eliminationid	path	uint	true	"Elimination ID"
+//	@Param			data	body	endpoint.AutoCreatePlayerSetsRequest	false	"Optional player count"
+//	@Success		200	{object}	endpoint.AutoCreatePlayerSetsResponse
+//	@Failure		400	{object}	response.ErrorResponse
+//	@Failure		403	{object}	response.ErrorResponse
+//	@Failure		409	{object}	response.ErrorResponse
+//	@Failure		500	{object}	response.ErrorResponse
+//	@Router			/playerset/elimination/{eliminationid}/auto [post]
+func AutoCreateIndividualPlayerSets(context *gin.Context) {
+	eliminationID := Convert2uint(context, "eliminationid")
+	elimination, err := database.GetOnlyEliminationById(eliminationID)
+	if err != nil || elimination.ID == 0 {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "invalid elimination ID"})
+		return
+	}
+	if !requireEliminationCompetitionAdmin(context, elimination) {
+		return
+	}
+
+	var request AutoCreatePlayerSetsRequest
+	if err := context.ShouldBindJSON(&request); err != nil && !errors.Is(err, io.EOF) {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "invalid auto player set request"})
+		return
+	}
+
+	var result AutoCreatePlayerSetsResponse
+	err = database.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&elimination, eliminationID).Error; err != nil {
+			return err
+		}
+		if elimination.TeamSize != 1 {
+			return errAutoPlayerSetsTeamSize
+		}
+
+		var stageCount int64
+		if err := tx.Model(&database.Stage{}).Where("elimination_id = ?", eliminationID).Count(&stageCount).Error; err != nil {
+			return err
+		}
+		if stageCount != 0 {
+			return errPlayerSetMutationLocked
+		}
+
+		// Qualification and Group deliberately share their ID in this data model.
+		var qualification database.Qualification
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&qualification, elimination.GroupId).Error; err != nil {
+			if errors.Is(err, gorm.ErrRecordNotFound) {
+				return errAutoPlayerSetsQualificationMissing
+			}
+			return err
+		}
+		requestedCount := qualification.AdvancingNum
+		usingQualificationDefault := request.Count == nil
+		if request.Count != nil {
+			requestedCount = *request.Count
+		}
+
+		var players []database.Player
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+			Where("group_id = ? AND `rank` != -1", elimination.GroupId).
+			Order("`rank` ASC, id ASC").Find(&players).Error; err != nil {
+			return err
+		}
+		if requestedCount < 4 || requestedCount > len(players) {
+			if usingQualificationDefault {
+				return errAutoPlayerSetsInvalidAdvancingNum
+			}
+			return errAutoPlayerSetsInvalidCount
+		}
+		for index, player := range players {
+			if player.Rank != index+1 {
+				return errAutoPlayerSetsInvalidRanks
+			}
+		}
+		players = players[:requestedCount]
+		selectedByID := make(map[uint]database.Player, len(players))
+		for _, player := range players {
+			selectedByID[player.ID] = player
+		}
+
+		var playerSets []database.PlayerSet
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+			Where("elimination_id = ?", eliminationID).Order("id ASC").Find(&playerSets).Error; err != nil {
+			return err
+		}
+		setIDs := make([]uint, 0, len(playerSets))
+		for _, playerSet := range playerSets {
+			setIDs = append(setIDs, playerSet.ID)
+		}
+		var links []database.PlayerSetMatchTable
+		if len(setIDs) > 0 {
+			if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+				Where("player_set_id IN ?", setIDs).Order("player_set_id ASC, player_id ASC").Find(&links).Error; err != nil {
+				return err
+			}
+		}
+
+		linksBySetID := make(map[uint][]database.PlayerSetMatchTable, len(playerSets))
+		for _, link := range links {
+			linksBySetID[link.PlayerSetId] = append(linksBySetID[link.PlayerSetId], link)
+		}
+		existingByPlayerID := make(map[uint]database.PlayerSet, len(playerSets))
+		for _, playerSet := range playerSets {
+			setLinks := linksBySetID[playerSet.ID]
+			if len(setLinks) != 1 {
+				return errAutoPlayerSetsConflict
+			}
+			player, selected := selectedByID[setLinks[0].PlayerId]
+			if !selected {
+				return errAutoPlayerSetsConflict
+			}
+			if _, duplicate := existingByPlayerID[player.ID]; duplicate {
+				return errAutoPlayerSetsConflict
+			}
+			existingByPlayerID[player.ID] = playerSet
+		}
+
+		result = AutoCreatePlayerSetsResponse{EliminationID: eliminationID, RequestedCount: requestedCount}
+		result.PlayerSets = make([]database.PlayerSet, 0, len(players))
+		for _, player := range players {
+			playerSet, exists := existingByPlayerID[player.ID]
+			if exists {
+				updates := map[string]interface{}{"rank": player.Rank, "set_name": player.Name, "total_score": player.TotalScore}
+				if err := tx.Model(&database.PlayerSet{}).Where("id = ?", playerSet.ID).Updates(updates).Error; err != nil {
+					return err
+				}
+				playerSet.Rank = player.Rank
+				playerSet.SetName = player.Name
+				playerSet.TotalScore = player.TotalScore
+				result.ReusedCount++
+			} else {
+				playerSet = database.PlayerSet{EliminationId: eliminationID, Rank: player.Rank, SetName: player.Name, TotalScore: player.TotalScore}
+				if err := tx.Create(&playerSet).Error; err != nil {
+					return err
+				}
+				if err := tx.Create(&database.PlayerSetMatchTable{PlayerId: player.ID, PlayerSetId: playerSet.ID}).Error; err != nil {
+					return err
+				}
+				result.CreatedCount++
+			}
+			result.PlayerSets = append(result.PlayerSets, playerSet)
+		}
+		return nil
+	})
+	if err != nil {
+		switch {
+		case errors.Is(err, errPlayerSetMutationLocked), errors.Is(err, errAutoPlayerSetsConflict):
+			context.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		case errors.Is(err, errAutoPlayerSetsInvalidCount),
+			errors.Is(err, errAutoPlayerSetsInvalidAdvancingNum),
+			errors.Is(err, errAutoPlayerSetsInvalidRanks),
+			errors.Is(err, errAutoPlayerSetsQualificationMissing),
+			errors.Is(err, errAutoPlayerSetsTeamSize),
+			errors.Is(err, gorm.ErrRecordNotFound):
+			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		default:
+			response.ErrorInternalErrorTest(context, eliminationID, "auto create individual player sets", err)
+		}
+		return
+	}
+	context.JSON(http.StatusOK, result)
 }
 
 // Get player sets which have medals by elimination id
