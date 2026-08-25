@@ -43,7 +43,7 @@ export default function StatisticRow({
         xs={1}
         sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
       >
-        X+10
+        10
       </Grid>
       <Divider orientation="vertical" flexItem variant="middle" />
       <Grid
@@ -51,7 +51,7 @@ export default function StatisticRow({
         xs={1}
         sx={{ display: "flex", justifyContent: "center", alignItems: "center" }}
       >
-        {totalTens + totalXs}
+        {totalTens}
       </Grid>
       <Divider orientation="vertical" flexItem />
       <Grid

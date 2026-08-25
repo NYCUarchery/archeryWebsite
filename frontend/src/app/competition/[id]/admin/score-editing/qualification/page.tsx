@@ -12,6 +12,7 @@ import {
   TableContainer,
   TextField,
   Paper,
+  Table,
   TableHead,
   TableRow,
   TableCell,
@@ -20,12 +21,26 @@ import {
   Dialog,
   DialogContent,
   Button,
+  Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import ScoreController from "@/components/ScoreController/ScoreController";
 import { extractScores } from "@/components/ScoreController/util";
 import { DatabaseRoundEnd } from "@/types/Api";
 import ScoreBlock from "@/components/ScoreBlock";
+import { calculatePlayerStats } from "@/utils/calculatePlayerStatistics";
+import StatisticRow from "@/components/ScoreDetail/StatisticRow";
+import { Player } from "@/types/oldRef/Player";
+
+function createEndDraft(end: DatabaseRoundEnd): DatabaseRoundEnd {
+  return {
+    ...end,
+    // ScoreController treats confirmed ends as read-only. This is an admin
+    // editing draft, so clear it only in local state, never in query cache.
+    is_confirmed: undefined,
+    round_scores: end.round_scores?.map((roundScore) => ({ ...roundScore })),
+  };
+}
 
 export default function Page({ params }: { params: { id: string } }) {
   const isSmall = useMediaQuery("(max-width:420px)");
@@ -47,12 +62,15 @@ export default function Page({ params }: { params: { id: string } }) {
       enabled: !!selectedPlayer?.value,
     }
   );
-  const { mutate: updateScore } = useMutation(
+  const { mutate: updateScore, isLoading: isSavingScore } = useMutation(
     ({ endId, scores }: { endId: number; scores: { scores: number[] } }) =>
       apiClient.player.allEndscoresPartialUpdate(endId, scores),
     {
-      onSuccess: () => {
-        queryClient.invalidateQueries(["player", selectedPlayer?.value]);
+      onSuccess: async () => {
+        const playerQueryKey = ["player", selectedPlayer?.value];
+        await queryClient.invalidateQueries(playerQueryKey);
+        setSelectedEnd(null);
+        setScoreDialogOpen(false);
       },
     }
   );
@@ -64,104 +82,124 @@ export default function Page({ params }: { params: { id: string } }) {
     })) ?? [];
 
   const handleOpenScoreDialog = (end: DatabaseRoundEnd) => {
-    // The conponent disables editing if the end is confirmed
-    end.is_confirmed = undefined;
-    setSelectedEnd(end);
+    setSelectedEnd(createEndDraft(end));
     setScoreDialogOpen(true);
   };
   const handleSaveScores = () => {
+    if (!selectedEnd?.id || !selectedEnd.round_scores || isSavingScore) return;
     const scores = selectedEnd!.round_scores!.map((score) => score.score!);
     updateScore({
       endId: selectedEnd!.id!,
       scores: { scores: scores },
     });
-    setScoreDialogOpen(false);
   };
   const handleCloseScoreDialog = () => {
-    queryClient.invalidateQueries(["player", selectedPlayer?.value]);
+    if (isSavingScore) return;
+    setSelectedEnd(null);
     setScoreDialogOpen(false);
   };
 
   const onAddscore = (score: number) => {
-    const lastEmptyScore = selectedEnd!.round_scores!.find(
-      (score) => score.score === -1
-    );
-    lastEmptyScore!.score = score;
-    setSelectedEnd({ ...selectedEnd! });
+    setSelectedEnd((end) => {
+      if (!end?.round_scores) return end;
+      const emptyIndex = end.round_scores.findIndex(
+        (roundScore) => roundScore.score === -1
+      );
+      if (emptyIndex === -1) return end;
+      return {
+        ...end,
+        round_scores: end.round_scores.map((roundScore, index) =>
+          index === emptyIndex ? { ...roundScore, score } : roundScore
+        ),
+      };
+    });
   };
   const onDeleteScore = () => {
-    const lastScore = selectedEnd!.round_scores!.findIndex(
-      (score) => score.score === -1
-    );
-    if (lastScore === -1) {
-      selectedEnd!.round_scores![selectedEnd!.round_scores!.length - 1].score =
-        -1;
-    } else {
-      selectedEnd!.round_scores![lastScore - 1].score = -1;
-    }
-    setSelectedEnd({ ...selectedEnd! });
+    setSelectedEnd((end) => {
+      if (!end?.round_scores) return end;
+      const firstEmptyIndex = end.round_scores.findIndex(
+        (roundScore) => roundScore.score === -1
+      );
+      const lastFilledIndex =
+        firstEmptyIndex === -1
+          ? end.round_scores.length - 1
+          : firstEmptyIndex - 1;
+      if (lastFilledIndex < 0) return end;
+      return {
+        ...end,
+        round_scores: end.round_scores.map((roundScore, index) =>
+          index === lastFilledIndex ? { ...roundScore, score: -1 } : roundScore
+        ),
+      };
+    });
   };
+  const playerStats = player
+    ? calculatePlayerStats(player as unknown as Player)
+    : undefined;
   const endRows =
-    player
-      ?.rounds!.map((round, roundIndex) => {
-        return round!.round_ends!.map((end, endIndex) => {
-          let roundTotalRow = <></>;
-          if (endIndex === 5) {
-            roundTotalRow = (
-              <TableRow key={`${roundIndex}-total`}>
-                <TableCell align="center" colSpan={1}>{`${
-                  roundIndex + 1
-                }`}</TableCell>
-                <TableCell align="center" colSpan={isSmall ? 3 : 6}></TableCell>
-                <TableCell align="center" colSpan={1}>
-                  {round.total_score}
-                </TableCell>
-                <TableCell align="center" colSpan={1}></TableCell>
-              </TableRow>
-            );
-          }
-
-          const endTotal = end!.round_scores!.reduce((acc, score) => {
-            if (score.score === 11) {
-              acc += 10;
-            } else if (score.score !== -1) {
-              acc += score.score!;
-            }
-            return acc;
-          }, 0);
-          return (
-            <>
-              <TableRow key={`${roundIndex}-${endIndex}`}>
-                <TableCell align="center" colSpan={1}>{`${roundIndex + 1}-${
-                  endIndex + 1
-                }`}</TableCell>
-                <TableCell align="center" colSpan={isSmall ? 3 : 6}>
+    player?.rounds?.flatMap((round, roundIndex) => {
+      const ends = round?.round_ends ?? [];
+      const roundStats = playerStats?.rounds[roundIndex];
+      return ends.map((end, endIndex) => {
+        const isLastEnd = endIndex === ends.length - 1;
+        const endTotal = end.round_scores?.reduce((total, score) => {
+          if (score.score === 11) return total + 10;
+          return score.score === -1 || score.score === undefined
+            ? total
+            : total + score.score;
+        }, 0);
+        return (
+          <Fragment key={`${roundIndex}-${endIndex}`}>
+            <TableRow key={`${roundIndex}-${endIndex}`}>
+              <TableCell align="center" colSpan={1}>{`${roundIndex + 1}-${
+                endIndex + 1
+              }`}</TableCell>
+              <TableCell align="center" colSpan={isSmall ? 3 : 6}>
+                <Box
+                  sx={{ display: "flex", justifyContent: "space-around" }}
+                  key={`${roundIndex}-${endIndex}`}
+                >
+                  {end!.round_scores!.map((score) => {
+                    return <ScoreBlock key={score.id} score={score.score!} />;
+                  })}
+                </Box>
+              </TableCell>
+              <TableCell align="center" colSpan={1}>
+                {endTotal}
+              </TableCell>
+              <TableCell align="center" colSpan={1}>
+                <IconButton
+                  aria-label={`編輯第${roundIndex + 1}局第${endIndex + 1}波分數`}
+                  onClick={() => handleOpenScoreDialog(end)}
+                >
+                  <EditIcon />
+                </IconButton>
+              </TableCell>
+            </TableRow>
+            {isLastEnd && (
+              <TableRow>
+                <TableCell colSpan={isSmall ? 6 : 9}>
                   <Box
-                    sx={{ display: "flex", justifyContent: "space-around" }}
-                    key={`${roundIndex}-${endIndex}`}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
                   >
-                    {end!.round_scores!.map((score) => {
-                      return (
-                        <ScoreBlock key={score.id} score={score.score!} />
-                      );
-                    })}
+                    <Typography>{`第${roundIndex + 1}局小計`}</Typography>
+                    <StatisticRow
+                      totalXs={roundStats?.totalXs ?? 0}
+                      totalTens={roundStats?.totalTens ?? 0}
+                      totalScore={roundStats?.totalScore ?? 0}
+                    />
                   </Box>
                 </TableCell>
-                <TableCell align="center" colSpan={1}>
-                  {endTotal}
-                </TableCell>
-                <TableCell align="center" colSpan={1}>
-                  <IconButton onClick={() => handleOpenScoreDialog(end)}>
-                    <EditIcon />
-                  </IconButton>
-                </TableCell>
               </TableRow>
-              {roundTotalRow}
-            </>
-          );
-        });
-      })
-      .flat() ?? [];
+            )}
+          </Fragment>
+        );
+      });
+    }) ?? [];
 
   return (
     <Box>
@@ -200,30 +238,54 @@ export default function Page({ params }: { params: { id: string } }) {
             width: "auto",
           }}
         >
-          <TableHead sx={{ width: "100%" }}>
-            <TableRow sx={{}}>
-              <TableCell align="center" colSpan={1}>
-                局-波
-              </TableCell>
-              <TableCell
-                align="center"
-                colSpan={isSmall ? 3 : 6}
-                width={isSmall ? "auto" : "200px"}
-              >
-                分數
-              </TableCell>
-              <TableCell align="center" colSpan={1}>
-                小計
-              </TableCell>
-              <TableCell align="center" colSpan={1}>
-                操作
-              </TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>{endRows}</TableBody>
+          <Table>
+            <TableHead sx={{ width: "100%" }}>
+              <TableRow sx={{}}>
+                <TableCell align="center" colSpan={1}>
+                  局-波
+                </TableCell>
+                <TableCell
+                  align="center"
+                  colSpan={isSmall ? 3 : 6}
+                  width={isSmall ? "auto" : "200px"}
+                >
+                  分數
+                </TableCell>
+                <TableCell align="center" colSpan={1}>
+                  小計
+                </TableCell>
+                <TableCell align="center" colSpan={1}>
+                  操作
+                </TableCell>
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {endRows}
+              {playerStats && (
+                <TableRow>
+                  <TableCell colSpan={isSmall ? 6 : 9}>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                      }}
+                    >
+                      <Typography>全場總計</Typography>
+                      <StatisticRow
+                        totalXs={playerStats.totalXs}
+                        totalTens={playerStats.totalTens}
+                        totalScore={playerStats.totalScore}
+                      />
+                    </Box>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </TableContainer>
       </Card>
-      <Dialog open={scoreDialogOpen}>
+      <Dialog open={scoreDialogOpen} onClose={handleCloseScoreDialog}>
         <DialogTitle>編輯分數</DialogTitle>
         <DialogContent>
           <Box
@@ -253,9 +315,14 @@ export default function Page({ params }: { params: { id: string } }) {
             onAddScore={onAddscore}
             onDeleteScore={onDeleteScore}
             onSave={handleSaveScores}
+            isSaving={isSavingScore}
           />
         </Box>
-        <Button onClick={handleCloseScoreDialog} color="error">
+        <Button
+          onClick={handleCloseScoreDialog}
+          color="error"
+          disabled={isSavingScore}
+        >
           取消
         </Button>
       </Dialog>
