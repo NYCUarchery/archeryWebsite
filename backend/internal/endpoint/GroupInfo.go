@@ -3,6 +3,7 @@ package endpoint
 import (
 	"backend/internal/database"
 	response "backend/internal/response"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -12,6 +13,17 @@ import (
 type groupIdsForReorder struct {
 	CompetitionId uint   `json:"competition_id"`
 	GroupIds      []uint `json:"group_ids"`
+}
+
+type GroupRankingResponse struct {
+	GroupID   uint                          `json:"group_id"`
+	GroupName string                        `json:"group_name"`
+	Players   []database.GroupRankingPlayer `json:"players"`
+}
+
+type UpdateGroupRankingRequest struct {
+	ExpectedPlayerIDs []uint `json:"expected_player_ids" binding:"required"`
+	PlayerIDs         []uint `json:"player_ids" binding:"required"`
 }
 
 //	{
@@ -78,6 +90,107 @@ func GetGroupInfoWPlayersByID(context *gin.Context) {
 	}
 	response.AcceptPrint(id, fmt.Sprint(data), "GroupInfo whith players")
 	context.IndentedJSON(http.StatusOK, data)
+}
+
+func getFormalRankingGroup(context *gin.Context, groupID uint) (database.Group, bool) {
+	if response.ErrorIdTest(context, groupID, database.GetGroupIsExist(groupID), "ranking group") {
+		return database.Group{}, false
+	}
+	group, err := database.GetGroupInfoById(groupID)
+	if response.ErrorInternalErrorTest(context, groupID, "Get ranking group", err) {
+		return database.Group{}, false
+	}
+	if group.ID == 0 {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "invalid ranking group"})
+		return database.Group{}, false
+	}
+
+	competition, err := database.GetOnlyCompetition(group.CompetitionId)
+	if response.ErrorInternalErrorTest(context, groupID, "Get ranking competition", err) {
+		return database.Group{}, false
+	}
+	if competition.UnassignedGroupId == group.ID {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "unassigned group has no qualification ranking"})
+		return database.Group{}, false
+	}
+	return group, true
+}
+
+// Get Group qualification ranking godoc
+//
+//	@Summary		Show a formal group's qualification ranking
+//	@Description	Returns rankable players in their current manual or automatic order, with total score, X count, and pure ten count.
+//	@Tags			GroupInfo
+//	@Produce		json
+//	@Param			groupId	path		int	true	"Group ID"
+//	@Success		200		{object}	endpoint.GroupRankingResponse	"ranking"
+//	@Failure		400		{object}	response.ErrorIdResponse		"invalid or unassigned group"
+//	@Failure		500		{object}	response.ErrorInternalErrorResponse	"database error"
+//	@Router			/groupinfo/players/ranking/{groupId} [get]
+func GetGroupPlayerRanking(context *gin.Context) {
+	groupID := Convert2uint(context, "groupId")
+	group, ok := getFormalRankingGroup(context, groupID)
+	if !ok {
+		return
+	}
+	players, err := database.GetGroupRankingPlayers(groupID)
+	if response.ErrorInternalErrorTest(context, groupID, "Get group player ranking", err) {
+		return
+	}
+	context.IndentedJSON(http.StatusOK, GroupRankingResponse{
+		GroupID:   group.ID,
+		GroupName: group.GroupName,
+		Players:   players,
+	})
+}
+
+// Update Group qualification ranking godoc
+//
+//	@Summary		Manually reorder a formal group's qualification ranking
+//	@Description	Updates all rankable players as one transaction. expected_player_ids must equal the ranking order loaded by the caller; a changed order returns 409.
+//	@Tags			GroupInfo
+//	@Accept			json
+//	@Produce		json
+//	@Param			groupId	path		int	true	"Group ID"
+//	@Param			Ranking	body		endpoint.UpdateGroupRankingRequest	true	"Expected and desired player IDs"
+//	@Success		200		{object}	endpoint.GroupRankingResponse	"updated ranking"
+//	@Failure		400		{object}	response.ErrorReceiveDataResponse	"invalid group or player ID permutation"
+//	@Failure		403		{object}	response.ErrorResponse	"target competition admin required"
+//	@Failure		409		{object}	response.ErrorResponse	"ranking order changed before update"
+//	@Failure		500		{object}	response.ErrorInternalErrorResponse	"database error"
+//	@Router			/groupinfo/players/ranking/{groupId} [patch]
+func UpdateGroupPlayerRanking(context *gin.Context) {
+	groupID := Convert2uint(context, "groupId")
+	group, ok := getFormalRankingGroup(context, groupID)
+	if !ok {
+		return
+	}
+	if !requireCompetitionAdmin(context, group.CompetitionId) {
+		return
+	}
+
+	var request UpdateGroupRankingRequest
+	if err := context.BindJSON(&request); response.ErrorReceiveDataTest(context, groupID, "Update group ranking", err) {
+		return
+	}
+
+	players, err := database.UpdateGroupPlayerRanking(groupID, request.ExpectedPlayerIDs, request.PlayerIDs)
+	if errors.Is(err, database.ErrInvalidRankingOrder) {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if errors.Is(err, database.ErrStaleRankingOrder) {
+		context.IndentedJSON(http.StatusConflict, gin.H{"error": err.Error()})
+		return
+	}
+	if response.ErrorInternalErrorTest(context, groupID, "Update group ranking", err) {
+		return
+	}
+	context.IndentedJSON(http.StatusOK, GroupRankingResponse{
+		GroupID:   group.ID,
+		GroupName: group.GroupName,
+		Players:   players,
+	})
 }
 
 // Post GroupInfo godoc

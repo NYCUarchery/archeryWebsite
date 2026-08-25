@@ -486,7 +486,8 @@ func PutCompetition(context *gin.Context) {
 //	@Param			id	path		int									true	"Competition ID"
 //	@Success		200	{object}	response.Response					"Update Competition Ranking Success"
 //	@Failure		400	{object}	response.ErrorIdResponse			"invalid competition id parameter"
-//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error / Get Competition GroupIds when update ranking / Get player ids when update ranking / Update player rank when update ranking by competition id"
+//	@Failure		403	{object}	response.ErrorResponse				"target competition admin required"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error while refreshing competition rankings"
 //	@Router			/competition/refresh/groups/players/rank/{id} [patch]
 func RefreshCompetitionRank(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -495,25 +496,12 @@ func RefreshCompetitionRank(context *gin.Context) {
 	if !isExist {
 		return
 	}
-
-	/*get players of each group, then update player rank*/
-	/*update all related player*/
-	groudIds, error := database.GetCompetitionAllGroupIds(id)
-	if response.ErrorInternalErrorTest(context, id, "Get Competition GroupIds when update ranking", error) {
+	if !requireCompetitionAdmin(context, id) {
 		return
 	}
-	for _, groupId := range groudIds {
-		GroupPlayer, error := database.GetGroupPlayerIdRankOrderById(groupId)
-		if response.ErrorInternalErrorTest(context, id, "Get player ids when update ranking", error) {
-			return
-		}
-		for i, temp := range GroupPlayer {
-			fmt.Printf("playerId: %d, rank: %d, TenUpcnt: %d, Xcnt: %d\n", temp.ID, i+1, temp.TenUpCnt, temp.XCnt)
-			error := database.UpdatePlayerRank(temp.ID, i+1)
-			if response.ErrorInternalErrorTest(context, id, "Update player rank when update ranking by competition id", error) {
-				return
-			}
-		}
+
+	if err := database.RefreshCompetitionRanks(id); response.ErrorInternalErrorTest(context, id, "Refresh Competition Ranking", err) {
+		return
 	}
 	context.IndentedJSON(http.StatusOK, gin.H{"message": "Update Competition Ranking Success"})
 }
