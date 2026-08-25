@@ -53,6 +53,15 @@ export interface DatabaseGroup {
   players?: DatabasePlayer[];
 }
 
+export interface DatabaseGroupRankingPlayer {
+  id?: number;
+  name?: string;
+  rank?: number;
+  ten_count?: number;
+  total_score?: number;
+  x_count?: number;
+}
+
 export interface DatabaseInstitution {
   id?: number;
   name?: string;
@@ -87,6 +96,11 @@ export interface DatabaseMatchResult {
   match_ends?: DatabaseMatchEnd[];
   match_id?: number;
   player_set?: DatabasePlayerSet;
+  /**
+   * PlayerSetId is nil for an as-yet unknown bracket slot.  Zero cannot
+   * represent that state because it is also a valid Go uint default and used
+   * by older rows without a foreign-key constraint.
+   */
   player_set_id?: number;
   shoot_off_score?: number;
   total_points?: number;
@@ -134,6 +148,15 @@ export interface DatabasePlayerSet {
   rank?: number;
   set_name?: string;
   total_score?: number;
+}
+
+export interface DatabasePlayerSetRanking {
+  id?: number;
+  rank?: number;
+  set_name?: string;
+  ten_count?: number;
+  total_score?: number;
+  x_count?: number;
 }
 
 export interface DatabaseQualification {
@@ -189,6 +212,18 @@ export interface EndpointAccountInfo {
   user_name?: string;
 }
 
+export interface EndpointAutoCreatePlayerSetsRequest {
+  count?: number;
+}
+
+export interface EndpointAutoCreatePlayerSetsResponse {
+  created_count?: number;
+  elimination_id?: number;
+  player_sets?: DatabasePlayerSet[];
+  requested_count?: number;
+  reused_count?: number;
+}
+
 export interface EndpointBracketAdvanceResponse {
   changed?: boolean;
   elimination_id?: number;
@@ -233,6 +268,12 @@ export interface EndpointGroupData {
   group_range?: string;
 }
 
+export interface EndpointGroupRankingResponse {
+  group_id?: number;
+  group_name?: string;
+  players?: DatabaseGroupRankingPlayer[];
+}
+
 export interface EndpointLoginInfo {
   password?: string;
   user_name?: string;
@@ -273,6 +314,11 @@ export interface EndpointParticipantWName {
 export interface EndpointPatchPlayerLaneOrderUpdateLaneIdOrderData {
   lane_id?: number;
   order?: number;
+}
+
+export interface EndpointPlayerSetRankingResponse {
+  elimination_id?: number;
+  player_sets?: DatabasePlayerSetRanking[];
 }
 
 export interface EndpointPostCompetitionCompetitionPostData {
@@ -433,6 +479,16 @@ export interface EndpointPutQualificationByIDQualificationPutData {
   advancing_num?: number;
   end_lane?: number;
   start_lane?: number;
+}
+
+export interface EndpointUpdateGroupRankingRequest {
+  expected_player_ids: number[];
+  player_ids: number[];
+}
+
+export interface EndpointUpdatePlayerSetRankingRequest {
+  expected_player_set_ids: number[];
+  player_set_ids: number[];
 }
 
 export interface EndpointUpdateTotalScoreData {
@@ -613,7 +669,7 @@ export class HttpClient<SecurityDataType = unknown> {
       ...requestParams,
       headers: {
         ...(requestParams.headers || {}),
-        ...(type ? { "Content-Type": type } : {}),
+        ...(type && type !== ContentType.FormData ? { "Content-Type": type } : {}),
       },
       params: query,
       responseType: responseFormat,
@@ -734,9 +790,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           groups?: ResponseNill;
           participants?: ResponseNill;
         },
-        | ResponseErrorReceiveDataResponse
-        | ResponseErrorResponse
-        | ResponseErrorInternalErrorResponse
+        ResponseErrorReceiveDataResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
       >({
         path: `/competition/current-phase/${id}`,
         method: "PATCH",
@@ -941,7 +995,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PATCH:/competition/refresh/groups/players/rank/{id}
      */
     refreshGroupsPlayersRankPartialUpdate: (id: number, params: RequestParams = {}) =>
-      this.request<ResponseResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<
+        ResponseResponse,
+        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/competition/refresh/groups/players/rank/${id}`,
         method: "PATCH",
         type: ContentType.Json,
@@ -1103,10 +1160,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PATCH:/elimination/currentend/minus/{id}
      */
     currentendMinusPartialUpdate: (id: number, params: RequestParams = {}) =>
-      this.request<
-        ResponseNill,
-        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
-      >({
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse>({
         path: `/elimination/currentend/minus/${id}`,
         method: "PATCH",
         ...params,
@@ -1121,10 +1175,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PATCH:/elimination/currentend/plus/{id}
      */
     currentendPlusPartialUpdate: (id: number, params: RequestParams = {}) =>
-      this.request<
-        ResponseNill,
-        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
-      >({
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse>({
         path: `/elimination/currentend/plus/${id}`,
         method: "PATCH",
         ...params,
@@ -1139,10 +1190,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PATCH:/elimination/currentstage/minus/{id}
      */
     currentstageMinusPartialUpdate: (id: number, params: RequestParams = {}) =>
-      this.request<
-        ResponseNill,
-        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
-      >({
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse>({
         path: `/elimination/currentstage/minus/${id}`,
         method: "PATCH",
         ...params,
@@ -1157,43 +1205,9 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PATCH:/elimination/currentstage/plus/{id}
      */
     currentstagePlusPartialUpdate: (id: number, params: RequestParams = {}) =>
-      this.request<
-        ResponseNill,
-        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
-      >({
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse>({
         path: `/elimination/currentstage/plus/${id}`,
         method: "PATCH",
-        ...params,
-      }),
-
-    /**
-     * @description Set stage and end atomically. Stages are zero-based in creation order and must contain a match. Individual eliminations allow ends 0 through 4; team and mixed eliminations allow ends 0 through 3. Moving to another stage resets current_end to 0.
-     *
-     * @tags Elimination
-     * @name ProgressPartialUpdate
-     * @summary Set one Elimination current stage and end.
-     * @request PATCH:/elimination/progress/{id}
-     */
-    progressPartialUpdate: (
-      id: number,
-      Progress: EndpointPutEliminationProgressProgressData,
-      params: RequestParams = {},
-    ) =>
-      this.request<
-        DatabaseElimination & {
-          medals?: ResponseNill;
-          player_sets?: ResponseNill;
-          stages?: ResponseNill;
-        },
-        | ResponseErrorReceiveDataResponse
-        | ResponseErrorResponse
-        | ResponseErrorInternalErrorResponse
-      >({
-        path: `/elimination/progress/${id}`,
-        method: "PATCH",
-        body: Progress,
-        type: ContentType.Json,
-        format: "json",
         ...params,
       }),
 
@@ -1206,17 +1220,16 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/elimination/match
      */
     matchCreate: (Match: EndpointPostMatchMatchData, params: RequestParams = {}) =>
-      this.request<
-        DatabaseMatch,
-        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
-      >({
-        path: `/elimination/match`,
-        method: "POST",
-        body: Match,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
+      this.request<DatabaseMatch, ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse>(
+        {
+          path: `/elimination/match`,
+          method: "POST",
+          body: Match,
+          type: ContentType.Json,
+          format: "json",
+          ...params,
+        },
+      ),
 
     /**
      * @description Update two MatchResult with two PlayerSetId in one Match by id
@@ -1231,17 +1244,16 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       PlayerSetId: EndpointPutMatchPlayerSetByMatchIdPutMatchPlayerSetIdData,
       params: RequestParams = {},
     ) =>
-      this.request<
-        DatabaseMatch,
-        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
-      >({
-        path: `/elimination/match/playerset/${matchid}`,
-        method: "PATCH",
-        body: PlayerSetId,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
+      this.request<DatabaseMatch, ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse>(
+        {
+          path: `/elimination/match/playerset/${matchid}`,
+          method: "PATCH",
+          body: PlayerSetId,
+          type: ContentType.Json,
+          format: "json",
+          ...params,
+        },
+      ),
 
     /**
      * @description Get one Match with matchResults, matchEnds, scores, playerSets, players by id
@@ -1280,6 +1292,35 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       >({
         path: `/elimination/playersets/${id}`,
         method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Set stage and end atomically. Stages are zero-based in creation order and must contain a match. Individual eliminations allow ends 0 through 4; team and mixed eliminations allow ends 0 through 3. Moving to another stage resets current_end to 0.
+     *
+     * @tags Elimination
+     * @name ProgressPartialUpdate
+     * @summary Set one Elimination current stage and end.
+     * @request PATCH:/elimination/progress/{id}
+     */
+    progressPartialUpdate: (
+      id: number,
+      Progress: EndpointPutEliminationProgressProgressData,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        DatabaseElimination & {
+          medals?: ResponseNill;
+          player_sets?: ResponseNill;
+          stages?: ResponseNill;
+        },
+        ResponseErrorReceiveDataResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
+      >({
+        path: `/elimination/progress/${id}`,
+        method: "PATCH",
+        body: Progress,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),
@@ -1428,7 +1469,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         ...params,
       }),
   };
-  groupInfo = {
+  groupinfo = {
     /**
      * @description Post one new GroupInfo data with new id Create qualification with same id Auto write GroupIndex Auto create elimination
      *
@@ -1473,6 +1514,47 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         path: `/groupinfo/ordering`,
         method: "PATCH",
         body: groupIdsForReorder,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Returns rankable players in their current manual or automatic order, with total score, X count, and pure ten count.
+     *
+     * @tags GroupInfo
+     * @name PlayersRankingDetail
+     * @summary Show a formal group's qualification ranking
+     * @request GET:/groupinfo/players/ranking/{groupId}
+     */
+    playersRankingDetail: (groupId: number, params: RequestParams = {}) =>
+      this.request<EndpointGroupRankingResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/groupinfo/players/ranking/${groupId}`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Updates all rankable players as one transaction. expected_player_ids must equal the ranking order loaded by the caller; a changed order returns 409.
+     *
+     * @tags GroupInfo
+     * @name PlayersRankingPartialUpdate
+     * @summary Manually reorder a formal group's qualification ranking
+     * @request PATCH:/groupinfo/players/ranking/{groupId}
+     */
+    playersRankingPartialUpdate: (
+      groupId: number,
+      Ranking: EndpointUpdateGroupRankingRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<
+        EndpointGroupRankingResponse,
+        ResponseErrorReceiveDataResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
+      >({
+        path: `/groupinfo/players/ranking/${groupId}`,
+        method: "PATCH",
+        body: Ranking,
         type: ContentType.Json,
         format: "json",
         ...params,
@@ -1698,7 +1780,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         ...params,
       }),
   };
-  matchResult = {
+  matchresult = {
     /**
      * @description Update one MatchResult isWinner by id
      *
@@ -1737,6 +1819,111 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         path: `/matchresult/lanenumber/${id}`,
         method: "PATCH",
         body: MatchResult,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description Post one new MatchEnd data, Auto write totalScores IsConfirmed, and auto create matchScores by teamSize teamSize: 1, 2, 3
+     *
+     * @tags MatchEnd
+     * @name MatchendCreate
+     * @summary Create one MatchEnd
+     * @request POST:/matchresult/matchend
+     */
+    matchendCreate: (matchEndData: EndpointPostMatchEndMatchEndData, params: RequestParams = {}) =>
+      this.request<
+        ResponseResponse,
+        ResponseErrorReceiveDataResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
+      >({
+        path: `/matchresult/matchend`,
+        method: "POST",
+        body: matchEndData,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Update one MatchEnd isConfirmed by id
+     *
+     * @tags MatchEnd
+     * @name MatchendIsconfirmedPartialUpdate
+     * @summary Update one MatchEnd isConfirmed
+     * @request PATCH:/matchresult/matchend/isconfirmed/{id}
+     */
+    matchendIsconfirmedPartialUpdate: (
+      id: number,
+      MatchEnd: EndpointPutMatchEndsIsConfirmedByIdMatchEndIsConfirmedData,
+      params: RequestParams = {},
+    ) =>
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/matchresult/matchend/isconfirmed/${id}`,
+        method: "PATCH",
+        body: MatchEnd,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids MatchScore ids and scores must be the same length
+     *
+     * @tags MatchEnd
+     * @name MatchendScoresPartialUpdate
+     * @summary Update one MatchEnd scores
+     * @request PATCH:/matchresult/matchend/scores/{id}
+     */
+    matchendScoresPartialUpdate: (
+      id: number,
+      matchEndScoresData: EndpointPutMatchEndsScoresByIdMatchEndScoresData,
+      params: RequestParams = {},
+    ) =>
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/matchresult/matchend/scores/${id}`,
+        method: "PATCH",
+        body: matchEndScoresData,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description Update one MatchEnd totalScores by id
+     *
+     * @tags MatchEnd
+     * @name MatchendTotalscorePartialUpdate
+     * @summary Update one MatchEnd totalScores
+     * @request PATCH:/matchresult/matchend/totalscore/{id}
+     */
+    matchendTotalscorePartialUpdate: (
+      id: number,
+      MatchEnd: EndpointPutMatchEndsTotalScoresByIdMatchEndTotalScoresData,
+      params: RequestParams = {},
+    ) =>
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/matchresult/matchend/totalscore/${id}`,
+        method: "PATCH",
+        body: MatchEnd,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * @description Update one MatchScore score by id Also update related MatchEnd totalScores
+     *
+     * @tags MatchScore
+     * @name MatchscoreScorePartialUpdate
+     * @summary Update one MatchScore score
+     * @request PATCH:/matchresult/matchscore/score/{id}
+     */
+    matchscoreScorePartialUpdate: (
+      id: number,
+      MatchScore: EndpointPutMatchScoreScoreByIdMatchScoreData,
+      params: RequestParams = {},
+    ) =>
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+        path: `/matchresult/matchscore/score/${id}`,
+        method: "PATCH",
+        body: MatchScore,
         type: ContentType.Json,
         ...params,
       }),
@@ -1842,113 +2029,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse>({
         path: `/matchresult/${id}`,
         method: "DELETE",
-        ...params,
-      }),
-  };
-  matchEnd = {
-    /**
-     * @description Post one new MatchEnd data, Auto write totalScores IsConfirmed, and auto create matchScores by teamSize teamSize: 1, 2, 3
-     *
-     * @tags MatchEnd
-     * @name MatchendCreate
-     * @summary Create one MatchEnd
-     * @request POST:/matchresult/matchend
-     */
-    matchendCreate: (matchEndData: EndpointPostMatchEndMatchEndData, params: RequestParams = {}) =>
-      this.request<
-        ResponseResponse,
-        ResponseErrorReceiveDataResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
-      >({
-        path: `/matchresult/matchend`,
-        method: "POST",
-        body: matchEndData,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * @description Update one MatchEnd isConfirmed by id
-     *
-     * @tags MatchEnd
-     * @name MatchendIsconfirmedPartialUpdate
-     * @summary Update one MatchEnd isConfirmed
-     * @request PATCH:/matchresult/matchend/isconfirmed/{id}
-     */
-    matchendIsconfirmedPartialUpdate: (
-      id: number,
-      MatchEnd: EndpointPutMatchEndsIsConfirmedByIdMatchEndIsConfirmedData,
-      params: RequestParams = {},
-    ) =>
-      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
-        path: `/matchresult/matchend/isconfirmed/${id}`,
-        method: "PATCH",
-        body: MatchEnd,
-        type: ContentType.Json,
-        ...params,
-      }),
-
-    /**
-     * @description Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids MatchScore ids and scores must be the same length
-     *
-     * @tags MatchEnd
-     * @name MatchendScoresPartialUpdate
-     * @summary Update one MatchEnd scores
-     * @request PATCH:/matchresult/matchend/scores/{id}
-     */
-    matchendScoresPartialUpdate: (
-      id: number,
-      matchEndScoresData: EndpointPutMatchEndsScoresByIdMatchEndScoresData,
-      params: RequestParams = {},
-    ) =>
-      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
-        path: `/matchresult/matchend/scores/${id}`,
-        method: "PATCH",
-        body: matchEndScoresData,
-        type: ContentType.Json,
-        ...params,
-      }),
-
-    /**
-     * @description Update one MatchEnd totalScores by id
-     *
-     * @tags MatchEnd
-     * @name MatchendTotalscorePartialUpdate
-     * @summary Update one MatchEnd totalScores
-     * @request PATCH:/matchresult/matchend/totalscore/{id}
-     */
-    matchendTotalscorePartialUpdate: (
-      id: number,
-      MatchEnd: EndpointPutMatchEndsTotalScoresByIdMatchEndTotalScoresData,
-      params: RequestParams = {},
-    ) =>
-      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
-        path: `/matchresult/matchend/totalscore/${id}`,
-        method: "PATCH",
-        body: MatchEnd,
-        type: ContentType.Json,
-        ...params,
-      }),
-  };
-  matchScore = {
-    /**
-     * @description Update one MatchScore score by id Also update related MatchEnd totalScores
-     *
-     * @tags MatchScore
-     * @name MatchscoreScorePartialUpdate
-     * @summary Update one MatchScore score
-     * @request PATCH:/matchresult/matchscore/score/{id}
-     */
-    matchscoreScorePartialUpdate: (
-      id: number,
-      MatchScore: EndpointPutMatchScoreScoreByIdMatchScoreData,
-      params: RequestParams = {},
-    ) =>
-      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
-        path: `/matchresult/matchscore/score/${id}`,
-        method: "PATCH",
-        body: MatchScore,
-        type: ContentType.Json,
         ...params,
       }),
   };
@@ -2574,7 +2654,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         ...params,
       }),
   };
-  playerSet = {
+  playerset = {
     /**
      * @description Post player set, and build player set match table If team size is 1, set name will be player name
      *
@@ -2629,6 +2709,82 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       this.request<DatabasePlayerSet[], ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/playerset/elimination/${eliminationid}`,
         method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Creates one PlayerSet per saved qualification rank. Count defaults to the qualification advancing_num. Requires a competition Admin.
+     *
+     * @tags PlayerSet
+     * @name EliminationAutoCreate
+     * @summary Auto-create individual elimination player sets
+     * @request POST:/playerset/elimination/{eliminationid}/auto
+     */
+    eliminationAutoCreate: (
+      eliminationid: number,
+      data?: EndpointAutoCreatePlayerSetsRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<EndpointAutoCreatePlayerSetsResponse, ResponseErrorResponse>({
+        path: `/playerset/elimination/${eliminationid}/auto`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Returns every player set in its current manual or automatic order, with team total score, X count, and pure ten count. Requires a competition Admin.
+     *
+     * @tags PlayerSet
+     * @name EliminationRankingDetail
+     * @summary Show an elimination's player set ranking
+     * @request GET:/playerset/elimination/{eliminationid}/ranking
+     */
+    eliminationRankingDetail: (eliminationid: number, params: RequestParams = {}) =>
+      this.request<EndpointPlayerSetRankingResponse, ResponseErrorResponse | ResponseErrorInternalErrorResponse>({
+        path: `/playerset/elimination/${eliminationid}/ranking`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Updates every player set of the elimination as one transaction. expected_player_set_ids must equal the ranking order loaded by the caller. A player set ID that belongs to a different elimination returns 400; a stale snapshot (order changed, or a set added/removed concurrently) returns 409. Requires a competition Admin. Fails once the bracket has been generated.
+     *
+     * @tags PlayerSet
+     * @name EliminationRankingPartialUpdate
+     * @summary Manually reorder an elimination's player set ranking
+     * @request PATCH:/playerset/elimination/{eliminationid}/ranking
+     */
+    eliminationRankingPartialUpdate: (
+      eliminationid: number,
+      Ranking: EndpointUpdatePlayerSetRankingRequest,
+      params: RequestParams = {},
+    ) =>
+      this.request<EndpointPlayerSetRankingResponse, ResponseErrorResponse | ResponseErrorInternalErrorResponse>({
+        path: `/playerset/elimination/${eliminationid}/ranking`,
+        method: "PATCH",
+        body: Ranking,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Recomputes and writes a contiguous rank for every player set of the elimination, ordered by team total score, X count, then pure ten count. Requires a competition Admin. Fails once the bracket has been generated.
+     *
+     * @tags PlayerSet
+     * @name EliminationRankingAutoPartialUpdate
+     * @summary Auto-rank an elimination's player sets by score
+     * @request PATCH:/playerset/elimination/{eliminationid}/ranking/auto
+     */
+    eliminationRankingAutoPartialUpdate: (eliminationid: number, params: RequestParams = {}) =>
+      this.request<EndpointPlayerSetRankingResponse, ResponseErrorResponse | ResponseErrorInternalErrorResponse>({
+        path: `/playerset/elimination/${eliminationid}/ranking/auto`,
+        method: "PATCH",
         format: "json",
         ...params,
       }),
@@ -2858,7 +3014,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         ...params,
       }),
   };
-  docs = {
+  swagger = {
     /**
      * @description get Api docs in json
      *
@@ -2963,4 +3119,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         ...params,
       }),
   };
+
+  // Backward-compatible aliases retained because existing callers use the
+  // tag-derived camelCase namespaces emitted by the previous generator.
+  groupInfo = this.groupinfo;
+  matchResult = this.matchresult;
+  matchEnd = this.matchresult;
+  playerSet = this.playerset;
 }

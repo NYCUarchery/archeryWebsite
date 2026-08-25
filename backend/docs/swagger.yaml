@@ -91,6 +91,21 @@ definitions:
           $ref: '#/definitions/database.Player'
         type: array
     type: object
+  database.GroupRankingPlayer:
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      rank:
+        type: integer
+      ten_count:
+        type: integer
+      total_score:
+        type: integer
+      x_count:
+        type: integer
+    type: object
   database.Institution:
     properties:
       id:
@@ -245,6 +260,21 @@ definitions:
       total_score:
         type: integer
     type: object
+  database.PlayerSetRanking:
+    properties:
+      id:
+        type: integer
+      rank:
+        type: integer
+      set_name:
+        type: string
+      ten_count:
+        type: integer
+      total_score:
+        type: integer
+      x_count:
+        type: integer
+    type: object
   database.Qualification:
     properties:
       advancing_num:
@@ -338,6 +368,26 @@ definitions:
       user_name:
         type: string
     type: object
+  endpoint.AutoCreatePlayerSetsRequest:
+    properties:
+      count:
+        type: integer
+    type: object
+  endpoint.AutoCreatePlayerSetsResponse:
+    properties:
+      created_count:
+        type: integer
+      elimination_id:
+        type: integer
+      player_sets:
+        items:
+          $ref: '#/definitions/database.PlayerSet'
+        type: array
+      requested_count:
+        type: integer
+      reused_count:
+        type: integer
+    type: object
   endpoint.BracketAdvanceResponse:
     properties:
       changed:
@@ -409,6 +459,17 @@ definitions:
       group_range:
         type: string
     type: object
+  endpoint.GroupRankingResponse:
+    properties:
+      group_id:
+        type: integer
+      group_name:
+        type: string
+      players:
+        items:
+          $ref: '#/definitions/database.GroupRankingPlayer'
+        type: array
+    type: object
   endpoint.LoginInfo:
     properties:
       password:
@@ -471,6 +532,15 @@ definitions:
         type: integer
       order:
         type: integer
+    type: object
+  endpoint.PlayerSetRankingResponse:
+    properties:
+      elimination_id:
+        type: integer
+      player_sets:
+        items:
+          $ref: '#/definitions/database.PlayerSetRanking'
+        type: array
     type: object
   endpoint.PostCompetition.CompetitionPostData:
     properties:
@@ -709,6 +779,36 @@ definitions:
         type: integer
       start_lane:
         type: integer
+    type: object
+  endpoint.UpdateGroupRankingRequest:
+    properties:
+      expected_player_ids:
+        items:
+          type: integer
+        type: array
+      player_ids:
+        items:
+          type: integer
+        type: array
+    required:
+    - expected_player_ids
+    - player_ids
+    type: object
+  endpoint.UpdatePlayerSetRankingRequest:
+    properties:
+      expected_player_set_ids:
+        items:
+          type: integer
+        minItems: 1
+        type: array
+      player_set_ids:
+        items:
+          type: integer
+        minItems: 1
+        type: array
+    required:
+    - expected_player_set_ids
+    - player_set_ids
     type: object
   endpoint.UpdateTotalScoreData:
     properties:
@@ -1450,10 +1550,12 @@ paths:
           description: invalid competition id parameter
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: target competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
-          description: internal db error / Get Competition GroupIds when update ranking
-            / Get player ids when update ranking / Update player rank when update
-            ranking by competition id
+          description: internal db error while refreshing competition rankings
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Refresh one Competition Ranking.
@@ -2424,6 +2526,78 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one GroupInfo with players
+      tags:
+      - GroupInfo
+  /groupinfo/players/ranking/{groupId}:
+    get:
+      description: Returns rankable players in their current manual or automatic order,
+        with total score, X count, and pure ten count.
+      parameters:
+      - description: Group ID
+        in: path
+        name: groupId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ranking
+          schema:
+            $ref: '#/definitions/endpoint.GroupRankingResponse'
+        "400":
+          description: invalid or unassigned group
+          schema:
+            $ref: '#/definitions/response.ErrorIdResponse'
+        "500":
+          description: database error
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show a formal group's qualification ranking
+      tags:
+      - GroupInfo
+    patch:
+      consumes:
+      - application/json
+      description: Updates all rankable players as one transaction. expected_player_ids
+        must equal the ranking order loaded by the caller; a changed order returns
+        409.
+      parameters:
+      - description: Group ID
+        in: path
+        name: groupId
+        required: true
+        type: integer
+      - description: Expected and desired player IDs
+        in: body
+        name: Ranking
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.UpdateGroupRankingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: updated ranking
+          schema:
+            $ref: '#/definitions/endpoint.GroupRankingResponse'
+        "400":
+          description: invalid group or player ID permutation
+          schema:
+            $ref: '#/definitions/response.ErrorReceiveDataResponse'
+        "403":
+          description: target competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: ranking order changed before update
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: database error
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Manually reorder a formal group's qualification ranking
       tags:
       - GroupInfo
   /institution:
@@ -4290,6 +4464,168 @@ paths:
       summary: Get all player sets by elimination id
       tags:
       - PlayerSet
+  /playerset/elimination/{eliminationid}/auto:
+    post:
+      consumes:
+      - application/json
+      description: Creates one PlayerSet per saved qualification rank. Count defaults
+        to the qualification advancing_num. Requires a competition Admin.
+      parameters:
+      - description: Elimination ID
+        in: path
+        name: eliminationid
+        required: true
+        type: integer
+      - description: Optional player count
+        in: body
+        name: data
+        schema:
+          $ref: '#/definitions/endpoint.AutoCreatePlayerSetsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/endpoint.AutoCreatePlayerSetsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Auto-create individual elimination player sets
+      tags:
+      - PlayerSet
+  /playerset/elimination/{eliminationid}/ranking:
+    get:
+      description: Returns every player set in its current manual or automatic order,
+        with team total score, X count, and pure ten count. Requires a competition
+        Admin.
+      parameters:
+      - description: Elimination ID
+        in: path
+        name: eliminationid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ranking
+          schema:
+            $ref: '#/definitions/endpoint.PlayerSetRankingResponse'
+        "400":
+          description: invalid elimination ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: target competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: database error
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Show an elimination's player set ranking
+      tags:
+      - PlayerSet
+    patch:
+      consumes:
+      - application/json
+      description: Updates every player set of the elimination as one transaction.
+        expected_player_set_ids must equal the ranking order loaded by the caller.
+        A player set ID that belongs to a different elimination returns 400; a
+        stale snapshot (order changed, or a set added/removed concurrently) returns
+        409. Requires a competition Admin. Fails once the bracket has been generated.
+      parameters:
+      - description: Elimination ID
+        in: path
+        name: eliminationid
+        required: true
+        type: integer
+      - description: Expected and desired player set IDs
+        in: body
+        name: Ranking
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.UpdatePlayerSetRankingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: updated ranking
+          schema:
+            $ref: '#/definitions/endpoint.PlayerSetRankingResponse'
+        "400":
+          description: invalid elimination ID, malformed body, invalid player set
+            ID permutation, or a player set ID belonging to another elimination
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: target competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: ranking order changed before update (including a player
+            set added or removed concurrently), or player sets cannot change after
+            bracket initialization
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: database error
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Manually reorder an elimination's player set ranking
+      tags:
+      - PlayerSet
+  /playerset/elimination/{eliminationid}/ranking/auto:
+    patch:
+      description: Recomputes and writes a contiguous rank for every player set
+        of the elimination, ordered by team total score, X count, then pure ten
+        count. Requires a competition Admin. Fails once the bracket has been generated.
+      parameters:
+      - description: Elimination ID
+        in: path
+        name: eliminationid
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: updated ranking
+          schema:
+            $ref: '#/definitions/endpoint.PlayerSetRankingResponse'
+        "400":
+          description: invalid elimination ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: target competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: player sets cannot change after bracket initialization
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: database error
+          schema:
+            $ref: '#/definitions/response.ErrorInternalErrorResponse'
+      summary: Auto-rank an elimination's player sets by score
+      tags:
+      - PlayerSet
   /playerset/elimination/medal/{eliminationid}:
     get:
       description: Get player sets which have medals by elimination id
@@ -4355,7 +4691,10 @@ paths:
       - PlayerSet
   /playerset/preranking/{eliminationid}:
     patch:
-      description: Put player set rank by elimination id
+      deprecated: true
+      description: 'Deprecated: use PATCH /playerset/elimination/{eliminationid}/ranking/auto.
+        Recomputes and writes a contiguous rank for every player set of the elimination
+        by score.'
       parameters:
       - description: Elimination ID
         in: path
@@ -4367,9 +4706,20 @@ paths:
       responses:
         "200":
           description: success
+        "400":
+          description: invalid elimination ID
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: target competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: player sets cannot change after bracket initialization
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
-          description: internal db error / Get Elimination Player Set Id Rank Order
-            By Id / Update Player Set Rank
+          description: internal db error / auto rank player sets
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Put player set rank

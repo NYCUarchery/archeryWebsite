@@ -846,8 +846,14 @@
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
+                    "403": {
+                        "description": "target competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "500": {
-                        "description": "internal db error / Get Competition GroupIds when update ranking / Get player ids when update ranking / Update player rank when update ranking by competition id",
+                        "description": "internal db error while refreshing competition rankings",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -2266,6 +2272,110 @@
                     },
                     "500": {
                         "description": "database error for Update GroupInfo Index, Get Competition",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/groupinfo/players/ranking/{groupId}": {
+            "get": {
+                "description": "Returns rankable players in their current manual or automatic order, with total score, X count, and pure ten count.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GroupInfo"
+                ],
+                "summary": "Show a formal group's qualification ranking",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Group ID",
+                        "name": "groupId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ranking",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.GroupRankingResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid or unassigned group",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "database error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Updates all rankable players as one transaction. expected_player_ids must equal the ranking order loaded by the caller; a changed order returns 409.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "GroupInfo"
+                ],
+                "summary": "Manually reorder a formal group's qualification ranking",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Group ID",
+                        "name": "groupId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Expected and desired player IDs",
+                        "name": "Ranking",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.UpdateGroupRankingRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "updated ranking",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.GroupRankingResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid group or player ID permutation",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorReceiveDataResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "target competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "ranking order changed before update",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "database error",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -5272,6 +5382,233 @@
                 }
             }
         },
+        "/playerset/elimination/{eliminationid}/auto": {
+            "post": {
+                "description": "Creates one PlayerSet per saved qualification rank. Count defaults to the qualification advancing_num. Requires a competition Admin.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PlayerSet"
+                ],
+                "summary": "Auto-create individual elimination player sets",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Elimination ID",
+                        "name": "eliminationid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Optional player count",
+                        "name": "data",
+                        "in": "body",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.AutoCreatePlayerSetsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.AutoCreatePlayerSetsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/playerset/elimination/{eliminationid}/ranking": {
+            "get": {
+                "description": "Returns every player set in its current manual or automatic order, with team total score, X count, and pure ten count. Requires a competition Admin.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PlayerSet"
+                ],
+                "summary": "Show an elimination's player set ranking",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Elimination ID",
+                        "name": "eliminationid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ranking",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.PlayerSetRankingResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid elimination ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "target competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "database error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "description": "Updates every player set of the elimination as one transaction. expected_player_set_ids must equal the ranking order loaded by the caller. A player set ID that belongs to a different elimination returns 400; a stale snapshot (order changed, or a set added/removed concurrently) returns 409. Requires a competition Admin. Fails once the bracket has been generated.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PlayerSet"
+                ],
+                "summary": "Manually reorder an elimination's player set ranking",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Elimination ID",
+                        "name": "eliminationid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Expected and desired player set IDs",
+                        "name": "Ranking",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.UpdatePlayerSetRankingRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "updated ranking",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.PlayerSetRankingResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid elimination ID, malformed body, invalid player set ID permutation, or a player set ID belonging to another elimination",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "target competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "ranking order changed before update (including a player set added or removed concurrently), or player sets cannot change after bracket initialization",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "database error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/playerset/elimination/{eliminationid}/ranking/auto": {
+            "patch": {
+                "description": "Recomputes and writes a contiguous rank for every player set of the elimination, ordered by team total score, X count, then pure ten count. Requires a competition Admin. Fails once the bracket has been generated.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "PlayerSet"
+                ],
+                "summary": "Auto-rank an elimination's player sets by score",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Elimination ID",
+                        "name": "eliminationid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "updated ranking",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.PlayerSetRankingResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "invalid elimination ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "target competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "player sets cannot change after bracket initialization",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "database error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/playerset/name/{id}": {
             "patch": {
                 "description": "Put player set name",
@@ -5324,7 +5661,7 @@
         },
         "/playerset/preranking/{eliminationid}": {
             "patch": {
-                "description": "Put player set rank by elimination id",
+                "description": "Deprecated: use PATCH /playerset/elimination/{eliminationid}/ranking/auto. Recomputes and writes a contiguous rank for every player set of the elimination by score.",
                 "produces": [
                     "application/json"
                 ],
@@ -5332,6 +5669,7 @@
                     "PlayerSet"
                 ],
                 "summary": "Put player set rank",
+                "deprecated": true,
                 "parameters": [
                     {
                         "type": "integer",
@@ -5345,8 +5683,26 @@
                     "200": {
                         "description": "success"
                     },
+                    "400": {
+                        "description": "invalid elimination ID",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "target competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "player sets cannot change after bracket initialization",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "500": {
-                        "description": "internal db error / Get Elimination Player Set Id Rank Order By Id / Update Player Set Rank",
+                        "description": "internal db error / auto rank player sets",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -6246,6 +6602,29 @@
                 }
             }
         },
+        "database.GroupRankingPlayer": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "rank": {
+                    "type": "integer"
+                },
+                "ten_count": {
+                    "type": "integer"
+                },
+                "total_score": {
+                    "type": "integer"
+                },
+                "x_count": {
+                    "type": "integer"
+                }
+            }
+        },
         "database.Institution": {
             "type": "object",
             "properties": {
@@ -6477,6 +6856,29 @@
                 }
             }
         },
+        "database.PlayerSetRanking": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "rank": {
+                    "type": "integer"
+                },
+                "set_name": {
+                    "type": "string"
+                },
+                "ten_count": {
+                    "type": "integer"
+                },
+                "total_score": {
+                    "type": "integer"
+                },
+                "x_count": {
+                    "type": "integer"
+                }
+            }
+        },
         "database.Qualification": {
             "type": "object",
             "properties": {
@@ -6620,6 +7022,37 @@
                 }
             }
         },
+        "endpoint.AutoCreatePlayerSetsRequest": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "endpoint.AutoCreatePlayerSetsResponse": {
+            "type": "object",
+            "properties": {
+                "created_count": {
+                    "type": "integer"
+                },
+                "elimination_id": {
+                    "type": "integer"
+                },
+                "player_sets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.PlayerSet"
+                    }
+                },
+                "requested_count": {
+                    "type": "integer"
+                },
+                "reused_count": {
+                    "type": "integer"
+                }
+            }
+        },
         "endpoint.BracketAdvanceResponse": {
             "type": "object",
             "properties": {
@@ -6730,6 +7163,23 @@
                 }
             }
         },
+        "endpoint.GroupRankingResponse": {
+            "type": "object",
+            "properties": {
+                "group_id": {
+                    "type": "integer"
+                },
+                "group_name": {
+                    "type": "string"
+                },
+                "players": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.GroupRankingPlayer"
+                    }
+                }
+            }
+        },
         "endpoint.LoginInfo": {
             "type": "object",
             "properties": {
@@ -6825,6 +7275,20 @@
                 },
                 "order": {
                     "type": "integer"
+                }
+            }
+        },
+        "endpoint.PlayerSetRankingResponse": {
+            "type": "object",
+            "properties": {
+                "elimination_id": {
+                    "type": "integer"
+                },
+                "player_sets": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.PlayerSetRanking"
+                    }
                 }
             }
         },
@@ -7198,6 +7662,50 @@
                 },
                 "start_lane": {
                     "type": "integer"
+                }
+            }
+        },
+        "endpoint.UpdateGroupRankingRequest": {
+            "type": "object",
+            "required": [
+                "expected_player_ids",
+                "player_ids"
+            ],
+            "properties": {
+                "expected_player_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "player_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "endpoint.UpdatePlayerSetRankingRequest": {
+            "type": "object",
+            "required": [
+                "expected_player_set_ids",
+                "player_set_ids"
+            ],
+            "properties": {
+                "expected_player_set_ids": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "player_set_ids": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "integer"
+                    }
                 }
             }
         },
