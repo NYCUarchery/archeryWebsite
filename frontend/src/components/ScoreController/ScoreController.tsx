@@ -30,7 +30,7 @@ export default function ScoreController({
 }: Props) {
   const filledCount = scores.filter((s) => s !== -1).length;
   const isFull = filledCount >= maximumArrowCount;
-  const canDelete = !isConfirmed && filledCount > 0;
+  const canDelete = !isConfirmed && !isSaving && filledCount > 0;
 
   const scoreButtons = [];
 
@@ -40,7 +40,7 @@ export default function ScoreController({
         <ScoreButton
           key={i}
           score={possibleScores[i]}
-          disabled={isConfirmed || isFull}
+          disabled={isConfirmed || isFull || isSaving}
           onAddScore={onAddScore}
         ></ScoreButton>
       </Grid>
