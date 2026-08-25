@@ -42,6 +42,20 @@ type AutoCreatePlayerSetsResponse struct {
 	PlayerSets     []database.PlayerSet `json:"player_sets"`
 }
 
+// PlayerSetRankingResponse is the score-oriented ranking view of every player
+// set of an elimination.
+type PlayerSetRankingResponse struct {
+	EliminationID uint                        `json:"elimination_id"`
+	PlayerSets    []database.PlayerSetRanking `json:"player_sets"`
+}
+
+// UpdatePlayerSetRankingRequest carries the ranking order the caller loaded
+// (ExpectedPlayerSetIDs) and the order to persist (PlayerSetIDs).
+type UpdatePlayerSetRankingRequest struct {
+	ExpectedPlayerSetIDs []uint `json:"expected_player_set_ids" binding:"required,min=1"`
+	PlayerSetIDs         []uint `json:"player_set_ids" binding:"required,min=1"`
+}
+
 // withPlayerSetMutationLock serializes seed mutations with bracket creation by
 // locking the same elimination row. The stage check and mutation therefore
 // cannot race with PostEliminationBracket.
@@ -461,38 +475,161 @@ func PutPlayerSetName(context *gin.Context) {
 	context.IndentedJSON(200, nil)
 }
 
+// Get elimination player set ranking
+//
+//	@Summary		Show an elimination's player set ranking
+//	@Description	Returns every player set in its current manual or automatic order, with team total score, X count, and pure ten count. Requires a competition Admin.
+//	@Tags			PlayerSet
+//	@Produce		json
+//	@Param			eliminationid	path		uint	true	"Elimination ID"
+//	@Success		200				{object}	endpoint.PlayerSetRankingResponse	"ranking"
+//	@Failure		400				{object}	response.ErrorResponse	"invalid elimination ID"
+//	@Failure		403				{object}	response.ErrorResponse	"target competition admin required"
+//	@Failure		500				{object}	response.ErrorInternalErrorResponse	"database error"
+//	@Router			/playerset/elimination/{eliminationid}/ranking [get]
+func GetPlayerSetRanking(context *gin.Context) {
+	eliminationID := Convert2uint(context, "eliminationid")
+	elimination, err := database.GetOnlyEliminationById(eliminationID)
+	if err != nil || elimination.ID == 0 {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "invalid elimination ID"})
+		return
+	}
+	if !requireEliminationCompetitionAdmin(context, elimination) {
+		return
+	}
+
+	rankings, err := database.GetPlayerSetRankings(database.DB, eliminationID)
+	if response.ErrorInternalErrorTest(context, eliminationID, "get player set ranking", err) {
+		return
+	}
+	context.JSON(http.StatusOK, PlayerSetRankingResponse{
+		EliminationID: eliminationID,
+		PlayerSets:    rankings,
+	})
+}
+
+// Auto-rank elimination player sets
+//
+//	@Summary		Auto-rank an elimination's player sets by score
+//	@Description	Recomputes and writes a contiguous rank for every player set of the elimination, ordered by team total score, X count, then pure ten count. Requires a competition Admin. Fails once the bracket has been generated.
+//	@Tags			PlayerSet
+//	@Produce		json
+//	@Param			eliminationid	path		uint	true	"Elimination ID"
+//	@Success		200				{object}	endpoint.PlayerSetRankingResponse	"updated ranking"
+//	@Failure		400				{object}	response.ErrorResponse	"invalid elimination ID"
+//	@Failure		403				{object}	response.ErrorResponse	"target competition admin required"
+//	@Failure		409				{object}	response.ErrorResponse	"player sets cannot change after bracket initialization"
+//	@Failure		500				{object}	response.ErrorInternalErrorResponse	"database error"
+//	@Router			/playerset/elimination/{eliminationid}/ranking/auto [patch]
+func AutoRankPlayerSetsByEliminationId(context *gin.Context) {
+	eliminationID := Convert2uint(context, "eliminationid")
+	elimination, err := database.GetOnlyEliminationById(eliminationID)
+	if err != nil || elimination.ID == 0 {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "invalid elimination ID"})
+		return
+	}
+	if !requireEliminationCompetitionAdmin(context, elimination) {
+		return
+	}
+
+	var rankings []database.PlayerSetRanking
+	err = withPlayerSetMutationLock(eliminationID, func(tx *gorm.DB) error {
+		var err error
+		rankings, err = database.AutoRankPlayerSets(tx, eliminationID)
+		return err
+	})
+	if writePlayerSetMutationError(context, eliminationID, "auto rank player sets", err) {
+		return
+	}
+	context.JSON(http.StatusOK, PlayerSetRankingResponse{
+		EliminationID: eliminationID,
+		PlayerSets:    rankings,
+	})
+}
+
+// Update elimination player set ranking
+//
+//	@Summary		Manually reorder an elimination's player set ranking
+//	@Description	Updates every player set of the elimination as one transaction. expected_player_set_ids must equal the ranking order loaded by the caller. A player set ID that belongs to a different elimination returns 400; a stale snapshot (order changed, or a set added/removed concurrently) returns 409. Requires a competition Admin. Fails once the bracket has been generated.
+//	@Tags			PlayerSet
+//	@Accept			json
+//	@Produce		json
+//	@Param			eliminationid	path		uint								true	"Elimination ID"
+//	@Param			Ranking			body		endpoint.UpdatePlayerSetRankingRequest	true	"Expected and desired player set IDs"
+//	@Success		200				{object}	endpoint.PlayerSetRankingResponse	"updated ranking"
+//	@Failure		400				{object}	response.ErrorResponse	"invalid elimination ID, malformed body, invalid player set ID permutation, or a player set ID belonging to another elimination"
+//	@Failure		403				{object}	response.ErrorResponse	"target competition admin required"
+//	@Failure		409				{object}	response.ErrorResponse	"ranking order changed before update (including a player set added or removed concurrently), or player sets cannot change after bracket initialization"
+//	@Failure		500				{object}	response.ErrorInternalErrorResponse	"database error"
+//	@Router			/playerset/elimination/{eliminationid}/ranking [patch]
+func UpdatePlayerSetRankingByEliminationId(context *gin.Context) {
+	eliminationID := Convert2uint(context, "eliminationid")
+	elimination, err := database.GetOnlyEliminationById(eliminationID)
+	if err != nil || elimination.ID == 0 {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "invalid elimination ID"})
+		return
+	}
+	if !requireEliminationCompetitionAdmin(context, elimination) {
+		return
+	}
+
+	var request UpdatePlayerSetRankingRequest
+	if err := context.ShouldBindJSON(&request); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "invalid player set ranking request"})
+		return
+	}
+
+	var rankings []database.PlayerSetRanking
+	err = withPlayerSetMutationLock(eliminationID, func(tx *gorm.DB) error {
+		var err error
+		rankings, err = database.ReorderPlayerSets(tx, eliminationID, request.ExpectedPlayerSetIDs, request.PlayerSetIDs)
+		return err
+	})
+	if errors.Is(err, database.ErrInvalidPlayerSetRankingOrder) {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if errors.Is(err, database.ErrStalePlayerSetRankingOrder) {
+		context.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		return
+	}
+	if writePlayerSetMutationError(context, eliminationID, "update player set ranking", err) {
+		return
+	}
+	context.JSON(http.StatusOK, PlayerSetRankingResponse{
+		EliminationID: eliminationID,
+		PlayerSets:    rankings,
+	})
+}
+
 // Put player set rank
 //
 //	@Summary		Put player set rank
-//	@Description	Put player set rank by elimination id
+//	@Description	Deprecated: use PATCH /playerset/elimination/{eliminationid}/ranking/auto. Recomputes and writes a contiguous rank for every player set of the elimination by score.
 //	@Tags			PlayerSet
 //	@Produce		json
 //	@Param			eliminationid	path		uint								true	"Elimination ID"
 //	@Success		200				{object}	nil									"success"
-//	@Failure		500				{object}	response.ErrorInternalErrorResponse	"internal db error / Get Elimination Player Set Id Rank Order By Id / Update Player Set Rank"
+//	@Failure		400				{object}	response.ErrorResponse				"invalid elimination ID"
+//	@Failure		403				{object}	response.ErrorResponse				"target competition admin required"
+//	@Failure		409				{object}	response.ErrorResponse				"player sets cannot change after bracket initialization"
+//	@Failure		500				{object}	response.ErrorInternalErrorResponse	"internal db error / auto rank player sets"
+//	@Deprecated
 //	@Router			/playerset/preranking/{eliminationid} [patch]
 func PutPlayerSetPreRankingByEliminationId(context *gin.Context) {
 	eliminationId := Convert2uint(context, "eliminationid")
-	if response.ErrorIdTest(context, eliminationId, database.GetEliminationIsExist(eliminationId), "elimination when ranking player sets") {
+	elimination, err := database.GetOnlyEliminationById(eliminationId)
+	if err != nil || elimination.ID == 0 {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "invalid elimination ID"})
 		return
 	}
-	err := withPlayerSetMutationLock(eliminationId, func(tx *gorm.DB) error {
-		var yourResultStruct []database.ResultStruct
-		if err := tx.Table("(SELECT player_sets.id AS player_set_id, player_set_match_tables.player_id FROM player_sets JOIN player_set_match_tables ON player_sets.id = player_set_match_tables.player_set_id WHERE player_sets.elimination_id = ?) AS A", eliminationId).
-			Select("A.player_set_id, SUM(C.total_score) AS all_total_score, SUM(C.x_cnt) AS all_x_cnt, SUM(C.ten_up_cnt) AS all_ten_up_cnt").
-			Joins("JOIN (SELECT players.id AS player_id, players.total_score, SUM(IF(round_scores.score = 11, 1, 0)) AS x_cnt, SUM(IF(round_scores.score >= 10, 1, 0)) AS ten_up_cnt FROM players JOIN (SELECT DISTINCT player_set_match_tables.player_id FROM player_sets JOIN player_set_match_tables ON player_sets.id = player_set_match_tables.player_set_id WHERE player_sets.elimination_id = ?) AS B ON players.id = B.player_id JOIN rounds ON players.id = rounds.player_id JOIN round_ends ON rounds.id = round_ends.round_id JOIN round_scores ON round_ends.id = round_scores.round_end_id GROUP BY players.id, players.total_score) AS C ON A.player_id = C.player_id", eliminationId).
-			Group("A.player_set_id").
-			Order("all_total_score DESC, all_ten_up_cnt DESC, all_x_cnt DESC").
-			Scan(&yourResultStruct).Error; err != nil {
-			return err
-		}
-		for index, resultStruct := range yourResultStruct {
-			if err := tx.Model(&database.PlayerSet{}).Where("id = ?", resultStruct.PlayerSetId).UpdateColumn("rank", index+1).Error; err != nil {
-				return err
-			}
-			fmt.Printf("rank: %d, player set id: %d, TotalScore %d, allTenUpCnt: %d, XCnt %d \n", index+1, resultStruct.PlayerSetId, resultStruct.AllTotalScore, resultStruct.AllTenUpCnt, resultStruct.AllXCnt)
-		}
-		return nil
+	if !requireEliminationCompetitionAdmin(context, elimination) {
+		return
+	}
+
+	err = withPlayerSetMutationLock(eliminationId, func(tx *gorm.DB) error {
+		_, err := database.AutoRankPlayerSets(tx, eliminationId)
+		return err
 	})
 	if writePlayerSetMutationError(context, eliminationId, "update player set rank", err) {
 		return
