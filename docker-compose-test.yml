@@ -4,8 +4,6 @@ services:
   frontend:
     build:
       context: ./frontend
-    volumes:
-      - frontend-node-modules:/app/node_modules
     restart: unless-stopped
   mysql:
     image: mysql:8
@@ -42,5 +40,4 @@ services:
       - backend
 
 volumes:
-  frontend-node-modules:
   db_data:
