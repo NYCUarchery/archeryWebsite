@@ -15,6 +15,7 @@ export default function Page({ params }: { params: { id: string } }) {
       currentEndIndex={competition.qualification_current_end}
       roundNum={competition.rounds_num}
       competitionId={competitionId}
+      competition={competition}
     />
   );
 }
