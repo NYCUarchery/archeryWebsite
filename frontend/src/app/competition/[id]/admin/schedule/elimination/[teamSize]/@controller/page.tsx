@@ -1,10 +1,22 @@
 "use client";
 import GroupMenu from "../../../GroupMenu";
-import { Alert, Box, Button, Autocomplete, Stack, TextField, Typography } from "@mui/material";
+import {
+  Alert,
+  Box,
+  Button,
+  Autocomplete,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Stack,
+  TextField,
+  Typography,
+} from "@mui/material";
 import { useAppSelector } from "store/hooks";
 import { useEffect, useState } from "react";
 import useGetCompetitionGroupsWithPlayers from "@/utils/QueryHooks/useGetCompetitionGroupsWithPlayers";
-import { useMutation, useQueryClient } from "react-query";
+import { useMutation, useQuery, useQueryClient } from "react-query";
 import { apiClient } from "@/utils/ApiClient";
 import { EndpointPostPlayerSetPlayerSetData } from "@/types/Api";
 import useGetElimination from "@/utils/QueryHooks/useGetElimination";
@@ -44,7 +56,20 @@ export default function Page({
   const { data: playerSets, isLoading: isPlayerSetsLoading } = useGetPlayerSets(
     elimination?.elimination_id
   );
+  const group = groups?.[groupIndex];
+  const { data: qualification, isLoading: isQualificationLoading } = useQuery(
+    ["qualificationDetail", group?.id],
+    () => apiClient.qualification.qualificationDetail(group!.id!),
+    {
+      select: (data) => data.data,
+      enabled: teamSize === 1 && group?.id !== undefined,
+      staleTime: 0,
+    }
+  );
   const [bracketError, setBracketError] = useState<string | null>(null);
+  const [autoCreateError, setAutoCreateError] = useState<string | null>(null);
+  const [autoCreateCount, setAutoCreateCount] = useState<string>("");
+  const [autoCreateDialogOpen, setAutoCreateDialogOpen] = useState(false);
   const [selectedPlayers, setSelectedPlayers] = useState<
     AutocompletePlayerValue[]
   >(Array(teamSize));
@@ -61,25 +86,98 @@ export default function Page({
           "playerSets",
           elimination!.elimination_id,
         ]);
-      },
-    }
-  );
-
-  const { mutate: rerankPlayerSet } = useMutation(
-    () => {
-      return apiClient.playerSet.prerankingPartialUpdate(
-        elimination!.elimination_id!
-      );
-    },
-    {
-      onSuccess: () => {
         queryClient.invalidateQueries([
-          "playerSets",
+          "playerSetRanking",
           elimination!.elimination_id,
         ]);
       },
     }
   );
+
+  const [autoRankingError, setAutoRankingError] = useState<string | null>(
+    null
+  );
+
+  const { mutate: autoRankPlayerSets, isLoading: isAutoRanking } =
+    useMutation(
+      () => {
+        return apiClient.playerSet.eliminationRankingAutoPartialUpdate(
+          elimination!.elimination_id!
+        );
+      },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries([
+            "playerSetRanking",
+            elimination!.elimination_id,
+          ]);
+          queryClient.invalidateQueries([
+            "playerSets",
+            elimination!.elimination_id,
+          ]);
+          setAutoRankingError(null);
+        },
+        onError: (error: any) => {
+          const status = error?.response?.status;
+          setAutoRankingError(
+            status === 403
+              ? "您沒有更新此對抗賽排名的權限。"
+              : status === 409
+                ? "已有對抗階段，未更新排名。"
+                : status !== undefined && status >= 500
+                  ? "伺服器暫時無法更新排名，請稍後再試。"
+                  : error?.response?.data?.error ??
+                    "自動更新排名失敗，請稍後再試。"
+          );
+        },
+      }
+    );
+
+  const { mutate: autoCreatePlayerSets, isLoading: isAutoCreating } =
+    useMutation(
+      (count: number) =>
+        apiClient.playerSet.eliminationAutoCreate(
+          elimination!.elimination_id!,
+          { count }
+        ),
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries([
+            "playerSets",
+            elimination!.elimination_id,
+          ]);
+          queryClient.invalidateQueries([
+            "playerSetRanking",
+            elimination!.elimination_id,
+          ]);
+          queryClient.invalidateQueries([
+            "eliminationDetail",
+            elimination!.elimination_id,
+          ]);
+          queryClient.invalidateQueries([
+            "competitionEliminations",
+            competitionId,
+          ]);
+          setAutoCreateError(null);
+          setAutoCreateDialogOpen(false);
+        },
+        onError: (error: any) => {
+          const status = error?.response?.status;
+          setAutoCreateError(
+            status === 400
+              ? "建立人數必須介於 4 與可排名選手數之間，且資格排名必須連續。"
+              : status === 403
+                ? "您沒有建立此對抗賽隊伍的權限。"
+                : status === 409
+                  ? "已有對抗階段或既有隊伍與資格排名不相容，未覆寫既有資料。"
+                  : status !== undefined && status >= 500
+                    ? "伺服器暫時無法建立隊伍，請稍後再試。"
+                    : error?.response?.data?.error ??
+                      "自動建立隊伍失敗，請稍後再試。"
+          );
+        },
+      }
+    );
 
   const { mutate: createBracket, isLoading: isBracketCreating } = useMutation(
     () => apiClient.elimination.bracketCreate(elimination!.elimination_id!),
@@ -105,7 +203,6 @@ export default function Page({
     }
   );
 
-  const group = groups?.[groupIndex];
   const playerOptions = [...(group?.players ?? [])]
     .sort((a, b) => a.rank! - b.rank!)
     .map((player) => ({
@@ -117,6 +214,15 @@ export default function Page({
   );
   const playerSetCount = sortedPlayerSets.length;
   const bracketExists = isCompleteEliminationBracket(eliminationDetail?.stages);
+  const stageExists = (eliminationDetail?.stages?.length ?? 0) > 0;
+  const eligiblePlayerCount = (group?.players ?? []).filter(
+    (player) => (player.rank ?? -1) >= 1
+  ).length;
+  const parsedAutoCreateCount = Number(autoCreateCount);
+  const isAutoCreateCountValid =
+    Number.isInteger(parsedAutoCreateCount) &&
+    parsedAutoCreateCount >= 4 &&
+    parsedAutoCreateCount <= eligiblePlayerCount;
   const canCreateBracket =
     !bracketExists &&
     !isPlayerSetsLoading &&
@@ -135,8 +241,17 @@ export default function Page({
     });
   };
 
-  const handleReranking = () => {
-    rerankPlayerSet();
+  const handleAutoRanking = () => {
+    autoRankPlayerSets();
+  };
+
+  const handleOpenAutoCreateDialog = () => {
+    if (!isAutoCreateCountValid) {
+      setAutoCreateError("建立人數必須介於 4 與目前可排名選手數之間。");
+      return;
+    }
+    setAutoCreateError(null);
+    setAutoCreateDialogOpen(true);
   };
 
   useEffect(() => {
@@ -144,6 +259,12 @@ export default function Page({
       setSetName(selectedPlayers[0]?.label ?? "");
     }
   }, [selectedPlayers]);
+
+  useEffect(() => {
+    if (qualification?.advancing_num !== undefined) {
+      setAutoCreateCount(String(qualification.advancing_num));
+    }
+  }, [qualification?.id, qualification?.advancing_num]);
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -165,6 +286,50 @@ export default function Page({
             <Alert severity="warning">隊伍排名必須連續且從 1 開始。</Alert>
           )}
         {bracketError && <Alert severity="error">{bracketError}</Alert>}
+        {teamSize === 1 && (
+          <>
+            <Typography variant="subtitle1">依資格排名自動建立隊伍</Typography>
+            <Typography variant="body2">
+              可排名選手數：{eligiblePlayerCount}
+            </Typography>
+            {stageExists && (
+              <Alert severity="info">已有對抗階段，不能再自動建立隊伍。</Alert>
+            )}
+            {autoCreateError && <Alert severity="error">{autoCreateError}</Alert>}
+            <TextField
+              label="建立人數"
+              type="number"
+              value={autoCreateCount}
+              onChange={(event) => setAutoCreateCount(event.target.value)}
+              inputProps={{ min: 4, max: eligiblePlayerCount, step: 1 }}
+              helperText={
+                isQualificationLoading
+                  ? "正在載入資格賽設定…"
+                  : "將依目前儲存的資格排名選取前 N 名。"
+              }
+              disabled={
+                isQualificationLoading ||
+                qualification === undefined ||
+                stageExists ||
+                isAutoCreating
+              }
+            />
+            <Button
+              variant="contained"
+              onClick={handleOpenAutoCreateDialog}
+              disabled={
+                isQualificationLoading ||
+                qualification === undefined ||
+                elimination?.elimination_id === undefined ||
+                stageExists ||
+                isAutoCreating ||
+                !isAutoCreateCountValid
+              }
+            >
+              {isAutoCreating ? "建立中…" : "依資格排名建立隊伍"}
+            </Button>
+          </>
+        )}
         <Button
           variant="contained"
           onClick={() => createBracket()}
@@ -173,8 +338,23 @@ export default function Page({
           {isBracketCreating ? "建立中…" : "建立完整對抗樹"}
         </Button>
       </Stack>
-      <Button onClick={handleReranking} disabled={bracketExists}>
-        更新排名
+      <Alert severity="info" sx={{ mt: 2 }}>
+        自動更新排名將覆寫手動調整結果。右側未儲存的拖曳調整將失效，需重新載入。
+      </Alert>
+      {autoRankingError && (
+        <Alert severity="error" sx={{ mt: 1 }}>
+          {autoRankingError}
+        </Alert>
+      )}
+      <Button
+        onClick={handleAutoRanking}
+        disabled={
+          stageExists ||
+          isAutoRanking ||
+          elimination?.elimination_id === undefined
+        }
+      >
+        {isAutoRanking ? "更新中…" : "自動更新排名"}
       </Button>
       {Array(teamSize)
         .fill(null)
@@ -223,6 +403,30 @@ export default function Page({
       >
         創建隊伍
       </Button>
+      <Dialog
+        open={autoCreateDialogOpen}
+        onClose={() => !isAutoCreating && setAutoCreateDialogOpen(false)}
+      >
+        <DialogTitle>依資格排名建立隊伍</DialogTitle>
+        <DialogContent>
+          將依目前儲存的資格排名建立前 {parsedAutoCreateCount} 名隊伍，確定要繼續嗎？
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setAutoCreateDialogOpen(false)}
+            disabled={isAutoCreating}
+          >
+            取消
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => autoCreatePlayerSets(parsedAutoCreateCount)}
+            disabled={isAutoCreating}
+          >
+            {isAutoCreating ? "建立中…" : "確認建立"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

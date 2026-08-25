@@ -3,7 +3,7 @@ import {
   buildEliminationFixture,
   registerEliminationRoutes,
 } from "./eliminationFixtures";
-import type { DatabasePlayerSet, DatabaseStage } from "@/types/Api";
+import type { DatabasePlayer, DatabasePlayerSet, DatabaseStage } from "@/types/Api";
 import type { EliminationVariant } from "./eliminationFixtures";
 
 function rankedPlayerSets(eliminationId: number): DatabasePlayerSet[] {
@@ -36,6 +36,77 @@ function completeFourEntrantStages(eliminationId: number): DatabaseStage[] {
       ],
     },
   ];
+}
+
+function completeEightEntrantStages(eliminationId: number): DatabaseStage[] {
+  let matchId = 9950;
+  let resultId = 9960;
+  return [4, 2, 2].map((matchCount, stageIndex) => ({
+    id: 9940 + stageIndex,
+    elimination_id: eliminationId,
+    matchs: Array.from({ length: matchCount }, () => ({
+      id: matchId++,
+      match_results: [{ id: resultId++ }, { id: resultId++ }],
+    })),
+  }));
+}
+
+async function prepareIndividualAutoCreate(page: import("@playwright/test").Page) {
+  const fixture = buildEliminationFixture("individual");
+  fixture.elimination.player_sets = [];
+  fixture.elimination.stages = [];
+  fixture.groupsWithPlayers.groups.unshift({
+    id: 9299,
+    competition_id: fixture.competitionId,
+    group_name: "未分組",
+    players: [],
+  });
+
+  const group = fixture.groupsWithPlayers.groups[1];
+  group.players = Array.from({ length: 5 }, (_, index): DatabasePlayer => ({
+    id: 9700 + index,
+    group_id: group.id,
+    name: `資格選手 ${index + 1}`,
+    rank: index + 1,
+    total_score: 500 - index,
+  }));
+  await registerEliminationRoutes(page, fixture);
+
+  let playerSets: DatabasePlayerSet[] = [];
+  let stages: DatabaseStage[] = [];
+  await page.route(`**/elimination/playersets/${fixture.eliminationId}`, async (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ player_sets: playerSets }),
+    })
+  );
+  await page.route(`**/elimination/stages/scores/medals/${fixture.eliminationId}`, async (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ ...fixture.elimination, player_sets: playerSets, stages }),
+    })
+  );
+  await page.route(`**/qualification/${group.id}`, async (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ id: group.id, advancing_num: 4 }),
+    })
+  );
+
+  return {
+    fixture,
+    group,
+    getPlayerSets: () => playerSets,
+    setPlayerSets: (sets: DatabasePlayerSet[]) => {
+      playerSets = sets;
+    },
+    setStages: (nextStages: DatabaseStage[]) => {
+      stages = nextStages;
+    },
+  };
 }
 
 test("對抗賽計分板：尚無階段時顯示建立提示，不渲染崩潰", async ({ page }) => {
@@ -115,6 +186,9 @@ for (const [variant, teamSize] of [
 
     await expect(page.getByText("隊數：4")).toBeVisible();
     await expect(page.getByText("下一個 2 的冪：4")).toBeVisible();
+    if (teamSize !== 1) {
+      await expect(page.getByRole("button", { name: "依資格排名建立隊伍" })).toHaveCount(0);
+    }
     await page.getByRole("button", { name: "建立完整對抗樹" }).click();
     await expect(page.getByText("建立狀態：完整對抗樹已建立")).toBeVisible();
     await expect(page.getByRole("button", { name: "創建隊伍" })).toBeDisabled();
@@ -157,4 +231,99 @@ test("對抗賽設定：409 顯示不覆寫既有資料", async ({ page }) => {
   await expect(
     page.getByText("已有部分或不相容賽程，未覆寫既有資料。")
   ).toBeVisible();
+});
+
+test("單人對抗賽：自動建組預填 advancing_num，可覆寫並刷新隊伍", async ({ page }) => {
+  const setup = await prepareIndividualAutoCreate(page);
+  const autoCreateRequests: unknown[] = [];
+  let bracketRequests = 0;
+  await page.route(`**/playerset/elimination/${setup.fixture.eliminationId}/auto`, async (route) => {
+    const body = route.request().postDataJSON() as { count: number };
+    autoCreateRequests.push(body);
+    setup.setPlayerSets(
+      setup.group.players.slice(0, body.count).map((player, index) => ({
+        id: 9800 + index,
+        elimination_id: setup.fixture.eliminationId,
+        rank: player.rank,
+        set_name: player.name,
+        total_score: player.total_score,
+        players: [player],
+      }))
+    );
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        elimination_id: setup.fixture.eliminationId,
+        requested_count: body.count,
+        created_count: body.count,
+        reused_count: 0,
+        player_sets: setup.getPlayerSets(),
+      }),
+    });
+  });
+  await page.route(
+    `**/elimination/bracket/${setup.fixture.eliminationId}`,
+    async (route) => {
+      bracketRequests++;
+      setup.setStages(completeEightEntrantStages(setup.fixture.eliminationId));
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          elimination_id: setup.fixture.eliminationId,
+          entrant_count: 5,
+          bracket_size: 8,
+          stage_count: 3,
+          created: true,
+        }),
+      });
+    }
+  );
+
+  const baseUrl = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000";
+  await page.goto(
+    `${baseUrl}/competition/${setup.fixture.competitionId}/admin/schedule/elimination/1`
+  );
+
+  const countInput = page.getByLabel("建立人數");
+  await expect(countInput).toHaveValue("4");
+  await countInput.fill("5");
+  await page.getByRole("button", { name: "依資格排名建立隊伍" }).click();
+  await expect(page.getByText("將依目前儲存的資格排名建立前 5 名隊伍，確定要繼續嗎？")).toBeVisible();
+  await page.getByRole("button", { name: "確認建立" }).click();
+
+  await expect(page.getByText("隊數：5")).toBeVisible();
+  expect(autoCreateRequests).toEqual([{ count: 5 }]);
+
+  const createBracketButton = page.getByRole("button", {
+    name: "建立完整對抗樹",
+  });
+  await expect(createBracketButton).toBeEnabled();
+  await createBracketButton.click();
+  await expect(page.getByText("建立狀態：完整對抗樹已建立")).toBeVisible();
+  expect(bracketRequests).toBe(1);
+});
+
+test("單人對抗賽：自動建組衝突時保留既有列表並顯示錯誤", async ({ page }) => {
+  const setup = await prepareIndividualAutoCreate(page);
+  await page.route(`**/playerset/elimination/${setup.fixture.eliminationId}/auto`, async (route) =>
+    route.fulfill({
+      status: 409,
+      contentType: "application/json",
+      body: JSON.stringify({ error: "incompatible player sets" }),
+    })
+  );
+
+  const baseUrl = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:3000";
+  await page.goto(
+    `${baseUrl}/competition/${setup.fixture.competitionId}/admin/schedule/elimination/1`
+  );
+  await page.getByRole("button", { name: "依資格排名建立隊伍" }).click();
+  await page.getByRole("button", { name: "確認建立" }).click();
+
+  await expect(
+    page.getByText("已有對抗階段或既有隊伍與資格排名不相容，未覆寫既有資料。")
+  ).toBeVisible();
+  await expect(page.getByText("隊數：0")).toBeVisible();
 });
