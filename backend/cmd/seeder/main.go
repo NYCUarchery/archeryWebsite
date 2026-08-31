@@ -11,9 +11,12 @@ import (
 )
 
 func main() {
-	scenarioFlag := flag.String("scenario", "all", "registered, qualification_finished, elimination_finished, or all")
+	const scenarioUsage = "registered, qualification_finished, elimination_finished, or all"
+	var scenarioFlag string
+	flag.StringVar(&scenarioFlag, "scenario", "all", scenarioUsage)
+	flag.StringVar(&scenarioFlag, "s", "all", scenarioUsage+" (shorthand)")
 	flag.Parse()
-	requested, err := requestedScenarios(*scenarioFlag)
+	requested, err := requestedScenarios(scenarioFlag)
 	if err != nil {
 		log.Print(err)
 		flag.Usage()
