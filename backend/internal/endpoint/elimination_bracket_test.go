@@ -6,9 +6,29 @@ import (
 	"testing"
 )
 
-func TestStandardSeedOrder(t *testing.T) {
-	if got, want := standardSeedOrder(8), []int{1, 8, 4, 5, 2, 7, 3, 6}; !reflect.DeepEqual(got, want) {
-		t.Fatalf("standardSeedOrder(8) = %v, want %v", got, want)
+func TestBitReversedSeedOrderPairsOddLeftAndEvenRight(t *testing.T) {
+	exact := map[int][]int{
+		4:  {1, 4, 3, 2},
+		8:  {1, 8, 5, 4, 3, 6, 7, 2},
+		16: {1, 16, 9, 8, 5, 12, 13, 4, 3, 14, 11, 6, 7, 10, 15, 2},
+		32: {1, 32, 17, 16, 9, 24, 25, 8, 5, 28, 21, 12, 13, 20, 29, 4, 3, 30, 19, 14, 11, 22, 27, 6, 7, 26, 23, 10, 15, 18, 31, 2},
+	}
+	for _, size := range []int{4, 8, 16, 32, 64, 128} {
+		got := bitReversedSeedOrder(size)
+		if len(got) != size {
+			t.Fatalf("bitReversedSeedOrder(%d) length = %d", size, len(got))
+		}
+		seen := make(map[int]bool, size)
+		for matchIndex := 0; matchIndex < size/2; matchIndex++ {
+			left, right := got[matchIndex*2], got[matchIndex*2+1]
+			if left%2 != 1 || right != size+1-left || seen[left] || seen[right] {
+				t.Fatalf("size %d invalid pair %d: %d,%d", size, matchIndex, left, right)
+			}
+			seen[left], seen[right] = true, true
+		}
+		if want, ok := exact[size]; ok && !reflect.DeepEqual(got, want) {
+			t.Fatalf("bitReversedSeedOrder(%d) = %v, want %v", size, got, want)
+		}
 	}
 }
 
@@ -61,16 +81,13 @@ func TestMatchEndsAndArrowsByTeamSize(t *testing.T) {
 	}
 }
 
-func TestExpectedFirstRoundSlotsUsesStandardSeedOrderAndByes(t *testing.T) {
+func TestExpectedFirstRoundSlotsPreservesRankGaps(t *testing.T) {
 	playerSets := make([]database.PlayerSet, 5)
 	for index := range playerSets {
 		playerSets[index] = database.PlayerSet{ID: uint(100 + index), Rank: index + 1}
 	}
 	slots := expectedFirstRoundSlots(playerSets, 8)
-	want := []*uint{
-		&playerSets[0].ID, nil, &playerSets[3].ID, &playerSets[4].ID,
-		&playerSets[1].ID, nil, &playerSets[2].ID, nil,
-	}
+	want := []*uint{&playerSets[0].ID, nil, &playerSets[4].ID, &playerSets[3].ID, &playerSets[2].ID, nil, nil, &playerSets[1].ID}
 	if len(slots) != len(want) {
 		t.Fatalf("slot count = %d, want %d", len(slots), len(want))
 	}
@@ -100,33 +117,57 @@ func TestExpectedFirstRoundSlotsHasOneByePerMissingEntrant(t *testing.T) {
 	}
 }
 
-func TestWinnerAndLoserOnlyAllowsMissingOpponentForStructuralBye(t *testing.T) {
-	playerSetID := uint(1)
-	results := []database.MatchResult{
-		{PlayerSetId: &playerSetID, IsWinner: true},
-		{PlayerSetId: nil, IsWinner: false},
+func TestValidateRosterForLockAllowsGapsButRejectsSetupRanksAndDuplicates(t *testing.T) {
+	valid := []database.PlayerSet{{Rank: 1}, {Rank: 3}, {Rank: 5}}
+	if err := validateRosterForLock(valid, 8); err != nil {
+		t.Fatalf("gapped roster rejected: %v", err)
 	}
-	if _, _, err := winnerAndLoser(results, false); err == nil {
-		t.Fatal("later-round pending opponent was accepted as a BYE")
-	}
-	winner, loser, err := winnerAndLoser(results, true)
-	if err != nil || winner == nil || *winner != playerSetID || loser != nil {
-		t.Fatalf("structural BYE rejected: winner=%v loser=%v err=%v", winner, loser, err)
+	for _, invalid := range [][]database.PlayerSet{
+		{{Rank: 0}},
+		{{Rank: 1}, {Rank: 1}},
+		{{Rank: 9}},
+	} {
+		if err := validateRosterForLock(invalid, 8); err == nil {
+			t.Fatalf("invalid entrants accepted: %+v", invalid)
+		}
 	}
 }
 
-func TestValidateBracketEntrantsRequiresContinuousRanks(t *testing.T) {
-	valid := []database.PlayerSet{{Rank: 1}, {Rank: 2}, {Rank: 3}, {Rank: 4}, {Rank: 5}}
-	if err := validateBracketEntrants(valid); err != nil {
-		t.Fatalf("valid entrants rejected: %v", err)
+func TestValidateRosterForSetupAllowsUnrankedPlaceholders(t *testing.T) {
+	if err := validateRosterForSetup([]database.PlayerSet{{Rank: 0}, {Rank: 1}, {Rank: 4}}, 8); err != nil {
+		t.Fatalf("setup roster rejected: %v", err)
 	}
-	for _, invalid := range [][]database.PlayerSet{
-		{{Rank: 1}, {Rank: 2}, {Rank: 3}},
-		{{Rank: 1}, {Rank: 2}, {Rank: 2}, {Rank: 4}},
-		{{Rank: 1}, {Rank: 2}, {Rank: 3}, {Rank: 5}},
+	for _, roster := range [][]database.PlayerSet{
+		{{Rank: 9}},
+		{{Rank: 1}, {Rank: 1}},
+		{{Rank: 1}, {Rank: 2}, {Rank: 3}, {Rank: 4}, {Rank: 5}},
 	} {
-		if err := validateBracketEntrants(invalid); err == nil {
-			t.Fatalf("invalid entrants accepted: %+v", invalid)
+		if err := validateRosterForSetup(roster, 4); err == nil {
+			t.Fatalf("invalid setup roster accepted: %+v", roster)
+		}
+	}
+}
+
+func TestPlacementPairValidation(t *testing.T) {
+	targetA, targetB := "A", "B"
+	valid := [][]MatchResultPlacement{
+		{{LaneNumber: 0}, {LaneNumber: 0}},
+		{{LaneNumber: 1}, {LaneNumber: 2}},
+		{{LaneNumber: 3, Target: &targetA}, {LaneNumber: 3, Target: &targetB}},
+	}
+	for _, placement := range valid {
+		if err := validatePlacementPair(placement); err != nil {
+			t.Fatalf("valid placement rejected: %v", err)
+		}
+	}
+	invalid := [][]MatchResultPlacement{
+		{{LaneNumber: 1}, {LaneNumber: 1}},
+		{{LaneNumber: 1, Target: &targetA}, {LaneNumber: 2, Target: &targetB}},
+		{{LaneNumber: 0, Target: &targetA}, {LaneNumber: 0, Target: &targetB}},
+	}
+	for _, placement := range invalid {
+		if err := validatePlacementPair(placement); err == nil {
+			t.Fatalf("invalid placement accepted: %+v", placement)
 		}
 	}
 }
