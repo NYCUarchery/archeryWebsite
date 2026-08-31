@@ -278,7 +278,9 @@ test.describe("對抗賽隊伍排名（PlayerSet ranking）", () => {
     await expect(table.getByText("隊名", { exact: true })).toBeVisible();
     await expect(table.getByText("隊伍總分", { exact: true })).toBeVisible();
     await expect(table.getByText("X", { exact: true })).toBeVisible();
-    await expect(table.getByText("10", { exact: true })).toBeVisible();
+    await expect(
+      table.getByRole("columnheader", { name: "10", exact: true })
+    ).toBeVisible();
     await expect.poll(() => tableRows(page)).toEqual([
       { rank: "1", name: "藍鷹隊" },
       { rank: "2", name: "紅鶴隊" },
