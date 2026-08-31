@@ -49,6 +49,10 @@ definitions:
     type: object
   database.Elimination:
     properties:
+      bracket_roster_locked:
+        type: boolean
+      bracket_seed_count:
+        type: integer
       current_end:
         type: integer
       current_stage:
@@ -178,6 +182,15 @@ definitions:
         type: integer
       shoot_off_score:
         type: integer
+      target:
+        description: |-
+          Target is the physical target side used for this result.  It is nil
+          until an administrator assigns a placement, otherwise it is "A" or "B".
+        enum:
+        - A
+        - B
+        type: string
+        x-nullable: true
       total_points:
         type: integer
     type: object
@@ -401,8 +414,26 @@ definitions:
       target_stage_id:
         type: integer
     type: object
+  endpoint.BracketFirstRoundSyncResponse:
+    properties:
+      changed:
+        type: boolean
+      elimination_id:
+        type: integer
+    type: object
+  endpoint.BracketInitRequest:
+    properties:
+      advancing_count:
+        maximum: 128
+        minimum: 4
+        type: integer
+    required:
+    - advancing_count
+    type: object
   endpoint.BracketInitResponse:
     properties:
+      advancing_count:
+        type: integer
       bracket_size:
         type: integer
       created:
@@ -477,6 +508,77 @@ definitions:
       user_name:
         type: string
     type: object
+  endpoint.MatchPlacementRequest:
+    properties:
+      placements:
+        items:
+          $ref: '#/definitions/endpoint.MatchResultPlacement'
+        minItems: 1
+        type: array
+    required:
+    - placements
+    type: object
+  endpoint.MatchResultPlacement:
+    properties:
+      lane_number:
+        type: integer
+      match_result_id:
+        type: integer
+      target:
+        enum:
+        - A
+        - B
+        type: string
+        x-nullable: true
+    required:
+    - lane_number
+    - match_result_id
+    type: object
+  endpoint.MatchSettingsRequest:
+    properties:
+      placements:
+        items:
+          $ref: '#/definitions/endpoint.MatchResultPlacement'
+        maxItems: 2
+        minItems: 2
+        type: array
+      player_set_ids:
+        items:
+          type: integer
+        type: array
+      winner_match_result_id:
+        type: integer
+        x-nullable: true
+    required:
+    - placements
+    - winner_match_result_id
+    type: object
+  endpoint.MatchSettingsResponse:
+    properties:
+      changed:
+        type: boolean
+      elimination_id:
+        type: integer
+      match_id:
+        type: integer
+    type: object
+  endpoint.MatchWinnerRequest:
+    properties:
+      winner_match_result_id:
+        type: integer
+        x-nullable: true
+    required:
+    - winner_match_result_id
+    type: object
+  endpoint.MatchWinnerResponse:
+    properties:
+      changed:
+        type: boolean
+      elimination_id:
+        type: integer
+      match_id:
+        type: integer
+    type: object
   endpoint.ModifyAccountPasswordInfo:
     properties:
       new_password:
@@ -531,6 +633,23 @@ definitions:
       lane_id:
         type: integer
       order:
+        type: integer
+    type: object
+  endpoint.PlacementResponse:
+    properties:
+      changed:
+        type: boolean
+      elimination_id:
+        type: integer
+      match_count:
+        type: integer
+      match_id:
+        type: integer
+      required_target_count:
+        type: integer
+      stage_id:
+        type: integer
+      used_end_lane_number:
         type: integer
     type: object
   endpoint.PlayerSetRankingResponse:
@@ -779,6 +898,22 @@ definitions:
         type: integer
       start_lane:
         type: integer
+    type: object
+  endpoint.StagePlacementRequest:
+    properties:
+      end_lane_number:
+        type: integer
+      mode:
+        enum:
+        - one_player_set_per_target
+        - two_player_sets_per_target
+        type: string
+      start_lane_number:
+        type: integer
+    required:
+    - end_lane_number
+    - mode
+    - start_lane_number
     type: object
   endpoint.UpdateGroupRankingRequest:
     properties:
@@ -1750,6 +1885,8 @@ paths:
       - Elimination
   /elimination/bracket/{id}:
     post:
+      consumes:
+      - application/json
       description: Creates a standard seeded bracket, including stages, gold and bronze
         finals, match results, ends, and scores. Requires a competition Admin.
       parameters:
@@ -1758,6 +1895,12 @@ paths:
         name: id
         required: true
         type: integer
+      - description: Fixed advancing count
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.BracketInitRequest'
       produces:
       - application/json
       responses:
@@ -1782,6 +1925,44 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorResponse'
       summary: Initialize an elimination bracket
+      tags:
+      - Elimination
+  /elimination/bracket/{id}/sync-first-round:
+    post:
+      description: Locks the elimination and PlayerSet rows, validates the complete
+        bracket shape and current setup ranks, then fills or clears only unstarted
+        first-round seed slots. Requires a competition Admin. It is idempotent and
+        does not lock the roster or advance matches.
+      parameters:
+      - description: Elimination ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/endpoint.BracketFirstRoundSyncResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Synchronize an open elimination bracket's first round
       tags:
       - Elimination
   /elimination/currentend/minus/{id}:
@@ -1945,11 +2126,53 @@ paths:
       summary: Create one Match
       tags:
       - Elimination
+  /elimination/match/placement/{matchid}:
+    put:
+      consumes:
+      - application/json
+      description: Requires a competition Admin. The request must name exactly both
+        MatchResults; target is A, B, or null. No lanes-table lookup is made.
+      parameters:
+      - description: Match ID
+        in: path
+        name: matchid
+        required: true
+        type: integer
+      - description: Match placement
+        in: body
+        name: Placement
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.MatchPlacementRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/endpoint.PlacementResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Place the two sides of an elimination match
+      tags:
+      - Elimination
   /elimination/match/playerset/{matchid}:
     patch:
       consumes:
       - application/json
-      description: Update two MatchResult with two PlayerSetId in one Match by id
+      description: Force-corrects both PlayerSet identities of any elimination Match
+        while retaining each slot's score, confirmation, winner, and placement. Selected
+        winners are reprojected downstream. Requires a competition Admin.
       parameters:
       - description: Match ID
         in: path
@@ -1979,7 +2202,7 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorResponse'
         "409":
-          description: complete bracket is locked
+          description: invalid same-stage assignment or bracket conflict
           schema:
             $ref: '#/definitions/response.ErrorResponse'
         "500":
@@ -2017,6 +2240,94 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Show one Match with all related data
+      tags:
+      - Elimination
+  /elimination/match/settings/{matchid}:
+    put:
+      consumes:
+      - application/json
+      description: Requires a competition Admin. winner_match_result_id is required
+        and may be null. Validates exactly two placements, may force-correct player_set_ids
+        for any match while retaining slot state and reprojecting selected winners,
+        and selects an occupied winner result. Any conflict rolls back every field.
+      parameters:
+      - description: Match ID
+        in: path
+        name: matchid
+        required: true
+        type: integer
+      - description: Match settings
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.MatchSettingsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/endpoint.MatchSettingsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Update elimination match placement and winner atomically
+      tags:
+      - Elimination
+  /elimination/match/winner/{matchid}:
+    put:
+      consumes:
+      - application/json
+      description: Locks the elimination, match, and both match results. winner_match_result_id
+        is required and must identify an occupied result of this match, or be null
+        to clear both winner flags. Requires a competition Admin. Generated brackets
+        validate and lock their roster, and cannot change a source after it has advanced.
+      parameters:
+      - description: Match ID
+        in: path
+        name: matchid
+        required: true
+        type: integer
+      - description: Winner selection
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.MatchWinnerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/endpoint.MatchWinnerResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Select an elimination match winner
       tags:
       - Elimination
   /elimination/playersets/{id}:
@@ -2219,6 +2530,46 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorResponse'
       summary: Advance an elimination stage
+      tags:
+      - Elimination
+  /elimination/stage/placement/{stageid}:
+    put:
+      consumes:
+      - application/json
+      description: Requires a competition Admin. mode is one_player_set_per_target
+        or two_player_sets_per_target; no lane records are required.
+      parameters:
+      - description: Stage ID
+        in: path
+        name: stageid
+        required: true
+        type: integer
+      - description: Stage placement
+        in: body
+        name: Placement
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.StagePlacementRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/endpoint.PlacementResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Place every match in an elimination stage
       tags:
       - Elimination
   /elimination/stages/matches/{id}:
@@ -2886,7 +3237,10 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Update one MatchResult isWinner by id
+      deprecated: true
+      description: When is_winner is true, atomically selects this occupied result
+        and clears the other result in its match. When false, clears both winner flags.
+        Prefer PUT /elimination/match/winner/{matchid}. Requires a competition Admin.
       parameters:
       - description: MatchResult ID
         in: path
@@ -2913,21 +3267,24 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorResponse'
         "409":
-          description: winner is locked after advancement
+          description: empty bracket slot, roster conflict, or winner locked after
+            advancement
           schema:
             $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db failed for updating isWinner
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Update one MatchResult isWinner
+      summary: Set or clear one match winner (legacy result endpoint)
       tags:
       - MatchResult
   /matchresult/lanenumber/{id}:
     patch:
       consumes:
       - application/json
-      description: Update one MatchResult laneNumber by id
+      deprecated: true
+      description: 'Deprecated: use PUT /elimination/match/placement/{matchid}. Requires
+        a competition Admin and preserves the complete-match placement invariant.'
       parameters:
       - description: MatchResult ID
         in: path
@@ -2953,7 +3310,7 @@ paths:
           description: internal db failed for updating laneNumber
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Update one MatchResult laneNumber
+      summary: 'Deprecated: update one MatchResult laneNumber'
       tags:
       - MatchResult
   /matchresult/matchend:
@@ -3023,6 +3380,10 @@ paths:
           description: invalid match end ID, maybe not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "409":
+          description: empty bracket slot or roster conflict
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db failed for updating isConfirmed
           schema:
@@ -3059,6 +3420,10 @@ paths:
             exist, or matchScore ids and scores length not match
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "409":
+          description: empty bracket slot or roster conflict
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db failed for updating scores
           schema:
@@ -3092,6 +3457,10 @@ paths:
           description: invalid match end ID, maybe not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "409":
+          description: empty bracket slot or roster conflict
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db failed for updating totalScores
           schema:
@@ -3127,6 +3496,10 @@ paths:
           description: invalid match score ID, maybe not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "409":
+          description: empty bracket slot or roster conflict
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db failed for updating score, get matchEnd by id,
             get matchScore, update matchEnd totalScores
@@ -3199,6 +3572,10 @@ paths:
           description: invalid match result ID, maybe not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "409":
+          description: empty bracket slot or roster conflict
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db failed for updating shootOffScore
           schema:
@@ -3232,6 +3609,10 @@ paths:
           description: invalid match result ID, maybe not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "409":
+          description: empty bracket slot or roster conflict
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db failed for updating totalPoints
           schema:
@@ -4363,6 +4744,14 @@ paths:
             set's length and teamsize does not match
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: bracket roster is locked or incompatible
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db error for create player set / get player / create
             player set match table / get elimination
@@ -4389,6 +4778,14 @@ paths:
           description: invalid plyer set id
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: bracket roster is locked or incompatible
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db error / Get Player Set By Id / Delete Player Set
             Match Table By Player Set Id / Delete Player Set By Id
@@ -4545,9 +4942,10 @@ paths:
       - application/json
       description: Updates every player set of the elimination as one transaction.
         expected_player_set_ids must equal the ranking order loaded by the caller.
-        A player set ID that belongs to a different elimination returns 400; a
-        stale snapshot (order changed, or a set added/removed concurrently) returns
-        409. Requires a competition Admin. Fails once the bracket has been generated.
+        A player set ID that belongs to a different elimination returns 400; a stale
+        snapshot (order changed, or a set added/removed concurrently) returns 409.
+        Requires a competition Admin. It remains available while a new bracket roster
+        is open.
       parameters:
       - description: Elimination ID
         in: path
@@ -4577,9 +4975,9 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorResponse'
         "409":
-          description: ranking order changed before update (including a player
-            set added or removed concurrently), or player sets cannot change after
-            bracket initialization
+          description: ranking order changed before update (including a player set
+            added or removed concurrently), or player sets cannot change after bracket
+            initialization
           schema:
             $ref: '#/definitions/response.ErrorResponse'
         "500":
@@ -4591,9 +4989,10 @@ paths:
       - PlayerSet
   /playerset/elimination/{eliminationid}/ranking/auto:
     patch:
-      description: Recomputes and writes a contiguous rank for every player set
-        of the elimination, ordered by team total score, X count, then pure ten
-        count. Requires a competition Admin. Fails once the bracket has been generated.
+      description: Recomputes and writes a contiguous rank for every player set of
+        the elimination, ordered by team total score, X count, then pure ten count.
+        Requires a competition Admin. It remains available while a new bracket roster
+        is open.
       parameters:
       - description: Elimination ID
         in: path
