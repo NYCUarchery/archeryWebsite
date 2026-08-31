@@ -7,14 +7,16 @@ import (
 )
 
 type Elimination struct {
-	ID           uint         `json:"id"        gorm:"primary_key"`
-	GroupId      uint         `json:"group_id" gorm:"constraint:oneToMany;"`
-	CurrentStage uint         `json:"current_stage"`
-	CurrentEnd   uint         `json:"current_end"`
-	TeamSize     int          `json:"team_size"`
-	PlayerSets   []*PlayerSet `json:"player_sets" gorm:"constraint:OnDelete:CASCADE;"`
-	Stages       []*Stage     `json:"stages" gorm:"constraint:OnDelete:CASCADE;"`
-	Medals       []*Medal     `json:"medals" gorm:"constraint:OnDelete:CASCADE;"`
+	ID                  uint         `json:"id"                  gorm:"primary_key"`
+	GroupId             uint         `json:"group_id"            gorm:"constraint:oneToMany;"`
+	CurrentStage        uint         `json:"current_stage"`
+	CurrentEnd          uint         `json:"current_end"`
+	TeamSize            int          `json:"team_size"`
+	BracketSeedCount    int          `json:"bracket_seed_count"`
+	BracketRosterLocked bool         `json:"bracket_roster_locked"`
+	PlayerSets          []*PlayerSet `json:"player_sets"         gorm:"constraint:OnDelete:CASCADE;"`
+	Stages              []*Stage     `json:"stages"              gorm:"constraint:OnDelete:CASCADE;"`
+	Medals              []*Medal     `json:"medals"              gorm:"constraint:OnDelete:CASCADE;"`
 }
 type Stage struct {
 	ID            uint     `json:"id"        gorm:"primary_key"`
