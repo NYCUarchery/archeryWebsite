@@ -12,7 +12,7 @@ INSERT INTO `competitions` VALUES (1,'男反選拔','113年全大運','0001-02-2
 INSERT INTO `participants` VALUES (1,1,1,'admin','approved'),(2,2,1,'Player','approved'),(3,3,1,'Player','approved'),(4,4,1,'Player','approved'),(5,5,1,'Player','approved'),(6,6,1,'Player','approved'),(7,7,1,'Player','approved'),(8,8,1,'Player','approved'),(9,9,1,'Player','approved'),(10,1,2,'admin','approved'),(11,9,2,'Player','approved'),(12,2,2,'Player','approved'),(13,3,2,'Player','approved'),(14,4,2,'Player','approved'),(15,5,2,'Player','approved'),(16,6,2,'Player','approved'),(17,7,2,'Player','approved'),(18,8,2,'Player','approved'),(19,10,2,'Player','approved');
 
 INSERT INTO `groups` VALUES (1,1,'unassigned','','',-1),(2,1,'男反30公尺','30m','反曲弓',0),(3,2,'unassigned','','',-1),(4,2,'男反30公尺','30m','反曲弓',0);
-INSERT INTO `eliminations` VALUES (1,2,0,0,1),(2,4,0,0,1);
+INSERT INTO `eliminations` (`id`, `group_id`, `current_stage`, `current_end`, `team_size`) VALUES (1,2,0,0,1),(2,4,0,0,1);
 INSERT INTO `medals` VALUES (1,1,0,0),(2,1,1,0),(3,1,2,0),(4,2,0,0),(5,2,1,0),(6,2,2,0);
 
 INSERT INTO `qualifications` VALUES (1,0,0,0),(2,4,1,2),(3,0,0,0),(4,5,1,4);
