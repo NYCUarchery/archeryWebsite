@@ -55,6 +55,18 @@ async function waitReady(page: Page, fixture: EliminationFixture) {
 }
 
 test.describe("Elimination Scoring Board", () => {
+  test("個人賽：同靶位 A/B 配置於記分頁標頭顯示", async ({ page }) => {
+    const fixture = buildEliminationFixture("individual", {
+      targets: ["A", "B"],
+    });
+    await registerEliminationRoutes(page, fixture);
+    await gotoEliminationScoring(page, fixture.competitionId);
+    await waitReady(page, fixture);
+
+    await expect(page.getByText("3A", { exact: true })).toBeVisible();
+    await expect(page.getByText("3B", { exact: true })).toBeVisible();
+  });
+
   test("個人賽：第 3 箭後所有分數鈕停用，快速連點不產生第 4 箭", async ({ page }) => {
     const fixture = buildEliminationFixture("individual");
     await registerEliminationRoutes(page, fixture);

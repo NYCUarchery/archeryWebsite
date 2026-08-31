@@ -25,6 +25,7 @@ import type {
 // 三種對抗賽情境：個人（teamSize 1）、混雙（teamSize 2）、團體（teamSize 3）。
 // phase 對映依 useCurrentEliminationMatch 之 mapPhaseToTeamSize：1→個人、2→團體、3→混雙。
 export type EliminationVariant = "individual" | "mixed" | "team";
+export type FixtureTarget = "A" | "B";
 
 interface VariantConfig {
   phase: number;
@@ -96,6 +97,7 @@ export interface EliminationFixture {
   competitionId: number;
   userId: number;
   eliminationId: number;
+  matchId: number;
   capacity: number;
   teamSizeLabel: string;
   setNameMine: string;
@@ -120,7 +122,7 @@ export interface EliminationFixture {
 // options.noMatch === true 時，目前階段不安排任何 Match，模擬「找不到對局」情境。
 export function buildEliminationFixture(
   variant: EliminationVariant,
-  options?: { noMatch?: boolean }
+  options?: { noMatch?: boolean; targets?: [FixtureTarget, FixtureTarget] }
 ): EliminationFixture {
   const config = VARIANT_CONFIG[variant];
   const setNameMine = "我方";
@@ -185,7 +187,7 @@ export function buildEliminationFixture(
     lane_number: 3,
     match_id: MATCH_ID,
     player_set_id: MY_PLAYER_SET_ID,
-    shoot_off_score: 0,
+    shoot_off_score: -1,
     total_points: 0,
     match_ends: [myMatchEnd],
   };
@@ -195,10 +197,19 @@ export function buildEliminationFixture(
     lane_number: 5,
     match_id: MATCH_ID,
     player_set_id: OPPONENT_PLAYER_SET_ID,
-    shoot_off_score: 0,
+    shoot_off_score: -1,
     total_points: 0,
     match_ends: [opponentMatchEnd],
   };
+  // Swagger 型別同步 target 前，以交集型別保留配置端點的新欄位測試資料。
+  if (options?.targets) {
+    opponentMatchResult.lane_number = myMatchResult.lane_number;
+    (myMatchResult as DatabaseMatchResult & { target?: FixtureTarget }).target =
+      options.targets[0];
+    (
+      opponentMatchResult as DatabaseMatchResult & { target?: FixtureTarget }
+    ).target = options.targets[1];
+  }
 
   const match: DatabaseMatch = {
     id: MATCH_ID,
@@ -283,6 +294,7 @@ export function buildEliminationFixture(
     competitionId: COMPETITION_ID,
     userId: USER_ID,
     eliminationId: ELIMINATION_ID,
+    matchId: MATCH_ID,
     capacity: config.capacity,
     teamSizeLabel: config.teamSizeLabel,
     setNameMine,
@@ -438,6 +450,17 @@ export async function registerEliminationRoutes(
     `**/elimination/stages/scores/medals/${fixture.eliminationId}`,
     async (route) => {
       // 每次皆回傳目前「伺服器端」最新狀態，讓存分／確認後的 reload 能讀到最新結果。
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify(serverElimination),
+      });
+    }
+  );
+
+  await page.route(
+    `**/elimination/playersets/${fixture.eliminationId}`,
+    async (route) => {
       await route.fulfill({
         status: 200,
         contentType: "application/json",
