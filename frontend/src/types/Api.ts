@@ -33,6 +33,8 @@ export interface DatabaseCompetition {
 }
 
 export interface DatabaseElimination {
+  bracket_roster_locked?: boolean;
+  bracket_seed_count?: number;
   current_end?: number;
   current_stage?: number;
   group_id?: number;
@@ -103,6 +105,11 @@ export interface DatabaseMatchResult {
    */
   player_set_id?: number;
   shoot_off_score?: number;
+  /**
+   * Target is the physical target side used for this result.  It is nil
+   * until an administrator assigns a placement, otherwise it is "A" or "B".
+   */
+  target?: "A" | "B" | null;
   total_points?: number;
 }
 
@@ -232,7 +239,21 @@ export interface EndpointBracketAdvanceResponse {
   target_stage_id?: number;
 }
 
+export interface EndpointBracketFirstRoundSyncResponse {
+  changed?: boolean;
+  elimination_id?: number;
+}
+
+export interface EndpointBracketInitRequest {
+  /**
+   * @min 4
+   * @max 128
+   */
+  advancing_count: number;
+}
+
 export interface EndpointBracketInitResponse {
+  advancing_count?: number;
   bracket_size?: number;
   created?: boolean;
   elimination_id?: number;
@@ -279,6 +300,43 @@ export interface EndpointLoginInfo {
   user_name?: string;
 }
 
+export interface EndpointMatchPlacementRequest {
+  /** @minItems 1 */
+  placements: EndpointMatchResultPlacement[];
+}
+
+export interface EndpointMatchResultPlacement {
+  lane_number: number;
+  match_result_id: number;
+  target?: "A" | "B" | null;
+}
+
+export interface EndpointMatchSettingsRequest {
+  /**
+   * @maxItems 2
+   * @minItems 2
+   */
+  placements: EndpointMatchResultPlacement[];
+  player_set_ids?: number[];
+  winner_match_result_id: number | null;
+}
+
+export interface EndpointMatchSettingsResponse {
+  changed?: boolean;
+  elimination_id?: number;
+  match_id?: number;
+}
+
+export interface EndpointMatchWinnerRequest {
+  winner_match_result_id: number | null;
+}
+
+export interface EndpointMatchWinnerResponse {
+  changed?: boolean;
+  elimination_id?: number;
+  match_id?: number;
+}
+
 export interface EndpointModifyAccountPasswordInfo {
   new_password?: string;
   original_password?: string;
@@ -314,6 +372,16 @@ export interface EndpointParticipantWName {
 export interface EndpointPatchPlayerLaneOrderUpdateLaneIdOrderData {
   lane_id?: number;
   order?: number;
+}
+
+export interface EndpointPlacementResponse {
+  changed?: boolean;
+  elimination_id?: number;
+  match_count?: number;
+  match_id?: number;
+  required_target_count?: number;
+  stage_id?: number;
+  used_end_lane_number?: number;
 }
 
 export interface EndpointPlayerSetRankingResponse {
@@ -481,13 +549,21 @@ export interface EndpointPutQualificationByIDQualificationPutData {
   start_lane?: number;
 }
 
+export interface EndpointStagePlacementRequest {
+  end_lane_number: number;
+  mode: "one_player_set_per_target" | "two_player_sets_per_target";
+  start_lane_number: number;
+}
+
 export interface EndpointUpdateGroupRankingRequest {
   expected_player_ids: number[];
   player_ids: number[];
 }
 
 export interface EndpointUpdatePlayerSetRankingRequest {
+  /** @minItems 1 */
   expected_player_set_ids: number[];
+  /** @minItems 1 */
   player_set_ids: number[];
 }
 
@@ -590,7 +666,7 @@ export class HttpClient<SecurityDataType = unknown> {
   private format?: ResponseType;
 
   constructor({ securityWorker, secure, format, ...axiosConfig }: ApiConfig<SecurityDataType> = {}) {
-    this.instance = axios.create({ ...axiosConfig, baseURL: axiosConfig.baseURL || "//localhost:80/api" });
+    this.instance = axios.create({ ...axiosConfig, baseURL: axiosConfig.baseURL || "//127.0.0.1:80/api" });
     this.secure = secure;
     this.format = format;
     this.securityWorker = securityWorker;
@@ -669,7 +745,7 @@ export class HttpClient<SecurityDataType = unknown> {
       ...requestParams,
       headers: {
         ...(requestParams.headers || {}),
-        ...(type && type !== ContentType.FormData ? { "Content-Type": type } : {}),
+        ...(type ? { "Content-Type": type } : {}),
       },
       params: query,
       responseType: responseFormat,
@@ -683,7 +759,7 @@ export class HttpClient<SecurityDataType = unknown> {
  * @title Gin swagger
  * @version 1.0
  * @license no license yet
- * @baseUrl //localhost:80/api
+ * @baseUrl //127.0.0.1:80/api
  * @contact NYCUArchery (https://github.com/NYCUarchery)
  *
  * Gin swagger
@@ -1143,9 +1219,27 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @summary Initialize an elimination bracket
      * @request POST:/elimination/bracket/{id}
      */
-    bracketCreate: (id: number, params: RequestParams = {}) =>
+    bracketCreate: (id: number, request: EndpointBracketInitRequest, params: RequestParams = {}) =>
       this.request<EndpointBracketInitResponse, ResponseErrorResponse>({
         path: `/elimination/bracket/${id}`,
+        method: "POST",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Locks the elimination and PlayerSet rows, validates the complete bracket shape and current setup ranks, then fills or clears only unstarted first-round seed slots. Requires a competition Admin. It is idempotent and does not lock the roster or advance matches.
+     *
+     * @tags Elimination
+     * @name BracketSyncFirstRoundCreate
+     * @summary Synchronize an open elimination bracket's first round
+     * @request POST:/elimination/bracket/{id}/sync-first-round
+     */
+    bracketSyncFirstRoundCreate: (id: number, params: RequestParams = {}) =>
+      this.request<EndpointBracketFirstRoundSyncResponse, ResponseErrorResponse>({
+        path: `/elimination/bracket/${id}/sync-first-round`,
         method: "POST",
         format: "json",
         ...params,
@@ -1232,6 +1326,24 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       ),
 
     /**
+     * @description Requires a competition Admin. The request must name exactly both MatchResults; target is A, B, or null. No lanes-table lookup is made.
+     *
+     * @tags Elimination
+     * @name MatchPlacementUpdate
+     * @summary Place the two sides of an elimination match
+     * @request PUT:/elimination/match/placement/{matchid}
+     */
+    matchPlacementUpdate: (matchid: number, Placement: EndpointMatchPlacementRequest, params: RequestParams = {}) =>
+      this.request<EndpointPlacementResponse, ResponseErrorResponse>({
+        path: `/elimination/match/placement/${matchid}`,
+        method: "PUT",
+        body: Placement,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
      * @description Update two MatchResult with two PlayerSetId in one Match by id
      *
      * @tags Elimination
@@ -1267,6 +1379,42 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       this.request<DatabaseMatch, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
         path: `/elimination/match/scores/${matchid}`,
         method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Requires a competition Admin. winner_match_result_id is required and may be null. Validates exactly two placements, may force-correct player_set_ids for any match while retaining slot state and reprojecting selected winners, and selects an occupied winner result. Any conflict rolls back every field.
+     *
+     * @tags Elimination
+     * @name MatchSettingsUpdate
+     * @summary Update elimination match placement and winner atomically
+     * @request PUT:/elimination/match/settings/{matchid}
+     */
+    matchSettingsUpdate: (matchid: number, request: EndpointMatchSettingsRequest, params: RequestParams = {}) =>
+      this.request<EndpointMatchSettingsResponse, ResponseErrorResponse>({
+        path: `/elimination/match/settings/${matchid}`,
+        method: "PUT",
+        body: request,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Locks the elimination, match, and both match results. winner_match_result_id is required and must identify an occupied result of this match, or be null to clear both winner flags. Requires a competition Admin. Generated brackets validate and lock their roster, and cannot change a source after it has advanced.
+     *
+     * @tags Elimination
+     * @name MatchWinnerUpdate
+     * @summary Select an elimination match winner
+     * @request PUT:/elimination/match/winner/{matchid}
+     */
+    matchWinnerUpdate: (matchid: number, request: EndpointMatchWinnerRequest, params: RequestParams = {}) =>
+      this.request<EndpointMatchWinnerResponse, ResponseErrorResponse>({
+        path: `/elimination/match/winner/${matchid}`,
+        method: "PUT",
+        body: request,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),
@@ -1382,6 +1530,24 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       this.request<EndpointBracketAdvanceResponse, ResponseErrorResponse>({
         path: `/elimination/stage/advance/${stageid}`,
         method: "POST",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Requires a competition Admin. mode is one_player_set_per_target or two_player_sets_per_target; no lane records are required.
+     *
+     * @tags Elimination
+     * @name StagePlacementUpdate
+     * @summary Place every match in an elimination stage
+     * @request PUT:/elimination/stage/placement/{stageid}
+     */
+    stagePlacementUpdate: (stageid: number, Placement: EndpointStagePlacementRequest, params: RequestParams = {}) =>
+      this.request<EndpointPlacementResponse, ResponseErrorResponse>({
+        path: `/elimination/stage/placement/${stageid}`,
+        method: "PUT",
+        body: Placement,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),
@@ -1782,12 +1948,13 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
   };
   matchresult = {
     /**
-     * @description Update one MatchResult isWinner by id
+     * @description When is_winner is true, atomically selects this occupied result and clears the other result in its match. When false, clears both winner flags. Prefer PUT /elimination/match/winner/{matchid}. Requires a competition Admin.
      *
      * @tags MatchResult
      * @name IswinnerPartialUpdate
-     * @summary Update one MatchResult isWinner
+     * @summary Set or clear one match winner (legacy result endpoint)
      * @request PATCH:/matchresult/iswinner/{id}
+     * @deprecated
      */
     iswinnerPartialUpdate: (
       id: number,
@@ -1803,12 +1970,13 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Update one MatchResult laneNumber by id
+     * @description Deprecated: use PUT /elimination/match/placement/{matchid}. Requires a competition Admin and preserves the complete-match placement invariant.
      *
      * @tags MatchResult
      * @name LanenumberPartialUpdate
-     * @summary Update one MatchResult laneNumber
+     * @summary Deprecated: update one MatchResult laneNumber
      * @request PATCH:/matchresult/lanenumber/{id}
+     * @deprecated
      */
     lanenumberPartialUpdate: (
       id: number,
@@ -1857,7 +2025,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       MatchEnd: EndpointPutMatchEndsIsConfirmedByIdMatchEndIsConfirmedData,
       params: RequestParams = {},
     ) =>
-      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse>({
         path: `/matchresult/matchend/isconfirmed/${id}`,
         method: "PATCH",
         body: MatchEnd,
@@ -1878,7 +2046,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       matchEndScoresData: EndpointPutMatchEndsScoresByIdMatchEndScoresData,
       params: RequestParams = {},
     ) =>
-      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse>({
         path: `/matchresult/matchend/scores/${id}`,
         method: "PATCH",
         body: matchEndScoresData,
@@ -1899,7 +2067,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       MatchEnd: EndpointPutMatchEndsTotalScoresByIdMatchEndTotalScoresData,
       params: RequestParams = {},
     ) =>
-      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse>({
         path: `/matchresult/matchend/totalscore/${id}`,
         method: "PATCH",
         body: MatchEnd,
@@ -1920,7 +2088,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       MatchScore: EndpointPutMatchScoreScoreByIdMatchScoreData,
       params: RequestParams = {},
     ) =>
-      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse>({
         path: `/matchresult/matchscore/score/${id}`,
         method: "PATCH",
         body: MatchScore,
@@ -1964,7 +2132,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       MatchResult: EndpointPutMatchResultShootOffScoreByIdMatchResultShootOffScoreData,
       params: RequestParams = {},
     ) =>
-      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse>({
         path: `/matchresult/shootoffscore/${id}`,
         method: "PATCH",
         body: MatchResult,
@@ -1985,7 +2153,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       MatchResult: EndpointPutMatchResultTotalPointsByIdMatchResultTotalPointsData,
       params: RequestParams = {},
     ) =>
-      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse>({
         path: `/matchresult/totalpoints/${id}`,
         method: "PATCH",
         body: MatchResult,
@@ -2668,7 +2836,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         DatabasePlayerSet & {
           players?: ResponseNill;
         },
-        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
       >({
         path: `/playerset`,
         method: "POST",
@@ -2723,7 +2891,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      */
     eliminationAutoCreate: (
       eliminationid: number,
-      data?: EndpointAutoCreatePlayerSetsRequest,
+      data: EndpointAutoCreatePlayerSetsRequest,
       params: RequestParams = {},
     ) =>
       this.request<EndpointAutoCreatePlayerSetsResponse, ResponseErrorResponse>({
@@ -2752,7 +2920,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Updates every player set of the elimination as one transaction. expected_player_set_ids must equal the ranking order loaded by the caller. A player set ID that belongs to a different elimination returns 400; a stale snapshot (order changed, or a set added/removed concurrently) returns 409. Requires a competition Admin. Fails once the bracket has been generated.
+     * @description Updates every player set of the elimination as one transaction. expected_player_set_ids must equal the ranking order loaded by the caller. A player set ID that belongs to a different elimination returns 400; a stale snapshot (order changed, or a set added/removed concurrently) returns 409. Requires a competition Admin. It remains available while a new bracket roster is open.
      *
      * @tags PlayerSet
      * @name EliminationRankingPartialUpdate
@@ -2774,7 +2942,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Recomputes and writes a contiguous rank for every player set of the elimination, ordered by team total score, X count, then pure ten count. Requires a competition Admin. Fails once the bracket has been generated.
+     * @description Recomputes and writes a contiguous rank for every player set of the elimination, ordered by team total score, X count, then pure ten count. Requires a competition Admin. It remains available while a new bracket roster is open.
      *
      * @tags PlayerSet
      * @name EliminationRankingAutoPartialUpdate
@@ -2807,15 +2975,16 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Put player set rank by elimination id
+     * @description Deprecated: use PATCH /playerset/elimination/{eliminationid}/ranking/auto. Recomputes and writes a contiguous rank for every player set of the elimination by score.
      *
      * @tags PlayerSet
      * @name PrerankingPartialUpdate
      * @summary Put player set rank
      * @request PATCH:/playerset/preranking/{eliminationid}
+     * @deprecated
      */
     prerankingPartialUpdate: (eliminationid: number, params: RequestParams = {}) =>
-      this.request<void, ResponseErrorInternalErrorResponse>({
+      this.request<void, ResponseErrorResponse | ResponseErrorInternalErrorResponse>({
         path: `/playerset/preranking/${eliminationid}`,
         method: "PATCH",
         ...params,
@@ -2854,7 +3023,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request DELETE:/playerset/{id}
      */
     playersetDelete: (id: number, params: RequestParams = {}) =>
-      this.request<ResponseDeleteSuccessResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<
+        ResponseDeleteSuccessResponse,
+        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/playerset/${id}`,
         method: "DELETE",
         ...params,
@@ -3120,8 +3292,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
   };
 
-  // Backward-compatible aliases retained because existing callers use the
-  // tag-derived camelCase namespaces emitted by the previous generator.
+  // Backward-compatible aliases used throughout the existing frontend.
   groupInfo = this.groupinfo;
   matchResult = this.matchresult;
   matchEnd = this.matchresult;
