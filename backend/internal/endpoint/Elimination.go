@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 func validateEliminationProgress(elimination database.Elimination, currentStage int, currentEnd int) error {
@@ -403,7 +404,7 @@ func PostMatch(context *gin.Context) {
 // Put two playerset id for two matchresult in one match godoc
 //
 //	@Summary		Update two MatchResult with two PlayerSetId in one Match
-//	@Description	Update two MatchResult with two PlayerSetId in one Match by id
+//	@Description	Force-corrects both PlayerSet identities of any elimination Match while retaining each slot's score, confirmation, winner, and placement. Selected winners are reprojected downstream. Requires a competition Admin.
 //	@Tags			Elimination
 //	@Accept			json
 //	@Produce		json
@@ -413,7 +414,7 @@ func PostMatch(context *gin.Context) {
 //	@Failure		400			{object}	response.ErrorIdResponse									"invalid Match ID / invalid PlayerSetId / PlayerSetId should be 2"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse							"internal db error for Get Match when updating match player set / Update MatchResult PlayerSetId / Get Match when updating match player set"
 //	@Failure		403	{object}	response.ErrorResponse	"competition admin required"
-//	@Failure		409	{object}	response.ErrorResponse	"complete bracket is locked"
+//	@Failure		409	{object}	response.ErrorResponse	"invalid same-stage assignment or bracket conflict"
 //	@Router			/elimination/match/playerset/{matchid} [patch]
 func PutMatchPlayerSetByMatchId(conetext *gin.Context) {
 	type PutMatchPlayerSetIdData struct {
@@ -462,18 +463,13 @@ func PutMatchPlayerSetByMatchId(conetext *gin.Context) {
 		return
 	}
 	var newMatch database.Match
-	err = withManualBracketMutation(elimination.ID, func(tx *gorm.DB, _ database.Elimination) error {
-		var results []database.MatchResult
-		if err := tx.Where("match_id = ?", matchId).Order("id asc").Find(&results).Error; err != nil {
+	err = database.DB.Transaction(func(tx *gorm.DB) error {
+		var lockedElimination database.Elimination
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&lockedElimination, elimination.ID).Error; err != nil {
 			return err
 		}
-		if len(results) != 2 {
-			return errBracketConflict
-		}
-		for resultIndex := range results {
-			if err := tx.Model(&database.MatchResult{}).Where("id = ?", results[resultIndex].ID).Update("player_set_id", data.PlayerSetIds[resultIndex]).Error; err != nil {
-				return err
-			}
+		if _, _, err := applyManualMatchPlayerSets(tx, lockedElimination, matchId, data.PlayerSetIds, true); err != nil {
+			return err
 		}
 		return tx.Preload("MatchResults", func(query *gorm.DB) *gorm.DB { return query.Order("id asc") }).
 			Preload("MatchResults.MatchEnds", func(query *gorm.DB) *gorm.DB { return query.Order("id asc") }).
