@@ -23,10 +23,11 @@ import useGetElimination from "@/utils/QueryHooks/useGetElimination";
 import useGetEliminationDetail from "@/utils/QueryHooks/useGetEliminationDetail";
 import useGetPlayerSets from "@/utils/QueryHooks/useGetPlayerSets";
 import {
-  hasContinuousRanks,
   isCompleteEliminationBracket,
+  isBracketRosterLocked,
   nextPowerOfTwo,
 } from "@/utils/eliminationBracket";
+import { createEliminationBracket } from "@/utils/eliminationPlacementApi";
 
 type AutocompletePlayerValue = {
   label: string | undefined;
@@ -70,6 +71,8 @@ export default function Page({
   const [autoCreateError, setAutoCreateError] = useState<string | null>(null);
   const [autoCreateCount, setAutoCreateCount] = useState<string>("");
   const [autoCreateDialogOpen, setAutoCreateDialogOpen] = useState(false);
+  const [bracketAdvancingCount, setBracketAdvancingCount] = useState("4");
+  const [bracketDialogOpen, setBracketDialogOpen] = useState(false);
   const [selectedPlayers, setSelectedPlayers] = useState<
     AutocompletePlayerValue[]
   >(Array(teamSize));
@@ -88,6 +91,12 @@ export default function Page({
         ]);
         queryClient.invalidateQueries([
           "playerSetRanking",
+          elimination!.elimination_id,
+        ]);
+        // 建樹後後端會在同一 transaction 依目前排名重填第一輪；
+        // 此 query 含 MatchResult.player_set_id，故不可只刷新隊伍列表。
+        queryClient.invalidateQueries([
+          "eliminationDetail",
           elimination!.elimination_id,
         ]);
       },
@@ -113,6 +122,11 @@ export default function Page({
           ]);
           queryClient.invalidateQueries([
             "playerSets",
+            elimination!.elimination_id,
+          ]);
+          // 自動排名會同步既有對抗樹的第一輪 seed。
+          queryClient.invalidateQueries([
+            "eliminationDetail",
             elimination!.elimination_id,
           ]);
           setAutoRankingError(null);
@@ -180,7 +194,11 @@ export default function Page({
     );
 
   const { mutate: createBracket, isLoading: isBracketCreating } = useMutation(
-    () => apiClient.elimination.bracketCreate(elimination!.elimination_id!),
+    () =>
+      createEliminationBracket(
+        elimination!.elimination_id!,
+        Number(bracketAdvancingCount)
+      ),
     {
       onSuccess: () => {
         queryClient.invalidateQueries([
@@ -191,7 +209,16 @@ export default function Page({
           "competitionEliminations",
           competitionId,
         ]);
+        queryClient.invalidateQueries([
+          "playerSets",
+          elimination?.elimination_id,
+        ]);
+        queryClient.invalidateQueries([
+          "playerSetRanking",
+          elimination?.elimination_id,
+        ]);
         setBracketError(null);
+        setBracketDialogOpen(false);
       },
       onError: (error: any) => {
         setBracketError(
@@ -209,12 +236,18 @@ export default function Page({
       value: player!.id,
       label: player!.name + " rank: " + player!.rank,
     }));
-  const sortedPlayerSets = [...(playerSets ?? [])].sort(
-    (a, b) => (a.rank ?? Infinity) - (b.rank ?? Infinity)
-  );
-  const playerSetCount = sortedPlayerSets.length;
+  const playerSetCount = playerSets?.length ?? 0;
   const bracketExists = isCompleteEliminationBracket(eliminationDetail?.stages);
-  const stageExists = (eliminationDetail?.stages?.length ?? 0) > 0;
+  const rosterLocked = isBracketRosterLocked(eliminationDetail);
+  const parsedBracketAdvancingCount = Number(bracketAdvancingCount);
+  const isBracketAdvancingCountValid =
+    Number.isInteger(parsedBracketAdvancingCount) &&
+    parsedBracketAdvancingCount >= 4 &&
+    parsedBracketAdvancingCount <= 128;
+  const bracketSize = nextPowerOfTwo(parsedBracketAdvancingCount);
+  const reservePlayerSetCount = isBracketAdvancingCountValid
+    ? Math.max(0, playerSetCount - parsedBracketAdvancingCount)
+    : 0;
   const eligiblePlayerCount = (group?.players ?? []).filter(
     (player) => (player.rank ?? -1) >= 1
   ).length;
@@ -223,11 +256,6 @@ export default function Page({
     Number.isInteger(parsedAutoCreateCount) &&
     parsedAutoCreateCount >= 4 &&
     parsedAutoCreateCount <= eligiblePlayerCount;
-  const canCreateBracket =
-    !bracketExists &&
-    !isPlayerSetsLoading &&
-    playerSetCount >= 4 &&
-    hasContinuousRanks(sortedPlayerSets);
 
   const handleCreatePlayerSet = () => {
     const playerIds = selectedPlayers.map((player) => player?.value);
@@ -263,28 +291,23 @@ export default function Page({
   useEffect(() => {
     if (qualification?.advancing_num !== undefined) {
       setAutoCreateCount(String(qualification.advancing_num));
+      if (teamSize === 1) {
+        setBracketAdvancingCount(String(qualification.advancing_num));
+      }
     }
-  }, [qualification?.id, qualification?.advancing_num]);
+  }, [qualification?.id, qualification?.advancing_num, teamSize]);
 
   return (
     <Box sx={{ width: "100%" }}>
       <GroupMenu groupNames={groups?.map((group) => group.group_name!) ?? []} />
       <Stack spacing={1} sx={{ my: 2 }}>
-        <Typography>隊數：{playerSetCount}</Typography>
+        <Typography>實際隊數：{playerSetCount}</Typography>
         <Typography>
-          下一個 2 的冪：{nextPowerOfTwo(playerSetCount) || "—"}
+          對抗樹大小：{bracketSize || "—"}
         </Typography>
         <Typography>
           建立狀態：{bracketExists ? "完整對抗樹已建立" : "尚未建立完整對抗樹"}
         </Typography>
-        {!isPlayerSetsLoading && playerSetCount < 4 && (
-          <Alert severity="info">至少需要 4 隊才能建立完整對抗樹。</Alert>
-        )}
-        {!isPlayerSetsLoading &&
-          playerSetCount >= 4 &&
-          !hasContinuousRanks(sortedPlayerSets) && (
-            <Alert severity="warning">隊伍排名必須連續且從 1 開始。</Alert>
-          )}
         {bracketError && <Alert severity="error">{bracketError}</Alert>}
         {teamSize === 1 && (
           <>
@@ -292,8 +315,8 @@ export default function Page({
             <Typography variant="body2">
               可排名選手數：{eligiblePlayerCount}
             </Typography>
-            {stageExists && (
-              <Alert severity="info">已有對抗階段，不能再自動建立隊伍。</Alert>
+            {rosterLocked && (
+              <Alert severity="info">對抗樹名單已鎖定，不能再自動建立隊伍。</Alert>
             )}
             {autoCreateError && <Alert severity="error">{autoCreateError}</Alert>}
             <TextField
@@ -310,7 +333,7 @@ export default function Page({
               disabled={
                 isQualificationLoading ||
                 qualification === undefined ||
-                stageExists ||
+                rosterLocked ||
                 isAutoCreating
               }
             />
@@ -321,7 +344,7 @@ export default function Page({
                 isQualificationLoading ||
                 qualification === undefined ||
                 elimination?.elimination_id === undefined ||
-                stageExists ||
+                rosterLocked ||
                 isAutoCreating ||
                 !isAutoCreateCountValid
               }
@@ -332,8 +355,13 @@ export default function Page({
         )}
         <Button
           variant="contained"
-          onClick={() => createBracket()}
-          disabled={!canCreateBracket || isBracketCreating}
+          onClick={() => setBracketDialogOpen(true)}
+          disabled={
+            elimination?.elimination_id === undefined ||
+            bracketExists ||
+            isPlayerSetsLoading ||
+            isBracketCreating
+          }
         >
           {isBracketCreating ? "建立中…" : "建立完整對抗樹"}
         </Button>
@@ -349,7 +377,7 @@ export default function Page({
       <Button
         onClick={handleAutoRanking}
         disabled={
-          stageExists ||
+          rosterLocked ||
           isAutoRanking ||
           elimination?.elimination_id === undefined
         }
@@ -367,7 +395,7 @@ export default function Page({
               id="player-select"
               value={selectedPlayers[index]}
               inputValue={inputValues[index]}
-              disabled={bracketExists}
+              disabled={rosterLocked}
               onChange={(_: any, newValue: AutocompletePlayerValue) => {
                 setSelectedPlayers((oldValue) => {
                   const newValues = [...oldValue];
@@ -390,7 +418,7 @@ export default function Page({
         })}
 
       <TextField
-        disabled={params.teamSize === "1" || bracketExists}
+        disabled={params.teamSize === "1" || rosterLocked}
         value={setName}
         onChange={(e) => setSetName(e.target.value)}
         sx={{ width: "100%", mb: 2 }}
@@ -399,7 +427,7 @@ export default function Page({
       <Button
         variant="contained"
         onClick={handleCreatePlayerSet}
-        disabled={bracketExists}
+        disabled={rosterLocked}
       >
         創建隊伍
       </Button>
@@ -424,6 +452,60 @@ export default function Page({
             disabled={isAutoCreating}
           >
             {isAutoCreating ? "建立中…" : "確認建立"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={bracketDialogOpen}
+        onClose={() => !isBracketCreating && setBracketDialogOpen(false)}
+      >
+        <DialogTitle>建立完整對抗樹</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            fullWidth
+            label="晉級數"
+            type="number"
+            value={bracketAdvancingCount}
+            inputProps={{ min: 4, max: 128, step: 1 }}
+            onChange={(event) => setBracketAdvancingCount(event.target.value)}
+            sx={{ mt: 1 }}
+          />
+          <Typography sx={{ mt: 2 }}>實際隊數：{playerSetCount}</Typography>
+          <Typography>對抗樹大小：{bracketSize || "—"}</Typography>
+          {teamSize === 1 && qualification?.advancing_num !== undefined && (
+            <Alert severity="info" sx={{ mt: 2 }}>
+              個人賽已預填排名賽晉級數 {qualification.advancing_num}。
+            </Alert>
+          )}
+          {!isBracketAdvancingCountValid && (
+            <Alert severity="error" sx={{ mt: 2 }}>
+              晉級數必須介於 4 與 128。
+            </Alert>
+          )}
+          {reservePlayerSetCount > 0 && (
+            <Alert severity="info" sx={{ mt: 2 }}>
+              前 {parsedBracketAdvancingCount} 隊依排名排入第一階段，其餘 {reservePlayerSetCount} 隊保留為後備。
+            </Alert>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={() => setBracketDialogOpen(false)}
+            disabled={isBracketCreating}
+          >
+            取消
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => createBracket()}
+            disabled={
+              elimination?.elimination_id === undefined ||
+              !isBracketAdvancingCountValid ||
+              isBracketCreating
+            }
+          >
+            {isBracketCreating ? "建立中…" : "建立"}
           </Button>
         </DialogActions>
       </Dialog>

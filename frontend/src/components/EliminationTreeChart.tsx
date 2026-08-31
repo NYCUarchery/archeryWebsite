@@ -6,6 +6,7 @@ import { HierarchyNode, HierarchyPointLink } from "d3";
 import { TreeNode } from "@/utils/parseStagesToTree";
 import { DatabasePlayerSet } from "@/types/Api";
 import { Typography } from "@mui/material";
+import { formatLanePlacement, getMatchResultTarget } from "@/utils/eliminationPlacement";
 interface Props {
   playerSets: DatabasePlayerSet[];
   goldRoot?: TreeNode;
@@ -198,7 +199,10 @@ export default function EliminationTreeChart({
       .attr("font-weight", "bold")
       .attr("font-size", "20px")
       .text((d: HierarchyNode<TreeNode>) =>
-        d.data.result.lane_number!.toString()
+        formatLanePlacement(
+          d.data.result.lane_number,
+          getMatchResultTarget(d.data.result)
+        )
       );
 
     bronzeGroup
@@ -268,7 +272,10 @@ export default function EliminationTreeChart({
       .attr("font-weight", "bold")
       .attr("font-size", "20px")
       .text((d: HierarchyNode<TreeNode>) =>
-        d.data.result.lane_number!.toString()
+        formatLanePlacement(
+          d.data.result.lane_number,
+          getMatchResultTarget(d.data.result)
+        )
       );
 
     const silverNode = d3.hierarchy<TreeNode>(silverRoot);

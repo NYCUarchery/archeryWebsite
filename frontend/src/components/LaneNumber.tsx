@@ -1,12 +1,14 @@
 import { Box } from "@mui/material";
+import { MatchTarget, formatLanePlacement } from "@/utils/eliminationPlacement";
 
 interface LaneNumberProps {
   laneNumber?: number;
+  target?: MatchTarget;
   width: string;
   height: string;
 }
 
-function LaneNumber({ laneNumber, width, height }: LaneNumberProps) {
+function LaneNumber({ laneNumber, target = null, width, height }: LaneNumberProps) {
   let color = "#fff700";
   let backgroundColor = "black";
   if (laneNumber != undefined && laneNumber % 2 == 1) {
@@ -34,7 +36,7 @@ function LaneNumber({ laneNumber, width, height }: LaneNumberProps) {
           lineHeight: height,
         }}
       >
-        {laneNumber}
+        {formatLanePlacement(laneNumber, target)}
       </span>
     </Box>
   );

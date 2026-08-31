@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { useMutation } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 import { Snackbar, Alert } from "@mui/material";
 import { apiClient } from "@/utils/ApiClient";
 import { useAppDispatch, useAppSelector } from "store/hooks";
@@ -72,6 +72,7 @@ function toLocalMatchResults(
 export default function Page({ params }: { params: { id: string } }) {
   const competitionId = parseInt(params.id);
   const status = useCurrentEliminationMatch(competitionId);
+  const queryClient = useQueryClient();
 
   const dispatch = useAppDispatch();
   const matchResults = useAppSelector(
@@ -92,6 +93,25 @@ export default function Page({ params }: { params: { id: string } }) {
     severity: "success" | "error";
     message: string;
   }>({ open: false, severity: "success", message: "" });
+
+  const markRosterLockedInCache = () => {
+    if (status.kind !== "ready" || status.data.elimination.id === undefined) {
+      return;
+    }
+    queryClient.setQueryData(
+      ["eliminationDetail", status.data.elimination.id],
+      (cachedResponse: any) =>
+        cachedResponse?.data
+          ? {
+              ...cachedResponse,
+              data: {
+                ...cachedResponse.data,
+                bracket_roster_locked: true,
+              },
+            }
+          : cachedResponse
+    );
+  };
 
   // 避免「本地資料因初始化/存分回填而變動」被誤判為「使用者剛填滿容量」而重觸自動存分。
   const isLocalRefreshRef = useRef(false);
@@ -148,6 +168,7 @@ export default function Page({ params }: { params: { id: string } }) {
         dispatch(setSaving(true));
       },
       onSuccess: ({ matchResultId, scores, totalScores }) => {
+        markRosterLockedInCache();
         dispatch(setSaving(false));
         dispatch(setSaveError(null));
         // 存分成功不改 is_confirmed/total_points/is_winner/current_end，僅回填本波分數。
@@ -178,6 +199,7 @@ export default function Page({ params }: { params: { id: string } }) {
     },
     {
       onSuccess: (matchResultId) => {
+        markRosterLockedInCache();
         dispatch(markConfirmed(matchResultId));
         setSnackbar({ open: true, severity: "success", message: "已確認本波" });
       },
