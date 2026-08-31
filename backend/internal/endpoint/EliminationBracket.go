@@ -14,11 +14,19 @@ import (
 // BracketInitResponse is deliberately small: callers should fetch the normal
 // elimination resource when they need the complete bracket graph.
 type BracketInitResponse struct {
-	EliminationID uint `json:"elimination_id"`
-	EntrantCount  int  `json:"entrant_count"`
-	BracketSize   int  `json:"bracket_size"`
-	StageCount    int  `json:"stage_count"`
-	Created       bool `json:"created"`
+	EliminationID  uint `json:"elimination_id"`
+	EntrantCount   int  `json:"entrant_count"`
+	AdvancingCount int  `json:"advancing_count"`
+	BracketSize    int  `json:"bracket_size"`
+	StageCount     int  `json:"stage_count"`
+	Created        bool `json:"created"`
+}
+
+// BracketInitRequest fixes the size of a bracket before a roster exists.  The
+// roster remains editable until scoring, confirmation, winner selection, or
+// explicit advancement locks it.
+type BracketInitRequest struct {
+	AdvancingCount int `json:"advancing_count" binding:"required,min=4,max=128"`
 }
 
 type BracketAdvanceResponse struct {
@@ -29,10 +37,19 @@ type BracketAdvanceResponse struct {
 	Changed       bool  `json:"changed"`
 }
 
+// BracketFirstRoundSyncResponse reports whether an open bracket's initial
+// seed slots changed. The endpoint never advances a match or locks the roster.
+type BracketFirstRoundSyncResponse struct {
+	EliminationID uint `json:"elimination_id"`
+	Changed       bool `json:"changed"`
+}
+
 var (
-	errBracketConflict = errors.New("elimination bracket is partial or incompatible")
-	errBracketPending  = errors.New("every source match needs exactly one winner")
-	errBracketLocked   = errors.New("complete elimination bracket cannot be changed through manual APIs")
+	errBracketConflict  = errors.New("elimination bracket is partial or incompatible")
+	errBracketPending   = errors.New("every source match needs exactly one winner")
+	errBracketLocked    = errors.New("complete elimination bracket cannot be changed through manual APIs")
+	errBracketEmptySlot = errors.New("cannot score, confirm, or select a winner for an empty bracket slot")
+	errBracketUnranked  = errors.New("every player set must have a rank before starting the elimination")
 )
 
 type bracketMatch struct {
@@ -53,20 +70,23 @@ func nextPowerOfTwo(value int) int {
 	return result
 }
 
-// standardSeedOrder returns the conventional bracket positions.  For eight
-// entrants it is 1,8,4,5,2,7,3,6, thus the highest seeds only meet late.
-func standardSeedOrder(size int) []int {
-	if size <= 1 {
-		return []int{1}
+// bitReversedSeedOrder returns first-round pairs with odd seeds on the left
+// and the paired even seed on the right. For eight slots it is
+// 1,8,5,4,3,6,7,2.
+func bitReversedSeedOrder(size int) []int {
+	order := make([]int, size)
+	bits := 0
+	for (1 << bits) < size/2 {
+		bits++
 	}
-	order := []int{1, 2}
-	for len(order) < size {
-		nextSize := len(order) * 2
-		next := make([]int, 0, nextSize)
-		for _, seed := range order {
-			next = append(next, seed, nextSize+1-seed)
+	for matchIndex := 0; matchIndex < size/2; matchIndex++ {
+		reversed := 0
+		for bit := 0; bit < bits; bit++ {
+			reversed = reversed<<1 | (matchIndex>>bit)&1
 		}
-		order = next
+		left := 2*reversed + 1
+		order[matchIndex*2] = left
+		order[matchIndex*2+1] = size + 1 - left
 	}
 	return order
 }
@@ -104,21 +124,32 @@ func withManualBracketMutation(eliminationID uint, mutation func(*gorm.DB, datab
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&elimination, eliminationID).Error; err != nil {
 			return err
 		}
-		var playerSets []database.PlayerSet
-		if err := tx.Where("elimination_id = ?", eliminationID).Find(&playerSets).Error; err != nil {
+		if err := ensureManualBracketMutationAllowed(tx, elimination); err != nil {
 			return err
-		}
-		if validateBracketEntrants(playerSets) == nil {
-			bracket, err := loadBracket(tx, eliminationID)
-			if err != nil {
-				return err
-			}
-			if bracketStageMatchShapeIsComplete(bracket, nextPowerOfTwo(len(playerSets))) {
-				return errBracketLocked
-			}
 		}
 		return mutation(tx, elimination)
 	})
+}
+
+// ensureManualBracketMutationAllowed is the transaction-level guard shared by
+// legacy player-set APIs and the composite match settings endpoint. The caller
+// must already hold the elimination row lock.
+func ensureManualBracketMutationAllowed(tx *gorm.DB, elimination database.Elimination) error {
+	var playerSets []database.PlayerSet
+	if err := tx.Where("elimination_id = ?", elimination.ID).Find(&playerSets).Error; err != nil {
+		return err
+	}
+	bracket, err := loadBracket(tx, elimination.ID)
+	if err != nil {
+		return err
+	}
+	if elimination.BracketSeedCount > 0 && bracketStageMatchShapeIsComplete(bracket, nextPowerOfTwo(elimination.BracketSeedCount)) {
+		return errBracketLocked
+	}
+	if elimination.BracketSeedCount == 0 && len(playerSets) > 0 && bracketStageMatchShapeIsComplete(bracket, nextPowerOfTwo(len(playerSets))) {
+		return errBracketLocked
+	}
+	return nil
 }
 
 func bracketWinnerMutationIsLocked(tx *gorm.DB, bracket []bracketStage, eliminationID, resultID uint) (bool, error) {
@@ -138,11 +169,23 @@ func bracketWinnerMutationIsLocked(tx *gorm.DB, bracket []bracketStage, eliminat
 				return awardedMedals != 0, err
 			}
 			if stageIndex == lastStage-1 {
+				if len(bracket[lastStage].Matches) == 1 {
+					if matchIndex >= len(bracket[lastStage].Matches[0].Results) {
+						return false, nil
+					}
+					return bracket[lastStage].Matches[0].Results[matchIndex].PlayerSetId != nil, nil
+				}
+				if len(bracket[lastStage].Matches) != 2 || matchIndex >= len(bracket[lastStage].Matches[0].Results) || matchIndex >= len(bracket[lastStage].Matches[1].Results) {
+					return false, nil
+				}
 				return bracket[lastStage].Matches[0].Results[matchIndex].PlayerSetId != nil ||
 					bracket[lastStage].Matches[1].Results[matchIndex].PlayerSetId != nil, nil
 			}
 			targetMatch := matchIndex / 2
 			targetSlot := matchIndex % 2
+			if stageIndex+1 >= len(bracket) || targetMatch >= len(bracket[stageIndex+1].Matches) || targetSlot >= len(bracket[stageIndex+1].Matches[targetMatch].Results) {
+				return false, nil
+			}
 			return bracket[stageIndex+1].Matches[targetMatch].Results[targetSlot].PlayerSetId != nil, nil
 		}
 	}
@@ -162,16 +205,9 @@ func matchEndsAndArrows(teamSize int) (int, int, error) {
 	}
 }
 
-func validateBracketEntrants(playerSets []database.PlayerSet) error {
-	if len(playerSets) < 4 {
-		return errors.New("at least four player sets are required")
-	}
-	seen := make(map[int]bool, len(playerSets))
-	for _, playerSet := range playerSets {
-		if playerSet.Rank < 1 || playerSet.Rank > len(playerSets) || seen[playerSet.Rank] {
-			return errors.New("player set ranks must be unique and continuous from 1")
-		}
-		seen[playerSet.Rank] = true
+func validateBracketSeedCount(seedCount int) error {
+	if seedCount < 4 || seedCount > 128 {
+		return errors.New("advancing_count must be between 4 and 128")
 	}
 	return nil
 }
@@ -202,16 +238,71 @@ func loadBracket(tx *gorm.DB, eliminationID uint) ([]bracketStage, error) {
 func expectedFirstRoundSlots(playerSets []database.PlayerSet, bracketSize int) []*uint {
 	byRank := make(map[int]uint, len(playerSets))
 	for _, playerSet := range playerSets {
-		byRank[playerSet.Rank] = playerSet.ID
+		if playerSet.Rank > 0 && playerSet.Rank <= bracketSize {
+			byRank[playerSet.Rank] = playerSet.ID
+		}
 	}
 	firstSlots := make([]*uint, bracketSize)
-	for position, rank := range standardSeedOrder(bracketSize) {
-		if playerSetID, ok := byRank[rank]; ok {
+	for position, seed := range bitReversedSeedOrder(bracketSize) {
+		if playerSetID, ok := byRank[seed]; ok {
 			id := playerSetID
 			firstSlots[position] = &id
 		}
 	}
 	return firstSlots
+}
+
+func rankedRoster(playerSets []database.PlayerSet, seedCount int) []database.PlayerSet {
+	roster := make([]database.PlayerSet, 0, seedCount)
+	for _, playerSet := range playerSets {
+		if playerSet.Rank > 0 && playerSet.Rank <= seedCount {
+			roster = append(roster, playerSet)
+		}
+	}
+	return roster
+}
+
+// validateRosterForLock permits unranked/out-of-cut reserves. Callers also
+// validate the complete first-round rank projection before locking play, so a
+// reserve can never be mistaken for an active slot.
+func validateRosterForLock(playerSets []database.PlayerSet, seedCount int) error {
+	seen := make(map[int]bool, len(playerSets))
+	for _, playerSet := range playerSets {
+		if playerSet.Rank == 0 {
+			continue
+		}
+		if playerSet.Rank < 0 || seen[playerSet.Rank] {
+			return errBracketConflict
+		}
+		seen[playerSet.Rank] = true
+	}
+	return nil
+}
+
+func validateRosterForSetup(playerSets []database.PlayerSet, seedCount int) error {
+	seen := make(map[int]bool, len(playerSets))
+	for _, playerSet := range playerSets {
+		if playerSet.Rank == 0 {
+			continue
+		}
+		if playerSet.Rank < 0 || seen[playerSet.Rank] {
+			return errBracketConflict
+		}
+		seen[playerSet.Rank] = true
+	}
+	return nil
+}
+
+func rosterHasOnlyUnsetRanks(playerSets []database.PlayerSet) bool {
+	if len(playerSets) == 0 {
+		return false
+	}
+	for _, playerSet := range playerSets {
+		if playerSet.Rank != 0 {
+			return false
+		}
+	}
+	return true
 }
 
 func sameOptionalID(left, right *uint) bool {
@@ -241,7 +332,7 @@ func decidedWinnerAndLoser(results []database.MatchResult) (*uint, *uint) {
 	return winner, loser
 }
 
-func bracketShapeIsCompatible(tx *gorm.DB, bracket []bracketStage, playerSets []database.PlayerSet, bracketSize, teamSize int) (bool, error) {
+func bracketShapeIsCompatible(tx *gorm.DB, bracket []bracketStage, playerSets []database.PlayerSet, seedCount, bracketSize, teamSize int) (bool, error) {
 	expected := expectedBracketMatchCounts(bracketSize)
 	if len(bracket) != len(expected) {
 		return false, nil
@@ -249,6 +340,8 @@ func bracketShapeIsCompatible(tx *gorm.DB, bracket []bracketStage, playerSets []
 	if len(bracket) == 0 {
 		return false, nil
 	}
+	// Medal rows remain required bracket structure.  Their PlayerSetId is a
+	// materialized result and may be replaced by an administrator correction.
 	var medals []database.Medal
 	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("elimination_id = ?", bracket[0].Stage.EliminationId).Order("type asc, id asc").Find(&medals).Error; err != nil {
 		return false, err
@@ -264,21 +357,27 @@ func bracketShapeIsCompatible(tx *gorm.DB, bracket []bracketStage, playerSets []
 	for _, playerSet := range playerSets {
 		validPlayerSetIDs[playerSet.ID] = true
 	}
-	expectedFirstSlots := expectedFirstRoundSlots(playerSets, bracketSize)
 	for stageIndex, stage := range bracket {
 		if len(stage.Matches) != expected[stageIndex] {
 			return false, nil
 		}
-		for matchIndex, match := range stage.Matches {
+		stagePlayerSets := make(map[uint]bool)
+		for _, match := range stage.Matches {
 			if len(match.Results) != 2 {
 				return false, nil
 			}
 			winnerCount := 0
 			knownCount := 0
-			for resultIndex, result := range match.Results {
+			for _, result := range match.Results {
 				isEmptySlot := result.PlayerSetId == nil
 				if result.PlayerSetId != nil && !validPlayerSetIDs[*result.PlayerSetId] {
 					return false, nil
+				}
+				if result.PlayerSetId != nil {
+					if stagePlayerSets[*result.PlayerSetId] {
+						return false, nil
+					}
+					stagePlayerSets[*result.PlayerSetId] = true
 				}
 				if result.PlayerSetId != nil {
 					knownCount++
@@ -289,14 +388,11 @@ func bracketShapeIsCompatible(tx *gorm.DB, bracket []bracketStage, playerSets []
 						return false, nil
 					}
 				}
-				if isEmptySlot && (result.TotalPoints != 0 || result.ShootOffScore != -1 || result.IsWinner || result.LaneNumber != 0) {
+				if isEmptySlot && (result.TotalPoints != 0 || result.ShootOffScore != -1 || result.IsWinner) {
 					return false, nil
 				}
-				if stageIndex == 0 {
-					expectedSlot := expectedFirstSlots[matchIndex*2+resultIndex]
-					if !sameOptionalID(result.PlayerSetId, expectedSlot) {
-						return false, nil
-					}
+				if result.Target != nil && *result.Target != "A" && *result.Target != "B" {
+					return false, nil
 				}
 				var ends []database.MatchEnd
 				if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("match_result_id = ?", result.ID).Order("id asc").Find(&ends).Error; err != nil {
@@ -325,38 +421,12 @@ func bracketShapeIsCompatible(tx *gorm.DB, bracket []bracketStage, playerSets []
 					}
 				}
 			}
-			if winnerCount > 1 || stageIndex == 0 && knownCount == 1 && winnerCount != 1 || stageIndex > 0 && winnerCount == 1 && knownCount != 2 {
+			if winnerCount > 1 {
 				return false, nil
 			}
 		}
 	}
 
-	lastStage := len(bracket) - 1
-	for stageIndex := 0; stageIndex < lastStage; stageIndex++ {
-		for matchIndex, sourceMatch := range bracket[stageIndex].Matches {
-			winner, loser := decidedWinnerAndLoser(sourceMatch.Results)
-			if stageIndex == lastStage-1 {
-				if !targetSlotIsCompatible(bracket[lastStage].Matches[0].Results[matchIndex].PlayerSetId, winner) ||
-					!targetSlotIsCompatible(bracket[lastStage].Matches[1].Results[matchIndex].PlayerSetId, loser) {
-					return false, nil
-				}
-				continue
-			}
-			targetMatch := matchIndex / 2
-			targetSlot := matchIndex % 2
-			if !targetSlotIsCompatible(bracket[stageIndex+1].Matches[targetMatch].Results[targetSlot].PlayerSetId, winner) {
-				return false, nil
-			}
-		}
-	}
-
-	gold, silver := decidedWinnerAndLoser(bracket[lastStage].Matches[0].Results)
-	bronze, _ := decidedWinnerAndLoser(bracket[lastStage].Matches[1].Results)
-	for medalIndex, expectedPlayerSetID := range []*uint{gold, silver, bronze} {
-		if medals[medalIndex].PlayerSetId != 0 && (expectedPlayerSetID == nil || medals[medalIndex].PlayerSetId != *expectedPlayerSetID) {
-			return false, nil
-		}
-	}
 	return true, nil
 }
 
@@ -415,22 +485,97 @@ func createBracket(tx *gorm.DB, elimination database.Elimination, playerSets []d
 			bracket[stageIndex].Matches[matchIndex] = match
 		}
 	}
-	if _, err := autoAdvanceByes(tx, bracket); err != nil {
-		return nil, err
-	}
 	return bracket, nil
 }
 
-func winnerAndLoser(results []database.MatchResult, allowBye bool) (*uint, *uint, error) {
+// syncFirstRoundRoster is the sole writer for a roster-open bracket's first
+// round.  It tolerates an empty roster and rank gaps, but refuses to erase a
+// result that has started scoring or has been decided.
+func syncFirstRoundRoster(tx *gorm.DB, elimination database.Elimination) (bool, error) {
+	if elimination.BracketSeedCount == 0 || elimination.BracketRosterLocked {
+		return false, nil
+	}
+	bracketSize := nextPowerOfTwo(elimination.BracketSeedCount)
+	bracket, err := loadBracket(tx, elimination.ID)
+	if err != nil {
+		return false, err
+	}
+	if !bracketStageMatchShapeIsComplete(bracket, bracketSize) {
+		return false, errBracketConflict
+	}
+	var playerSets []database.PlayerSet
+	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("elimination_id = ?", elimination.ID).Order("`rank` asc, id asc").Find(&playerSets).Error; err != nil {
+		return false, err
+	}
+	if rosterHasOnlyUnsetRanks(playerSets) {
+		if _, err := database.AutoRankPlayerSets(tx, elimination.ID); err != nil {
+			return false, err
+		}
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("elimination_id = ?", elimination.ID).Order("`rank` asc, id asc").Find(&playerSets).Error; err != nil {
+			return false, err
+		}
+	}
+	if err := validateRosterForSetup(playerSets, elimination.BracketSeedCount); err != nil {
+		return false, err
+	}
+	expected := expectedFirstRoundSlots(rankedRoster(playerSets, elimination.BracketSeedCount), bracketSize)
+	changed := false
+	for matchIndex, match := range bracket[0].Matches {
+		for resultIndex := range match.Results {
+			result := &match.Results[resultIndex]
+			want := expected[matchIndex*2+resultIndex]
+			if sameOptionalID(result.PlayerSetId, want) {
+				continue
+			}
+			started, err := bracketSlotHasStarted(tx, *result)
+			if err != nil {
+				return false, err
+			}
+			if started {
+				return false, errBracketConflict
+			}
+			if err := tx.Model(&database.MatchResult{}).Where("id = ?", result.ID).Update("player_set_id", want).Error; err != nil {
+				return false, err
+			}
+			result.PlayerSetId = want
+			changed = true
+		}
+	}
+	return changed, nil
+}
+
+func lockBracketRoster(tx *gorm.DB, elimination *database.Elimination) error {
+	if elimination.BracketSeedCount == 0 || elimination.BracketRosterLocked {
+		return nil
+	}
+	if err := tx.Model(&database.Elimination{}).Where("id = ?", elimination.ID).Update("bracket_roster_locked", true).Error; err != nil {
+		return err
+	}
+	elimination.BracketRosterLocked = true
+	return nil
+}
+
+// resolvedWinnerAndLoser accepts empty and one-entrant matches. A one-entrant
+// match becomes a BYE only when an administrator advances its stage, never at
+// bracket creation time. The returned bool reports whether the match has an
+// entrant at all.
+func resolvedWinnerAndLoser(tx *gorm.DB, results []database.MatchResult) (*uint, *uint, bool, error) {
 	if len(results) != 2 {
-		return nil, nil, errBracketConflict
+		return nil, nil, false, errBracketConflict
 	}
 	winners := 0
+	known := 0
 	var winner, loser *uint
-	for _, result := range results {
+	var onlyKnown *database.MatchResult
+	for index := range results {
+		result := &results[index]
+		if result.PlayerSetId != nil {
+			known++
+			onlyKnown = result
+		}
 		if result.IsWinner {
 			if result.PlayerSetId == nil {
-				return nil, nil, errBracketConflict
+				return nil, nil, false, errBracketConflict
 			}
 			winners++
 			winner = result.PlayerSetId
@@ -440,13 +585,24 @@ func winnerAndLoser(results []database.MatchResult, allowBye bool) (*uint, *uint
 			loser = result.PlayerSetId
 		}
 	}
+	if known == 0 {
+		return nil, nil, false, nil
+	}
+	if known == 1 {
+		if winners > 1 {
+			return nil, nil, false, errBracketConflict
+		}
+		if winners == 0 {
+			if err := tx.Model(&database.MatchResult{}).Where("id = ?", onlyKnown.ID).Update("is_winner", true).Error; err != nil {
+				return nil, nil, false, err
+			}
+		}
+		return onlyKnown.PlayerSetId, nil, true, nil
+	}
 	if winners != 1 {
-		return nil, nil, errBracketPending
+		return nil, nil, false, errBracketPending
 	}
-	if loser == nil && !allowBye {
-		return nil, nil, errBracketPending
-	}
-	return winner, loser, nil
+	return winner, loser, true, nil
 }
 
 func putBracketSlot(tx *gorm.DB, result *database.MatchResult, playerSetID *uint) (bool, error) {
@@ -474,9 +630,233 @@ func putBracketSlot(tx *gorm.DB, result *database.MatchResult, playerSetID *uint
 	return true, nil
 }
 
-func bracketSlotIsBlank(tx *gorm.DB, result database.MatchResult) (bool, error) {
-	if result.PlayerSetId != nil || result.TotalPoints != 0 || result.ShootOffScore != -1 || result.IsWinner || result.LaneNumber != 0 {
+type bracketSlotProjection struct {
+	result      *database.MatchResult
+	playerSetID *uint
+}
+
+// overwriteBracketSlots projects one or more source outputs into predefined
+// child slots. A later correction may replace an earlier projection, retaining
+// each target slot's score, confirmation, winner, and placement. Multiple
+// destinations are validated together so a semifinal winner/loser correction
+// can atomically swap gold and bronze entries.
+func overwriteBracketSlots(tx *gorm.DB, stage *bracketStage, projections []bracketSlotProjection) (bool, error) {
+	destinationIDs := make(map[uint]bool, len(projections))
+	proposed := make(map[uint]*uint, len(projections))
+	for _, projection := range projections {
+		if projection.result == nil || destinationIDs[projection.result.ID] {
+			return false, errBracketConflict
+		}
+		destinationIDs[projection.result.ID] = true
+		proposed[projection.result.ID] = projection.playerSetID
+	}
+	// A projected winner may already occupy a sibling target slot because an
+	// earlier write was stale. Treat that as a stage-local permutation: move
+	// the displaced destination identity into the old sibling slot, then check
+	// the whole resulting stage. This is required for A/B child-slot swaps.
+	desired := make(map[uint]bool, len(projections))
+	for _, playerSetID := range proposed {
+		if playerSetID != nil {
+			desired[*playerSetID] = true
+		}
+	}
+	locations := make(map[uint][]*database.MatchResult)
+	for matchIndex := range stage.Matches {
+		for resultIndex := range stage.Matches[matchIndex].Results {
+			result := &stage.Matches[matchIndex].Results[resultIndex]
+			if result.PlayerSetId != nil {
+				locations[*result.PlayerSetId] = append(locations[*result.PlayerSetId], result)
+			}
+		}
+	}
+	// Both sides below deliberately use caller projection order. A map may
+	// index identities, but must never choose which displaced identity goes to
+	// which external source slot: that mapping is observable score ownership.
+	displaced := make([]*uint, 0, len(projections))
+	for _, projection := range projections {
+		if projection.result.PlayerSetId == nil || !desired[*projection.result.PlayerSetId] {
+			displaced = append(displaced, projection.result.PlayerSetId)
+		}
+	}
+	external := make([]*database.MatchResult, 0, len(projections))
+	for _, projection := range projections {
+		if projection.playerSetID == nil {
+			continue
+		}
+		for _, result := range locations[*projection.playerSetID] {
+			if !destinationIDs[result.ID] {
+				external = append(external, result)
+			}
+		}
+	}
+	if len(external) > len(displaced) {
+		return false, errBracketConflict
+	}
+	for index, result := range external {
+		if _, duplicatedRewrite := proposed[result.ID]; duplicatedRewrite {
+			return false, errBracketConflict
+		}
+		proposed[result.ID] = displaced[index]
+	}
+	// Validate the whole post-write stage, rather than each individual update.
+	// This permits a legitimate cross-match swap without a transient duplicate,
+	// while still rejecting a request that leaves any double booking behind.
+	seen := make(map[uint]bool)
+	for _, match := range stage.Matches {
+		for _, candidate := range match.Results {
+			playerSetID := candidate.PlayerSetId
+			if replacement, isDestination := proposed[candidate.ID]; isDestination {
+				playerSetID = replacement
+			}
+			if playerSetID == nil {
+				continue
+			}
+			if seen[*playerSetID] {
+				return false, errBracketConflict
+			}
+			seen[*playerSetID] = true
+		}
+	}
+	changed := false
+	for matchIndex := range stage.Matches {
+		for resultIndex := range stage.Matches[matchIndex].Results {
+			result := &stage.Matches[matchIndex].Results[resultIndex]
+			playerSetID, rewritten := proposed[result.ID]
+			if !rewritten || sameOptionalID(result.PlayerSetId, playerSetID) {
+				continue
+			}
+			if err := tx.Model(&database.MatchResult{}).Where("id = ?", result.ID).Update("player_set_id", playerSetID).Error; err != nil {
+				return false, err
+			}
+			if playerSetID == nil {
+				result.PlayerSetId = nil
+			} else {
+				id := *playerSetID
+				result.PlayerSetId = &id
+			}
+			changed = true
+		}
+	}
+	return changed, nil
+}
+
+func overwriteBracketSlot(tx *gorm.DB, stage *bracketStage, result *database.MatchResult, playerSetID *uint) (bool, error) {
+	return overwriteBracketSlots(tx, stage, []bracketSlotProjection{{result: result, playerSetID: playerSetID}})
+}
+
+func explicitWinnerAndLoser(results []database.MatchResult) (*uint, *uint, bool, error) {
+	if len(results) != 2 {
+		return nil, nil, false, errBracketConflict
+	}
+	var winner, loser *uint
+	winnerCount := 0
+	for _, result := range results {
+		if result.IsWinner {
+			if result.PlayerSetId == nil {
+				return nil, nil, false, errBracketConflict
+			}
+			winnerCount++
+			winner = result.PlayerSetId
+			continue
+		}
+		loser = result.PlayerSetId
+	}
+	if winnerCount > 1 {
+		return nil, nil, false, errBracketConflict
+	}
+	return winner, loser, winnerCount == 1, nil
+}
+
+// projectDecidedStages batches all changed sources of each stage before it
+// writes their child slots. It avoids map-order dependent duplicate conflicts:
+// cross-match swaps are evaluated as one final target-stage configuration.
+// resolveByes is used only by explicit stage advancement; recovery follows
+// explicit winner flags and never invents a result.
+func projectDecidedStages(tx *gorm.DB, bracket []bracketStage, stageIndex int, affected map[int]bool, resolveByes, cascade bool) (bool, error) {
+	if stageIndex < 0 || stageIndex >= len(bracket) {
+		return false, errBracketConflict
+	}
+	lastStage := len(bracket) - 1
+	if stageIndex == lastStage || len(affected) == 0 {
 		return false, nil
+	}
+	projections := make([]bracketSlotProjection, 0, len(affected)*2)
+	nextAffected := make(map[int]bool)
+	for matchIndex := range bracket[stageIndex].Matches {
+		if !affected[matchIndex] {
+			continue
+		}
+		var winner, loser *uint
+		var decided bool
+		var err error
+		if resolveByes {
+			winner, loser, decided, err = resolvedWinnerAndLoser(tx, bracket[stageIndex].Matches[matchIndex].Results)
+		} else {
+			winner, loser, decided, err = explicitWinnerAndLoser(bracket[stageIndex].Matches[matchIndex].Results)
+		}
+		if err != nil {
+			return false, err
+		}
+		if !decided {
+			continue
+		}
+		if stageIndex == lastStage-1 {
+			if len(bracket[lastStage].Matches) == 1 {
+				if matchIndex >= len(bracket[lastStage].Matches[0].Results) {
+					return false, errBracketConflict
+				}
+				projections = append(projections, bracketSlotProjection{result: &bracket[lastStage].Matches[0].Results[matchIndex], playerSetID: winner})
+				nextAffected[0] = true
+				continue
+			}
+			if len(bracket[lastStage].Matches) != 2 || matchIndex >= len(bracket[lastStage].Matches[0].Results) || matchIndex >= len(bracket[lastStage].Matches[1].Results) {
+				return false, errBracketConflict
+			}
+			projections = append(projections,
+				bracketSlotProjection{result: &bracket[lastStage].Matches[0].Results[matchIndex], playerSetID: winner},
+				bracketSlotProjection{result: &bracket[lastStage].Matches[1].Results[matchIndex], playerSetID: loser},
+			)
+			nextAffected[0], nextAffected[1] = true, true
+			continue
+		}
+		targetMatch, targetSlot := matchIndex/2, matchIndex%2
+		if targetMatch >= len(bracket[stageIndex+1].Matches) || targetSlot >= len(bracket[stageIndex+1].Matches[targetMatch].Results) {
+			return false, errBracketConflict
+		}
+		projections = append(projections, bracketSlotProjection{result: &bracket[stageIndex+1].Matches[targetMatch].Results[targetSlot], playerSetID: winner})
+		nextAffected[targetMatch] = true
+	}
+	if len(projections) == 0 {
+		return false, nil
+	}
+	changed, err := overwriteBracketSlots(tx, &bracket[stageIndex+1], projections)
+	if err != nil || !cascade {
+		return changed, err
+	}
+	// overwriteBracketSlots may have performed a sibling swap while resolving
+	// stale target data. Every next-stage match is therefore eligible to carry
+	// its already-selected winner forward.
+	for matchIndex := range bracket[stageIndex+1].Matches {
+		nextAffected[matchIndex] = true
+	}
+	propagated, err := projectDecidedStages(tx, bracket, stageIndex+1, nextAffected, false, true)
+	return changed || propagated, err
+}
+
+func bracketSlotIsBlank(tx *gorm.DB, result database.MatchResult) (bool, error) {
+	if result.PlayerSetId != nil {
+		return false, nil
+	}
+	started, err := bracketSlotHasStarted(tx, result)
+	return !started, err
+}
+
+// bracketSlotHasStarted ignores roster and placement metadata. It is used by
+// roster-open synchronisation, which may replace or clear PlayerSetId but may
+// never erase score, confirmation, or winner state.
+func bracketSlotHasStarted(tx *gorm.DB, result database.MatchResult) (bool, error) {
+	if result.TotalPoints != 0 || result.ShootOffScore != -1 || result.IsWinner {
+		return true, nil
 	}
 	var ends []database.MatchEnd
 	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("match_result_id = ?", result.ID).Find(&ends).Error; err != nil {
@@ -484,7 +864,7 @@ func bracketSlotIsBlank(tx *gorm.DB, result database.MatchResult) (bool, error) 
 	}
 	for _, end := range ends {
 		if end.TotalScore != 0 || end.IsConfirmed {
-			return false, nil
+			return true, nil
 		}
 		var scores []database.MatchScore
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("match_end_id = ?", end.ID).Find(&scores).Error; err != nil {
@@ -492,33 +872,34 @@ func bracketSlotIsBlank(tx *gorm.DB, result database.MatchResult) (bool, error) 
 		}
 		for _, score := range scores {
 			if score.Score != -1 {
-				return false, nil
+				return true, nil
 			}
 		}
 	}
-	return true, nil
+	return false, nil
 }
 
-func advanceSourceMatch(tx *gorm.DB, bracket []bracketStage, stageIndex, matchIndex int, allowBye bool) (bool, error) {
-	winner, loser, err := winnerAndLoser(bracket[stageIndex].Matches[matchIndex].Results, allowBye)
+func advanceSourceMatch(tx *gorm.DB, bracket []bracketStage, stageIndex, matchIndex int) (bool, error) {
+	winner, loser, occupied, err := resolvedWinnerAndLoser(tx, bracket[stageIndex].Matches[matchIndex].Results)
 	if err != nil {
 		return false, err
+	}
+	if !occupied {
+		return false, nil
 	}
 	lastStage := len(bracket) - 1
 	if stageIndex == lastStage {
 		return false, nil
 	}
 	if stageIndex == lastStage-1 { // semi-final: winner to gold, loser to bronze
-		changed, err := putBracketSlot(tx, &bracket[lastStage].Matches[0].Results[matchIndex], winner)
-		if err != nil {
-			return false, err
-		}
-		loserChanged, err := putBracketSlot(tx, &bracket[lastStage].Matches[1].Results[matchIndex], loser)
-		return changed || loserChanged, err
+		return overwriteBracketSlots(tx, &bracket[lastStage], []bracketSlotProjection{
+			{result: &bracket[lastStage].Matches[0].Results[matchIndex], playerSetID: winner},
+			{result: &bracket[lastStage].Matches[1].Results[matchIndex], playerSetID: loser},
+		})
 	}
 	targetMatch := matchIndex / 2
 	targetSlot := matchIndex % 2
-	return putBracketSlot(tx, &bracket[stageIndex+1].Matches[targetMatch].Results[targetSlot], winner)
+	return overwriteBracketSlot(tx, &bracket[stageIndex+1], &bracket[stageIndex+1].Matches[targetMatch].Results[targetSlot], winner)
 }
 
 // autoAdvanceByes resolves structural BYEs in the first round only. A nil slot
@@ -551,7 +932,7 @@ func autoAdvanceByes(tx *gorm.DB, bracket []bracketStage) (bool, error) {
 		winnerResult.IsWinner = true
 		changed = true
 		if len(bracket) > 1 {
-			propagated, err := advanceSourceMatch(tx, bracket, 0, matchIndex, true)
+			propagated, err := advanceSourceMatch(tx, bracket, 0, matchIndex)
 			if err != nil {
 				return false, err
 			}
@@ -581,25 +962,114 @@ func setMedalPlayerSet(tx *gorm.DB, eliminationID uint, medalType int, playerSet
 	return true, nil
 }
 
-func finalizeBracket(tx *gorm.DB, eliminationID uint, final bracketStage) (bool, error) {
-	if len(final.Matches) != 2 {
-		return false, errBracketConflict
-	}
-	gold, silver, err := winnerAndLoser(final.Matches[0].Results, false)
-	if err != nil {
+func overwriteMedalPlayerSet(tx *gorm.DB, eliminationID uint, medalType int, playerSetID *uint) (bool, error) {
+	var medal database.Medal
+	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("elimination_id = ? AND type = ?", eliminationID, medalType).First(&medal).Error; err != nil {
 		return false, err
 	}
-	bronze, _, err := winnerAndLoser(final.Matches[1].Results, false)
-	if err != nil {
+	want := uint(0)
+	if playerSetID != nil {
+		want = *playerSetID
+	}
+	if medal.PlayerSetId == want {
+		return false, nil
+	}
+	if err := tx.Model(&database.Medal{}).Where("id = ?", medal.ID).Update("player_set_id", want).Error; err != nil {
 		return false, err
 	}
-	changed := false
-	for medalType, playerSetID := range []*uint{gold, silver, bronze} {
-		medalChanged, err := setMedalPlayerSet(tx, eliminationID, medalType, playerSetID)
+	return true, nil
+}
+
+// reprojectBracketMedals makes medal rows a materialized view of final match
+// identities.  Forced PlayerSet corrections may happen after a final was
+// finalized, so stale medal rows must be replaced rather than treated as a
+// conflict.
+func reprojectBracketMedals(tx *gorm.DB, eliminationID uint, final bracketStage) (bool, error) {
+	if len(final.Matches) == 1 {
+		gold, silver, decided, err := explicitWinnerAndLoser(final.Matches[0].Results)
+		if err != nil || !decided {
+			return false, err
+		}
+		goldChanged, err := overwriteMedalPlayerSet(tx, eliminationID, 0, gold)
 		if err != nil {
 			return false, err
 		}
-		changed = changed || medalChanged
+		silverChanged, err := overwriteMedalPlayerSet(tx, eliminationID, 1, silver)
+		return goldChanged || silverChanged, err
+	}
+	if len(final.Matches) != 2 {
+		return false, errBracketConflict
+	}
+	gold, silver, goldDecided, err := explicitWinnerAndLoser(final.Matches[0].Results)
+	if err != nil {
+		return false, err
+	}
+	bronze, _, bronzeDecided, err := explicitWinnerAndLoser(final.Matches[1].Results)
+	if err != nil {
+		return false, err
+	}
+	placements := []*uint{nil, nil, nil}
+	resolved := []bool{false, false, false}
+	if goldDecided {
+		placements[0], placements[1] = gold, silver
+		resolved[0], resolved[1] = true, true
+	}
+	if bronzeDecided {
+		placements[2] = bronze
+		resolved[2] = true
+	}
+	changed := false
+	for medalType, playerSetID := range placements {
+		if !resolved[medalType] {
+			continue
+		}
+		updated, err := overwriteMedalPlayerSet(tx, eliminationID, medalType, playerSetID)
+		if err != nil {
+			return false, err
+		}
+		changed = changed || updated
+	}
+	return changed, nil
+}
+
+func finalizeBracket(tx *gorm.DB, eliminationID uint, final bracketStage) (bool, error) {
+	if len(final.Matches) == 1 {
+		gold, silver, occupied, err := resolvedWinnerAndLoser(tx, final.Matches[0].Results)
+		if err != nil || !occupied {
+			return false, err
+		}
+		goldChanged, err := overwriteMedalPlayerSet(tx, eliminationID, 0, gold)
+		if err != nil {
+			return false, err
+		}
+		silverChanged, err := overwriteMedalPlayerSet(tx, eliminationID, 1, silver)
+		return goldChanged || silverChanged, err
+	}
+	if len(final.Matches) != 2 {
+		return false, errBracketConflict
+	}
+	gold, silver, goldOccupied, err := resolvedWinnerAndLoser(tx, final.Matches[0].Results)
+	if err != nil {
+		return false, err
+	}
+	bronze, _, bronzeOccupied, err := resolvedWinnerAndLoser(tx, final.Matches[1].Results)
+	if err != nil {
+		return false, err
+	}
+	placements := []*uint{nil, nil, nil}
+	if goldOccupied {
+		placements[0], placements[1] = gold, silver
+	}
+	if bronzeOccupied {
+		placements[2] = bronze
+	}
+	changed := false
+	for medalType, playerSetID := range placements {
+		updated, err := overwriteMedalPlayerSet(tx, eliminationID, medalType, playerSetID)
+		if err != nil {
+			return false, err
+		}
+		changed = changed || updated
 	}
 	return changed, nil
 }
@@ -611,8 +1081,10 @@ func finalizeBracket(tx *gorm.DB, eliminationID uint, final bracketStage) (bool,
 //	@Summary		Initialize an elimination bracket
 //	@Description	Creates a standard seeded bracket, including stages, gold and bronze finals, match results, ends, and scores. Requires a competition Admin.
 //	@Tags			Elimination
+//	@Accept		json
 //	@Produce		json
 //	@Param			id	path	int	true	"Elimination ID"
+//	@Param			request	body	endpoint.BracketInitRequest	true	"Fixed advancing count"
 //	@Success		200	{object}	endpoint.BracketInitResponse
 //	@Failure		400	{object}	response.ErrorResponse
 //	@Failure		403	{object}	response.ErrorResponse
@@ -629,6 +1101,15 @@ func PostEliminationBracket(context *gin.Context) {
 	if !requireEliminationCompetitionAdmin(context, elimination) {
 		return
 	}
+	var request BracketInitRequest
+	if err := context.ShouldBindJSON(&request); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "invalid bracket request"})
+		return
+	}
+	if err := validateBracketSeedCount(request.AdvancingCount); err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
 
 	var data BracketInitResponse
 	err = database.DB.Transaction(func(tx *gorm.DB) error {
@@ -639,7 +1120,18 @@ func PostEliminationBracket(context *gin.Context) {
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("elimination_id = ?", id).Order("`rank` asc, id asc").Find(&playerSets).Error; err != nil {
 			return err
 		}
-		if err := validateBracketEntrants(playerSets); err != nil {
+		// Legacy manual PlayerSet creation leaves Rank at its zero value. When
+		// no rank has been saved at all, derive the normal score-oriented rank
+		// before seeding. A partially or fully saved ranking remains authoritative.
+		if rosterHasOnlyUnsetRanks(playerSets) {
+			if _, err := database.AutoRankPlayerSets(tx, id); err != nil {
+				return err
+			}
+			if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("elimination_id = ?", id).Order("`rank` asc, id asc").Find(&playerSets).Error; err != nil {
+				return err
+			}
+		}
+		if err := validateRosterForSetup(playerSets, request.AdvancingCount); err != nil {
 			return err
 		}
 		var medals []database.Medal
@@ -649,14 +1141,29 @@ func PostEliminationBracket(context *gin.Context) {
 		if len(medals) != 3 || medals[0].Type != 0 || medals[1].Type != 1 || medals[2].Type != 2 {
 			return errBracketConflict
 		}
-		bracketSize := nextPowerOfTwo(len(playerSets))
+		bracketSize := nextPowerOfTwo(request.AdvancingCount)
 		bracket, err := loadBracket(tx, id)
 		if err != nil {
 			return err
 		}
 		created := false
 		if len(bracket) != 0 {
-			compatible, err := bracketShapeIsCompatible(tx, bracket, playerSets, bracketSize, elimination.TeamSize)
+			if elimination.BracketSeedCount == 0 || elimination.BracketSeedCount != request.AdvancingCount {
+				return errBracketConflict
+			}
+			if !elimination.BracketRosterLocked {
+				if _, err := syncFirstRoundRoster(tx, elimination); err != nil {
+					return err
+				}
+				bracket, err = loadBracket(tx, id)
+				if err != nil {
+					return err
+				}
+				if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("elimination_id = ?", id).Order("`rank` asc, id asc").Find(&playerSets).Error; err != nil {
+					return err
+				}
+			}
+			compatible, err := bracketShapeIsCompatible(tx, bracket, playerSets, request.AdvancingCount, bracketSize, elimination.TeamSize)
 			if err != nil {
 				return err
 			}
@@ -664,12 +1171,87 @@ func PostEliminationBracket(context *gin.Context) {
 				return errBracketConflict
 			}
 		} else {
-			if _, err := createBracket(tx, elimination, playerSets, bracketSize); err != nil {
+			elimination.BracketSeedCount = request.AdvancingCount
+			elimination.BracketRosterLocked = false
+			if err := tx.Model(&database.Elimination{}).Where("id = ?", id).Updates(map[string]interface{}{
+				"bracket_seed_count":    request.AdvancingCount,
+				"bracket_roster_locked": false,
+			}).Error; err != nil {
+				return err
+			}
+			if _, err := createBracket(tx, elimination, rankedRoster(playerSets, request.AdvancingCount), bracketSize); err != nil {
+				return err
+			}
+			if _, err := syncFirstRoundRoster(tx, elimination); err != nil {
 				return err
 			}
 			created = true
 		}
-		data = BracketInitResponse{EliminationID: id, EntrantCount: len(playerSets), BracketSize: bracketSize, StageCount: len(expectedBracketMatchCounts(bracketSize)), Created: created}
+		data = BracketInitResponse{EliminationID: id, EntrantCount: len(playerSets), AdvancingCount: request.AdvancingCount, BracketSize: bracketSize, StageCount: len(expectedBracketMatchCounts(bracketSize)), Created: created}
+		return nil
+	})
+	if err != nil {
+		writeBracketError(context, err)
+		return
+	}
+	context.JSON(http.StatusOK, data)
+}
+
+// PostEliminationBracketFirstRoundSync reconciles an unstarted bracket's
+// first-round slots with the persisted PlayerSet ranks. It is intentionally
+// separate from stage advancement so an administrator can inspect the seeded
+// bracket before locking it by scoring or advancing.
+//
+//	@Summary		Synchronize an open elimination bracket's first round
+//	@Description	Locks the elimination and PlayerSet rows, validates the complete bracket shape and current setup ranks, then fills or clears only unstarted first-round seed slots. Requires a competition Admin. It is idempotent and does not lock the roster or advance matches.
+//	@Tags			Elimination
+//	@Produce		json
+//	@Param			id	path	int	true	"Elimination ID"
+//	@Success		200	{object}	endpoint.BracketFirstRoundSyncResponse
+//	@Failure		400	{object}	response.ErrorResponse
+//	@Failure		403	{object}	response.ErrorResponse
+//	@Failure		409	{object}	response.ErrorResponse
+//	@Failure		500	{object}	response.ErrorResponse
+//	@Router			/elimination/bracket/{id}/sync-first-round [post]
+func PostEliminationBracketFirstRoundSync(context *gin.Context) {
+	id := Convert2uint(context, "id")
+	elimination, err := database.GetOnlyEliminationById(id)
+	if err != nil || elimination.ID == 0 {
+		context.JSON(http.StatusBadRequest, gin.H{"error": "invalid elimination ID"})
+		return
+	}
+	if !requireEliminationCompetitionAdmin(context, elimination) {
+		return
+	}
+
+	data := BracketFirstRoundSyncResponse{EliminationID: id}
+	err = database.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&elimination, id).Error; err != nil {
+			return err
+		}
+		if elimination.BracketSeedCount == 0 || elimination.BracketRosterLocked {
+			return errBracketConflict
+		}
+		bracketSize := nextPowerOfTwo(elimination.BracketSeedCount)
+		bracket, err := loadBracket(tx, id)
+		if err != nil {
+			return err
+		}
+		if !bracketStageMatchShapeIsComplete(bracket, bracketSize) {
+			return errBracketConflict
+		}
+		var playerSets []database.PlayerSet
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("elimination_id = ?", id).Order("`rank` asc, id asc").Find(&playerSets).Error; err != nil {
+			return err
+		}
+		if err := validateRosterForSetup(playerSets, elimination.BracketSeedCount); err != nil {
+			return err
+		}
+		changed, err := syncFirstRoundRoster(tx, elimination)
+		if err != nil {
+			return err
+		}
+		data.Changed = changed
 		return nil
 	})
 	if err != nil {
@@ -714,24 +1296,37 @@ func PostEliminationStageAdvance(context *gin.Context) {
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&elimination, elimination.ID).Error; err != nil {
 			return err
 		}
+		if elimination.BracketSeedCount == 0 {
+			// Historical brackets predate roster synchronisation. They retain the
+			// previous immutable contract rather than guessing a seed count.
+			return errBracketConflict
+		}
+		if !elimination.BracketRosterLocked {
+			if _, err := syncFirstRoundRoster(tx, elimination); err != nil {
+				return err
+			}
+		}
+		bracketSize := nextPowerOfTwo(elimination.BracketSeedCount)
 		var playerSets []database.PlayerSet
 		if err := tx.Where("elimination_id = ?", elimination.ID).Find(&playerSets).Error; err != nil {
 			return err
 		}
-		if err := validateBracketEntrants(playerSets); err != nil {
-			return errBracketConflict
+		if err := validateRosterForLock(playerSets, elimination.BracketSeedCount); err != nil {
+			return err
 		}
-		bracketSize := nextPowerOfTwo(len(playerSets))
 		bracket, err := loadBracket(tx, elimination.ID)
 		if err != nil {
 			return err
 		}
-		compatible, err := bracketShapeIsCompatible(tx, bracket, playerSets, bracketSize, elimination.TeamSize)
+		compatible, err := bracketShapeIsCompatible(tx, bracket, playerSets, elimination.BracketSeedCount, bracketSize, elimination.TeamSize)
 		if err != nil {
 			return err
 		}
 		if !compatible {
 			return errBracketConflict
+		}
+		if err := lockBracketRoster(tx, &elimination); err != nil {
+			return err
 		}
 		sourceIndex := -1
 		for index, candidate := range bracket {
@@ -754,18 +1349,15 @@ func PostEliminationStageAdvance(context *gin.Context) {
 		}
 		targetID := bracket[sourceIndex+1].Stage.ID
 		data.TargetStageID = &targetID
+		affected := make(map[int]bool, len(bracket[sourceIndex].Matches))
 		for matchIndex := range bracket[sourceIndex].Matches {
-			changed, err := advanceSourceMatch(tx, bracket, sourceIndex, matchIndex, sourceIndex == 0)
-			if err != nil {
-				return err
-			}
-			data.Changed = data.Changed || changed
+			affected[matchIndex] = true
 		}
-		autoChanged, err := autoAdvanceByes(tx, bracket)
+		changed, err := projectDecidedStages(tx, bracket, sourceIndex, affected, true, false)
 		if err != nil {
 			return err
 		}
-		data.Changed = data.Changed || autoChanged
+		data.Changed = changed
 		return nil
 	})
 	if err != nil {
@@ -777,15 +1369,17 @@ func PostEliminationStageAdvance(context *gin.Context) {
 
 func writeBracketError(context *gin.Context, err error) {
 	switch {
-	case errors.Is(err, errBracketConflict), errors.Is(err, errBracketPending), errors.Is(err, errBracketLocked):
+	case errors.Is(err, errBracketConflict), errors.Is(err, errBracketPending), errors.Is(err, errBracketLocked), errors.Is(err, errBracketEmptySlot), errors.Is(err, errBracketUnranked):
 		context.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+	case errors.Is(err, errInvalidPlacement), errors.Is(err, errPlacementMode):
+		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 	case errors.Is(err, gorm.ErrRecordNotFound):
 		context.JSON(http.StatusBadRequest, gin.H{"error": "invalid elimination or stage"})
 	default:
 		// Validation errors intentionally return 400, while database failures are
 		// internal errors. No database error produced here has a stable public
 		// string that should be exposed.
-		if err.Error() == "at least four player sets are required" || err.Error() == "player set ranks must be unique and continuous from 1" || len(err.Error()) >= len("unsupported elimination team_size") && err.Error()[:len("unsupported elimination team_size")] == "unsupported elimination team_size" {
+		if err.Error() == "advancing_count must be between 4 and 128" || len(err.Error()) >= len("unsupported elimination team_size") && err.Error()[:len("unsupported elimination team_size")] == "unsupported elimination team_size" {
 			context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
 		}

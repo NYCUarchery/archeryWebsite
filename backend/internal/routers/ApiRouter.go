@@ -145,9 +145,14 @@ func eliminationRouter(api *gin.RouterGroup) {
 
 		eliminationssr.POST("/", endpoint.PostElimination)
 		eliminationssr.POST("/bracket/:id", endpoint.PostEliminationBracket)
+		eliminationssr.POST("/bracket/:id/sync-first-round", endpoint.PostEliminationBracketFirstRoundSync)
 		eliminationssr.POST("/stage", endpoint.PostStage)
 		eliminationssr.POST("/stage/advance/:stageid", endpoint.PostEliminationStageAdvance)
 		eliminationssr.POST("/match", endpoint.PostMatch)
+		eliminationssr.PUT("/match/winner/:matchid", endpoint.PutEliminationMatchWinner)
+		eliminationssr.PUT("/match/settings/:matchid", endpoint.PutEliminationMatchSettings)
+		eliminationssr.PUT("/stage/placement/:stageid", endpoint.PutEliminationStagePlacement)
+		eliminationssr.PUT("/match/placement/:matchid", endpoint.PutEliminationMatchPlacement)
 
 		eliminationssr.PATCH("/match/playerset/:matchid", endpoint.PutMatchPlayerSetByMatchId)
 		eliminationssr.PATCH("/currentstage/plus/:id", endpoint.PutEliminationCurrentStagePlusById)

@@ -1,7 +1,10 @@
 package database
 
 import (
+	"database/sql"
+	"fmt"
 	"log"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -12,12 +15,15 @@ type MatchResult struct {
 	// PlayerSetId is nil for an as-yet unknown bracket slot.  Zero cannot
 	// represent that state because it is also a valid Go uint default and used
 	// by older rows without a foreign-key constraint.
-	PlayerSetId   *uint       `json:"player_set_id,omitempty"`
+	PlayerSetId *uint `json:"player_set_id,omitempty"`
+	// Target is the physical target side used for this result.  It is nil
+	// until an administrator assigns a placement, otherwise it is "A" or "B".
+	Target        *string     `json:"target,omitempty" enums:"A,B" extensions:"x-nullable" gorm:"type:char(1);check:match_results_target_allowed,target IN ('A','B') OR target IS NULL"`
 	TotalPoints   int         `json:"total_points"`
 	ShootOffScore int         `json:"shoot_off_score"`
 	IsWinner      bool        `json:"is_winner"`
 	LaneNumber    int         `json:"lane_number"`
-	PlayerSet     *PlayerSet  `json:"player_set" gorm:"foreignKey:PlayerSetId;"`
+	PlayerSet     *PlayerSet  `json:"player_set" gorm:"foreignKey:PlayerSetId;constraint:OnDelete:SET NULL;"`
 	MatchEnds     []*MatchEnd `json:"match_ends" gorm:"constraint:OnDelete:CASCADE;"`
 }
 
@@ -36,9 +42,48 @@ type MatchScore struct {
 }
 
 func InitMatchResult() {
-	DB.AutoMigrate(&MatchResult{})
-	DB.AutoMigrate(&MatchEnd{})
-	DB.AutoMigrate(&MatchScore{})
+	if err := DB.AutoMigrate(&MatchResult{}); err != nil {
+		log.Println("Failed to auto migrate MatchResult:", err)
+		return
+	}
+	if err := ensureMatchResultPlayerSetConstraint(); err != nil {
+		// Continuing without this FK would let roster deletion leave dangling
+		// bracket slots. Treat this migration as a startup invariant.
+		panic(fmt.Sprintf("failed to migrate MatchResult PlayerSet constraint: %v", err))
+	}
+	if err := DB.AutoMigrate(&MatchEnd{}); err != nil {
+		log.Println("Failed to auto migrate MatchEnd:", err)
+		return
+	}
+	if err := DB.AutoMigrate(&MatchScore{}); err != nil {
+		log.Println("Failed to auto migrate MatchScore:", err)
+	}
+}
+
+// ensureMatchResultPlayerSetConstraint upgrades legacy RESTRICT schemas once,
+// while avoiding disruptive DROP/CREATE DDL on every application startup.
+func ensureMatchResultPlayerSetConstraint() error {
+	var deleteRule string
+	err := DB.Raw(`
+		SELECT DELETE_RULE
+		FROM information_schema.REFERENTIAL_CONSTRAINTS
+		WHERE CONSTRAINT_SCHEMA = DATABASE()
+		  AND TABLE_NAME = 'match_results'
+		  AND REFERENCED_TABLE_NAME = 'player_sets'
+		LIMIT 1
+	`).Row().Scan(&deleteRule)
+	if err == nil && strings.EqualFold(deleteRule, "SET NULL") {
+		return nil
+	}
+	if err != nil && err != sql.ErrNoRows {
+		return err
+	}
+	if err == nil {
+		if err := DB.Migrator().DropConstraint(&MatchResult{}, "PlayerSet"); err != nil {
+			return err
+		}
+	}
+	return DB.Migrator().CreateConstraint(&MatchResult{}, "PlayerSet")
 }
 
 func DropMatchResult() {
