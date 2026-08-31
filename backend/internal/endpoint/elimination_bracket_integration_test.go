@@ -17,6 +17,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/suite"
+	"gorm.io/gorm"
 )
 
 // EliminationBracketIntegrationTestSuite deliberately exercises the HTTP
@@ -60,8 +61,23 @@ func (suite *EliminationBracketIntegrationTestSuite) SetupTest() {
 		context.Status(http.StatusNoContent)
 	})
 	suite.router.POST("/elimination/bracket/:id", PostEliminationBracket)
+	suite.router.POST("/elimination/bracket/:id/sync-first-round", PostEliminationBracketFirstRoundSync)
 	suite.router.POST("/elimination/stage/advance/:stageid", PostEliminationStageAdvance)
+	suite.router.PUT("/elimination/match/winner/:matchid", PutEliminationMatchWinner)
+	suite.router.PUT("/elimination/match/settings/:matchid", PutEliminationMatchSettings)
+	suite.router.PUT("/elimination/stage/placement/:stageid", PutEliminationStagePlacement)
+	suite.router.PUT("/elimination/match/placement/:matchid", PutEliminationMatchPlacement)
+	suite.router.PATCH("/elimination/match/playerset/:matchid", PutMatchPlayerSetByMatchId)
+	suite.router.POST("/playerset", PostPlayerSet)
+	suite.router.DELETE("/playerset/:id", DeletePlayerSet)
 	suite.router.POST("/matchresult/matchend", PostMatchEnd)
+	suite.router.PATCH("/matchresult/totalpoints/:id", PutMatchResultTotalPointsById)
+	suite.router.PATCH("/matchresult/shootoffscore/:id", PutMatchResultShootOffScoreById)
+	suite.router.PATCH("/matchresult/iswinner/:id", PutMatchResultIsWinnerById)
+	suite.router.PATCH("/matchresult/matchend/totalscore/:id", PutMatchEndsTotalScoresById)
+	suite.router.PATCH("/matchresult/matchend/scores/:id", PutMatchEndsScoresById)
+	suite.router.PATCH("/matchresult/matchend/isconfirmed/:id", PutMatchEndsIsConfirmedById)
+	suite.router.PATCH("/matchresult/matchscore/score/:id", PutMatchScoreScoreById)
 	suite.router.DELETE("/matchresult/:id", DeleteMatchResultById)
 	suite.router.PATCH("/medal/playersetid/:id", PutMedalPlayerSetIdById)
 }
@@ -138,7 +154,13 @@ func (suite *EliminationBracketIntegrationTestSuite) createFixture(teamSize, ent
 }
 
 func (suite *EliminationBracketIntegrationTestSuite) postBracket(eliminationID uint, cookies []*http.Cookie) (*httptest.ResponseRecorder, BracketInitResponse) {
-	recorder := suite.request(http.MethodPost, fmt.Sprintf("/elimination/bracket/%d", eliminationID), cookies)
+	var entrantCount int64
+	suite.Require().NoError(database.DB.Model(&database.PlayerSet{}).Where("elimination_id = ?", eliminationID).Count(&entrantCount).Error)
+	advancingCount := int(entrantCount)
+	if advancingCount < 4 {
+		advancingCount = 4
+	}
+	recorder := suite.requestJSON(http.MethodPost, fmt.Sprintf("/elimination/bracket/%d", eliminationID), map[string]int{"advancing_count": advancingCount}, cookies)
 	var response BracketInitResponse
 	if recorder.Code == http.StatusOK {
 		suite.Require().NoError(json.Unmarshal(recorder.Body.Bytes(), &response))
@@ -149,6 +171,24 @@ func (suite *EliminationBracketIntegrationTestSuite) postBracket(eliminationID u
 func (suite *EliminationBracketIntegrationTestSuite) postAdvance(stageID uint, cookies []*http.Cookie) (*httptest.ResponseRecorder, BracketAdvanceResponse) {
 	recorder := suite.request(http.MethodPost, fmt.Sprintf("/elimination/stage/advance/%d", stageID), cookies)
 	var response BracketAdvanceResponse
+	if recorder.Code == http.StatusOK {
+		suite.Require().NoError(json.Unmarshal(recorder.Body.Bytes(), &response))
+	}
+	return recorder, response
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) postFirstRoundSync(eliminationID uint, cookies []*http.Cookie) (*httptest.ResponseRecorder, BracketFirstRoundSyncResponse) {
+	recorder := suite.request(http.MethodPost, fmt.Sprintf("/elimination/bracket/%d/sync-first-round", eliminationID), cookies)
+	var response BracketFirstRoundSyncResponse
+	if recorder.Code == http.StatusOK {
+		suite.Require().NoError(json.Unmarshal(recorder.Body.Bytes(), &response))
+	}
+	return recorder, response
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) putMatchWinner(matchID uint, winnerMatchResultID *uint, cookies []*http.Cookie) (*httptest.ResponseRecorder, MatchWinnerResponse) {
+	recorder := suite.requestJSON(http.MethodPut, fmt.Sprintf("/elimination/match/winner/%d", matchID), MatchWinnerRequest{WinnerMatchResultID: winnerMatchResultID}, cookies)
+	var response MatchWinnerResponse
 	if recorder.Code == http.StatusOK {
 		suite.Require().NoError(json.Unmarshal(recorder.Body.Bytes(), &response))
 	}
@@ -200,6 +240,135 @@ func (suite *EliminationBracketIntegrationTestSuite) TestInitializeCompleteBrack
 	recorder, response = suite.postBracket(elimination.ID, adminCookies)
 	suite.Equal(http.StatusOK, recorder.Code)
 	suite.False(response.Created)
+	recorder = suite.requestJSON(http.MethodPost, fmt.Sprintf("/elimination/bracket/%d", elimination.ID), map[string]int{"advancing_count": 8}, adminCookies)
+	suite.Equal(http.StatusConflict, recorder.Code)
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestInitializeRanksUnsetPlayerSetsBeforeSeedingFirstRound() {
+	elimination, playerSets, adminCookies, _ := suite.createFixture(1, 4, []int{0, 0, 0, 0})
+	recorder, _ := suite.postBracket(elimination.ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+
+	var ranked []database.PlayerSet
+	suite.Require().NoError(database.DB.Where("elimination_id = ?", elimination.ID).Order("`rank` asc, id asc").Find(&ranked).Error)
+	suite.Len(ranked, 4)
+	for index, playerSet := range ranked {
+		suite.Equal(index+1, playerSet.Rank)
+		suite.Equal(playerSets[index].ID, playerSet.ID)
+	}
+
+	bracket := suite.loadBracket(elimination.ID)
+	firstRound := bracket.Stages[0].Matchs
+	suite.Equal(playerSets[0].ID, *firstRound[0].MatchResults[0].PlayerSetId)
+	suite.Equal(playerSets[3].ID, *firstRound[0].MatchResults[1].PlayerSetId)
+	suite.Equal(playerSets[2].ID, *firstRound[1].MatchResults[0].PlayerSetId)
+	suite.Equal(playerSets[1].ID, *firstRound[1].MatchResults[1].PlayerSetId)
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestFirstRoundSyncRanksUnsetPlayerSetsInAnExistingOpenBracket() {
+	elimination, _, adminCookies, _ := suite.createFixture(1, 0, nil)
+	recorder, _ := suite.postBracket(elimination.ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+
+	playerSets := make([]database.PlayerSet, 4)
+	for index := range playerSets {
+		playerSet, err := database.CreatePlayerSet(database.PlayerSet{EliminationId: elimination.ID, Rank: 0, SetName: fmt.Sprintf("late-set-%d", index+1)})
+		suite.Require().NoError(err)
+		playerSets[index] = playerSet
+	}
+	recorder, syncResponse := suite.postFirstRoundSync(elimination.ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	suite.True(syncResponse.Changed)
+
+	var ranked []database.PlayerSet
+	suite.Require().NoError(database.DB.Where("elimination_id = ?", elimination.ID).Order("`rank` asc, id asc").Find(&ranked).Error)
+	for index, playerSet := range ranked {
+		suite.Equal(index+1, playerSet.Rank)
+	}
+	bracket := suite.loadBracket(elimination.ID)
+	suite.Equal(playerSets[0].ID, *bracket.Stages[0].Matchs[0].MatchResults[0].PlayerSetId)
+	suite.Equal(playerSets[3].ID, *bracket.Stages[0].Matchs[0].MatchResults[1].PlayerSetId)
+	suite.Equal(playerSets[2].ID, *bracket.Stages[0].Matchs[1].MatchResults[0].PlayerSetId)
+	suite.Equal(playerSets[1].ID, *bracket.Stages[0].Matchs[1].MatchResults[1].PlayerSetId)
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestInitializeAllowsEmptyAndGappedSetupRosterWithoutAdvancingByes() {
+	empty, _, emptyAdmin, _ := suite.createFixture(1, 0, nil)
+	recorder, response := suite.postBracket(empty.ID, emptyAdmin)
+	suite.Equal(http.StatusOK, recorder.Code)
+	suite.Equal(0, response.EntrantCount)
+	bracket := suite.loadBracket(empty.ID)
+	for _, match := range bracket.Stages[0].Matchs {
+		for _, result := range match.MatchResults {
+			suite.Nil(result.PlayerSetId)
+			suite.False(result.IsWinner)
+		}
+	}
+
+	gapped, playerSets, gappedAdmin, _ := suite.createFixture(1, 2, []int{1, 4})
+	recorder, _ = suite.postBracket(gapped.ID, gappedAdmin)
+	suite.Equal(http.StatusOK, recorder.Code)
+	bracket = suite.loadBracket(gapped.ID)
+	suite.Equal(playerSets[0].ID, *bracket.Stages[0].Matchs[0].MatchResults[0].PlayerSetId)
+	suite.Equal(playerSets[1].ID, *bracket.Stages[0].Matchs[0].MatchResults[1].PlayerSetId)
+	suite.False(bracket.Stages[0].Matchs[0].MatchResults[0].IsWinner)
+	suite.False(bracket.Stages[0].Matchs[0].MatchResults[1].IsWinner)
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestFirstRoundSyncRepairsOpenBracketAndIsIdempotent() {
+	elimination, playerSets, adminCookies, nonAdminCookies := suite.createFixture(1, 2, []int{1, 4})
+	recorder, _ := suite.postBracket(elimination.ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+
+	// Simulate a legacy/out-of-band schedule-rank write: the bracket still has
+	// seed 4 in match 0, but rank 3 must move it to match 1.
+	suite.Require().NoError(database.DB.Model(&database.PlayerSet{}).Where("id = ?", playerSets[1].ID).Update("rank", 3).Error)
+	recorder, _ = suite.postFirstRoundSync(elimination.ID, nonAdminCookies)
+	suite.Equal(http.StatusForbidden, recorder.Code)
+
+	recorder, response := suite.postFirstRoundSync(elimination.ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+	suite.True(response.Changed)
+	bracket := suite.loadBracket(elimination.ID)
+	suite.Equal(playerSets[0].ID, *bracket.Stages[0].Matchs[0].MatchResults[0].PlayerSetId)
+	suite.Nil(bracket.Stages[0].Matchs[0].MatchResults[1].PlayerSetId)
+	suite.Equal(playerSets[1].ID, *bracket.Stages[0].Matchs[1].MatchResults[0].PlayerSetId)
+	suite.Nil(bracket.Stages[0].Matchs[1].MatchResults[1].PlayerSetId)
+
+	recorder, response = suite.postFirstRoundSync(elimination.ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+	suite.False(response.Changed)
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestFirstAdvanceSynchronizesOpenFirstRoundBeforeCompatibilityCheck() {
+	elimination, playerSets, adminCookies, _ := suite.createFixture(1, 2, []int{1, 4})
+	recorder, _ := suite.postBracket(elimination.ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+
+	// Both first-round matches become structural BYEs after the persisted rank
+	// change. Before the pre-advance sync this stale first slot caused the
+	// generic partial/incompatible 409.
+	suite.Require().NoError(database.DB.Model(&database.PlayerSet{}).Where("id = ?", playerSets[1].ID).Update("rank", 3).Error)
+	bracket := suite.loadBracket(elimination.ID)
+	recorder, response := suite.postAdvance(bracket.Stages[0].ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	suite.True(response.Changed)
+	bracket = suite.loadBracket(elimination.ID)
+	suite.Equal(playerSets[0].ID, *bracket.Stages[1].Matchs[0].MatchResults[0].PlayerSetId)
+	suite.Equal(playerSets[1].ID, *bracket.Stages[1].Matchs[0].MatchResults[1].PlayerSetId)
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestFirstAdvanceTreatsRankZeroAsReserveThenRequiresWinners() {
+	elimination, _, adminCookies, _ := suite.createFixture(1, 4, []int{0, 1, 2, 3})
+	recorder, _ := suite.postBracket(elimination.ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+	bracket := suite.loadBracket(elimination.ID)
+	recorder, _ = suite.postAdvance(bracket.Stages[0].ID, adminCookies)
+	suite.Equal(http.StatusConflict, recorder.Code)
+	suite.Contains(recorder.Body.String(), errBracketPending.Error())
+	stored, err := database.GetOnlyEliminationById(elimination.ID)
+	suite.Require().NoError(err)
+	suite.False(stored.BracketRosterLocked)
 }
 
 func (suite *EliminationBracketIntegrationTestSuite) TestInitializeRequiresCompetitionAdminAndValidEntrants() {
@@ -211,11 +380,11 @@ func (suite *EliminationBracketIntegrationTestSuite) TestInitializeRequiresCompe
 
 	tooFew, _, tooFewAdmin, _ := suite.createFixture(1, 3, nil)
 	recorder, _ = suite.postBracket(tooFew.ID, tooFewAdmin)
-	suite.Equal(http.StatusBadRequest, recorder.Code)
+	suite.Equal(http.StatusOK, recorder.Code)
 
 	badRanks, _, badRanksAdmin, _ := suite.createFixture(1, 4, []int{1, 2, 2, 4})
 	recorder, _ = suite.postBracket(badRanks.ID, badRanksAdmin)
-	suite.Equal(http.StatusBadRequest, recorder.Code)
+	suite.Equal(http.StatusConflict, recorder.Code)
 
 	partial, _, partialAdmin, _ := suite.createFixture(1, 4, nil)
 	_, err := database.CreateStage(database.Stage{EliminationId: partial.ID})
@@ -249,7 +418,7 @@ func (suite *EliminationBracketIntegrationTestSuite) TestInitializeRollsBackAndC
 		go func() {
 			defer waitGroup.Done()
 			<-start
-			responses <- suite.request(http.MethodPost, fmt.Sprintf("/elimination/bracket/%d", elimination.ID), concurrentAdminCookies)
+			responses <- suite.requestJSON(http.MethodPost, fmt.Sprintf("/elimination/bracket/%d", elimination.ID), map[string]int{"advancing_count": 4}, concurrentAdminCookies)
 		}()
 	}
 	close(start)
@@ -319,7 +488,677 @@ func (suite *EliminationBracketIntegrationTestSuite) TestAdvanceRegularStageThen
 	suite.False(advance.Changed)
 }
 
-func (suite *EliminationBracketIntegrationTestSuite) TestAdvanceRefusesTargetConflictWithoutOverwriting() {
+func (suite *EliminationBracketIntegrationTestSuite) TestMatchWinnerEndpointSelectsExactlyOneAndProtectsAdvancedSource() {
+	elimination, _, adminCookies, _ := suite.createFixture(1, 4, nil)
+	recorder, _ := suite.postBracket(elimination.ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+	bracket := suite.loadBracket(elimination.ID)
+	match := bracket.Stages[0].Matchs[0]
+	firstID := match.MatchResults[0].ID
+	secondID := match.MatchResults[1].ID
+
+	// Saving an unselected dialog state must not lock a roster that remains
+	// editable for schedule changes.
+	recorder, response := suite.putMatchWinner(match.ID, nil, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+	suite.False(response.Changed)
+	stored, err := database.GetOnlyEliminationById(elimination.ID)
+	suite.Require().NoError(err)
+	suite.False(stored.BracketRosterLocked)
+
+	recorder, response = suite.putMatchWinner(match.ID, &firstID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+	suite.True(response.Changed)
+	bracket = suite.loadBracket(elimination.ID)
+	suite.True(bracket.Stages[0].Matchs[0].MatchResults[0].IsWinner)
+	suite.False(bracket.Stages[0].Matchs[0].MatchResults[1].IsWinner)
+
+	recorder, response = suite.putMatchWinner(match.ID, &secondID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+	suite.True(response.Changed)
+	bracket = suite.loadBracket(elimination.ID)
+	suite.False(bracket.Stages[0].Matchs[0].MatchResults[0].IsWinner)
+	suite.True(bracket.Stages[0].Matchs[0].MatchResults[1].IsWinner)
+
+	recorder, response = suite.putMatchWinner(match.ID, nil, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+	suite.True(response.Changed)
+	bracket = suite.loadBracket(elimination.ID)
+	suite.False(bracket.Stages[0].Matchs[0].MatchResults[0].IsWinner)
+	suite.False(bracket.Stages[0].Matchs[0].MatchResults[1].IsWinner)
+
+	// The old per-result API now delegates to the same match transaction, so
+	// selecting the other side clears the prior winner instead of creating two.
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/iswinner/%d", firstID), map[string]bool{"is_winner": true}, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/iswinner/%d", secondID), map[string]bool{"is_winner": true}, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+	bracket = suite.loadBracket(elimination.ID)
+	suite.False(bracket.Stages[0].Matchs[0].MatchResults[0].IsWinner)
+	suite.True(bracket.Stages[0].Matchs[0].MatchResults[1].IsWinner)
+
+	// Once this source has been advanced, its winner cannot be rewritten.
+	for matchIndex := 1; matchIndex < len(bracket.Stages[0].Matchs); matchIndex++ {
+		suite.markWinner(bracket, 0, matchIndex, 0)
+	}
+	recorder, _ = suite.postAdvance(bracket.Stages[0].ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+	recorder, _ = suite.putMatchWinner(match.ID, &firstID, adminCookies)
+	suite.Equal(http.StatusConflict, recorder.Code)
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestMatchWinnerSynchronizesOpenFirstRoundBeforeSelectingWinner() {
+	elimination, playerSets, adminCookies, _ := suite.createFixture(1, 2, []int{1, 4})
+	recorder, _ := suite.postBracket(elimination.ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+
+	// This rank write deliberately bypasses the roster mutation helper. The
+	// match winner endpoint must re-sync before checking whether its selected
+	// result is occupied.
+	suite.Require().NoError(database.DB.Model(&database.PlayerSet{}).Where("id = ?", playerSets[1].ID).Update("rank", 3).Error)
+	bracket := suite.loadBracket(elimination.ID)
+	match := bracket.Stages[0].Matchs[1]
+	winnerID := match.MatchResults[0].ID
+	recorder, response := suite.putMatchWinner(match.ID, &winnerID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	suite.True(response.Changed)
+	bracket = suite.loadBracket(elimination.ID)
+	suite.Equal(playerSets[1].ID, *bracket.Stages[0].Matchs[1].MatchResults[0].PlayerSetId)
+	suite.True(bracket.Stages[0].Matchs[1].MatchResults[0].IsWinner)
+	suite.False(bracket.Stages[0].Matchs[1].MatchResults[1].IsWinner)
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestMatchSettingsIsAtomicAndIdempotent() {
+	elimination, _, adminCookies, _ := suite.createFixture(1, 4, nil)
+	recorder, _ := suite.postBracket(elimination.ID, adminCookies)
+	bracket := suite.loadBracket(elimination.ID)
+	match := bracket.Stages[0].Matchs[0]
+	winnerID := match.MatchResults[0].ID
+	a, b := "A", "B"
+	body := MatchSettingsRequest{WinnerMatchResultID: &winnerID, Placements: []MatchResultPlacement{{MatchResultID: winnerID, LaneNumber: 7, Target: &a}, {MatchResultID: match.MatchResults[1].ID, LaneNumber: 7, Target: &b}}}
+	recorder = suite.requestJSON(http.MethodPut, fmt.Sprintf("/elimination/match/settings/%d", match.ID), body, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	var response MatchSettingsResponse
+	suite.Require().NoError(json.Unmarshal(recorder.Body.Bytes(), &response))
+	suite.True(response.Changed)
+	bracket = suite.loadBracket(elimination.ID)
+	suite.True(bracket.Stages[0].Matchs[0].MatchResults[0].IsWinner)
+	suite.Equal(7, bracket.Stages[0].Matchs[0].MatchResults[0].LaneNumber)
+	recorder = suite.requestJSON(http.MethodPut, fmt.Sprintf("/elimination/match/settings/%d", match.ID), body, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+	suite.Require().NoError(json.Unmarshal(recorder.Body.Bytes(), &response))
+	suite.False(response.Changed)
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestMatchSettingsRollsBackPlacementWhenWinnerHasAdvanced() {
+	elimination, _, adminCookies, _ := suite.createFixture(1, 4, nil)
+	recorder, _ := suite.postBracket(elimination.ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+
+	bracket := suite.loadBracket(elimination.ID)
+	suite.markWinner(bracket, 0, 0, 0)
+	suite.markWinner(bracket, 0, 1, 0)
+	recorder, _ = suite.postAdvance(bracket.Stages[0].ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+
+	bracket = suite.loadBracket(elimination.ID)
+	match := bracket.Stages[0].Matchs[0]
+	// Attempt to switch the already-advanced source to the opposite winner.
+	// Re-sending the existing winner is idempotent and must still permit a
+	// placement-only correction after advancement.
+	winnerID := match.MatchResults[1].ID
+	a, b := "A", "B"
+	recorder = suite.requestJSON(http.MethodPut, fmt.Sprintf("/elimination/match/settings/%d", match.ID), MatchSettingsRequest{
+		WinnerMatchResultID: &winnerID,
+		Placements:          []MatchResultPlacement{{MatchResultID: match.MatchResults[0].ID, LaneNumber: 9, Target: &a}, {MatchResultID: match.MatchResults[1].ID, LaneNumber: 9, Target: &b}},
+	}, adminCookies)
+	suite.Equal(http.StatusConflict, recorder.Code, recorder.Body.String())
+
+	bracket = suite.loadBracket(elimination.ID)
+	suite.True(bracket.Stages[0].Matchs[0].MatchResults[0].IsWinner)
+	suite.Equal(0, bracket.Stages[0].Matchs[0].MatchResults[0].LaneNumber)
+	suite.Nil(bracket.Stages[0].Matchs[0].MatchResults[0].Target)
+	suite.Equal(0, bracket.Stages[0].Matchs[0].MatchResults[1].LaneNumber)
+	suite.Nil(bracket.Stages[0].Matchs[0].MatchResults[1].Target)
+
+	existingWinnerID := match.MatchResults[0].ID
+	recorder = suite.requestJSON(http.MethodPut, fmt.Sprintf("/elimination/match/settings/%d", match.ID), MatchSettingsRequest{
+		WinnerMatchResultID: &existingWinnerID,
+		Placements:          []MatchResultPlacement{{MatchResultID: match.MatchResults[0].ID, LaneNumber: 9, Target: &a}, {MatchResultID: match.MatchResults[1].ID, LaneNumber: 9, Target: &b}},
+	}, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	bracket = suite.loadBracket(elimination.ID)
+	suite.True(bracket.Stages[0].Matchs[0].MatchResults[0].IsWinner)
+	suite.Equal(9, bracket.Stages[0].Matchs[0].MatchResults[0].LaneNumber)
+	suite.Equal(9, bracket.Stages[0].Matchs[0].MatchResults[1].LaneNumber)
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestMatchSettingsSupportsLegacyPlayerSets() {
+	elimination, playerSets, adminCookies, _ := suite.createFixture(1, 2, nil)
+	var match bracketMatch
+	suite.Require().NoError(database.DB.Transaction(func(tx *gorm.DB) error {
+		stage := database.Stage{EliminationId: elimination.ID}
+		if err := tx.Create(&stage).Error; err != nil {
+			return err
+		}
+		var err error
+		match, err = createBracketMatch(tx, stage.ID, [2]*uint{}, elimination.TeamSize)
+		return err
+	}))
+	a, b := "A", "B"
+	winnerID := match.Results[0].ID
+	body := MatchSettingsRequest{
+		WinnerMatchResultID: &winnerID,
+		PlayerSetIDs:        []uint{playerSets[0].ID, playerSets[1].ID},
+		Placements:          []MatchResultPlacement{{MatchResultID: winnerID, LaneNumber: 4, Target: &a}, {MatchResultID: match.Results[1].ID, LaneNumber: 4, Target: &b}},
+	}
+	recorder := suite.requestJSON(http.MethodPut, fmt.Sprintf("/elimination/match/settings/%d", match.Match.ID), body, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+
+	loaded := suite.loadBracket(elimination.ID).Stages[0].Matchs[0]
+	suite.Equal(playerSets[0].ID, *loaded.MatchResults[0].PlayerSetId)
+	suite.Equal(playerSets[1].ID, *loaded.MatchResults[1].PlayerSetId)
+	suite.True(loaded.MatchResults[0].IsWinner)
+	medals, err := database.GetMedalInfoByEliminationId(elimination.ID)
+	suite.Require().NoError(err)
+	suite.Equal(playerSets[0].ID, medals[0].PlayerSetId)
+	suite.Equal(playerSets[1].ID, medals[1].PlayerSetId)
+	suite.Zero(medals[2].PlayerSetId)
+
+	correction := body
+	correction.PlayerSetIDs = []uint{playerSets[1].ID, playerSets[0].ID}
+	recorder = suite.requestJSON(http.MethodPut, fmt.Sprintf("/elimination/match/settings/%d", match.Match.ID), correction, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	medals, err = database.GetMedalInfoByEliminationId(elimination.ID)
+	suite.Require().NoError(err)
+	suite.Equal(playerSets[1].ID, medals[0].PlayerSetId)
+	suite.Equal(playerSets[0].ID, medals[1].PlayerSetId)
+
+	duplicateBody := body
+	duplicateBody.PlayerSetIDs = []uint{playerSets[0].ID, playerSets[0].ID}
+	duplicateBody.Placements = []MatchResultPlacement{{MatchResultID: match.Results[0].ID, LaneNumber: 8, Target: &a}, {MatchResultID: match.Results[1].ID, LaneNumber: 8, Target: &b}}
+	recorder = suite.requestJSON(http.MethodPut, fmt.Sprintf("/elimination/match/settings/%d", match.Match.ID), duplicateBody, adminCookies)
+	suite.Equal(http.StatusConflict, recorder.Code, recorder.Body.String())
+	loaded = suite.loadBracket(elimination.ID).Stages[0].Matchs[0]
+	suite.Equal(playerSets[1].ID, *loaded.MatchResults[0].PlayerSetId)
+	suite.Equal(playerSets[0].ID, *loaded.MatchResults[1].PlayerSetId)
+	suite.Equal(4, loaded.MatchResults[0].LaneNumber)
+	suite.Equal(4, loaded.MatchResults[1].LaneNumber)
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestManualMatchPlayerSetAssignmentAllowsStartedAndLaterMatches() {
+	elimination, playerSets, adminCookies, _ := suite.createFixture(1, 4, nil)
+	var firstStageMatch bracketMatch
+	var finalStageMatch bracketMatch
+	suite.Require().NoError(database.DB.Transaction(func(tx *gorm.DB) error {
+		firstStage := database.Stage{EliminationId: elimination.ID}
+		if err := tx.Create(&firstStage).Error; err != nil {
+			return err
+		}
+		finalStage := database.Stage{EliminationId: elimination.ID}
+		if err := tx.Create(&finalStage).Error; err != nil {
+			return err
+		}
+		var err error
+		firstStageMatch, err = createBracketMatch(tx, firstStage.ID, [2]*uint{}, elimination.TeamSize)
+		if err != nil {
+			return err
+		}
+		if _, err := createBracketMatch(tx, firstStage.ID, [2]*uint{}, elimination.TeamSize); err != nil {
+			return err
+		}
+		finalStageMatch, err = createBracketMatch(tx, finalStage.ID, [2]*uint{}, elimination.TeamSize)
+		if err != nil {
+			return err
+		}
+		_, err = createBracketMatch(tx, finalStage.ID, [2]*uint{}, elimination.TeamSize)
+		return err
+	}))
+
+	path := fmt.Sprintf("/elimination/match/playerset/%d", firstStageMatch.Match.ID)
+	recorder := suite.requestJSON(http.MethodPatch, path, map[string]any{"player_set_ids": []uint{playerSets[0].ID, playerSets[1].ID}}, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	loaded := suite.loadBracket(elimination.ID).Stages[0].Matchs[0]
+	suite.Equal(playerSets[0].ID, *loaded.MatchResults[0].PlayerSetId)
+	suite.Equal(playerSets[1].ID, *loaded.MatchResults[1].PlayerSetId)
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/elimination/match/playerset/%d", finalStageMatch.Match.ID), map[string]any{"player_set_ids": []uint{playerSets[2].ID, playerSets[3].ID}}, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/totalpoints/%d", loaded.MatchResults[0].ID), map[string]int{"total_points": 2}, nil)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	recorder = suite.requestJSON(http.MethodPatch, path, map[string]any{"player_set_ids": []uint{playerSets[0].ID, playerSets[1].ID}}, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	recorder = suite.requestJSON(http.MethodPatch, path, map[string]any{"player_set_ids": []uint{playerSets[2].ID, playerSets[3].ID}}, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	loaded = suite.loadBracket(elimination.ID).Stages[0].Matchs[0]
+	suite.Equal(playerSets[2].ID, *loaded.MatchResults[0].PlayerSetId)
+	suite.Equal(playerSets[3].ID, *loaded.MatchResults[1].PlayerSetId)
+	suite.Equal(2, loaded.MatchResults[0].TotalPoints)
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestCompleteLegacyEightSlotBracketAllowsFinalAssignmentWithThreePlayerSets() {
+	elimination, playerSets, adminCookies, _ := suite.createFixture(1, 3, nil)
+	var finalMatch bracketMatch
+	suite.Require().NoError(database.DB.Transaction(func(tx *gorm.DB) error {
+		stages := make([]database.Stage, 3)
+		for index := range stages {
+			stages[index] = database.Stage{EliminationId: elimination.ID}
+			if err := tx.Create(&stages[index]).Error; err != nil {
+				return err
+			}
+		}
+		for index := 0; index < 4; index++ {
+			if _, err := createBracketMatch(tx, stages[0].ID, [2]*uint{}, elimination.TeamSize); err != nil {
+				return err
+			}
+		}
+		for index := 0; index < 2; index++ {
+			if _, err := createBracketMatch(tx, stages[1].ID, [2]*uint{}, elimination.TeamSize); err != nil {
+				return err
+			}
+		}
+		var err error
+		finalMatch, err = createBracketMatch(tx, stages[2].ID, [2]*uint{}, elimination.TeamSize)
+		if err != nil {
+			return err
+		}
+		_, err = createBracketMatch(tx, stages[2].ID, [2]*uint{}, elimination.TeamSize)
+		return err
+	}))
+	recorder := suite.requestJSON(http.MethodPatch, fmt.Sprintf("/elimination/match/playerset/%d", finalMatch.Match.ID), map[string]any{"player_set_ids": []uint{playerSets[0].ID, playerSets[1].ID}}, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestGeneratedBracketManualAssignmentAllowsLaterRoundsAndLockedRoster() {
+	elimination, playerSets, adminCookies, _ := suite.createFixture(1, 4, nil)
+	recorder, _ := suite.postBracket(elimination.ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	bracket := suite.loadBracket(elimination.ID)
+
+	laterRoundPath := fmt.Sprintf("/elimination/match/playerset/%d", bracket.Stages[1].Matchs[0].ID)
+	recorder = suite.requestJSON(http.MethodPatch, laterRoundPath, map[string]any{"player_set_ids": []uint{playerSets[0].ID, playerSets[1].ID}}, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+
+	suite.Require().NoError(database.DB.Model(&database.Elimination{}).Where("id = ?", elimination.ID).Update("bracket_roster_locked", true).Error)
+	firstRoundPath := fmt.Sprintf("/elimination/match/playerset/%d", bracket.Stages[0].Matchs[0].ID)
+	recorder = suite.requestJSON(http.MethodPatch, firstRoundPath, map[string]any{"player_set_ids": []uint{playerSets[3].ID, playerSets[0].ID}}, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	recorder = suite.requestJSON(http.MethodPatch, firstRoundPath, map[string]any{"player_set_ids": []uint{playerSets[0].ID, playerSets[3].ID}}, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestManualCorrectionReprojectsAdvancedWinnerAndPreservesTargetScore() {
+	elimination, _, adminCookies, _ := suite.createFixture(1, 4, nil)
+	recorder, _ := suite.postBracket(elimination.ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	bracket := suite.loadBracket(elimination.ID)
+	suite.markWinner(bracket, 0, 0, 0)
+	suite.markWinner(bracket, 0, 1, 0)
+	recorder, _ = suite.postAdvance(bracket.Stages[0].ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+
+	bracket = suite.loadBracket(elimination.ID)
+	source := bracket.Stages[0].Matchs[0]
+	goldTarget := bracket.Stages[1].Matchs[0].MatchResults[0]
+	suite.Require().NotNil(source.MatchResults[0].PlayerSetId)
+	suite.Require().NotNil(source.MatchResults[1].PlayerSetId)
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/totalpoints/%d", goldTarget.ID), map[string]int{"total_points": 17}, nil)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/elimination/match/playerset/%d", source.ID), map[string]any{"player_set_ids": []uint{*source.MatchResults[1].PlayerSetId, *source.MatchResults[0].PlayerSetId}}, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	bracket = suite.loadBracket(elimination.ID)
+	correctedSource := bracket.Stages[0].Matchs[0]
+	correctedTarget := bracket.Stages[1].Matchs[0].MatchResults[0]
+	suite.True(correctedSource.MatchResults[0].IsWinner)
+	suite.Equal(*correctedSource.MatchResults[0].PlayerSetId, *correctedTarget.PlayerSetId)
+	suite.Equal(17, correctedTarget.TotalPoints)
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestManualLaterRoundCorrectionCanScoreAndReprojectsFinalMedals() {
+	elimination, _, adminCookies, _ := suite.createFixture(1, 4, nil)
+	recorder, _ := suite.postBracket(elimination.ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	bracket := suite.loadBracket(elimination.ID)
+	suite.markWinner(bracket, 0, 0, 0)
+	suite.markWinner(bracket, 0, 1, 0)
+	recorder, _ = suite.postAdvance(bracket.Stages[0].ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+
+	bracket = suite.loadBracket(elimination.ID)
+	gold := bracket.Stages[1].Matchs[0]
+	suite.Require().NotNil(gold.MatchResults[0].PlayerSetId)
+	suite.Require().NotNil(gold.MatchResults[1].PlayerSetId)
+	firstID, secondID := *gold.MatchResults[0].PlayerSetId, *gold.MatchResults[1].PlayerSetId
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/elimination/match/playerset/%d", gold.ID), map[string]any{"player_set_ids": []uint{secondID, firstID}}, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+
+	bracket = suite.loadBracket(elimination.ID)
+	gold = bracket.Stages[1].Matchs[0]
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/totalpoints/%d", gold.MatchResults[0].ID), map[string]int{"total_points": 19}, nil)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	recorder, _ = suite.putMatchWinner(gold.ID, &gold.MatchResults[0].ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	bracket = suite.loadBracket(elimination.ID)
+	suite.markWinner(bracket, 1, 1, 0)
+	recorder, _ = suite.postAdvance(bracket.Stages[1].ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	medals, err := database.GetMedalInfoByEliminationId(elimination.ID)
+	suite.Require().NoError(err)
+	suite.Equal(secondID, medals[0].PlayerSetId)
+
+	// The final has already been awarded. Swapping its two identities retains
+	// the score/winner slot and immediately rewrites the materialized medals.
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/elimination/match/playerset/%d", gold.ID), map[string]any{"player_set_ids": []uint{firstID, secondID}}, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	bracket = suite.loadBracket(elimination.ID)
+	suite.True(bracket.Stages[1].Matchs[0].MatchResults[0].IsWinner)
+	suite.Equal(19, bracket.Stages[1].Matchs[0].MatchResults[0].TotalPoints)
+	medals, err = database.GetMedalInfoByEliminationId(elimination.ID)
+	suite.Require().NoError(err)
+	suite.Equal(firstID, medals[0].PlayerSetId)
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestManualSourceCorrectionAfterFinalReprojectsDescendantsAndMedals() {
+	elimination, _, adminCookies, _ := suite.createFixture(1, 4, nil)
+	recorder, _ := suite.postBracket(elimination.ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	bracket := suite.loadBracket(elimination.ID)
+	suite.markWinner(bracket, 0, 0, 0)
+	suite.markWinner(bracket, 0, 1, 0)
+	recorder, _ = suite.postAdvance(bracket.Stages[0].ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+
+	bracket = suite.loadBracket(elimination.ID)
+	source := bracket.Stages[0].Matchs[0]
+	gold := bracket.Stages[1].Matchs[0]
+	bronze := bracket.Stages[1].Matchs[1]
+	suite.Require().NotNil(source.MatchResults[0].PlayerSetId)
+	suite.Require().NotNil(source.MatchResults[1].PlayerSetId)
+	suite.Require().NotNil(gold.MatchResults[0].PlayerSetId)
+	suite.Require().NotNil(bronze.MatchResults[0].PlayerSetId)
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/totalpoints/%d", gold.MatchResults[0].ID), map[string]int{"total_points": 23}, nil)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	suite.markWinner(bracket, 1, 0, 0)
+	suite.markWinner(bracket, 1, 1, 0)
+	recorder, _ = suite.postAdvance(bracket.Stages[1].ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/elimination/match/playerset/%d", source.ID), map[string]any{"player_set_ids": []uint{*source.MatchResults[1].PlayerSetId, *source.MatchResults[0].PlayerSetId}}, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	bracket = suite.loadBracket(elimination.ID)
+	source = bracket.Stages[0].Matchs[0]
+	gold = bracket.Stages[1].Matchs[0]
+	bronze = bracket.Stages[1].Matchs[1]
+	suite.True(source.MatchResults[0].IsWinner)
+	suite.Equal(*source.MatchResults[0].PlayerSetId, *gold.MatchResults[0].PlayerSetId)
+	suite.Equal(*source.MatchResults[1].PlayerSetId, *bronze.MatchResults[0].PlayerSetId)
+	suite.True(gold.MatchResults[0].IsWinner)
+	suite.Equal(23, gold.MatchResults[0].TotalPoints)
+	medals, err := database.GetMedalInfoByEliminationId(elimination.ID)
+	suite.Require().NoError(err)
+	suite.Equal(*gold.MatchResults[0].PlayerSetId, medals[0].PlayerSetId)
+	suite.Equal(*bronze.MatchResults[0].PlayerSetId, medals[2].PlayerSetId)
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestManualCrossMatchSwapBatchProjectsAllDecidedSources() {
+	elimination, _, adminCookies, _ := suite.createFixture(1, 4, nil)
+	recorder, _ := suite.postBracket(elimination.ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	bracket := suite.loadBracket(elimination.ID)
+	suite.markWinner(bracket, 0, 0, 0)
+	suite.markWinner(bracket, 0, 1, 0)
+	recorder, _ = suite.postAdvance(bracket.Stages[0].ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	bracket = suite.loadBracket(elimination.ID)
+	first, second := bracket.Stages[0].Matchs[0], bracket.Stages[0].Matchs[1]
+	firstOriginal0, firstOriginal1 := *first.MatchResults[0].PlayerSetId, *first.MatchResults[1].PlayerSetId
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/elimination/match/playerset/%d", first.ID), map[string]any{"player_set_ids": []uint{*second.MatchResults[0].PlayerSetId, *second.MatchResults[1].PlayerSetId}}, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	bracket = suite.loadBracket(elimination.ID)
+	first, second = bracket.Stages[0].Matchs[0], bracket.Stages[0].Matchs[1]
+	gold, bronze := bracket.Stages[1].Matchs[0], bracket.Stages[1].Matchs[1]
+	// Projection order is deterministic: first destination's displaced pair
+	// returns to first requested external source, then second to second.
+	suite.Equal(firstOriginal0, *second.MatchResults[0].PlayerSetId)
+	suite.Equal(firstOriginal1, *second.MatchResults[1].PlayerSetId)
+	suite.Equal(*first.MatchResults[0].PlayerSetId, *gold.MatchResults[0].PlayerSetId)
+	suite.Equal(*second.MatchResults[0].PlayerSetId, *gold.MatchResults[1].PlayerSetId)
+	suite.Equal(*first.MatchResults[1].PlayerSetId, *bronze.MatchResults[0].PlayerSetId)
+	suite.Equal(*second.MatchResults[1].PlayerSetId, *bronze.MatchResults[1].PlayerSetId)
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestLegacyTwoSemiFinalsIntoOneGoldFinalCorrection() {
+	elimination, playerSets, adminCookies, _ := suite.createFixture(1, 4, nil)
+	var firstStage, finalStage database.Stage
+	suite.Require().NoError(database.DB.Transaction(func(tx *gorm.DB) error {
+		var err error
+		firstStage = database.Stage{EliminationId: elimination.ID}
+		if err = tx.Create(&firstStage).Error; err != nil {
+			return err
+		}
+		finalStage = database.Stage{EliminationId: elimination.ID}
+		if err = tx.Create(&finalStage).Error; err != nil {
+			return err
+		}
+		if _, err = createBracketMatch(tx, firstStage.ID, [2]*uint{&playerSets[0].ID, &playerSets[3].ID}, 1); err != nil {
+			return err
+		}
+		if _, err = createBracketMatch(tx, firstStage.ID, [2]*uint{&playerSets[2].ID, &playerSets[1].ID}, 1); err != nil {
+			return err
+		}
+		_, err = createBracketMatch(tx, finalStage.ID, [2]*uint{}, 1)
+		return err
+	}))
+	bracket := suite.loadBracket(elimination.ID)
+	suite.markWinner(bracket, 0, 0, 0)
+	suite.markWinner(bracket, 0, 1, 0)
+	suite.Require().NoError(database.DB.Transaction(func(tx *gorm.DB) error {
+		loaded, err := loadBracket(tx, elimination.ID)
+		if err != nil {
+			return err
+		}
+		_, err = projectDecidedStages(tx, loaded, 0, map[int]bool{0: true, 1: true}, false, true)
+		return err
+	}))
+	bracket = suite.loadBracket(elimination.ID)
+	gold := bracket.Stages[1].Matchs[0]
+	suite.markWinner(bracket, 1, 0, 0)
+	suite.Require().NoError(database.DB.Transaction(func(tx *gorm.DB) error {
+		loaded, err := loadBracket(tx, elimination.ID)
+		if err != nil {
+			return err
+		}
+		_, err = reprojectBracketMedals(tx, elimination.ID, bracketStage{Stage: loaded[1].Stage, Matches: loaded[1].Matches})
+		return err
+	}))
+	// Bronze is legacy/manual data, not derivable from this topology.
+	suite.Require().NoError(database.DB.Model(&database.Medal{}).Where("elimination_id = ? AND type = ?", elimination.ID, 2).Update("player_set_id", playerSets[1].ID).Error)
+
+	semi := bracket.Stages[0].Matchs[0]
+	recorder := suite.requestJSON(http.MethodPatch, fmt.Sprintf("/elimination/match/playerset/%d", semi.ID), map[string]any{"player_set_ids": []uint{playerSets[3].ID, playerSets[0].ID}}, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	bracket = suite.loadBracket(elimination.ID)
+	gold = bracket.Stages[1].Matchs[0]
+	suite.Equal(playerSets[3].ID, *gold.MatchResults[0].PlayerSetId)
+	medals, err := database.GetMedalInfoByEliminationId(elimination.ID)
+	suite.Require().NoError(err)
+	suite.Equal(playerSets[3].ID, medals[0].PlayerSetId)
+	suite.Equal(playerSets[2].ID, medals[1].PlayerSetId)
+	suite.Equal(playerSets[1].ID, medals[2].PlayerSetId)
+
+	secondWinnerID := bracket.Stages[0].Matchs[0].MatchResults[1].ID
+	recorder, _ = suite.putMatchWinner(semi.ID, &secondWinnerID, adminCookies)
+	suite.Equal(http.StatusConflict, recorder.Code, recorder.Body.String())
+	bracket = suite.loadBracket(elimination.ID)
+	suite.Equal(playerSets[3].ID, *bracket.Stages[1].Matchs[0].MatchResults[0].PlayerSetId)
+	medals, err = database.GetMedalInfoByEliminationId(elimination.ID)
+	suite.Require().NoError(err)
+	suite.Equal(playerSets[3].ID, medals[0].PlayerSetId)
+	suite.Equal(playerSets[2].ID, medals[1].PlayerSetId)
+	suite.Equal(playerSets[1].ID, medals[2].PlayerSetId)
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestBatchProjectorDeterministicallyPermutesExternalStaleSlots() {
+	elimination, _, adminCookies, _ := suite.createFixture(1, 8, nil)
+	recorder, _ := suite.postBracket(elimination.ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	bracket := suite.loadBracket(elimination.ID)
+
+	// Only the first two sources are decided. Their wanted A/B slots in the
+	// next stage are deliberately held by the other match; C/D occupy the two
+	// actual destinations. The batch must move C to A's old slot and D to B's
+	// old slot, retaining each external slot's score and winner state.
+	firstSource := bracket.Stages[0].Matchs[0]
+	secondSource := bracket.Stages[0].Matchs[1]
+	thirdSource := bracket.Stages[0].Matchs[2]
+	fourthSource := bracket.Stages[0].Matchs[3]
+	firstWinner := *firstSource.MatchResults[0].PlayerSetId
+	secondWinner := *secondSource.MatchResults[0].PlayerSetId
+	thirdWinner := *thirdSource.MatchResults[0].PlayerSetId
+	fourthWinner := *fourthSource.MatchResults[0].PlayerSetId
+	firstTarget := bracket.Stages[1].Matchs[0]
+	externalTarget := bracket.Stages[1].Matchs[1]
+
+	// C/D are old destinations; A/B are external slots with distinguishable
+	// match state. Both stage-one matches already have a selected winner, so
+	// the subsequent stage advance also proves the swapped sibling continues.
+	suite.Require().NoError(database.DB.Model(&database.MatchResult{}).Where("id = ?", firstTarget.MatchResults[0].ID).Updates(map[string]interface{}{"player_set_id": thirdWinner, "total_points": 13, "is_winner": true}).Error)
+	suite.Require().NoError(database.DB.Model(&database.MatchResult{}).Where("id = ?", firstTarget.MatchResults[1].ID).Updates(map[string]interface{}{"player_set_id": fourthWinner, "total_points": 7}).Error)
+	suite.Require().NoError(database.DB.Model(&database.MatchResult{}).Where("id = ?", externalTarget.MatchResults[0].ID).Updates(map[string]interface{}{"player_set_id": firstWinner, "total_points": 31, "is_winner": true}).Error)
+	suite.Require().NoError(database.DB.Model(&database.MatchResult{}).Where("id = ?", externalTarget.MatchResults[1].ID).Updates(map[string]interface{}{"player_set_id": secondWinner, "total_points": 17}).Error)
+
+	suite.markWinner(bracket, 0, 0, 0)
+	suite.markWinner(bracket, 0, 1, 0)
+	// The public stage-advance endpoint deliberately requires every source
+	// match to be decided. Exercise its shared batch projector with just the
+	// two completed sources, which is the recovery path that has external
+	// target slots and therefore needs the deterministic permutation.
+	suite.Require().NoError(database.DB.Transaction(func(tx *gorm.DB) error {
+		loaded, err := loadBracket(tx, elimination.ID)
+		if err != nil {
+			return err
+		}
+		_, err = projectDecidedStages(tx, loaded, 0, map[int]bool{0: true, 1: true}, false, true)
+		return err
+	}))
+	bracket = suite.loadBracket(elimination.ID)
+	firstTarget = bracket.Stages[1].Matchs[0]
+	externalTarget = bracket.Stages[1].Matchs[1]
+	suite.Equal(firstWinner, *firstTarget.MatchResults[0].PlayerSetId)
+	suite.Equal(secondWinner, *firstTarget.MatchResults[1].PlayerSetId)
+	suite.Equal(thirdWinner, *externalTarget.MatchResults[0].PlayerSetId)
+	suite.Equal(fourthWinner, *externalTarget.MatchResults[1].PlayerSetId)
+	suite.Equal(31, externalTarget.MatchResults[0].TotalPoints)
+	suite.True(externalTarget.MatchResults[0].IsWinner)
+	suite.Equal(17, externalTarget.MatchResults[1].TotalPoints)
+
+	// The external winner is now C, not stale A, and must reach the gold
+	// final; the same deterministic pairing must therefore survive the next
+	// projection and final medal assignment.
+	// Batch cascading reaches both final matches. Finalizing then verifies
+	// their identities award the corresponding medals.
+	gold, bronze := bracket.Stages[2].Matchs[0], bracket.Stages[2].Matchs[1]
+	suite.Equal(firstWinner, *gold.MatchResults[0].PlayerSetId)
+	suite.Equal(thirdWinner, *gold.MatchResults[1].PlayerSetId)
+	suite.Equal(secondWinner, *bronze.MatchResults[0].PlayerSetId)
+	suite.Equal(fourthWinner, *bronze.MatchResults[1].PlayerSetId)
+	suite.markWinner(bracket, 2, 0, 0)
+	suite.markWinner(bracket, 2, 1, 0)
+	recorder, _ = suite.postAdvance(bracket.Stages[2].ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	medals, err := database.GetMedalInfoByEliminationId(elimination.ID)
+	suite.Require().NoError(err)
+	suite.Equal(firstWinner, medals[0].PlayerSetId)
+	suite.Equal(thirdWinner, medals[1].PlayerSetId)
+	suite.Equal(secondWinner, medals[2].PlayerSetId)
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestGeneratedBracketManualSwapLocksAutoRosterAndCanAdvance() {
+	elimination, playerSets, adminCookies, _ := suite.createFixture(1, 5, nil)
+	recorder := suite.requestJSON(http.MethodPost, fmt.Sprintf("/elimination/bracket/%d", elimination.ID), BracketInitRequest{AdvancingCount: 4}, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	bracket := suite.loadBracket(elimination.ID)
+	firstMatch := bracket.Stages[0].Matchs[0]
+	path := fmt.Sprintf("/elimination/match/playerset/%d", firstMatch.ID)
+
+	// Rank 5 is a reserve. Manual recovery swaps rank 2 from its other first
+	// round match and admits the reserve, without duplicating a team or
+	// rewriting ranking data.
+	recorder = suite.requestJSON(http.MethodPatch, path, map[string]any{"player_set_ids": []uint{playerSets[4].ID, playerSets[1].ID}}, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	bracket = suite.loadBracket(elimination.ID)
+	suite.Equal(playerSets[4].ID, *bracket.Stages[0].Matchs[0].MatchResults[0].PlayerSetId)
+	suite.Equal(playerSets[1].ID, *bracket.Stages[0].Matchs[0].MatchResults[1].PlayerSetId)
+	firstRoundIDs := map[uint]bool{}
+	for _, match := range bracket.Stages[0].Matchs {
+		for _, result := range match.MatchResults {
+			if result.PlayerSetId != nil {
+				suite.False(firstRoundIDs[*result.PlayerSetId], "first round must not duplicate a PlayerSet")
+				firstRoundIDs[*result.PlayerSetId] = true
+			}
+		}
+	}
+
+	var ranked []database.PlayerSet
+	suite.Require().NoError(database.DB.Where("elimination_id = ?", elimination.ID).Order("id asc").Find(&ranked).Error)
+	ranks := map[uint]int{}
+	for _, playerSet := range ranked {
+		ranks[playerSet.ID] = playerSet.Rank
+	}
+	suite.Equal(5, ranks[playerSets[4].ID])
+	suite.Equal(2, ranks[playerSets[1].ID])
+	suite.Equal(1, ranks[playerSets[0].ID])
+	suite.Equal(4, ranks[playerSets[3].ID])
+
+	recorder, syncResponse := suite.postFirstRoundSync(elimination.ID, adminCookies)
+	suite.Equal(http.StatusConflict, recorder.Code, recorder.Body.String())
+	suite.False(syncResponse.Changed)
+	winnerID := bracket.Stages[0].Matchs[0].MatchResults[0].ID
+	recorder, _ = suite.putMatchWinner(bracket.Stages[0].Matchs[0].ID, &winnerID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	bracket = suite.loadBracket(elimination.ID)
+	suite.markWinner(bracket, 0, 1, 0)
+	recorder, _ = suite.postAdvance(bracket.Stages[0].ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestGeneratedBracketCanPromoteZeroRankReserveAndLocksAutoRoster() {
+	elimination, playerSets, adminCookies, _ := suite.createFixture(1, 4, nil)
+	reserve, err := database.CreatePlayerSet(database.PlayerSet{EliminationId: elimination.ID, Rank: 0, SetName: "zero-rank-reserve"})
+	suite.Require().NoError(err)
+	recorder := suite.requestJSON(http.MethodPost, fmt.Sprintf("/elimination/bracket/%d", elimination.ID), BracketInitRequest{AdvancingCount: 4}, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	bracket := suite.loadBracket(elimination.ID)
+	path := fmt.Sprintf("/elimination/match/playerset/%d", bracket.Stages[0].Matchs[0].ID)
+	recorder = suite.requestJSON(http.MethodPatch, path, map[string]any{"player_set_ids": []uint{reserve.ID, playerSets[1].ID}}, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	recorder, syncResponse := suite.postFirstRoundSync(elimination.ID, adminCookies)
+	suite.Equal(http.StatusConflict, recorder.Code, recorder.Body.String())
+	suite.False(syncResponse.Changed)
+	bracket = suite.loadBracket(elimination.ID)
+	suite.Equal(reserve.ID, *bracket.Stages[0].Matchs[0].MatchResults[0].PlayerSetId)
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestLegacyWinnerMutationRejectsPopulatedDownstream() {
+	elimination, _, adminCookies, _ := suite.createFixture(1, 4, nil)
+	recorder, _ := suite.postBracket(elimination.ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+	bracket := suite.loadBracket(elimination.ID)
+	source := bracket.Stages[0].Matchs[0].MatchResults[0]
+	target := bracket.Stages[1].Matchs[0].MatchResults[0]
+	suite.Require().NotNil(source.PlayerSetId)
+	suite.Require().NoError(database.DB.Model(&database.Elimination{}).Where("id = ?", elimination.ID).Update("bracket_seed_count", 0).Error)
+	suite.Require().NoError(database.DB.Model(&database.MatchResult{}).Where("id = ?", target.ID).Update("player_set_id", *source.PlayerSetId).Error)
+
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/iswinner/%d", source.ID), map[string]bool{"is_winner": true}, adminCookies)
+	suite.Equal(http.StatusConflict, recorder.Code, recorder.Body.String())
+	var reloaded database.MatchResult
+	suite.Require().NoError(database.DB.First(&reloaded, source.ID).Error)
+	suite.False(reloaded.IsWinner)
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestAdvanceOverwritesStaleTargetProjection() {
 	elimination, playerSets, adminCookies, _ := suite.createFixture(1, 4, nil)
 	recorder, _ := suite.postBracket(elimination.ID, adminCookies)
 	suite.Equal(http.StatusOK, recorder.Code)
@@ -332,14 +1171,35 @@ func (suite *EliminationBracketIntegrationTestSuite) TestAdvanceRefusesTargetCon
 	suite.Require().NoError(database.DB.Model(&database.MatchResult{}).Where("id = ?", targetResultID).Update("player_set_id", conflictingPlayerSetID).Error)
 
 	recorder, _ = suite.postAdvance(bracket.Stages[0].ID, adminCookies)
-	suite.Equal(http.StatusConflict, recorder.Code)
+	suite.Equal(http.StatusOK, recorder.Code)
 	var target database.MatchResult
 	suite.Require().NoError(database.DB.First(&target, targetResultID).Error)
 	suite.NotNil(target.PlayerSetId)
-	suite.Equal(conflictingPlayerSetID, *target.PlayerSetId)
+	suite.Equal(*bracket.Stages[0].Matchs[0].MatchResults[0].PlayerSetId, *target.PlayerSetId)
 }
 
-func (suite *EliminationBracketIntegrationTestSuite) TestAdvanceRefusesScoredEmptyTargetSlot() {
+func (suite *EliminationBracketIntegrationTestSuite) TestAdvanceBatchRepairsStaleSwappedSiblingTargets() {
+	elimination, _, adminCookies, _ := suite.createFixture(1, 4, nil)
+	recorder, _ := suite.postBracket(elimination.ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	bracket := suite.loadBracket(elimination.ID)
+	suite.markWinner(bracket, 0, 0, 0)
+	suite.markWinner(bracket, 0, 1, 0)
+	firstWinner := *bracket.Stages[0].Matchs[0].MatchResults[0].PlayerSetId
+	secondWinner := *bracket.Stages[0].Matchs[1].MatchResults[0].PlayerSetId
+	firstTarget := bracket.Stages[1].Matchs[0].MatchResults[0]
+	secondTarget := bracket.Stages[1].Matchs[0].MatchResults[1]
+	suite.Require().NoError(database.DB.Model(&database.MatchResult{}).Where("id = ?", firstTarget.ID).Update("player_set_id", secondWinner).Error)
+	suite.Require().NoError(database.DB.Model(&database.MatchResult{}).Where("id = ?", secondTarget.ID).Update("player_set_id", firstWinner).Error)
+
+	recorder, _ = suite.postAdvance(bracket.Stages[0].ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	bracket = suite.loadBracket(elimination.ID)
+	suite.Equal(firstWinner, *bracket.Stages[1].Matchs[0].MatchResults[0].PlayerSetId)
+	suite.Equal(secondWinner, *bracket.Stages[1].Matchs[0].MatchResults[1].PlayerSetId)
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestAdvanceIgnoresPlacementMetadataOnEmptyTargetSlot() {
 	elimination, _, adminCookies, _ := suite.createFixture(1, 4, nil)
 	recorder, _ := suite.postBracket(elimination.ID, adminCookies)
 	suite.Equal(http.StatusOK, recorder.Code)
@@ -347,14 +1207,16 @@ func (suite *EliminationBracketIntegrationTestSuite) TestAdvanceRefusesScoredEmp
 	bracket := suite.loadBracket(elimination.ID)
 	suite.markWinner(bracket, 0, 0, 0)
 	suite.markWinner(bracket, 0, 1, 0)
+	winnerPlayerSetID := *bracket.Stages[0].Matchs[0].MatchResults[0].PlayerSetId
 	targetResultID := bracket.Stages[1].Matchs[0].MatchResults[0].ID
 	suite.Require().NoError(database.DB.Model(&database.MatchResult{}).Where("id = ?", targetResultID).Update("lane_number", 7).Error)
 
 	recorder, _ = suite.postAdvance(bracket.Stages[0].ID, adminCookies)
-	suite.Equal(http.StatusConflict, recorder.Code)
+	suite.Equal(http.StatusOK, recorder.Code)
 	var target database.MatchResult
 	suite.Require().NoError(database.DB.First(&target, targetResultID).Error)
-	suite.Nil(target.PlayerSetId)
+	suite.NotNil(target.PlayerSetId)
+	suite.Equal(winnerPlayerSetID, *target.PlayerSetId)
 	suite.Equal(7, target.LaneNumber)
 }
 
@@ -400,4 +1262,228 @@ func (suite *EliminationBracketIntegrationTestSuite) TestCompleteBracketRejectsL
 	updatedMedal, err := database.GetMedalById(medals[0].ID)
 	suite.Require().NoError(err)
 	suite.Zero(updatedMedal.PlayerSetId)
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestRosterOpenSyncSupportsRankSwapAndDelete() {
+	elimination, playerSets, adminCookies, _ := suite.createFixture(1, 4, nil)
+	recorder, _ := suite.postBracket(elimination.ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+
+	err := withPlayerSetMutationLock(elimination.ID, func(tx *gorm.DB) error {
+		if err := tx.Model(&database.PlayerSet{}).Where("id = ?", playerSets[0].ID).Update("rank", 4).Error; err != nil {
+			return err
+		}
+		return tx.Model(&database.PlayerSet{}).Where("id = ?", playerSets[3].ID).Update("rank", 1).Error
+	})
+	suite.Require().NoError(err)
+	bracket := suite.loadBracket(elimination.ID)
+	suite.NotNil(bracket.Stages[0].Matchs[0].MatchResults[0].PlayerSetId)
+	suite.Equal(playerSets[3].ID, *bracket.Stages[0].Matchs[0].MatchResults[0].PlayerSetId)
+
+	err = withPlayerSetMutationLock(elimination.ID, func(tx *gorm.DB) error {
+		return tx.Where("id = ?", playerSets[3].ID).Delete(&database.PlayerSet{}).Error
+	})
+	suite.Require().NoError(err)
+	bracket = suite.loadBracket(elimination.ID)
+	suite.Nil(bracket.Stages[0].Matchs[0].MatchResults[0].PlayerSetId)
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestRosterMutationEndpointsRequireCompetitionAdmin() {
+	elimination, playerSets, adminCookies, nonAdminCookies := suite.createFixture(1, 4, nil)
+	recorder, _ := suite.postBracket(elimination.ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+	foreignCompetition, err := database.PostCompetition(database.Competition{Title: "foreign", StartTime: time.Now(), EndTime: time.Now().Add(time.Hour)})
+	suite.Require().NoError(err)
+	foreignAdminUserID := uint(81003)
+	_, err = database.CreateParticipant(database.Participant{UserID: foreignAdminUserID, CompetitionID: foreignCompetition.ID, Role: pkg.RoleToString(pkg.RAdmin), Status: "approved"})
+	suite.Require().NoError(err)
+	foreignAdminCookies := suite.login(foreignAdminUserID)
+
+	postBody := map[string]any{"elimination_id": elimination.ID, "set_name": "", "player_ids": []uint{}}
+	recorder = suite.requestJSON(http.MethodPost, "/playerset", postBody, nil)
+	suite.Equal(http.StatusForbidden, recorder.Code)
+	recorder = suite.requestJSON(http.MethodPost, "/playerset", postBody, nonAdminCookies)
+	suite.Equal(http.StatusForbidden, recorder.Code)
+	recorder = suite.requestJSON(http.MethodPost, "/playerset", postBody, foreignAdminCookies)
+	suite.Equal(http.StatusForbidden, recorder.Code)
+
+	deletePath := fmt.Sprintf("/playerset/%d", playerSets[0].ID)
+	recorder = suite.request(http.MethodDelete, deletePath, nil)
+	suite.Equal(http.StatusForbidden, recorder.Code)
+	suite.True(database.GetPlayerSetIsExist(playerSets[0].ID))
+	recorder = suite.request(http.MethodDelete, deletePath, nonAdminCookies)
+	suite.Equal(http.StatusForbidden, recorder.Code)
+	suite.True(database.GetPlayerSetIsExist(playerSets[0].ID))
+	recorder = suite.request(http.MethodDelete, deletePath, foreignAdminCookies)
+	suite.Equal(http.StatusForbidden, recorder.Code)
+	suite.True(database.GetPlayerSetIsExist(playerSets[0].ID))
+	recorder = suite.request(http.MethodDelete, deletePath, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+	suite.False(database.GetPlayerSetIsExist(playerSets[0].ID))
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestEmptySlotWritersRollbackWithoutLockingRoster() {
+	elimination, _, adminCookies, _ := suite.createFixture(1, 0, nil)
+	recorder, _ := suite.postBracket(elimination.ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+	bracket := suite.loadBracket(elimination.ID)
+	emptyResult := bracket.Stages[0].Matchs[0].MatchResults[0]
+	emptyEnd := emptyResult.MatchEnds[0]
+	scoreIDs := make([]uint, len(emptyEnd.MatchScores))
+	scores := make([]int, len(emptyEnd.MatchScores))
+	for index := range emptyEnd.MatchScores {
+		scoreIDs[index] = emptyEnd.MatchScores[index].ID
+		scores[index] = 10
+	}
+	writes := []struct {
+		path    string
+		body    any
+		cookies []*http.Cookie
+	}{
+		{fmt.Sprintf("/matchresult/totalpoints/%d", emptyResult.ID), map[string]int{"total_points": 2}, nil},
+		{fmt.Sprintf("/matchresult/shootoffscore/%d", emptyResult.ID), map[string]int{"shoot_off_score": 10}, nil},
+		{fmt.Sprintf("/matchresult/iswinner/%d", emptyResult.ID), map[string]bool{"is_winner": true}, adminCookies},
+		{fmt.Sprintf("/matchresult/matchend/totalscore/%d", emptyEnd.ID), map[string]int{"total_scores": 30}, nil},
+		{fmt.Sprintf("/matchresult/matchend/scores/%d", emptyEnd.ID), map[string]any{"total_scores": 30, "match_score_ids": scoreIDs, "scores": scores}, nil},
+		{fmt.Sprintf("/matchresult/matchend/isconfirmed/%d", emptyEnd.ID), map[string]bool{"is_confirmed": true}, nil},
+		{fmt.Sprintf("/matchresult/matchscore/score/%d", scoreIDs[0]), map[string]int{"score": 10}, nil},
+	}
+	for _, write := range writes {
+		recorder = suite.requestJSON(http.MethodPatch, write.path, write.body, write.cookies)
+		suite.Equal(http.StatusConflict, recorder.Code, write.path)
+		stored, err := database.GetOnlyEliminationById(elimination.ID)
+		suite.Require().NoError(err)
+		suite.False(stored.BracketRosterLocked, write.path)
+	}
+
+	storedResult, err := database.GetMatchResultById(emptyResult.ID)
+	suite.Require().NoError(err)
+	suite.Equal(0, storedResult.TotalPoints)
+	suite.Equal(-1, storedResult.ShootOffScore)
+	suite.False(storedResult.IsWinner)
+	storedEnd, err := database.GetMatchEndById(emptyEnd.ID)
+	suite.Require().NoError(err)
+	suite.Equal(0, storedEnd.TotalScore)
+	suite.False(storedEnd.IsConfirmed)
+	for _, scoreID := range scoreIDs {
+		storedScore, err := database.GetMatchScoreById(scoreID)
+		suite.Require().NoError(err)
+		suite.Equal(-1, storedScore.Score)
+	}
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestConfirmationValidatesThenLocksRosterAtomically() {
+	elimination, _, adminCookies, _ := suite.createFixture(1, 4, []int{0, 1, 2, 3})
+	recorder, _ := suite.postBracket(elimination.ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+	bracket := suite.loadBracket(elimination.ID)
+	matchEndID := bracket.Stages[0].Matchs[0].MatchResults[0].MatchEnds[0].ID
+
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/matchend/isconfirmed/%d", matchEndID), map[string]bool{"is_confirmed": true}, nil)
+	suite.Equal(http.StatusOK, recorder.Code)
+	stored, err := database.GetOnlyEliminationById(elimination.ID)
+	suite.Require().NoError(err)
+	suite.True(stored.BracketRosterLocked)
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestConfirmationRejectsDuplicateUntilManualIdentityCorrection() {
+	elimination, playerSets, adminCookies, _ := suite.createFixture(1, 4, nil)
+	recorder, _ := suite.postBracket(elimination.ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+	bracket := suite.loadBracket(elimination.ID)
+	firstResult := bracket.Stages[0].Matchs[0].MatchResults[0]
+	suite.Require().NoError(database.DB.Model(&database.MatchResult{}).Where("id = ?", firstResult.ID).Update("player_set_id", playerSets[1].ID).Error)
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/matchend/isconfirmed/%d", firstResult.MatchEnds[0].ID), map[string]bool{"is_confirmed": true}, nil)
+	suite.Equal(http.StatusConflict, recorder.Code, recorder.Body.String())
+	stored, err := database.GetOnlyEliminationById(elimination.ID)
+	suite.Require().NoError(err)
+	suite.False(stored.BracketRosterLocked)
+
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/elimination/match/playerset/%d", bracket.Stages[0].Matchs[0].ID), map[string]any{"player_set_ids": []uint{playerSets[0].ID, playerSets[3].ID}}, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/matchend/isconfirmed/%d", firstResult.MatchEnds[0].ID), map[string]bool{"is_confirmed": true}, nil)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestStageAndMatchPlacementModesAndValidation() {
+	elimination, _, adminCookies, nonAdminCookies := suite.createFixture(1, 4, nil)
+	recorder, _ := suite.postBracket(elimination.ID, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+	bracket := suite.loadBracket(elimination.ID)
+	stageID := bracket.Stages[0].ID
+	placementPath := fmt.Sprintf("/elimination/stage/placement/%d", stageID)
+	recorder = suite.requestJSON(http.MethodPut, placementPath, map[string]any{
+		"start_lane_number": 1, "end_lane_number": 4, "mode": "one_player_set_per_target",
+	}, nil)
+	suite.Equal(http.StatusForbidden, recorder.Code)
+	recorder = suite.requestJSON(http.MethodPut, placementPath, map[string]any{
+		"start_lane_number": 1, "end_lane_number": 4, "mode": "one_player_set_per_target",
+	}, nonAdminCookies)
+	suite.Equal(http.StatusForbidden, recorder.Code)
+	recorder = suite.requestJSON(http.MethodPut, placementPath, map[string]any{
+		"start_lane_number": 1, "end_lane_number": 4, "mode": "one_player_set_per_target",
+	}, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+	var stageResponse PlacementResponse
+	suite.Require().NoError(json.Unmarshal(recorder.Body.Bytes(), &stageResponse))
+	suite.Equal(4, stageResponse.RequiredTargetCount)
+	suite.Equal(4, stageResponse.UsedEndLaneNumber)
+	bracket = suite.loadBracket(elimination.ID)
+	suite.Equal(1, bracket.Stages[0].Matchs[0].MatchResults[0].LaneNumber)
+	suite.Equal(2, bracket.Stages[0].Matchs[0].MatchResults[1].LaneNumber)
+	suite.Nil(bracket.Stages[0].Matchs[0].MatchResults[0].Target)
+
+	recorder = suite.requestJSON(http.MethodPut, placementPath, map[string]any{
+		"start_lane_number": 5, "end_lane_number": 9, "mode": "two_player_sets_per_target",
+	}, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+	suite.Require().NoError(json.Unmarshal(recorder.Body.Bytes(), &stageResponse))
+	suite.Equal(2, stageResponse.RequiredTargetCount)
+	suite.Equal(6, stageResponse.UsedEndLaneNumber)
+	suite.True(stageResponse.Changed)
+	bracket = suite.loadBracket(elimination.ID)
+	suite.Equal(5, bracket.Stages[0].Matchs[0].MatchResults[0].LaneNumber)
+	suite.Equal(5, bracket.Stages[0].Matchs[0].MatchResults[1].LaneNumber)
+	suite.Equal("A", *bracket.Stages[0].Matchs[0].MatchResults[0].Target)
+	suite.Equal("B", *bracket.Stages[0].Matchs[0].MatchResults[1].Target)
+
+	match := bracket.Stages[0].Matchs[0]
+	targetA, targetB := "A", "B"
+	recorder = suite.requestJSON(http.MethodPut, fmt.Sprintf("/elimination/match/placement/%d", match.ID), MatchPlacementRequest{Placements: []MatchResultPlacement{
+		{MatchResultID: match.MatchResults[0].ID, LaneNumber: 9, Target: &targetA},
+		{MatchResultID: match.MatchResults[1].ID, LaneNumber: 9, Target: &targetB},
+	}}, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code)
+	recorder = suite.requestJSON(http.MethodPut, fmt.Sprintf("/elimination/match/placement/%d", match.ID), MatchPlacementRequest{Placements: []MatchResultPlacement{
+		{MatchResultID: match.MatchResults[0].ID, LaneNumber: 9, Target: &targetA},
+		{MatchResultID: match.MatchResults[1].ID, LaneNumber: 8, Target: &targetB},
+	}}, adminCookies)
+	suite.Equal(http.StatusBadRequest, recorder.Code)
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestAdvanceHandlesZeroAndOneEntrantStages() {
+	empty, _, emptyAdmin, _ := suite.createFixture(1, 0, nil)
+	recorder, _ := suite.postBracket(empty.ID, emptyAdmin)
+	suite.Equal(http.StatusOK, recorder.Code)
+	emptyBracket := suite.loadBracket(empty.ID)
+	recorder, advance := suite.postAdvance(emptyBracket.Stages[0].ID, emptyAdmin)
+	suite.Equal(http.StatusOK, recorder.Code)
+	suite.False(advance.Changed)
+
+	one, _, oneAdmin, _ := suite.createFixture(1, 1, []int{1})
+	recorder, _ = suite.postBracket(one.ID, oneAdmin)
+	suite.Equal(http.StatusOK, recorder.Code)
+	bracket := suite.loadBracket(one.ID)
+	recorder, advance = suite.postAdvance(bracket.Stages[0].ID, oneAdmin)
+	suite.Equal(http.StatusOK, recorder.Code)
+	suite.True(advance.Changed)
+	bracket = suite.loadBracket(one.ID)
+	recorder, advance = suite.postAdvance(bracket.Stages[1].ID, oneAdmin)
+	suite.Equal(http.StatusOK, recorder.Code)
+	suite.True(advance.Finalized)
+	medals, err := database.GetMedalInfoByEliminationId(one.ID)
+	suite.Require().NoError(err)
+	suite.NotZero(medals[0].PlayerSetId)
+	suite.Zero(medals[1].PlayerSetId)
+	suite.Zero(medals[2].PlayerSetId)
 }
