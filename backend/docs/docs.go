@@ -1218,6 +1218,9 @@ const docTemplate = `{
         "/elimination/bracket/{id}": {
             "post": {
                 "description": "Creates a standard seeded bracket, including stages, gold and bronze finals, match results, ends, and scores. Requires a competition Admin.",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
@@ -1232,6 +1235,15 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "Fixed advancing count",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.BracketInitRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -1239,6 +1251,59 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/endpoint.BracketInitResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/elimination/bracket/{id}/sync-first-round": {
+            "post": {
+                "description": "Locks the elimination and PlayerSet rows, validates the complete bracket shape and current setup ranks, then fills or clears only unstarted first-round seed slots. Requires a competition Admin. It is idempotent and does not lock the roster or advance matches.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Elimination"
+                ],
+                "summary": "Synchronize an open elimination bracket's first round",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Elimination ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.BracketFirstRoundSyncResponse"
                         }
                     },
                     "400": {
@@ -1502,9 +1567,68 @@ const docTemplate = `{
                 }
             }
         },
+        "/elimination/match/placement/{matchid}": {
+            "put": {
+                "description": "Requires a competition Admin. The request must name exactly both MatchResults; target is A, B, or null. No lanes-table lookup is made.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Elimination"
+                ],
+                "summary": "Place the two sides of an elimination match",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Match ID",
+                        "name": "matchid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Match placement",
+                        "name": "Placement",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.MatchPlacementRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.PlacementResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/elimination/match/playerset/{matchid}": {
             "patch": {
-                "description": "Update two MatchResult with two PlayerSetId in one Match by id",
+                "description": "Force-corrects both PlayerSet identities of any elimination Match while retaining each slot's score, confirmation, winner, and placement. Selected winners are reprojected downstream. Requires a competition Admin.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1553,7 +1677,7 @@ const docTemplate = `{
                         }
                     },
                     "409": {
-                        "description": "complete bracket is locked",
+                        "description": "invalid same-stage assignment or bracket conflict",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
@@ -1603,6 +1727,130 @@ const docTemplate = `{
                         "description": "internal db error for Get Match",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/elimination/match/settings/{matchid}": {
+            "put": {
+                "description": "Requires a competition Admin. winner_match_result_id is required and may be null. Validates exactly two placements, may force-correct player_set_ids for any match while retaining slot state and reprojecting selected winners, and selects an occupied winner result. Any conflict rolls back every field.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Elimination"
+                ],
+                "summary": "Update elimination match placement and winner atomically",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Match ID",
+                        "name": "matchid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Match settings",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.MatchSettingsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.MatchSettingsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/elimination/match/winner/{matchid}": {
+            "put": {
+                "description": "Locks the elimination, match, and both match results. winner_match_result_id is required and must identify an occupied result of this match, or be null to clear both winner flags. Requires a competition Admin. Generated brackets validate and lock their roster, and cannot change a source after it has advanced.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Elimination"
+                ],
+                "summary": "Select an elimination match winner",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Match ID",
+                        "name": "matchid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Winner selection",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.MatchWinnerRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.MatchWinnerResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     }
                 }
@@ -1922,6 +2170,65 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/elimination/stage/placement/{stageid}": {
+            "put": {
+                "description": "Requires a competition Admin. mode is one_player_set_per_target or two_player_sets_per_target; no lane records are required.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Elimination"
+                ],
+                "summary": "Place every match in an elimination stage",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Stage ID",
+                        "name": "stageid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Stage placement",
+                        "name": "Placement",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.StagePlacementRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.PlacementResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
@@ -2950,14 +3257,15 @@ const docTemplate = `{
         },
         "/matchresult/iswinner/{id}": {
             "patch": {
-                "description": "Update one MatchResult isWinner by id",
+                "description": "When is_winner is true, atomically selects this occupied result and clears the other result in its match. When false, clears both winner flags. Prefer PUT /elimination/match/winner/{matchid}. Requires a competition Admin.",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
                     "MatchResult"
                 ],
-                "summary": "Update one MatchResult isWinner",
+                "summary": "Set or clear one match winner (legacy result endpoint)",
+                "deprecated": true,
                 "parameters": [
                     {
                         "type": "integer",
@@ -2996,7 +3304,7 @@ const docTemplate = `{
                         }
                     },
                     "409": {
-                        "description": "winner is locked after advancement",
+                        "description": "empty bracket slot, roster conflict, or winner locked after advancement",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
@@ -3012,14 +3320,15 @@ const docTemplate = `{
         },
         "/matchresult/lanenumber/{id}": {
             "patch": {
-                "description": "Update one MatchResult laneNumber by id",
+                "description": "Deprecated: use PUT /elimination/match/placement/{matchid}. Requires a competition Admin and preserves the complete-match placement invariant.",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
                     "MatchResult"
                 ],
-                "summary": "Update one MatchResult laneNumber",
+                "summary": "Deprecated: update one MatchResult laneNumber",
+                "deprecated": true,
                 "parameters": [
                     {
                         "type": "integer",
@@ -3159,6 +3468,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
+                    "409": {
+                        "description": "empty bracket slot or roster conflict",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "internal db failed for updating isConfirmed",
                         "schema": {
@@ -3207,6 +3522,12 @@ const docTemplate = `{
                         "description": "invalid match end ID, maybe not exist, or matchScore ids not exist, or matchScore ids and scores length not match",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "empty bracket slot or roster conflict",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
@@ -3259,6 +3580,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
+                    "409": {
+                        "description": "empty bracket slot or roster conflict",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "internal db failed for updating totalScores",
                         "schema": {
@@ -3307,6 +3634,12 @@ const docTemplate = `{
                         "description": "invalid match score ID, maybe not exist",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "empty bracket slot or roster conflict",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
@@ -3424,6 +3757,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
+                    "409": {
+                        "description": "empty bracket slot or roster conflict",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "internal db failed for updating shootOffScore",
                         "schema": {
@@ -3472,6 +3811,12 @@ const docTemplate = `{
                         "description": "invalid match result ID, maybe not exist",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "empty bracket slot or roster conflict",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
@@ -5291,6 +5636,18 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
+                    "403": {
+                        "description": "competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "bracket roster is locked or incompatible",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "internal db error for create player set / get player / create player set match table / get elimination",
                         "schema": {
@@ -5499,7 +5856,7 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "Updates every player set of the elimination as one transaction. expected_player_set_ids must equal the ranking order loaded by the caller. A player set ID that belongs to a different elimination returns 400; a stale snapshot (order changed, or a set added/removed concurrently) returns 409. Requires a competition Admin. Fails once the bracket has been generated.",
+                "description": "Updates every player set of the elimination as one transaction. expected_player_set_ids must equal the ranking order loaded by the caller. A player set ID that belongs to a different elimination returns 400; a stale snapshot (order changed, or a set added/removed concurrently) returns 409. Requires a competition Admin. It remains available while a new bracket roster is open.",
                 "consumes": [
                     "application/json"
                 ],
@@ -5564,7 +5921,7 @@ const docTemplate = `{
         },
         "/playerset/elimination/{eliminationid}/ranking/auto": {
             "patch": {
-                "description": "Recomputes and writes a contiguous rank for every player set of the elimination, ordered by team total score, X count, then pure ten count. Requires a competition Admin. Fails once the bracket has been generated.",
+                "description": "Recomputes and writes a contiguous rank for every player set of the elimination, ordered by team total score, X count, then pure ten count. Requires a competition Admin. It remains available while a new bracket roster is open.",
                 "produces": [
                     "application/json"
                 ],
@@ -5809,6 +6166,18 @@ const docTemplate = `{
                         "description": "invalid plyer set id",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "bracket roster is locked or incompatible",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
@@ -6544,6 +6913,12 @@ const docTemplate = `{
         "database.Elimination": {
             "type": "object",
             "properties": {
+                "bracket_roster_locked": {
+                    "type": "boolean"
+                },
+                "bracket_seed_count": {
+                    "type": "integer"
+                },
                 "current_end": {
                     "type": "integer"
                 },
@@ -6735,6 +7110,15 @@ const docTemplate = `{
                 },
                 "shoot_off_score": {
                     "type": "integer"
+                },
+                "target": {
+                    "description": "Target is the physical target side used for this result.  It is nil\nuntil an administrator assigns a placement, otherwise it is \"A\" or \"B\".",
+                    "type": "string",
+                    "enum": [
+                        "A",
+                        "B"
+                    ],
+                    "x-nullable": true
                 },
                 "total_points": {
                     "type": "integer"
@@ -7079,9 +7463,36 @@ const docTemplate = `{
                 }
             }
         },
+        "endpoint.BracketFirstRoundSyncResponse": {
+            "type": "object",
+            "properties": {
+                "changed": {
+                    "type": "boolean"
+                },
+                "elimination_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "endpoint.BracketInitRequest": {
+            "type": "object",
+            "required": [
+                "advancing_count"
+            ],
+            "properties": {
+                "advancing_count": {
+                    "type": "integer",
+                    "maximum": 128,
+                    "minimum": 4
+                }
+            }
+        },
         "endpoint.BracketInitResponse": {
             "type": "object",
             "properties": {
+                "advancing_count": {
+                    "type": "integer"
+                },
                 "bracket_size": {
                     "type": "integer"
                 },
@@ -7197,6 +7608,111 @@ const docTemplate = `{
                 }
             }
         },
+        "endpoint.MatchPlacementRequest": {
+            "type": "object",
+            "required": [
+                "placements"
+            ],
+            "properties": {
+                "placements": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "$ref": "#/definitions/endpoint.MatchResultPlacement"
+                    }
+                }
+            }
+        },
+        "endpoint.MatchResultPlacement": {
+            "type": "object",
+            "required": [
+                "lane_number",
+                "match_result_id"
+            ],
+            "properties": {
+                "lane_number": {
+                    "type": "integer"
+                },
+                "match_result_id": {
+                    "type": "integer"
+                },
+                "target": {
+                    "type": "string",
+                    "enum": [
+                        "A",
+                        "B"
+                    ],
+                    "x-nullable": true
+                }
+            }
+        },
+        "endpoint.MatchSettingsRequest": {
+            "type": "object",
+            "required": [
+                "placements",
+                "winner_match_result_id"
+            ],
+            "properties": {
+                "placements": {
+                    "type": "array",
+                    "maxItems": 2,
+                    "minItems": 2,
+                    "items": {
+                        "$ref": "#/definitions/endpoint.MatchResultPlacement"
+                    }
+                },
+                "player_set_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "winner_match_result_id": {
+                    "type": "integer",
+                    "x-nullable": true
+                }
+            }
+        },
+        "endpoint.MatchSettingsResponse": {
+            "type": "object",
+            "properties": {
+                "changed": {
+                    "type": "boolean"
+                },
+                "elimination_id": {
+                    "type": "integer"
+                },
+                "match_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "endpoint.MatchWinnerRequest": {
+            "type": "object",
+            "required": [
+                "winner_match_result_id"
+            ],
+            "properties": {
+                "winner_match_result_id": {
+                    "type": "integer",
+                    "x-nullable": true
+                }
+            }
+        },
+        "endpoint.MatchWinnerResponse": {
+            "type": "object",
+            "properties": {
+                "changed": {
+                    "type": "boolean"
+                },
+                "elimination_id": {
+                    "type": "integer"
+                },
+                "match_id": {
+                    "type": "integer"
+                }
+            }
+        },
         "endpoint.ModifyAccountPasswordInfo": {
             "type": "object",
             "properties": {
@@ -7280,6 +7796,32 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "order": {
+                    "type": "integer"
+                }
+            }
+        },
+        "endpoint.PlacementResponse": {
+            "type": "object",
+            "properties": {
+                "changed": {
+                    "type": "boolean"
+                },
+                "elimination_id": {
+                    "type": "integer"
+                },
+                "match_count": {
+                    "type": "integer"
+                },
+                "match_id": {
+                    "type": "integer"
+                },
+                "required_target_count": {
+                    "type": "integer"
+                },
+                "stage_id": {
+                    "type": "integer"
+                },
+                "used_end_lane_number": {
                     "type": "integer"
                 }
             }
@@ -7667,6 +8209,29 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "start_lane": {
+                    "type": "integer"
+                }
+            }
+        },
+        "endpoint.StagePlacementRequest": {
+            "type": "object",
+            "required": [
+                "end_lane_number",
+                "mode",
+                "start_lane_number"
+            ],
+            "properties": {
+                "end_lane_number": {
+                    "type": "integer"
+                },
+                "mode": {
+                    "type": "string",
+                    "enum": [
+                        "one_player_set_per_target",
+                        "two_player_sets_per_target"
+                    ]
+                },
+                "start_lane_number": {
                     "type": "integer"
                 }
             }
