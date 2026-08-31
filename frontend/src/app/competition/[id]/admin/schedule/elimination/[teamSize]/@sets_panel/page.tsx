@@ -46,7 +46,7 @@ import { useMutation, useQueryClient } from "react-query";
 import { apiClient } from "@/utils/ApiClient";
 import useGetPlayerSetDetail from "@/utils/QueryHooks/useGetPlayerSetDetail";
 import useGetEliminationDetail from "@/utils/QueryHooks/useGetEliminationDetail";
-import { isCompleteEliminationBracket } from "@/utils/eliminationBracket";
+import { isBracketRosterLocked } from "@/utils/eliminationBracket";
 import type { DatabasePlayerSetRanking } from "@/types/Api";
 
 type RankingRow = Required<DatabasePlayerSetRanking>;
@@ -162,6 +162,11 @@ export default function Page({
           "playerSetRanking",
           elimination!.elimination_id,
         ]);
+        // 刪隊會令後端重算第一輪空位，須刷新含 bracket slot 的 detail。
+        queryClient.invalidateQueries([
+          "eliminationDetail",
+          elimination!.elimination_id,
+        ]);
       },
       onError: (error: any) => {
         setDeleteError(
@@ -178,8 +183,7 @@ export default function Page({
   const { data: eliminationDetail } = useGetEliminationDetail(
     elimination?.elimination_id
   );
-  const bracketExists = isCompleteEliminationBracket(eliminationDetail?.stages);
-  const stageExists = (eliminationDetail?.stages?.length ?? 0) > 0;
+  const rosterLocked = isBracketRosterLocked(eliminationDetail);
   const { data: playerSet } = useGetPlayerSetDetail(playerSetId);
 
   const {
@@ -262,6 +266,12 @@ export default function Page({
           "playerSetRanking",
           elimination!.elimination_id,
         ]);
+        // 重排成功後，後端已同步第一輪 seed；detail 使用 Infinity cache，
+        // 不主動失效便會持續顯示舊 slot。
+        queryClient.invalidateQueries([
+          "eliminationDetail",
+          elimination!.elimination_id,
+        ]);
       },
       onError: (error: any) => {
         const status = error?.response?.status;
@@ -296,8 +306,8 @@ export default function Page({
   );
 
   const rowCount = rows.length;
-  const dragDisabled = stageExists || isSavingRanking || rowCount < 2;
-  const rankingButtonsDisabled = stageExists || isSavingRanking || rowCount < 2;
+  const dragDisabled = rosterLocked || isSavingRanking || rowCount < 2;
+  const rankingButtonsDisabled = rosterLocked || isSavingRanking || rowCount < 2;
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
     if (dragDisabled || !over || active.id === over.id) return;
@@ -420,7 +430,7 @@ export default function Page({
                       row={row}
                       index={index}
                       dragDisabled={dragDisabled}
-                      canDelete={!bracketExists}
+                      canDelete={!rosterLocked}
                       onOpenDetail={(id) => {
                         setPlayerSetId(id);
                         setPlayerSetDialogOpen(true);

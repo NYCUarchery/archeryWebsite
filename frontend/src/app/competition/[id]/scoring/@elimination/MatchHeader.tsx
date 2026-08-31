@@ -1,6 +1,7 @@
 import { Box } from "@mui/material";
 import LaneNumber from "@/components/LaneNumber";
 import { DatabaseMatchResult } from "@/types/Api";
+import { getMatchResultTarget } from "@/utils/eliminationPlacement";
 
 interface Props {
   stageIndex: number; // elimination.current_stage（0-based）
@@ -24,6 +25,7 @@ export default function MatchHeader({
           <LaneNumber
             key={mr.id}
             laneNumber={mr.lane_number}
+            target={getMatchResultTarget(mr)}
             width="30px"
             height="30px"
           />
