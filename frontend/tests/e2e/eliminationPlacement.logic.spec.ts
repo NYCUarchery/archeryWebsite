@@ -57,6 +57,24 @@ test("靶位配置：0 隊、128 名額、兩種模式與手動形狀皆合契�
       { match_result_id: 1, lane_number: 3, target: "A" },
       { match_result_id: 2, lane_number: 4, target: "B" },
     ])
+  ).toBe(true);
+  expect(
+    isValidMatchPlacement([
+      { match_result_id: 1, lane_number: 7, target: null },
+      { match_result_id: 2, lane_number: 7, target: null },
+    ])
+  ).toBe(true);
+  expect(
+    isValidMatchPlacement([
+      { match_result_id: 1, lane_number: 7, target: "A" },
+      { match_result_id: 2, lane_number: 7, target: "A" },
+    ])
+  ).toBe(true);
+  expect(
+    isValidMatchPlacement([
+      { match_result_id: 1, lane_number: -1, target: null },
+      { match_result_id: 2, lane_number: 9, target: null },
+    ])
   ).toBe(false);
   expect(formatLanePlacement(3, "A")).toBe("3A");
   expect(formatLanePlacement(0, null)).toBe("");
