@@ -59,13 +59,13 @@ func setupMatchEndWithScores(isConfirmed bool) (database.MatchEnd, []database.Ma
 	return matchEnd, matchScores
 }
 
-// 驗證已確認局拒絕改分、未確認局改分照常成功
+// 驗證已確認局需要所屬賽事管理員、未確認局改分照常成功
 func (suite *MatchResultTestSuite) TestPutMatchEndsScoresByIdConfirmedLock() {
 	r := gin.Default()
 	r.PATCH("/matchresult/matchend/scores/:id", PutMatchEndsScoresById)
 
-	Convey("Test PutMatchEndsScoresById is_confirmed lock", suite.T(), func() {
-		Convey("已確認局應拒絕改分", func() {
+	Convey("Test PutMatchEndsScoresById confirmed authorization", suite.T(), func() {
+		Convey("未登入者不得修改已確認局", func() {
 			matchEnd, matchScores := setupMatchEndWithScores(true)
 
 			body := gin.H{
@@ -78,7 +78,7 @@ func (suite *MatchResultTestSuite) TestPutMatchEndsScoresByIdConfirmedLock() {
 			req, _ := http.NewRequest("PATCH", fmt.Sprintf("/matchresult/matchend/scores/%d", matchEnd.ID), bytes.NewBuffer(jsonValue))
 			r.ServeHTTP(w, req)
 
-			So(w.Code, ShouldEqual, http.StatusBadRequest)
+			So(w.Code, ShouldEqual, http.StatusForbidden)
 
 			// 分數不應被更動
 			for _, ms := range matchScores {
