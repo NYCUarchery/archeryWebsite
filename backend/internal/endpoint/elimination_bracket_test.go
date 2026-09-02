@@ -4,6 +4,8 @@ import (
 	"backend/internal/database"
 	"reflect"
 	"testing"
+
+	"github.com/gin-gonic/gin/binding"
 )
 
 func TestBitReversedSeedOrderPairsOddLeftAndEvenRight(t *testing.T) {
@@ -62,6 +64,22 @@ func TestBracketSizesAndStageShapes(t *testing.T) {
 		if matches := expectedBracketMatchCounts(bracketSize); !reflect.DeepEqual(matches, want.matches) {
 			t.Fatalf("entrant count %d matches = %v, want %v", entrantCount, matches, want.matches)
 		}
+	}
+}
+
+func TestFinalStageMatchOnlyRecognizesTerminalMatches(t *testing.T) {
+	bracket := []bracketStage{
+		{Matches: []bracketMatch{{Match: database.Match{ID: 10}}}},
+		{Matches: []bracketMatch{{Match: database.Match{ID: 20}}, {Match: database.Match{ID: 21}}}},
+	}
+	for _, matchID := range []uint{20, 21} {
+		final, ok := finalStageMatch(bracket, matchID)
+		if !ok || len(final.Matches) != 2 {
+			t.Fatalf("final match %d was not recognized", matchID)
+		}
+	}
+	if _, ok := finalStageMatch(bracket, 10); ok {
+		t.Fatal("non-final match was treated as a medal-correctable final")
 	}
 }
 
@@ -154,6 +172,9 @@ func TestPlacementPairValidation(t *testing.T) {
 		{{LaneNumber: 0}, {LaneNumber: 0}},
 		{{LaneNumber: 1}, {LaneNumber: 2}},
 		{{LaneNumber: 3, Target: &targetA}, {LaneNumber: 3, Target: &targetB}},
+		{{LaneNumber: 1, Target: &targetA}, {LaneNumber: 9, Target: &targetB}},
+		{{LaneNumber: 3}, {LaneNumber: 3}},
+		{{LaneNumber: 5, Target: &targetA}, {LaneNumber: 5, Target: &targetA}},
 	}
 	for _, placement := range valid {
 		if err := validatePlacementPair(placement); err != nil {
@@ -161,13 +182,39 @@ func TestPlacementPairValidation(t *testing.T) {
 		}
 	}
 	invalid := [][]MatchResultPlacement{
-		{{LaneNumber: 1}, {LaneNumber: 1}},
-		{{LaneNumber: 1, Target: &targetA}, {LaneNumber: 2, Target: &targetB}},
-		{{LaneNumber: 0, Target: &targetA}, {LaneNumber: 0, Target: &targetB}},
+		{{LaneNumber: -1}, {LaneNumber: 1}},
+		{{LaneNumber: 1}},
+		{{LaneNumber: 1}, {LaneNumber: 2}, {LaneNumber: 3}},
 	}
 	for _, placement := range invalid {
 		if err := validatePlacementPair(placement); err == nil {
 			t.Fatalf("invalid placement accepted: %+v", placement)
 		}
+	}
+}
+
+func TestMatchPlacementBindingAllowsZeroLaneNumber(t *testing.T) {
+	var request MatchPlacementRequest
+	err := binding.JSON.BindBody([]byte(`{"placements":[{"match_result_id":1,"lane_number":0},{"match_result_id":2,"lane_number":0,"target":"A"}]}`), &request)
+	if err != nil {
+		t.Fatalf("zero lane_number rejected: %v", err)
+	}
+	if request.Placements[0].LaneNumber != 0 || request.Placements[1].LaneNumber != 0 {
+		t.Fatalf("zero lane_number was not bound: %+v", request.Placements)
+	}
+	for _, body := range [][]byte{
+		[]byte(`{"placements":[{"match_result_id":1},{"match_result_id":2,"lane_number":0}]}`),
+		[]byte(`{"placements":[{"match_result_id":1,"lane_number":null},{"match_result_id":2,"lane_number":0}]}`),
+	} {
+		err = binding.JSON.BindBody(body, &request)
+		if err == nil {
+			t.Fatalf("missing or null lane_number accepted: %s", body)
+		}
+	}
+
+	var placement MatchResultPlacement
+	err = binding.JSON.BindBody([]byte(`{"match_result_id":1,"lane_number":-1}`), &placement)
+	if err == nil {
+		t.Fatal("negative lane_number accepted")
 	}
 }
