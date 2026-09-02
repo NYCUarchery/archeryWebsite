@@ -66,6 +66,28 @@ func TestItemSpecificationsAreDisjoint(t *testing.T) {
 	}
 }
 
+func TestCompoundItemSpecification(t *testing.T) {
+	const compoundItemIndex = 3
+	if len(itemSpecs) != 4 {
+		t.Fatalf("seeded competition must have four formal items, got %d", len(itemSpecs))
+	}
+	if totalLanes() != 16 || seededUserCount() != 32 {
+		t.Fatalf("four items must provide 16 lanes and 32 archer accounts, got %d lanes and %d accounts", totalLanes(), seededUserCount())
+	}
+	spec := itemSpecs[compoundItemIndex]
+	if spec.GroupName != "公開男子複合弓組" || spec.GroupRange != "公開男子" || spec.BowType != "Compound" {
+		t.Fatalf("compound item specification = %+v", spec)
+	}
+	if lanes := itemLaneNumbers(compoundItemIndex); fmt.Sprint(lanes) != "[13 14 15 16]" {
+		t.Fatalf("compound item lanes = %v, want [13 14 15 16]", lanes)
+	}
+	firstArcher := compoundItemIndex*playersPerItem + 1
+	lastArcher := (compoundItemIndex + 1) * playersPerItem
+	if firstArcher != 25 || lastArcher != 32 || fmt.Sprintf("seeder.archer.%02d", firstArcher) != "seeder.archer.25" || fmt.Sprintf("seeder.archer.%02d", lastArcher) != "seeder.archer.32" {
+		t.Fatalf("compound item accounts = seeder.archer.%02d through seeder.archer.%02d, want seeder.archer.25 through seeder.archer.32", firstArcher, lastArcher)
+	}
+}
+
 func TestQualificationSeedScoresAreRankedAndRepresentable(t *testing.T) {
 	maximum := endsPerRound * arrowsPerEnd * 10
 	seen := make(map[int]string, len(itemSpecs)*playersPerItem)
