@@ -2,6 +2,7 @@ package database
 
 import (
 	"log"
+	"sort"
 
 	"gorm.io/gorm"
 )
@@ -25,9 +26,141 @@ type Stage struct {
 }
 
 type Match struct {
-	ID           uint           `json:"id"        gorm:"primary_key"`
-	StageId      uint           `json:"stage_id"`
-	MatchResults []*MatchResult `json:"match_results" gorm:"constraint:OnDelete:CASCADE;"`
+	ID            uint               `json:"id"        gorm:"primary_key"`
+	StageId       uint               `json:"stage_id"`
+	OutcomeStatus MatchOutcomeStatus `json:"outcome_status,omitempty" gorm:"-" readonly:"true" enums:"incomplete,winner,shoot_off,locked_conflict,unsupported_bow_type"`
+	MatchResults  []*MatchResult     `json:"match_results" gorm:"constraint:OnDelete:CASCADE;"`
+}
+
+// ComputeMatchPoints returns a copy with set points derived from the two
+// complete, ordered sides of a match. It performs no database access and does
+// not mutate its input. Incomplete ends retain the prior cumulative value
+// without receiving points.
+func ComputeMatchPoints(match Match) Match {
+	computed := match
+	computed.MatchResults = make([]*MatchResult, len(match.MatchResults))
+	for resultIndex, result := range match.MatchResults {
+		if result == nil {
+			continue
+		}
+		resultCopy := *result
+		computed.MatchResults[resultIndex] = &resultCopy
+		resultCopy.MatchEnds = make([]*MatchEnd, len(result.MatchEnds))
+		for endIndex, end := range result.MatchEnds {
+			if end == nil {
+				continue
+			}
+			endCopy := *end
+			resultCopy.MatchEnds[endIndex] = &endCopy
+		}
+		sort.SliceStable(resultCopy.MatchEnds, func(left, right int) bool {
+			if resultCopy.MatchEnds[left] == nil {
+				return false
+			}
+			if resultCopy.MatchEnds[right] == nil {
+				return true
+			}
+			return resultCopy.MatchEnds[left].ID < resultCopy.MatchEnds[right].ID
+		})
+	}
+	sort.SliceStable(computed.MatchResults, func(left, right int) bool {
+		if computed.MatchResults[left] == nil {
+			return false
+		}
+		if computed.MatchResults[right] == nil {
+			return true
+		}
+		return computed.MatchResults[left].ID < computed.MatchResults[right].ID
+	})
+	for _, result := range computed.MatchResults {
+		if result == nil {
+			continue
+		}
+		result.TotalPoints = 0
+		for _, end := range result.MatchEnds {
+			if end == nil {
+				continue
+			}
+			end.Points = nil
+			end.CumulativePoints = 0
+		}
+	}
+	if len(computed.MatchResults) != 2 || computed.MatchResults[0] == nil || computed.MatchResults[1] == nil {
+		return computed
+	}
+
+	left := computed.MatchResults[0]
+	right := computed.MatchResults[1]
+	leftCumulative, rightCumulative := 0, 0
+	endCount := len(left.MatchEnds)
+	if len(right.MatchEnds) > endCount {
+		endCount = len(right.MatchEnds)
+	}
+	for index := 0; index < endCount; index++ {
+		var leftEnd, rightEnd *MatchEnd
+		if index < len(left.MatchEnds) {
+			leftEnd = left.MatchEnds[index]
+		}
+		if index < len(right.MatchEnds) {
+			rightEnd = right.MatchEnds[index]
+		}
+
+		leftScore, rightScore, complete := comparableEndScores(leftEnd, rightEnd)
+		if complete {
+			leftPoints, rightPoints := 1, 1
+			if leftScore > rightScore {
+				leftPoints, rightPoints = 2, 0
+			} else if leftScore < rightScore {
+				leftPoints, rightPoints = 0, 2
+			}
+			leftEnd.Points = &leftPoints
+			rightEnd.Points = &rightPoints
+			leftCumulative += leftPoints
+			rightCumulative += rightPoints
+		}
+		if leftEnd != nil {
+			leftEnd.CumulativePoints = leftCumulative
+		}
+		if rightEnd != nil {
+			rightEnd.CumulativePoints = rightCumulative
+		}
+	}
+	left.TotalPoints = leftCumulative
+	right.TotalPoints = rightCumulative
+	return computed
+}
+
+func comparableEndScores(left, right *MatchEnd) (int, int, bool) {
+	if left == nil || right == nil || len(left.MatchScores) == 0 || len(left.MatchScores) != len(right.MatchScores) {
+		return 0, 0, false
+	}
+	leftTotal, rightTotal := 0, 0
+	for index := range left.MatchScores {
+		leftScore := left.MatchScores[index].Score
+		rightScore := right.MatchScores[index].Score
+		if leftScore < 0 || rightScore < 0 {
+			return 0, 0, false
+		}
+		leftTotal += matchScoreValue(leftScore)
+		rightTotal += matchScoreValue(rightScore)
+	}
+	return leftTotal, rightTotal, true
+}
+
+func matchScoreValue(score int) int {
+	if score > 10 {
+		return 10
+	}
+	return score
+}
+
+func computeEliminationMatchPoints(elimination *Elimination) {
+	for _, stage := range elimination.Stages {
+		for _, match := range stage.Matchs {
+			computed := ComputeMatchPoints(*match)
+			*match = computed
+		}
+	}
 }
 
 func InitElimination() {
@@ -138,6 +271,9 @@ func GetEliminationWScoresById(id uint) (Elimination, error) {
 		Model(&Elimination{}).
 		Where("id = ?", id).
 		First(&data)
+	if result.Error == nil {
+		computeEliminationMatchPoints(&data)
+	}
 	return data, result.Error
 }
 
@@ -189,6 +325,9 @@ func GetEliminationById(id uint) (Elimination, error) {
 		Model(&Elimination{}).
 		Where("id = ?", id).
 		First(&data)
+	if result.Error == nil {
+		computeEliminationMatchPoints(&data)
+	}
 	return data, result.Error
 }
 
@@ -216,6 +355,9 @@ func GetMatchWScoresById(id uint) (Match, error) {
 		Model(&Match{}).
 		Where("id = ?", id).
 		First(&data)
+	if result.Error == nil {
+		data = ComputeMatchPoints(data)
+	}
 	return data, result.Error
 }
 

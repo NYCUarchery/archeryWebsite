@@ -19,7 +19,7 @@ type MatchResult struct {
 	// Target is the physical target side used for this result.  It is nil
 	// until an administrator assigns a placement, otherwise it is "A" or "B".
 	Target        *string     `json:"target,omitempty" enums:"A,B" extensions:"x-nullable" gorm:"type:char(1);check:match_results_target_allowed,target IN ('A','B') OR target IS NULL"`
-	TotalPoints   int         `json:"total_points"`
+	TotalPoints   int         `json:"total_points" gorm:"-" readonly:"true"`
 	ShootOffScore int         `json:"shoot_off_score"`
 	IsWinner      bool        `json:"is_winner"`
 	LaneNumber    int         `json:"lane_number"`
@@ -28,11 +28,13 @@ type MatchResult struct {
 }
 
 type MatchEnd struct {
-	ID            uint          `json:"id"        gorm:"primary_key"`
-	MatchResultId uint          `json:"match_result_id"`
-	TotalScore    int           `json:"total_scores"`
-	IsConfirmed   bool          `json:"is_confirmed"`
-	MatchScores   []*MatchScore `json:"match_scores" gorm:"constraint:OnDelete:CASCADE;"`
+	ID               uint          `json:"id"        gorm:"primary_key"`
+	MatchResultId    uint          `json:"match_result_id"`
+	TotalScore       int           `json:"total_scores"`
+	IsConfirmed      bool          `json:"is_confirmed"`
+	Points           *int          `json:"points" gorm:"-" extensions:"x-nullable" readonly:"true"`
+	CumulativePoints int           `json:"cumulative_points" gorm:"-" readonly:"true"`
+	MatchScores      []*MatchScore `json:"match_scores" gorm:"constraint:OnDelete:CASCADE;"`
 }
 
 type MatchScore struct {
@@ -45,6 +47,11 @@ func InitMatchResult() {
 	if err := DB.AutoMigrate(&MatchResult{}); err != nil {
 		log.Println("Failed to auto migrate MatchResult:", err)
 		return
+	}
+	if DB.Migrator().HasColumn(&MatchResult{}, "total_points") {
+		if err := DB.Migrator().DropColumn(&MatchResult{}, "total_points"); err != nil {
+			panic(fmt.Sprintf("failed to drop legacy MatchResult total_points: %v", err))
+		}
 	}
 	if err := ensureMatchResultPlayerSetConstraint(); err != nil {
 		// Continuing without this FK would let roster deletion leave dangling
@@ -129,28 +136,34 @@ func GetMatchScoreWMEndIdIsExist(id uint, match_end_id uint) bool {
 }
 
 func GetMatchResultById(id uint) (MatchResult, error) {
-	var data MatchResult
-	result := DB.
-		Preload("PlayerSet").
-		Table("match_results").
-		Where("id = ?", id).
-		First(&data)
-	return data, result.Error
+	data, err := getComputedMatchResultByID(id)
+	if err != nil {
+		return data, err
+	}
+	data.MatchEnds = nil
+	return data, nil
 }
 func GetMatchResultWScoresById(id uint) (MatchResult, error) {
-	var data MatchResult
-	result := DB.
-		Preload("PlayerSet").
-		Preload("MatchEnds", func(tx *gorm.DB) *gorm.DB {
-			return tx.Order("id asc")
-		}).
-		Preload("MatchEnds.MatchScores", func(tx *gorm.DB) *gorm.DB {
-			return tx.Order("score DESC")
-		}).
-		Model(&MatchResult{}).
-		Where("id = ?", id).
-		First(&data)
-	return data, result.Error
+	return getComputedMatchResultByID(id)
+}
+
+// getComputedMatchResultByID loads both sides of the containing match because
+// set points cannot be derived from one MatchResult in isolation.
+func getComputedMatchResultByID(id uint) (MatchResult, error) {
+	var relation MatchResult
+	if err := DB.Select("id", "match_id").First(&relation, id).Error; err != nil {
+		return relation, err
+	}
+	match, err := GetMatchWScoresById(relation.MatchId)
+	if err != nil {
+		return MatchResult{}, err
+	}
+	for _, result := range match.MatchResults {
+		if result.ID == id {
+			return *result, nil
+		}
+	}
+	return MatchResult{}, gorm.ErrRecordNotFound
 }
 func GetMatchScoreById(id uint) (MatchScore, error) {
 	var data MatchScore
@@ -191,10 +204,6 @@ func UpdateMatchResultPlayerSetIdById(id uint, playerSetId uint) error {
 	return result.Error
 }
 
-func UpdateMatchResultTotalPointsById(id uint, totalPoint int) error {
-	result := DB.Table("match_results").Where("id = ?", id).Update("total_points", totalPoint)
-	return result.Error
-}
 func UpdateMatchShootOffScoreById(id uint, shootOffScore int) error {
 	result := DB.Table("match_results").Where("id = ?", id).Update("shoot_off_score", shootOffScore)
 	return result.Error

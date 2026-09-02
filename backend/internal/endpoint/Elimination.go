@@ -162,6 +162,9 @@ func GetEliminationWScoresById(context *gin.Context) {
 	if response.ErrorInternalErrorTest(context, id, "Get Elimination with scores", err) {
 		return
 	}
+	if response.ErrorInternalErrorTest(context, id, "Compute elimination match outcomes", decorateEliminationOutcomeStatusesForRead(&data)) {
+		return
+	}
 	response.AcceptPrint(id, fmt.Sprint(data), "Elimination with scores")
 	context.IndentedJSON(200, data)
 }
@@ -187,6 +190,9 @@ func GetEliminationById(context *gin.Context) {
 	if response.ErrorInternalErrorTest(context, id, "Get Elimination", err) {
 		return
 	}
+	if response.ErrorInternalErrorTest(context, id, "Compute elimination match outcomes", decorateEliminationOutcomeStatusesForRead(&data)) {
+		return
+	}
 	response.AcceptPrint(id, fmt.Sprint(data), "Elimination")
 	context.IndentedJSON(200, data)
 }
@@ -209,6 +215,9 @@ func GetMatchWScoresById(context *gin.Context) {
 	}
 	data, err := database.GetMatchWScoresById(id)
 	if response.ErrorInternalErrorTest(context, id, "Get Match with scores", err) {
+		return
+	}
+	if response.ErrorInternalErrorTest(context, id, "Compute elimination match outcome", decorateMatchOutcomeStatusForRead(&data)) {
 		return
 	}
 	response.AcceptPrint(id, fmt.Sprint(data), "Match with scores")

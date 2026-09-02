@@ -170,7 +170,6 @@ func matchResultRouter(api *gin.RouterGroup) {
 		matchresultssr.GET("/:id", endpoint.GetMatchResultById)
 		matchresultssr.GET("/scores/:id", endpoint.GetMatchResultWScoresById)
 		matchresultssr.POST("/matchend", endpoint.PostMatchEnd)
-		matchresultssr.PATCH("/totalpoints/:id", endpoint.PutMatchResultTotalPointsById)
 		matchresultssr.PATCH("/shootoffscore/:id", endpoint.PutMatchResultShootOffScoreById)
 		matchresultssr.PATCH("/iswinner/:id", endpoint.PutMatchResultIsWinnerById)
 		matchresultssr.PATCH("/lanenumber/:id", endpoint.PutMatchResultLaneNumberById)
