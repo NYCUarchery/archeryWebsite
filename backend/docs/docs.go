@@ -1569,7 +1569,7 @@ const docTemplate = `{
         },
         "/elimination/match/placement/{matchid}": {
             "put": {
-                "description": "Requires a competition Admin. The request must name exactly both MatchResults; target is A, B, or null. No lanes-table lookup is made.",
+                "description": "Requires a competition Admin. The request must name exactly both MatchResults. Each side may independently use any non-negative lane_number and target A, B, or null. No lanes-table lookup is made.",
                 "consumes": [
                     "application/json"
                 ],
@@ -3468,6 +3468,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
+                    "403": {
+                        "description": "changing a confirmed MatchEnd to unconfirmed requires the owning competition Admin",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "409": {
                         "description": "empty bracket slot or roster conflict",
                         "schema": {
@@ -3485,7 +3491,7 @@ const docTemplate = `{
         },
         "/matchresult/matchend/scores/{id}": {
             "patch": {
-                "description": "Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids\nMatchScore ids and scores must be the same length",
+                "description": "Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids\nMatchScore ids and scores must be the same length. Confirmed MatchEnds require the owning competition Admin, every MatchScore exactly once, and a server-computed total.",
                 "consumes": [
                     "application/json"
                 ],
@@ -3524,6 +3530,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
+                    "403": {
+                        "description": "confirmed MatchEnd updates require the owning competition Admin",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "409": {
                         "description": "empty bracket slot or roster conflict",
                         "schema": {
@@ -3541,7 +3553,7 @@ const docTemplate = `{
         },
         "/matchresult/matchend/totalscore/{id}": {
             "patch": {
-                "description": "Update one MatchEnd totalScores by id",
+                "description": "Update one MatchEnd totalScores by id. Confirmed MatchEnds must use the aggregate scores endpoint and are rejected here.",
                 "consumes": [
                     "application/json"
                 ],
@@ -3575,7 +3587,7 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "invalid match end ID, maybe not exist",
+                        "description": "invalid match end ID, or confirmed MatchEnd must use the aggregate scores endpoint",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
@@ -3765,62 +3777,6 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "internal db failed for updating shootOffScore",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorInternalErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/matchresult/totalpoints/{id}": {
-            "patch": {
-                "description": "Update one MatchResult totalPoints by id",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "MatchResult"
-                ],
-                "summary": "Update one MatchResult totalPoints",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "MatchResult ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "MatchResult",
-                        "name": "MatchResult",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/endpoint.PutMatchResultTotalPointsById.matchResultTotalPointsData"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "success, return nil",
-                        "schema": {
-                            "$ref": "#/definitions/response.Nill"
-                        }
-                    },
-                    "400": {
-                        "description": "invalid match result ID, maybe not exist",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorIdResponse"
-                        }
-                    },
-                    "409": {
-                        "description": "empty bracket slot or roster conflict",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "internal db failed for updating totalPoints",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }
@@ -7052,6 +7008,21 @@ const docTemplate = `{
                         "$ref": "#/definitions/database.MatchResult"
                     }
                 },
+                "outcome_status": {
+                    "enum": [
+                        "incomplete",
+                        "winner",
+                        "shoot_off",
+                        "locked_conflict",
+                        "unsupported_bow_type"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/database.MatchOutcomeStatus"
+                        }
+                    ],
+                    "readOnly": true
+                },
                 "stage_id": {
                     "type": "integer"
                 }
@@ -7060,6 +7031,10 @@ const docTemplate = `{
         "database.MatchEnd": {
             "type": "object",
             "properties": {
+                "cumulative_points": {
+                    "type": "integer",
+                    "readOnly": true
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -7075,10 +7050,32 @@ const docTemplate = `{
                         "$ref": "#/definitions/database.MatchScore"
                     }
                 },
+                "points": {
+                    "type": "integer",
+                    "x-nullable": true,
+                    "readOnly": true
+                },
                 "total_scores": {
                     "type": "integer"
                 }
             }
+        },
+        "database.MatchOutcomeStatus": {
+            "type": "string",
+            "enum": [
+                "incomplete",
+                "winner",
+                "shoot_off",
+                "locked_conflict",
+                "unsupported_bow_type"
+            ],
+            "x-enum-varnames": [
+                "MatchOutcomeIncomplete",
+                "MatchOutcomeWinner",
+                "MatchOutcomeShootOff",
+                "MatchOutcomeLockedConflict",
+                "MatchOutcomeUnsupportedBowType"
+            ]
         },
         "database.MatchResult": {
             "type": "object",
@@ -7121,7 +7118,8 @@ const docTemplate = `{
                     "x-nullable": true
                 },
                 "total_points": {
-                    "type": "integer"
+                    "type": "integer",
+                    "readOnly": true
                 }
             }
         },
@@ -7631,7 +7629,8 @@ const docTemplate = `{
             ],
             "properties": {
                 "lane_number": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 0
                 },
                 "match_result_id": {
                     "type": "integer"
@@ -8093,14 +8092,6 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "shoot_off_score": {
-                    "type": "integer"
-                }
-            }
-        },
-        "endpoint.PutMatchResultTotalPointsById.matchResultTotalPointsData": {
-            "type": "object",
-            "properties": {
-                "total_points": {
                     "type": "integer"
                 }
             }
