@@ -26,6 +26,12 @@ import type {
 // phase 對映依 useCurrentEliminationMatch 之 mapPhaseToTeamSize：1→個人、2→團體、3→混雙。
 export type EliminationVariant = "individual" | "mixed" | "team";
 export type FixtureTarget = "A" | "B";
+export type FixtureOutcomeStatus =
+  | "incomplete"
+  | "winner"
+  | "shoot_off"
+  | "locked_conflict"
+  | "unsupported_bow_type";
 
 interface VariantConfig {
   phase: number;
@@ -122,7 +128,11 @@ export interface EliminationFixture {
 // options.noMatch === true 時，目前階段不安排任何 Match，模擬「找不到對局」情境。
 export function buildEliminationFixture(
   variant: EliminationVariant,
-  options?: { noMatch?: boolean; targets?: [FixtureTarget, FixtureTarget] }
+  options?: {
+    noMatch?: boolean;
+    targets?: [FixtureTarget, FixtureTarget];
+    outcomeStatus?: FixtureOutcomeStatus;
+  }
 ): EliminationFixture {
   const config = VARIANT_CONFIG[variant];
   const setNameMine = "我方";
@@ -216,6 +226,12 @@ export function buildEliminationFixture(
     stage_id: STAGE_ID,
     match_results: [myMatchResult, opponentMatchResult],
   };
+  // outcome_status 是後端新加的唯讀欄位；OpenAPI 生成尚未同步時仍可用 fixture
+  // 覆蓋 Progress 呈現，不直接修改生成的 Api.ts。
+  if (options?.outcomeStatus) {
+    (match as DatabaseMatch & { outcome_status?: FixtureOutcomeStatus }).outcome_status =
+      options.outcomeStatus;
+  }
 
   const stage: DatabaseStage = {
     id: STAGE_ID,
@@ -327,6 +343,7 @@ export interface EliminationRouteHandles {
   forbiddenRequests: RecordedRequest[];
   setScoresShouldFail(shouldFail: boolean): void;
   setConfirmShouldFail(shouldFail: boolean): void;
+  setScoreSaveWinner(matchResultId: number | null): void;
   setCompetitionPhase(phase: number): void;
   // 取得目前「伺服器端」某 MatchEnd 之狀態（PATCH 後會更新），供測試斷言持久化結果。
   getMatchEndState(matchEndId: number): DatabaseMatchEnd | undefined;
@@ -345,6 +362,62 @@ function findMatchEndById(
     }
   }
   return undefined;
+}
+
+function scoreValue(score: number | undefined): number {
+  if (score === 11) return 10;
+  return score !== undefined && score >= 0 ? score : 0;
+}
+
+// 模擬後端 ComputeMatchPoints：每次改分後重算本場逐波與累積對抗點數。
+function recomputeMatchPoints(elimination: DatabaseElimination): void {
+  for (const stage of elimination.stages ?? []) {
+    for (const match of stage.matchs ?? []) {
+      const [left, right] = match.match_results ?? [];
+      if (!left || !right) continue;
+      const leftEnds = left.match_ends ?? [];
+      const rightEnds = right.match_ends ?? [];
+      const cumulative = [0, 0];
+      const endCount = Math.max(leftEnds.length, rightEnds.length);
+      for (let index = 0; index < endCount; index += 1) {
+        const leftEnd = leftEnds[index];
+        const rightEnd = rightEnds[index];
+        const leftScores = leftEnd?.match_scores ?? [];
+        const rightScores = rightEnd?.match_scores ?? [];
+        const complete =
+          leftScores.length > 0 &&
+          leftScores.length === rightScores.length &&
+          leftScores.every((score) => score.score !== undefined && score.score >= 0) &&
+          rightScores.every((score) => score.score !== undefined && score.score >= 0);
+        if (complete) {
+          const leftTotal = leftScores.reduce(
+            (total, score) => total + scoreValue(score.score),
+            0
+          );
+          const rightTotal = rightScores.reduce(
+            (total, score) => total + scoreValue(score.score),
+            0
+          );
+          const points = leftTotal === rightTotal
+            ? [1, 1]
+            : leftTotal > rightTotal
+              ? [2, 0]
+              : [0, 2];
+          cumulative[0] += points[0];
+          cumulative[1] += points[1];
+          if (leftEnd) leftEnd.points = points[0];
+          if (rightEnd) rightEnd.points = points[1];
+        } else {
+          if (leftEnd) leftEnd.points = null;
+          if (rightEnd) rightEnd.points = null;
+        }
+        if (leftEnd) leftEnd.cumulative_points = cumulative[0];
+        if (rightEnd) rightEnd.cumulative_points = cumulative[1];
+      }
+      left.total_points = cumulative[0];
+      right.total_points = cumulative[1];
+    }
+  }
 }
 
 // 對抗賽記分不應觸碰之其他端點（積點／勝負／靶位／加時賽分數／單箭分數／推進局數與階段）。
@@ -379,6 +452,7 @@ export async function registerEliminationRoutes(
   const forbiddenRequests: RecordedRequest[] = [];
   let scoresShouldFail = false;
   let confirmShouldFail = false;
+  let scoreSaveWinner: number | null | undefined;
 
   await page.route("**/user/me", async (route) => {
     await route.fulfill({
@@ -503,6 +577,16 @@ export async function registerEliminationRoutes(
         if (target) target.score = body.scores?.[i] ?? -1;
       });
       matchEnd.total_scores = body.total_scores;
+      recomputeMatchPoints(serverElimination);
+	  if (scoreSaveWinner !== undefined) {
+		for (const stage of serverElimination.stages ?? []) {
+		  for (const match of stage.matchs ?? []) {
+			for (const result of match.match_results ?? []) {
+			  result.is_winner = result.id === scoreSaveWinner;
+			}
+		  }
+		}
+	  }
     }
     await route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
   });
@@ -523,7 +607,7 @@ export async function registerEliminationRoutes(
     }
 
     const matchEnd = findMatchEndById(serverElimination, matchEndId);
-    if (matchEnd) matchEnd.is_confirmed = true;
+    if (matchEnd) matchEnd.is_confirmed = body.is_confirmed ?? false;
     await route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
   });
 
@@ -549,6 +633,9 @@ export async function registerEliminationRoutes(
     setConfirmShouldFail: (shouldFail: boolean) => {
       confirmShouldFail = shouldFail;
     },
+	setScoreSaveWinner: (matchResultId: number | null) => {
+	  scoreSaveWinner = matchResultId;
+	},
     setCompetitionPhase: (phase: number) => {
       serverCompetition.current_phase = phase;
     },
