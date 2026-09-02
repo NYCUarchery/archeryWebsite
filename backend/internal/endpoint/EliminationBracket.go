@@ -118,6 +118,22 @@ func bracketStageMatchShapeIsComplete(bracket []bracketStage, bracketSize int) b
 	return true
 }
 
+// finalStageMatch returns the terminal stage only when matchID belongs to it.
+// Manual corrections may reproject medals for these matches; earlier matches
+// must still obey downstream-propagation locks.
+func finalStageMatch(bracket []bracketStage, matchID uint) (bracketStage, bool) {
+	if len(bracket) == 0 {
+		return bracketStage{}, false
+	}
+	final := bracket[len(bracket)-1]
+	for _, match := range final.Matches {
+		if match.Match.ID == matchID {
+			return final, true
+		}
+	}
+	return bracketStage{}, false
+}
+
 func withManualBracketMutation(eliminationID uint, mutation func(*gorm.DB, database.Elimination) error) error {
 	return database.DB.Transaction(func(tx *gorm.DB) error {
 		var elimination database.Elimination
@@ -388,7 +404,7 @@ func bracketShapeIsCompatible(tx *gorm.DB, bracket []bracketStage, playerSets []
 						return false, nil
 					}
 				}
-				if isEmptySlot && (result.TotalPoints != 0 || result.ShootOffScore != -1 || result.IsWinner) {
+				if isEmptySlot && (result.ShootOffScore != -1 || result.IsWinner) {
 					return false, nil
 				}
 				if result.Target != nil && *result.Target != "A" && *result.Target != "B" {
@@ -855,7 +871,7 @@ func bracketSlotIsBlank(tx *gorm.DB, result database.MatchResult) (bool, error) 
 // roster-open synchronisation, which may replace or clear PlayerSetId but may
 // never erase score, confirmation, or winner state.
 func bracketSlotHasStarted(tx *gorm.DB, result database.MatchResult) (bool, error) {
-	if result.TotalPoints != 0 || result.ShootOffScore != -1 || result.IsWinner {
+	if result.ShootOffScore != -1 || result.IsWinner {
 		return true, nil
 	}
 	var ends []database.MatchEnd
@@ -1030,6 +1046,66 @@ func reprojectBracketMedals(tx *gorm.DB, eliminationID uint, final bracketStage)
 		changed = changed || updated
 	}
 	return changed, nil
+}
+
+// reprojectManualFinalMatchMedals updates only the medals derived from one
+// manually corrected last-stage match. Unlike the broader bracket projector,
+// an explicit winner clear must clear that match's already-awarded medal rows:
+// gold/silver for the gold final, or bronze for the bronze final. The other
+// final match remains authoritative and is deliberately left unchanged.
+func reprojectManualFinalMatchMedals(tx *gorm.DB, eliminationID uint, final bracketStage, matchID uint) (bool, error) {
+	for matchIndex, match := range final.Matches {
+		if match.Match.ID != matchID {
+			continue
+		}
+		if len(final.Matches) == 1 || matchIndex == 0 {
+			gold, silver, decided, err := explicitWinnerAndLoser(match.Results)
+			if err != nil {
+				return false, err
+			}
+			if !decided {
+				gold, silver = nil, nil
+			}
+			goldChanged, err := overwriteMedalPlayerSet(tx, eliminationID, 0, gold)
+			if err != nil {
+				return false, err
+			}
+			silverChanged, err := overwriteMedalPlayerSet(tx, eliminationID, 1, silver)
+			return goldChanged || silverChanged, err
+		}
+		if len(final.Matches) != 2 || matchIndex != 1 {
+			return false, errBracketConflict
+		}
+		bronze, _, decided, err := explicitWinnerAndLoser(match.Results)
+		if err != nil {
+			return false, err
+		}
+		if !decided {
+			bronze = nil
+		}
+		return overwriteMedalPlayerSet(tx, eliminationID, 2, bronze)
+	}
+	return false, errBracketConflict
+}
+
+func manualFinalMatchHasAwardedMedals(tx *gorm.DB, eliminationID uint, final bracketStage, matchID uint) (bool, error) {
+	for matchIndex, match := range final.Matches {
+		if match.Match.ID != matchID {
+			continue
+		}
+		medalTypes := []int{0, 1}
+		if len(final.Matches) == 2 && matchIndex == 1 {
+			medalTypes = []int{2}
+		} else if len(final.Matches) != 1 && (len(final.Matches) != 2 || matchIndex != 0) {
+			return false, errBracketConflict
+		}
+		var awarded int64
+		err := tx.Model(&database.Medal{}).
+			Where("elimination_id = ? AND type IN ? AND player_set_id <> 0", eliminationID, medalTypes).
+			Count(&awarded).Error
+		return awarded != 0, err
+	}
+	return false, errBracketConflict
 }
 
 func finalizeBracket(tx *gorm.DB, eliminationID uint, final bracketStage) (bool, error) {
