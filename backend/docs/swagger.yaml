@@ -140,11 +140,24 @@ definitions:
         items:
           $ref: '#/definitions/database.MatchResult'
         type: array
+      outcome_status:
+        allOf:
+        - $ref: '#/definitions/database.MatchOutcomeStatus'
+        enum:
+        - incomplete
+        - winner
+        - shoot_off
+        - locked_conflict
+        - unsupported_bow_type
+        readOnly: true
       stage_id:
         type: integer
     type: object
   database.MatchEnd:
     properties:
+      cumulative_points:
+        readOnly: true
+        type: integer
       id:
         type: integer
       is_confirmed:
@@ -155,9 +168,27 @@ definitions:
         items:
           $ref: '#/definitions/database.MatchScore'
         type: array
+      points:
+        readOnly: true
+        type: integer
+        x-nullable: true
       total_scores:
         type: integer
     type: object
+  database.MatchOutcomeStatus:
+    enum:
+    - incomplete
+    - winner
+    - shoot_off
+    - locked_conflict
+    - unsupported_bow_type
+    type: string
+    x-enum-varnames:
+    - MatchOutcomeIncomplete
+    - MatchOutcomeWinner
+    - MatchOutcomeShootOff
+    - MatchOutcomeLockedConflict
+    - MatchOutcomeUnsupportedBowType
   database.MatchResult:
     properties:
       id:
@@ -192,6 +223,7 @@ definitions:
         type: string
         x-nullable: true
       total_points:
+        readOnly: true
         type: integer
     type: object
   database.MatchScore:
@@ -521,6 +553,7 @@ definitions:
   endpoint.MatchResultPlacement:
     properties:
       lane_number:
+        minimum: 0
         type: integer
       match_result_id:
         type: integer
@@ -824,11 +857,6 @@ definitions:
   endpoint.PutMatchResultShootOffScoreById.matchResultShootOffScoreData:
     properties:
       shoot_off_score:
-        type: integer
-    type: object
-  endpoint.PutMatchResultTotalPointsById.matchResultTotalPointsData:
-    properties:
-      total_points:
         type: integer
     type: object
   endpoint.PutMatchScoreScoreById.matchScoreData:
@@ -2131,7 +2159,8 @@ paths:
       consumes:
       - application/json
       description: Requires a competition Admin. The request must name exactly both
-        MatchResults; target is A, B, or null. No lanes-table lookup is made.
+        MatchResults. Each side may independently use any non-negative lane_number
+        and target A, B, or null. No lanes-table lookup is made.
       parameters:
       - description: Match ID
         in: path
@@ -3380,6 +3409,11 @@ paths:
           description: invalid match end ID, maybe not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: changing a confirmed MatchEnd to unconfirmed requires the owning
+            competition Admin
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "409":
           description: empty bracket slot or roster conflict
           schema:
@@ -3397,7 +3431,7 @@ paths:
       - application/json
       description: |-
         Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids
-        MatchScore ids and scores must be the same length
+        MatchScore ids and scores must be the same length. Confirmed MatchEnds require the owning competition Admin, every MatchScore exactly once, and a server-computed total.
       parameters:
       - description: MatchEnd ID
         in: path
@@ -3420,6 +3454,10 @@ paths:
             exist, or matchScore ids and scores length not match
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: confirmed MatchEnd updates require the owning competition Admin
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "409":
           description: empty bracket slot or roster conflict
           schema:
@@ -3435,7 +3473,8 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Update one MatchEnd totalScores by id
+      description: Update one MatchEnd totalScores by id. Confirmed MatchEnds must
+        use the aggregate scores endpoint and are rejected here.
       parameters:
       - description: MatchEnd ID
         in: path
@@ -3454,7 +3493,8 @@ paths:
           schema:
             $ref: '#/definitions/response.Nill'
         "400":
-          description: invalid match end ID, maybe not exist
+          description: invalid match end ID, or confirmed MatchEnd must use the aggregate
+            scores endpoint
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
         "409":
@@ -3581,43 +3621,6 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: Update one MatchResult shootOffScore
-      tags:
-      - MatchResult
-  /matchresult/totalpoints/{id}:
-    patch:
-      consumes:
-      - application/json
-      description: Update one MatchResult totalPoints by id
-      parameters:
-      - description: MatchResult ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: MatchResult
-        in: body
-        name: MatchResult
-        required: true
-        schema:
-          $ref: '#/definitions/endpoint.PutMatchResultTotalPointsById.matchResultTotalPointsData'
-      responses:
-        "200":
-          description: success, return nil
-          schema:
-            $ref: '#/definitions/response.Nill'
-        "400":
-          description: invalid match result ID, maybe not exist
-          schema:
-            $ref: '#/definitions/response.ErrorIdResponse'
-        "409":
-          description: empty bracket slot or roster conflict
-          schema:
-            $ref: '#/definitions/response.ErrorResponse'
-        "500":
-          description: internal db failed for updating totalPoints
-          schema:
-            $ref: '#/definitions/response.ErrorInternalErrorResponse'
-      summary: Update one MatchResult totalPoints
       tags:
       - MatchResult
   /medal/{id}:
