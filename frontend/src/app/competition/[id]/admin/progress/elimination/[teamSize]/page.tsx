@@ -5,25 +5,25 @@ import {
   Box,
   Button,
   Card,
+  Chip,
   Dialog,
   DialogTitle,
   DialogContent,
+  FormControl,
+  InputLabel,
   MenuItem,
   Select,
   TextField,
   Paper,
   DialogActions,
   Stack,
+  Tooltip,
   Typography,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
 } from "@mui/material";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import GroupsIcon from "@mui/icons-material/Groups";
 import { useMutation, useQueryClient } from "react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import useGetCompetitionGroupsWithPlayers from "@/utils/QueryHooks/useGetCompetitionGroupsWithPlayers";
 import useGetCompetitionWithGroups from "@/utils/QueryHooks/useGetCompetitionWithGroups";
@@ -36,8 +36,13 @@ import { apiClient } from "@/utils/ApiClient";
 import {
   EndpointPostStagePostStageData,
   EndpointPostMatchMatchData,
+  DatabaseMatch,
+  DatabaseMatchEnd,
 } from "@/types/Api";
 import LaneNumber from "@/components/LaneNumber";
+import EliminationMatchScoreComparison from "@/components/EliminationMatchScoreComparison";
+import ScoreController from "@/components/ScoreController/ScoreController";
+import ScoreBlock from "@/components/ScoreBlock";
 import EliminationProgressControl from "./EliminationProgressControl";
 import {
   hasEliminationMatchStarted,
@@ -58,6 +63,64 @@ import {
 interface PlayerSetOption {
   id: number;
   label: string;
+}
+
+type MatchOutcomeStatus = NonNullable<DatabaseMatch["outcome_status"]>;
+
+function getOutcomeStatus(match?: DatabaseMatch): MatchOutcomeStatus | undefined {
+  return match?.outcome_status;
+}
+
+function OutcomeStatusIndicator({
+  status,
+  detail = false,
+}: {
+  status?: MatchOutcomeStatus;
+  detail?: boolean;
+}) {
+  if (status === "shoot_off") {
+    return detail ? (
+      <Alert severity="warning" data-testid="match-outcome-shoot-off">
+        需要加射；請由管理員完成加射後手動指定勝方。
+      </Alert>
+    ) : (
+      <Chip
+        data-testid="match-outcome-shoot-off"
+        label="需要加射"
+        color="warning"
+        size="small"
+      />
+    );
+  }
+  if (status === "locked_conflict") {
+    return detail ? (
+      <Alert severity="warning" data-testid="match-outcome-locked-conflict">
+        比分與已晉級賽果不一致
+      </Alert>
+    ) : (
+      <Chip
+        data-testid="match-outcome-locked-conflict"
+        label="比分與已晉級賽果不一致"
+        color="warning"
+        size="small"
+      />
+    );
+  }
+  if (status === "unsupported_bow_type") {
+    return detail ? (
+      <Alert severity="info" data-testid="match-outcome-unsupported-bow-type">
+        此弓種無法自動判定勝方；請由管理員手動指定。
+      </Alert>
+    ) : (
+      <Chip
+        data-testid="match-outcome-unsupported-bow-type"
+        label="此弓種無法自動判定"
+        color="default"
+        size="small"
+      />
+    );
+  }
+  return null;
 }
 
 function Page({ params }: { params: { id: string; teamSize: string } }) {
@@ -95,6 +158,13 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
   const [winnerMatchResultId, setWinnerMatchResultId] = useState<number | null>(
     null
   );
+  const [scoreActionError, setScoreActionError] = useState<string | null>(null);
+  const [scoreDialogOpen, setScoreDialogOpen] = useState(false);
+  const [scoreDraft, setScoreDraft] = useState<DatabaseMatchEnd | null>(null);
+  const [updatingEndId, setUpdatingEndId] = useState<number | null>(null);
+  const [winnerSyncMatchId, setWinnerSyncMatchId] = useState<number | null>(
+    null
+  );
 
   const {
     data: competition,
@@ -128,6 +198,23 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
     })) ?? [];
 
   const stages = eliminationDetail?.stages ?? [];
+  const selectedMatch = stages
+    .find((stage) => stage.id === selectedStageId)
+    ?.matchs?.find((match) => match.id === selectedMatchId);
+
+  // 比分儲存後，待 refetch 的權威 match 進入 render，才同步本地
+  // winner 選單。此 effect 僅讀 query 結果與更新本地表單，不呼叫 API。
+  useEffect(() => {
+    if (winnerSyncMatchId === null || selectedMatch?.id !== winnerSyncMatchId) {
+      return;
+    }
+    setWinnerMatchResultId(
+      selectedMatch.match_results?.find((result) => result.is_winner)?.id ??
+        null
+    );
+    setWinnerSyncMatchId(null);
+  }, [selectedMatch, winnerSyncMatchId]);
+
   const bracketExists = isCompleteEliminationBracket(eliminationDetail?.stages);
   const hasGeneratedBracket = (eliminationDetail?.bracket_seed_count ?? 0) > 0;
   const rosterLocked = isBracketRosterLocked(eliminationDetail);
@@ -309,6 +396,74 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
         },
       }
     );
+
+  // 比分與對抗組設定分開寫入；前者完成後只刷新 detail，不關閉主 dialog。
+  const { mutate: toggleMatchEndConfirmation } =
+    useMutation(
+      ({ endId, isConfirmed }: { endId: number; isConfirmed: boolean }) =>
+        apiClient.matchEnd.matchendIsconfirmedPartialUpdate(endId, {
+          is_confirmed: isConfirmed,
+        }),
+      {
+        onMutate: ({ endId }) => setUpdatingEndId(endId),
+        onSuccess: async () => {
+          await queryClient.invalidateQueries([
+            "eliminationDetail",
+            elimination?.elimination_id,
+          ]);
+          setScoreActionError(null);
+        },
+        onError: (error: any) => {
+          setScoreActionError(
+            error?.response?.data?.error ?? "更新本波確認狀態失敗，請稍後再試。"
+          );
+        },
+        onSettled: () => setUpdatingEndId(null),
+      }
+    );
+
+  const { mutate: saveMatchEndScores, isLoading: isScoreSaving } = useMutation(
+    async (draft: DatabaseMatchEnd) => {
+      if (!draft.id || !draft.match_scores?.length) {
+        throw new Error("本波沒有可儲存的箭分資料");
+      }
+      const scores = draft.match_scores.map((score) => score.score ?? -1);
+      const matchScoreIds = draft.match_scores.map((score) => {
+        if (!score.id) throw new Error("缺少箭分 ID");
+        return score.id;
+      });
+      const totalScores = scores.reduce(
+        (total, score) => total + (score === 11 ? 10 : score >= 0 ? score : 0),
+        0
+      );
+      await apiClient.matchEnd.matchendScoresPartialUpdate(draft.id, {
+        match_score_ids: matchScoreIds,
+        scores,
+        total_scores: totalScores,
+      });
+    },
+    {
+      onMutate: (draft) => setUpdatingEndId(draft.id ?? null),
+      onSuccess: async () => {
+        await queryClient.invalidateQueries([
+          "eliminationDetail",
+          elimination?.elimination_id,
+        ]);
+        // 後端可能於此存分中自動改判或清除勝方；下一個 query render
+        // 會同步選單，避免主 dialog 稍後以舊 winner 再覆寫它。
+        setWinnerSyncMatchId(selectedMatchId);
+        setScoreActionError(null);
+        setScoreDialogOpen(false);
+        setScoreDraft(null);
+      },
+      onError: (error: any) => {
+        setScoreActionError(
+          error?.response?.data?.error ?? "儲存本波分數失敗，請稍後再試。"
+        );
+      },
+      onSettled: () => setUpdatingEndId(null),
+    }
+  );
 
   const {
     mutate: setEliminationProgress,
@@ -508,6 +663,62 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
     setInitialPlayerSetIds(null);
     setWinnerMatchResultId(null);
     setPlacementError(null);
+    setScoreActionError(null);
+    setScoreDialogOpen(false);
+    setScoreDraft(null);
+    setWinnerSyncMatchId(null);
+  };
+
+  const handleOpenScoreDialog = (end: DatabaseMatchEnd) => {
+    // 草稿與 query cache 完全分離；取消或 API 失敗都不會污染主 dialog。
+    setScoreDraft({
+      ...end,
+      match_scores: end.match_scores?.map((score) => ({ ...score })) ?? [],
+    });
+    setScoreActionError(null);
+    setScoreDialogOpen(true);
+  };
+
+  const handleCloseScoreDialog = () => {
+    if (isScoreSaving) return;
+    setScoreDialogOpen(false);
+    setScoreDraft(null);
+  };
+
+  const updateScoreDraft = (updater: (scores: number[]) => number[]) => {
+    setScoreDraft((draft) => {
+      if (!draft?.match_scores) return draft;
+      const nextScores = updater(draft.match_scores.map((score) => score.score ?? -1));
+      return {
+        ...draft,
+        match_scores: draft.match_scores.map((score, index) => ({
+          ...score,
+          score: nextScores[index] ?? -1,
+        })),
+      };
+    });
+  };
+
+  const addScoreToDraft = (score: number) => {
+    updateScoreDraft((scores) => {
+      const index = scores.findIndex((value) => value < 0);
+      if (index === -1) return scores;
+      return scores.map((value, scoreIndex) => (scoreIndex === index ? score : value));
+    });
+  };
+
+  const deleteScoreFromDraft = () => {
+    updateScoreDraft((scores) => {
+      let index = -1;
+      for (let scoreIndex = scores.length - 1; scoreIndex >= 0; scoreIndex -= 1) {
+        if (scores[scoreIndex] >= 0) {
+          index = scoreIndex;
+          break;
+        }
+      }
+      if (index === -1) return scores;
+      return scores.map((value, scoreIndex) => (scoreIndex === index ? -1 : value));
+    });
   };
 
   const canCreateStage = () => {
@@ -524,9 +735,7 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
   const selectedSet2Detail = playerSets?.find(
     (set) => set.id === setOption2?.id
   );
-  const selectedMatch = stages
-    .find((stage) => stage.id === selectedStageId)
-    ?.matchs?.find((match) => match.id === selectedMatchId);
+  const selectedMatchOutcomeStatus = getOutcomeStatus(selectedMatch);
   const canAssignPlayerSets = selectedMatch !== undefined;
   const playerSetsChangedInDialog =
     initialPlayerSetIds !== null &&
@@ -535,6 +744,104 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
   const showPlayerSetCorrectionWarning =
     playerSetsChangedInDialog &&
     (rosterLocked || hasEliminationMatchStarted(selectedMatch));
+  const matchDialogTeams = [
+    {
+      number: 1,
+      option: setOption1,
+      detail: selectedSet1Detail,
+      placement: matchPlacements[0],
+      setOption: setSetOption1,
+      result: selectedMatch?.match_results?.[0],
+    },
+    {
+      number: 2,
+      option: setOption2,
+      detail: selectedSet2Detail,
+      placement: matchPlacements[1],
+      setOption: setSetOption2,
+      result: selectedMatch?.match_results?.[1],
+    },
+  ] as const;
+
+  const renderMatchTeamHeader = ({
+    number,
+    option,
+    detail,
+    placement,
+    setOption,
+  }: (typeof matchDialogTeams)[number]) => (
+    <Box data-testid={`match-team-card-${number}`} sx={{ minWidth: 0 }}>
+      <Stack spacing={0.75}>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "minmax(150px, 1fr) 96px 96px",
+            gap: 0.5,
+            alignItems: "start",
+          }}
+        >
+          <Autocomplete
+            options={playerSetOptions}
+            value={option}
+            onChange={(_, newValue) => setOption(newValue)}
+            disabled={!canAssignPlayerSets || isMatchDialogSaving}
+            size="small"
+            renderInput={(params) => (
+              <TextField {...params} label={`隊伍 ${number}`} />
+            )}
+          />
+          {placement && (
+            <TextField
+              type="text"
+              label="靶道"
+              value={placement.lane_number}
+              inputProps={{ inputMode: "numeric", pattern: "[0-9]*", "aria-label": `隊伍 ${number} 靶道` }}
+              onChange={(event) =>
+                updateMatchPlacement(placement.match_result_id, {
+                  lane_number: Number(event.target.value),
+                })
+              }
+              disabled={isMatchDialogSaving}
+              size="small"
+              fullWidth
+            />
+          )}
+          {placement && (
+            <FormControl size="small" fullWidth disabled={isMatchDialogSaving}>
+              <InputLabel>靶面</InputLabel>
+              <Select
+                label="靶面"
+                value={placement.target ?? ""}
+                inputProps={{ "aria-label": `隊伍 ${number} 靶面` }}
+                onChange={(event) =>
+                  updateMatchPlacement(placement.match_result_id, {
+                    target: (event.target.value || null) as MatchTarget,
+                  })
+                }
+              >
+                <MenuItem value="">無</MenuItem>
+                <MenuItem value="A">A</MenuItem>
+                <MenuItem value="B">B</MenuItem>
+              </Select>
+            </FormControl>
+          )}
+        </Box>
+        <Stack direction="row" spacing={0.5} alignItems="center" flexWrap="wrap">
+          <Tooltip title="隊員">
+            <GroupsIcon color="action" fontSize="small" aria-label="隊員" />
+          </Tooltip>
+          <Typography variant="caption" color="text.secondary">隊員</Typography>
+          {detail?.players?.length ? (
+            detail.players.map((player) => (
+              <Typography key={player.id} variant="body2">{player.name}</Typography>
+            ))
+          ) : (
+            <Typography variant="body2">—</Typography>
+          )}
+        </Stack>
+      </Stack>
+    </Box>
+  );
 
   const stagePlacementTargetCount = requiredTargetCount(
     stageToPlace?.matchCount ?? 0,
@@ -682,6 +989,7 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
                   {stage.matchs?.map((match) => {
                     const result1 = match.match_results?.[0];
                     const result2 = match.match_results?.[1];
+                    const outcomeStatus = getOutcomeStatus(match);
                     const set1 = playerSets?.find(
                       (set) => set.id === result1?.player_set_id
                     );
@@ -750,6 +1058,16 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
                             ) : null}
                           </Typography>
                         </Stack>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            justifyContent: "center",
+                            px: 1,
+                            pb: 1,
+                          }}
+                        >
+                          <OutcomeStatusIndicator status={outcomeStatus} />
+                        </Box>
                       </Paper>
                     );
                   })}
@@ -825,16 +1143,21 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
       </Dialog>
       <Dialog
         open={matchInfoDialogOpen}
-        onClose={() => !isMatchDialogSaving && handleMatchInfoDialogClose()}
+        onClose={() =>
+          !isMatchDialogSaving && !isScoreSaving && updatingEndId === null && handleMatchInfoDialogClose()
+        }
         maxWidth="md"
         fullWidth
       >
-        <DialogTitle>修改對抗組</DialogTitle>
-        <DialogContent sx={{ overflow: "visible" }}>
-          <Stack spacing={1.5} sx={{ mt: 1 }}>
-            <Typography>
-              Match ID: <strong>{selectedMatchId}</strong>
-            </Typography>
+        <DialogTitle sx={{ py: 1 }}>
+          修改對抗組 #{selectedMatchId}
+        </DialogTitle>
+        <DialogContent sx={{ overflow: "visible", pb: 1 }}>
+          <Stack spacing={1} sx={{ mt: 0.5 }}>
+            <OutcomeStatusIndicator
+              status={selectedMatchOutcomeStatus}
+              detail
+            />
             <TextField
               select
               label="贏家"
@@ -862,112 +1185,35 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
                 隊伍 2：{setOption2?.label ?? "空席"}
               </MenuItem>
             </TextField>
-            <Paper sx={{ overflow: "hidden" }}>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>隊伍</TableCell>
-                    <TableCell>隊員</TableCell>
-                    <TableCell>靶道</TableCell>
-                    <TableCell>靶面</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {[
-                    {
-                      number: 1,
-                      option: setOption1,
-                      detail: selectedSet1Detail,
-                      placement: matchPlacements[0],
-                      setOption: setSetOption1,
-                    },
-                    {
-                      number: 2,
-                      option: setOption2,
-                      detail: selectedSet2Detail,
-                      placement: matchPlacements[1],
-                      setOption: setSetOption2,
-                    },
-                  ].map(({ number, option, detail, placement, setOption }) => (
-                    <TableRow key={number}>
-                      <TableCell sx={{ width: "40%", minWidth: 200 }}>
-                        <Autocomplete
-                          options={playerSetOptions}
-                          value={option}
-                          onChange={(_, newValue) => setOption(newValue)}
-                          disabled={!canAssignPlayerSets || isMatchDialogSaving}
-                          size="small"
-                          renderInput={(params) => (
-                            <TextField {...params} label={`隊伍 ${number}`} />
-                          )}
-                        />
-                      </TableCell>
-                      <TableCell sx={{ minWidth: 110 }}>
-                        <Stack spacing={0.25}>
-                          {detail?.players?.map((player) => (
-                            <Typography key={player.id} variant="body2">
-                              {player.name}
-                            </Typography>
-                          )) ?? <Typography variant="body2">—</Typography>}
-                        </Stack>
-                      </TableCell>
-                      <TableCell sx={{ width: 110 }}>
-                        {placement && (
-                          <TextField
-                            type="number"
-                            value={placement.lane_number}
-                            inputProps={{
-                              min: 0,
-                              "aria-label": `隊伍 ${number} 靶道`,
-                            }}
-                            onChange={(event) =>
-                              updateMatchPlacement(placement.match_result_id, {
-                                lane_number: Number(event.target.value),
-                              })
-                            }
-                            disabled={isMatchDialogSaving}
-                            size="small"
-                            sx={{ width: 90 }}
-                          />
-                        )}
-                      </TableCell>
-                      <TableCell sx={{ width: 100 }}>
-                        {placement && (
-                          <Select
-                            size="small"
-                            value={placement.target ?? ""}
-                            inputProps={{
-                              "aria-label": `隊伍 ${number} 靶面`,
-                            }}
-                            onChange={(event) =>
-                              updateMatchPlacement(placement.match_result_id, {
-                                target: (event.target.value || null) as MatchTarget,
-                              })
-                            }
-                            disabled={isMatchDialogSaving}
-                            sx={{ minWidth: 80 }}
-                          >
-                            <MenuItem value="">無</MenuItem>
-                            <MenuItem value="A">A</MenuItem>
-                            <MenuItem value="B">B</MenuItem>
-                          </Select>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Paper>
-            <Typography variant="body2" color="text.secondary">
-              合法：不同靶道且無靶面；同靶道且靶面 A/B 各一；或兩方皆為 0／無。
-            </Typography>
+            <EliminationMatchScoreComparison
+              side1={{
+                label: setOption1?.label ?? "隊伍 1：空席",
+                matchResult: matchDialogTeams[0].result,
+                header: renderMatchTeamHeader(matchDialogTeams[0]),
+              }}
+              side2={{
+                label: setOption2?.label ?? "隊伍 2：空席",
+                matchResult: matchDialogTeams[1].result,
+                header: renderMatchTeamHeader(matchDialogTeams[1]),
+              }}
+              onToggleConfirmation={(end, isConfirmed) => {
+                if (!end.id) return;
+                setScoreActionError(null);
+                toggleMatchEndConfirmation({ endId: end.id, isConfirmed });
+              }}
+              onEditEnd={handleOpenScoreDialog}
+              updatingEndIds={updatingEndId === null ? [] : [updatingEndId]}
+              disabled={
+                isMatchDialogSaving ||
+                isScoreSaving ||
+                updatingEndId !== null
+              }
+            />
+            {scoreActionError && <Alert severity="error">{scoreActionError}</Alert>}
             {showPlayerSetCorrectionWarning && (
               <Alert severity="warning">
                 救援更正隊伍會保留該格既有比分與勝方；系統將同步後續賽程。
               </Alert>
-            )}
-            {!isValidMatchPlacement(matchPlacements) && (
-              <Alert severity="error">靶道與靶面配置不合法。</Alert>
             )}
             {placementError && <Alert severity="error">{placementError}</Alert>}
           </Stack>
@@ -977,17 +1223,63 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
           <Button
             variant="contained"
             onClick={() => saveMatchDialog()}
-            disabled={!isValidMatchPlacement(matchPlacements) || isMatchDialogSaving}
+            disabled={
+              !isValidMatchPlacement(matchPlacements) ||
+              isMatchDialogSaving ||
+              isScoreSaving ||
+              updatingEndId !== null
+            }
           >
             {isMatchDialogSaving ? "儲存中…" : "儲存"}
           </Button>
           <Button
             color="info"
             onClick={handleMatchInfoDialogClose}
-            disabled={isMatchDialogSaving}
+            disabled={
+              isMatchDialogSaving ||
+              isScoreSaving ||
+              updatingEndId !== null
+            }
           >
             取消
           </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={scoreDialogOpen}
+        onClose={handleCloseScoreDialog}
+        aria-labelledby="match-end-score-dialog-title"
+      >
+        <DialogTitle id="match-end-score-dialog-title">編輯本波分數</DialogTitle>
+        <DialogContent sx={{ minWidth: 320 }}>
+          <Stack spacing={1.25} sx={{ mt: 0.5 }}>
+            <Stack direction="row" spacing={0.75} justifyContent="center" flexWrap="wrap">
+              {(scoreDraft?.match_scores ?? []).map((score, index) =>
+                score.score !== undefined && score.score >= 0 ? (
+                  <ScoreBlock key={score.id ?? index} score={score.score} size="1.25rem" />
+                ) : (
+                  <Typography key={score.id ?? index} aria-label="未記分">—</Typography>
+                )
+              )}
+            </Stack>
+            {scoreActionError && <Alert severity="error">{scoreActionError}</Alert>}
+          </Stack>
+        </DialogContent>
+        <Box sx={{ px: 3, pb: 1 }}>
+          <ScoreController
+            scores={(scoreDraft?.match_scores ?? []).map((score) => score.score ?? -1)}
+            isConfirmed={scoreDraft?.is_confirmed ?? false}
+            allowConfirmedEditing
+            maximumArrowCount={scoreDraft?.match_scores?.length ?? 0}
+            possibleScores={[11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0]}
+            onAddScore={addScoreToDraft}
+            onDeleteScore={deleteScoreFromDraft}
+            onSave={() => scoreDraft && saveMatchEndScores(scoreDraft)}
+            isSaving={isScoreSaving}
+          />
+        </Box>
+        <DialogActions>
+          <Button onClick={handleCloseScoreDialog} disabled={isScoreSaving}>取消</Button>
         </DialogActions>
       </Dialog>
       <Dialog
