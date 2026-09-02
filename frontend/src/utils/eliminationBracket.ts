@@ -31,7 +31,6 @@ export function hasEliminationMatchStarted(match?: DatabaseMatch) {
     match?.match_results?.some((result) =>
       Boolean(
         result.is_winner ||
-          (result.total_points !== undefined && result.total_points !== 0) ||
           (result.shoot_off_score ?? -1) !== -1 ||
           result.match_ends?.some(
             (end) =>

@@ -80,15 +80,26 @@ export interface DatabaseLane {
 export interface DatabaseMatch {
   id?: number;
   match_results?: DatabaseMatchResult[];
+  outcome_status?: "incomplete" | "winner" | "shoot_off" | "locked_conflict" | "unsupported_bow_type";
   stage_id?: number;
 }
 
 export interface DatabaseMatchEnd {
+  cumulative_points?: number;
   id?: number;
   is_confirmed?: boolean;
   match_result_id?: number;
   match_scores?: DatabaseMatchScore[];
+  points?: number | null;
   total_scores?: number;
+}
+
+export enum DatabaseMatchOutcomeStatus {
+  MatchOutcomeIncomplete = "incomplete",
+  MatchOutcomeWinner = "winner",
+  MatchOutcomeShootOff = "shoot_off",
+  MatchOutcomeLockedConflict = "locked_conflict",
+  MatchOutcomeUnsupportedBowType = "unsupported_bow_type",
 }
 
 export interface DatabaseMatchResult {
@@ -306,6 +317,7 @@ export interface EndpointMatchPlacementRequest {
 }
 
 export interface EndpointMatchResultPlacement {
+  /** @min 0 */
   lane_number: number;
   match_result_id: number;
   target?: "A" | "B" | null;
@@ -492,10 +504,6 @@ export interface EndpointPutMatchResultLaneNumberByIdMatchResultLaneNumberData {
 
 export interface EndpointPutMatchResultShootOffScoreByIdMatchResultShootOffScoreData {
   shoot_off_score?: number;
-}
-
-export interface EndpointPutMatchResultTotalPointsByIdMatchResultTotalPointsData {
-  total_points?: number;
 }
 
 export interface EndpointPutMatchScoreScoreByIdMatchScoreData {
@@ -1326,7 +1334,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       ),
 
     /**
-     * @description Requires a competition Admin. The request must name exactly both MatchResults; target is A, B, or null. No lanes-table lookup is made.
+     * @description Requires a competition Admin. The request must name exactly both MatchResults. Each side may independently use any non-negative lane_number and target A, B, or null. No lanes-table lookup is made.
      *
      * @tags Elimination
      * @name MatchPlacementUpdate
@@ -1344,7 +1352,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Update two MatchResult with two PlayerSetId in one Match by id
+     * @description Force-corrects both PlayerSet identities of any elimination Match while retaining each slot's score, confirmation, winner, and placement. Selected winners are reprojected downstream. Requires a competition Admin.
      *
      * @tags Elimination
      * @name MatchPlayersetPartialUpdate
@@ -2034,7 +2042,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids MatchScore ids and scores must be the same length
+     * @description Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids MatchScore ids and scores must be the same length. Confirmed MatchEnds require the owning competition Admin, every MatchScore exactly once, and a server-computed total.
      *
      * @tags MatchEnd
      * @name MatchendScoresPartialUpdate
@@ -2055,7 +2063,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Update one MatchEnd totalScores by id
+     * @description Update one MatchEnd totalScores by id. Confirmed MatchEnds must use the aggregate scores endpoint and are rejected here.
      *
      * @tags MatchEnd
      * @name MatchendTotalscorePartialUpdate
@@ -2134,27 +2142,6 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     ) =>
       this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse>({
         path: `/matchresult/shootoffscore/${id}`,
-        method: "PATCH",
-        body: MatchResult,
-        type: ContentType.Json,
-        ...params,
-      }),
-
-    /**
-     * @description Update one MatchResult totalPoints by id
-     *
-     * @tags MatchResult
-     * @name TotalpointsPartialUpdate
-     * @summary Update one MatchResult totalPoints
-     * @request PATCH:/matchresult/totalpoints/{id}
-     */
-    totalpointsPartialUpdate: (
-      id: number,
-      MatchResult: EndpointPutMatchResultTotalPointsByIdMatchResultTotalPointsData,
-      params: RequestParams = {},
-    ) =>
-      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse>({
-        path: `/matchresult/totalpoints/${id}`,
         method: "PATCH",
         body: MatchResult,
         type: ContentType.Json,

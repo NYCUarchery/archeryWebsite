@@ -24,27 +24,20 @@ export interface MatchPlacement {
 export function isValidMatchPlacement(placements: MatchPlacement[]) {
   if (placements.length !== 2) return false;
   const [left, right] = placements;
-  if (left.match_result_id === right.match_result_id) return false;
+  if (
+    left.match_result_id <= 0 ||
+    right.match_result_id <= 0 ||
+    left.match_result_id === right.match_result_id
+  ) {
+    return false;
+  }
 
-  const bothUnplaced =
-    left.lane_number === 0 &&
-    right.lane_number === 0 &&
-    left.target === null &&
-    right.target === null;
-  const separateTargets =
-    left.lane_number > 0 &&
-    right.lane_number > 0 &&
-    left.lane_number !== right.lane_number &&
-    left.target === null &&
-    right.target === null;
-  const sharedTarget =
-    left.lane_number > 0 &&
-    left.lane_number === right.lane_number &&
-    left.target !== null &&
-    right.target !== null &&
-    left.target !== right.target;
-
-  return bothUnplaced || separateTargets || sharedTarget;
+  return placements.every(
+    ({ lane_number, target }) =>
+      Number.isInteger(lane_number) &&
+      lane_number >= 0 &&
+      (target === null || target === "A" || target === "B")
+  );
 }
 
 export function requiredTargetCount(

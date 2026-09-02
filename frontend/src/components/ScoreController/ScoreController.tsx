@@ -14,6 +14,8 @@ interface Props {
   onConfirm?: () => void;
   isSaving?: boolean;
   canConfirm?: boolean; // false 表示尚未選定記分對象，確認鈕停用
+  /** 僅供管理端改分：已確認波次仍可調整箭分，但不改確認狀態。 */
+  allowConfirmedEditing?: boolean;
 }
 
 export default function ScoreController({
@@ -27,10 +29,12 @@ export default function ScoreController({
   onConfirm,
   isSaving = false,
   canConfirm = true,
+  allowConfirmedEditing = false,
 }: Props) {
   const filledCount = scores.filter((s) => s !== -1).length;
   const isFull = filledCount >= maximumArrowCount;
-  const canDelete = !isConfirmed && !isSaving && filledCount > 0;
+  const canEdit = !isConfirmed || allowConfirmedEditing;
+  const canDelete = canEdit && !isSaving && filledCount > 0;
 
   const scoreButtons = [];
 
@@ -40,7 +44,7 @@ export default function ScoreController({
         <ScoreButton
           key={i}
           score={possibleScores[i]}
-          disabled={isConfirmed || isFull || isSaving}
+          disabled={!canEdit || isFull || isSaving}
           onAddScore={onAddScore}
         ></ScoreButton>
       </Grid>
