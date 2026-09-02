@@ -2,6 +2,7 @@ package endpoint
 
 import (
 	"backend/internal/database"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"strings"
@@ -12,7 +13,7 @@ import (
 )
 
 var (
-	errInvalidPlacement = errors.New("placement lane_number must be positive and target must be A, B, or null")
+	errInvalidPlacement = errors.New("placement lane_number must be non-negative and target must be A, B, or null")
 	errPlacementMode    = errors.New("placement mode must be one_player_set_per_target or two_player_sets_per_target")
 )
 
@@ -27,8 +28,29 @@ type StagePlacementRequest struct {
 
 type MatchResultPlacement struct {
 	MatchResultID uint    `json:"match_result_id" binding:"required"`
-	LaneNumber    int     `json:"lane_number" binding:"required"`
+	LaneNumber    int     `json:"lane_number" binding:"gte=0" validate:"required"`
 	Target        *string `json:"target" enums:"A,B" extensions:"x-nullable"`
+}
+
+// UnmarshalJSON distinguishes an omitted or null lane_number from a valid 0.
+// Internal callers retain the concrete int field and validate their generated
+// placements through applyMatchPlacement.
+func (placement *MatchResultPlacement) UnmarshalJSON(data []byte) error {
+	var raw struct {
+		MatchResultID uint    `json:"match_result_id"`
+		LaneNumber    *int    `json:"lane_number"`
+		Target        *string `json:"target"`
+	}
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return err
+	}
+	if raw.LaneNumber == nil {
+		return errors.New("placement lane_number is required")
+	}
+	placement.MatchResultID = raw.MatchResultID
+	placement.LaneNumber = *raw.LaneNumber
+	placement.Target = raw.Target
+	return nil
 }
 
 // MatchPlacementRequest is deliberately independent of the lanes table:
@@ -73,20 +95,12 @@ func validatePlacementPair(placements []MatchResultPlacement) error {
 	if len(placements) != 2 {
 		return errInvalidPlacement
 	}
-	first, second := placements[0], placements[1]
-	if first.LaneNumber < 0 || second.LaneNumber < 0 {
-		return errInvalidPlacement
+	for _, placement := range placements {
+		if placement.LaneNumber < 0 {
+			return errInvalidPlacement
+		}
 	}
-	if first.LaneNumber == 0 && second.LaneNumber == 0 && first.Target == nil && second.Target == nil {
-		return nil
-	}
-	if first.LaneNumber > 0 && second.LaneNumber > 0 && first.Target == nil && second.Target == nil && first.LaneNumber != second.LaneNumber {
-		return nil
-	}
-	if first.LaneNumber > 0 && first.LaneNumber == second.LaneNumber && first.Target != nil && second.Target != nil && *first.Target != *second.Target {
-		return nil
-	}
-	return errInvalidPlacement
+	return nil
 }
 
 func applyMatchPlacement(tx *gorm.DB, matchID uint, placements []MatchResultPlacement) (bool, error) {
@@ -287,7 +301,7 @@ func PutEliminationStagePlacement(context *gin.Context) {
 // of one match. It is safe to call before or after scores are recorded.
 //
 // @Summary      Place the two sides of an elimination match
-// @Description  Requires a competition Admin. The request must name exactly both MatchResults; target is A, B, or null. No lanes-table lookup is made.
+// @Description  Requires a competition Admin. The request must name exactly both MatchResults. Each side may independently use any non-negative lane_number and target A, B, or null. No lanes-table lookup is made.
 // @Tags         Elimination
 // @Accept       json
 // @Produce      json
