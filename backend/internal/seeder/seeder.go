@@ -56,6 +56,7 @@ var itemSpecs = []itemSpec{
 	{GroupName: "公開男子反曲弓組", GroupRange: "公開男子", BowType: "Recurve"},
 	{GroupName: "公開女子反曲弓組", GroupRange: "公開女子", BowType: "Recurve"},
 	{GroupName: "新人反曲弓組", GroupRange: "新人", BowType: "Recurve"},
+	{GroupName: "公開男子複合弓組", GroupRange: "公開男子", BowType: "Compound"},
 }
 
 var scenarios = []Scenario{Registered, QualificationFinished, EliminationFinished}
@@ -516,7 +517,6 @@ func createFinishedMatch(tx *gorm.DB, stageID uint, first, second database.Playe
 		result := database.MatchResult{
 			MatchId:       match.ID,
 			PlayerSetId:   &playerSetID,
-			TotalPoints:   map[bool]int{true: 6, false: 4}[winner],
 			ShootOffScore: -1,
 			IsWinner:      winner,
 			LaneNumber:    index + 1,
@@ -956,7 +956,7 @@ func assertItemElimination(db *gorm.DB, scenario Scenario, competition database.
 			return fmt.Errorf("stage %d must have %d matches, got %d", stageIndex+1, len(round), len(matches))
 		}
 		for matchIndex, expected := range round {
-			if err := assertFinishedMatch(db, matches[matchIndex].ID, sets[expected.First], sets[expected.Second], expected.WinnerIndex); err != nil {
+			if err := assertFinishedMatch(db, matches[matchIndex].ID, sets[expected.First], sets[expected.Second], expected.WinnerIndex, group.BowType); err != nil {
 				return fmt.Errorf("stage %d match %d: %w", stageIndex+1, matchIndex+1, err)
 			}
 			totalResults += 2
@@ -1039,16 +1039,24 @@ func assertItemPlayerSets(db *gorm.DB, elimination database.Elimination, players
 // assertFinishedMatch checks one match: its two results, its single winner, and
 // that points, ends and arrows all agree. Every end keeps its scores while
 // staying unconfirmed, matching what createFinishedMatch writes.
-func assertFinishedMatch(db *gorm.DB, matchID uint, first, second database.PlayerSet, winnerIndex int) error {
-	var results []database.MatchResult
-	if err := db.Where("match_id = ?", matchID).Order("id ASC").Find(&results).Error; err != nil {
-		return fmt.Errorf("find match results: %w", err)
+func assertFinishedMatch(db *gorm.DB, matchID uint, first, second database.PlayerSet, winnerIndex int, bowType string) error {
+	var match database.Match
+	if err := db.
+		Preload("MatchResults", func(tx *gorm.DB) *gorm.DB { return tx.Order("id ASC") }).
+		Preload("MatchResults.MatchEnds", func(tx *gorm.DB) *gorm.DB { return tx.Order("id ASC") }).
+		Preload("MatchResults.MatchEnds.MatchScores", func(tx *gorm.DB) *gorm.DB { return tx.Order("id ASC") }).
+		Where("id = ?", matchID).
+		First(&match).Error; err != nil {
+		return fmt.Errorf("find match with computed scores: %w", err)
 	}
+	match = database.ComputeMatchPoints(match)
+	results := match.MatchResults
 	if len(results) != 2 {
 		return fmt.Errorf("match must have exactly two results, got %d", len(results))
 	}
 	expectedSets := []database.PlayerSet{first, second}
 	winnerCount := 0
+	winnerResultID := uint(0)
 	for index, result := range results {
 		if result.PlayerSetId == nil || *result.PlayerSetId != expectedSets[index].ID {
 			return fmt.Errorf("result %d must score player set %d, got %d", index+1, expectedSets[index].ID, result.PlayerSetId)
@@ -1062,6 +1070,7 @@ func assertFinishedMatch(db *gorm.DB, matchID uint, first, second database.Playe
 		}
 		if winner {
 			winnerCount++
+			winnerResultID = result.ID
 		}
 		expectedPoints, expectedWonEnds := 4, 2
 		if winner {
@@ -1070,10 +1079,7 @@ func assertFinishedMatch(db *gorm.DB, matchID uint, first, second database.Playe
 		if result.TotalPoints != expectedPoints {
 			return fmt.Errorf("result %d must hold %d set points, got %d", index+1, expectedPoints, result.TotalPoints)
 		}
-		var ends []database.MatchEnd
-		if err := db.Where("match_result_id = ?", result.ID).Order("id ASC").Find(&ends).Error; err != nil {
-			return fmt.Errorf("find match ends: %w", err)
-		}
+		ends := result.MatchEnds
 		if len(ends) != finishedMatchEnd {
 			return fmt.Errorf("result %d must have %d ends, got %d", index+1, finishedMatchEnd, len(ends))
 		}
@@ -1088,10 +1094,7 @@ func assertFinishedMatch(db *gorm.DB, matchID uint, first, second database.Playe
 			if end.TotalScore == 30 {
 				wonEnds++
 			}
-			var scores []database.MatchScore
-			if err := db.Where("match_end_id = ?", end.ID).Order("id ASC").Find(&scores).Error; err != nil {
-				return fmt.Errorf("find match scores: %w", err)
-			}
+			scores := end.MatchScores
 			if len(scores) != arrowsPerMatchEnd {
 				return fmt.Errorf("end %d must have %d arrows, got %d", end.ID, arrowsPerMatchEnd, len(scores))
 			}
@@ -1109,6 +1112,12 @@ func assertFinishedMatch(db *gorm.DB, matchID uint, first, second database.Playe
 	}
 	if winnerCount != 1 {
 		return fmt.Errorf("match must have exactly one winner, got %d", winnerCount)
+	}
+	if bowType == "Compound" {
+		outcome := database.ComputeMatchOutcome(match, bowType, 1)
+		if outcome.Status != database.MatchOutcomeWinner || outcome.WinnerMatchResultID == nil || *outcome.WinnerMatchResultID != winnerResultID {
+			return fmt.Errorf("compound five-wave total must select winner result %d, got status=%s winner=%v", winnerResultID, outcome.Status, outcome.WinnerMatchResultID)
+		}
 	}
 	return nil
 }
