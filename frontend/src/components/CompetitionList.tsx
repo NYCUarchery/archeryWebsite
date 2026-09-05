@@ -11,12 +11,14 @@ interface Props {
   competitions: DatabaseCompetition[];
   uid?: number;
   onPlayerApply?: (competitionId: number) => void;
+  onJudgeApply?: (competitionId: number) => void;
   onAdminApply?: (competitionId: number) => void;
 }
 interface CompetitionItemProps {
   competition: DatabaseCompetition;
   uid?: number;
   onPlayerApply?: (competitionId: number) => void;
+  onJudgeApply?: (competitionId: number) => void;
   onAdminApply?: (competitionId: number) => void;
 }
 
@@ -24,6 +26,7 @@ export const CompetitionList = ({
   competitions,
   uid,
   onPlayerApply,
+  onJudgeApply,
   onAdminApply,
 }: Props) => {
   return (
@@ -33,6 +36,7 @@ export const CompetitionList = ({
           competition={competition}
           uid={uid}
           onAdminApply={onAdminApply}
+          onJudgeApply={onJudgeApply}
           onPlayerApply={onPlayerApply}
           key={competition.id}
         />
@@ -45,6 +49,7 @@ export const CompetitionItem = ({
   competition,
   uid,
   onPlayerApply,
+  onJudgeApply,
   onAdminApply,
 }: CompetitionItemProps) => {
   const [open, setOpen] = useState(false);
@@ -62,6 +67,11 @@ export const CompetitionItem = ({
 
   const handleAdminApplication = () => {
     onAdminApply?.(competition.id!);
+    setOpen(false);
+  };
+
+  const handleJudgeApplication = () => {
+    onJudgeApply?.(competition.id!);
     setOpen(false);
   };
 
@@ -93,6 +103,7 @@ export const CompetitionItem = ({
       <Dialog open={open} onClose={() => setOpen(false)}>
         <DialogActions>
           <Button onClick={handleAdminApplication}>申請為管理員</Button>
+          <Button onClick={handleJudgeApplication}>申請為裁判</Button>
           <Button onClick={handlePlayeApplication}>申請為選手</Button>
         </DialogActions>
       </Dialog>

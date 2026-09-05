@@ -4081,6 +4081,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorReceiveDataFormatResponse"
                         }
                     },
+                    "403": {
+                        "description": "applications may only be submitted for the authenticated user",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "db error",
                         "schema": {
@@ -4374,7 +4380,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Delete one Participant by id.\nThis api is intentionally designed not to delete related data, because a user may drop out of competition, but competition still need the record.",
+                "description": "Delete one Participant by id. Requires an approved Admin of the target competition; the last approved Admin cannot be deleted.\nThis api is intentionally designed not to delete related data, because a user may drop out of competition, but competition still need the record.",
                 "produces": [
                     "application/json"
                 ],
@@ -4402,6 +4408,18 @@ const docTemplate = `{
                         "description": "invalid participant id",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "target competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "cannot delete the last approved competition admin",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
@@ -4583,7 +4601,7 @@ const docTemplate = `{
         },
         "/player/group/{id}": {
             "patch": {
-                "description": "Update one Player groupId by id, and change player laneid to Unassigned lane.",
+                "description": "Update one Player groupId by id, and change player laneid to Unassigned lane. Requires an approved Admin of the Player's competition; the target group must belong to that competition.",
                 "consumes": [
                     "application/json"
                 ],
@@ -4638,6 +4656,12 @@ const docTemplate = `{
                         "description": "invalid player id / invalid group id parameter, may not exist",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "target competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
@@ -4704,7 +4728,7 @@ const docTemplate = `{
         },
         "/player/lane-order/{id}": {
             "patch": {
-                "description": "Update one Player order and landID By by id.",
+                "description": "Update one Player order and landID By by id. Requires an approved Admin of the Player's competition; the target lane must belong to that competition.",
                 "consumes": [
                     "application/json"
                 ],
@@ -4761,6 +4785,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
+                    "403": {
+                        "description": "target competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "internal db error / updating player order / updating player laneid / get player info",
                         "schema": {
@@ -4772,7 +4802,7 @@ const docTemplate = `{
         },
         "/player/lane/{id}": {
             "patch": {
-                "description": "Update one Player laneId by id, update lane playernum.",
+                "description": "Update one Player laneId by id, update lane playernum. Requires an approved Admin of the Player's competition; the target lane must belong to that competition.",
                 "consumes": [
                     "application/json"
                 ],
@@ -4829,6 +4859,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
+                    "403": {
+                        "description": "target competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "internal db error / updating player laneid / get player info",
                         "schema": {
@@ -4840,7 +4876,7 @@ const docTemplate = `{
         },
         "/player/order/{id}": {
             "patch": {
-                "description": "Update one Player order by id.",
+                "description": "Update one Player order by id. Requires an approved Admin of the Player's competition.",
                 "consumes": [
                     "application/json"
                 ],
@@ -4895,6 +4931,12 @@ const docTemplate = `{
                         "description": "invalid player id parameter, may not exist",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "target competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
@@ -5448,7 +5490,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Delete one Player by id, delete related round, roundend, roundscore data, and playerNum minus one in lane.",
+                "description": "Delete one Player by id, delete related round, roundend, roundscore data, and playerNum minus one in lane. Requires an approved Admin of the Player's competition.",
                 "produces": [
                     "application/json"
                 ],
@@ -5478,6 +5520,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
+                    "403": {
+                        "description": "target competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "internal db error for deleting player",
                         "schema": {
@@ -5489,7 +5537,7 @@ const docTemplate = `{
         },
         "/player/{participantid}": {
             "post": {
-                "description": "Create one Player by participant id.\nCreate related rounds by laneNum of competition, create 6 roundscores for each 6 roundends, UnassignedLane playerNum ++.\nOrder is 0, TotalScore is 0, ShootOffScore is -1, Rank is 0.\nGroup is unassigned group, Lane is unassigned lane.\nWill copy data from participant, user, competition.",
+                "description": "Create one Player by participant id.\nCreate related rounds by laneNum of competition, create 6 roundscores for each 6 roundends, UnassignedLane playerNum ++.\nOrder is 0, TotalScore is 0, ShootOffScore is -1, Rank is 0.\nGroup is unassigned group, Lane is unassigned lane.\nWill copy data from participant, user, competition.\nRequires an approved target-competition Admin and an approved Player Participant. Judge Participants can never create a Player. Creation of Player, rounds, ends, and arrows is atomic.",
                 "produces": [
                     "application/json"
                 ],
@@ -5532,6 +5580,18 @@ const docTemplate = `{
                         "description": "invalid participant id parameter, may not exist",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "target competition admin and approved Player participant required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "participant already has a Player",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {

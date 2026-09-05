@@ -1,5 +1,5 @@
 import { User } from "./data";
-import { Page, expect } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 export async function registerUser(page: Page, user: User) {
   await page.goto("http://127.0.0.1/");
   await page.getByLabel("account of current user").click();
@@ -37,5 +37,5 @@ export async function logoutUser(page: Page) {
   await page.getByLabel("account of current user").click();
   await page.getByRole("menuitem", { name: "登出" }).click();
   await page.getByLabel("account of current user").click();
-  await expect(await page.getByText("訪客")).toBeVisible();
+  await expect(page.getByText("訪客", { exact: true })).toBeVisible();
 }
