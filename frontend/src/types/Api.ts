@@ -2021,7 +2021,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Update one MatchEnd isConfirmed by id
+     * @description Confirm an eligible MatchEnd as Player, Judge, or Admin. Only the owning competition Admin may change a confirmed MatchEnd back to unconfirmed.
      *
      * @tags MatchEnd
      * @name MatchendIsconfirmedPartialUpdate
@@ -2042,7 +2042,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids MatchScore ids and scores must be the same length. Confirmed MatchEnds require the owning competition Admin, every MatchScore exactly once, and a server-computed total.
+     * @description Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids Approved Judges may update the active current stage, Players their own current match's unconfirmed end, and Admins may perform rescue updates. A confirmed MatchEnd requires Judge or Admin and every MatchScore exactly once; confirmation remains set and total/outcome are recomputed atomically.
      *
      * @tags MatchEnd
      * @name MatchendScoresPartialUpdate
@@ -2063,7 +2063,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Update one MatchEnd totalScores by id. Confirmed MatchEnds must use the aggregate scores endpoint and are rejected here.
+     * @description Recompute one MatchEnd total score from its arrows. Approved Judges may update the active current stage, Players their own current match's unconfirmed end, and Admins may perform rescue updates. Confirmed ends must use the aggregate scores endpoint.
      *
      * @tags MatchEnd
      * @name MatchendTotalscorePartialUpdate
@@ -2084,7 +2084,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Update one MatchScore score by id Also update related MatchEnd totalScores
+     * @description Update one MatchScore score and recompute its MatchEnd total. Approved Judges may update the active current stage, Players their own current match's unconfirmed end, and Admins may perform rescue updates. Confirmed ends require the aggregate endpoint.
      *
      * @tags MatchScore
      * @name MatchscoreScorePartialUpdate
@@ -2128,7 +2128,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Update one MatchResult shootOffScore by id
+     * @description Update one MatchResult shootOffScore by id. An approved Judge may update an active elimination's current stage; an approved Admin may perform rescue updates.
      *
      * @tags MatchResult
      * @name ShootoffscorePartialUpdate
@@ -2392,7 +2392,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
   };
   player = {
     /**
-     * @description Update all scores of one end by end id Will auto update player total score Should have a 6 element array scores array
+     * @description Atomically update every arrow in one qualification end and recompute round/player totals. Approved Judge/Admin may edit confirmed ends; a Player is limited to an unconfirmed current end on their own lane. The score count must exactly match the stored RoundScore collection.
      *
      * @tags Player
      * @name AllEndscoresPartialUpdate
@@ -2404,7 +2404,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       scores: EndpointPutPlayerAllEndScoresByEndIdEndScores,
       params: RequestParams = {},
     ) =>
-      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse>({
         path: `/player/all-endscores/${endid}`,
         method: "PATCH",
         body: scores,
@@ -2482,7 +2482,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Update one Player isConfirmed by id.
+     * @description Confirm a qualification end as an approved Judge/Admin, or as a Player scoring the current end on their own lane. Only an Admin may unconfirm an already confirmed end.
      *
      * @tags Player
      * @name IsconfirmedPartialUpdate
@@ -2494,7 +2494,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       data: EndpointPutPlayerIsConfirmedUpdateIsConfirmedData,
       params: RequestParams = {},
     ) =>
-      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse>({
         path: `/player/isconfirmed/${roundendid}`,
         method: "PATCH",
         body: data,
@@ -2621,7 +2621,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Just in case api. Create one RoundEnd by round id, IsComfirmed is false. Should not be used, just in case function, PostPlayer is used to create player, rounds, roundends, roundscores.
+     * @description Just in case api. Create one RoundEnd by round id, IsComfirmed is false. Should not be used, just in case function, PostPlayer is used to create player, rounds, roundends, roundscores. Structural rescue operation restricted to an approved Admin of the target competition; cannot exceed six ends per round.
      *
      * @tags Player
      * @name RoundendCreate
@@ -2634,7 +2634,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       },
       params: RequestParams = {},
     ) =>
-      this.request<DatabaseRoundEnd, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<
+        DatabaseRoundEnd,
+        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/player/roundend`,
         method: "POST",
         body: RoundEnd,
@@ -2644,7 +2647,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Just in case api. Need to modify to refresh total scores. Create one RoundScore by roundend id. Update total score in player, round, roundend for one arrow score. Should not be used, just in case function, PostPlayer is used to create player, rounds, roundends, roundscores.
+     * @description Just in case api. Need to modify to refresh total scores. Create one RoundScore by roundend id. Update total score in player, round, roundend for one arrow score. Should not be used, just in case function, PostPlayer is used to create player, rounds, roundends, roundscores. Structural rescue operation restricted to an approved Admin of the target competition; cannot append to a confirmed end or exceed six arrows.
      *
      * @tags Player
      * @name RoundscoreCreate
@@ -2652,7 +2655,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/player/roundscore
      */
     roundscoreCreate: (RoundScore: EndpointUpdateTotalScoreData, params: RequestParams = {}) =>
-      this.request<DatabaseRoundScore, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<
+        DatabaseRoundScore,
+        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/player/roundscore`,
         method: "POST",
         body: RoundScore,
@@ -2662,7 +2668,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Update one Player score by id. Will auto update player total score.
+     * @description Update one qualification arrow and atomically recompute round/player totals. Approved Judge/Admin may edit confirmed ends; a Player is limited to an unconfirmed current end on their own lane.
      *
      * @tags Player
      * @name RoundscorePartialUpdate
@@ -2670,7 +2676,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PATCH:/player/roundscore/{roundscoreid}
      */
     roundscorePartialUpdate: (roundscoreid: number, data: EndpointUpdateTotalScoreData, params: RequestParams = {}) =>
-      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse>({
         path: `/player/roundscore/${roundscoreid}`,
         method: "PATCH",
         body: data,
@@ -2706,7 +2712,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Update one Player shootoffScore by id.
+     * @description Update one Player shootoffScore by id. Rescue operation restricted to an approved Judge or Admin of the target competition.
      *
      * @tags Player
      * @name ShootoffscorePartialUpdate
@@ -2723,7 +2729,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           player_sets?: ResponseNill;
           rounds?: ResponseNill;
         },
-        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
       >({
         path: `/player/shootoffscore/${id}`,
         method: "PATCH",
@@ -2734,7 +2740,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Just in case api. Update one Player total score by id.
+     * @description Just in case api. Recompute one Player total score from persisted arrows. Rescue operation restricted to an approved Judge or Admin of the target competition; the submitted aggregate is ignored.
      *
      * @tags Player
      * @name TotalscorePartialUpdate
@@ -2746,7 +2752,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       data: EndpointPutPlayerTotalScoreByplayerIdUpdateTotalScoreData,
       params: RequestParams = {},
     ) =>
-      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<ResponseNill, ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse>({
         path: `/player/totalscore/${id}`,
         method: "PATCH",
         body: data,

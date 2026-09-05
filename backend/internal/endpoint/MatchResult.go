@@ -174,6 +174,35 @@ func matchResultForMatchScore(tx *gorm.DB, matchScoreID uint) (uint, error) {
 	return relation.MatchResultID, err
 }
 
+func matchForMatchResult(tx *gorm.DB, matchResultID uint) (uint, error) {
+	var result database.MatchResult
+	if err := tx.Select("match_id").First(&result, matchResultID).Error; err != nil {
+		return 0, err
+	}
+	return result.MatchId, nil
+}
+
+func matchForMatchEnd(tx *gorm.DB, matchEndID uint) (uint, error) {
+	var relation struct{ MatchID uint }
+	err := tx.Table("match_ends").
+		Select("match_results.match_id AS match_id").
+		Joins("JOIN match_results ON match_results.id = match_ends.match_result_id").
+		Where("match_ends.id = ?", matchEndID).
+		Take(&relation).Error
+	return relation.MatchID, err
+}
+
+func matchForMatchScore(tx *gorm.DB, matchScoreID uint) (uint, error) {
+	var relation struct{ MatchID uint }
+	err := tx.Table("match_scores").
+		Select("match_results.match_id AS match_id").
+		Joins("JOIN match_ends ON match_ends.id = match_scores.match_end_id").
+		Joins("JOIN match_results ON match_results.id = match_ends.match_result_id").
+		Where("match_scores.id = ?", matchScoreID).
+		Take(&relation).Error
+	return relation.MatchID, err
+}
+
 func IsGetMatchResult(context *gin.Context, id uint) (bool, database.MatchResult) {
 	if response.ErrorIdTest(context, id, database.GetMatchResultIsExist(id), "MatchResult") {
 		return false, database.MatchResult{}
@@ -371,7 +400,7 @@ func PostMatchScore(context *gin.Context, matchEndId uint) bool {
 // Put MatchResult shootOffScore godoc
 //
 //	@Summary		Update one MatchResult shootOffScore
-//	@Description	Update one MatchResult shootOffScore by id
+//	@Description	Update one MatchResult shootOffScore by id. An approved Judge may update an active elimination's current stage; an approved Admin may perform rescue updates.
 //	@Tags			MatchResult
 //	@Accept			json
 //	@Param			id			path		int																		true	"MatchResult ID"
@@ -380,6 +409,7 @@ func PostMatchScore(context *gin.Context, matchEndId uint) bool {
 //	@Failure		400			{object}	response.ErrorIdResponse												"invalid match result ID, maybe not exist"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse										"internal db failed for updating shootOffScore"
 //	@Failure		409	{object}	response.ErrorResponse	"empty bracket slot or roster conflict"
+//	@Failure		403	{object}	response.ErrorResponse	"approved Judge or Admin required for the target competition"
 //	@Router			/matchresult/shootoffscore/{id} [patch]
 func PutMatchResultShootOffScoreById(context *gin.Context) {
 	type matchResultShootOffScoreData struct {
@@ -402,12 +432,22 @@ func PutMatchResultShootOffScoreById(context *gin.Context) {
 		if err := lockRosterForEliminationScoring(tx, eliminationID); err != nil {
 			return err
 		}
-		if err := requireOccupiedMatchResult(tx, id); err != nil {
+		matchID, err := matchForMatchResult(tx, id)
+		if err != nil {
+			return err
+		}
+		if _, err := authorizeEliminationScore(context, tx, eliminationID, matchID, nil); err != nil {
+			return err
+		}
+		if err := requireOccupiedMatch(tx, matchID); err != nil {
 			return err
 		}
 		return tx.Model(&database.MatchResult{}).Where("id = ?", id).Update("shoot_off_score", data.ShootOffScore).Error
 	})
 	if err != nil {
+		if writeScoreAuthorizationError(context, err) {
+			return
+		}
 		writeBracketError(context, err)
 		return
 	}
@@ -1162,7 +1202,7 @@ func PutMatchResultLaneNumberById(context *gin.Context) {
 // Put MatchEnd totalScores godoc
 //
 //	@Summary		Update one MatchEnd totalScores
-//	@Description	Update one MatchEnd totalScores by id. Confirmed MatchEnds must use the aggregate scores endpoint and are rejected here.
+//	@Description	Recompute one MatchEnd total score from its arrows. Approved Judges may update the active current stage, Players their own current match's unconfirmed end, and Admins may perform rescue updates. Confirmed ends must use the aggregate scores endpoint.
 //	@Tags			MatchEnd
 //	@Accept			json
 //	@Param			id			path		int																true	"MatchEnd ID"
@@ -1171,6 +1211,7 @@ func PutMatchResultLaneNumberById(context *gin.Context) {
 //	@Failure		400			{object}	response.ErrorIdResponse										"invalid match end ID, or confirmed MatchEnd must use the aggregate scores endpoint"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse								"internal db failed for updating totalScores"
 //	@Failure		409	{object}	response.ErrorResponse	"empty bracket slot or roster conflict"
+//	@Failure		403	{object}	response.ErrorResponse	"approved scoring role for the target competition required"
 //	@Router			/matchresult/matchend/totalscore/{id} [patch]
 func PutMatchEndsTotalScoresById(context *gin.Context) {
 	type matchEndTotalScoresData struct {
@@ -1197,7 +1238,14 @@ func PutMatchEndsTotalScoresById(context *gin.Context) {
 		if err != nil {
 			return err
 		}
-		if err := requireOccupiedMatchResult(tx, matchResultID); err != nil {
+		matchID, err := matchForMatchEnd(tx, id)
+		if err != nil {
+			return err
+		}
+		if _, err := authorizeEliminationScore(context, tx, eliminationID, matchID, &id); err != nil {
+			return err
+		}
+		if err := requireOccupiedMatch(tx, matchID); err != nil {
 			return err
 		}
 		var lockedEnd database.MatchEnd
@@ -1207,9 +1255,23 @@ func PutMatchEndsTotalScoresById(context *gin.Context) {
 		if lockedEnd.IsConfirmed {
 			return errConfirmedMatchEndUseScoresEndpoint
 		}
-		return tx.Model(&database.MatchEnd{}).Where("id = ?", id).Update("total_score", data.TotalScore).Error
+		var lockedScores []database.MatchScore
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("match_end_id = ?", id).Find(&lockedScores).Error; err != nil {
+			return err
+		}
+		totalScore := 0
+		for _, score := range lockedScores {
+			totalScore += Scorefmt(score.Score)
+		}
+		if err := tx.Model(&database.MatchEnd{}).Where("id = ?", id).Update("total_score", totalScore).Error; err != nil {
+			return err
+		}
+		return applyAutomaticOutcomeForMatchResult(tx, eliminationID, matchResultID)
 	})
 	if err != nil {
+		if writeScoreAuthorizationError(context, err) {
+			return
+		}
 		if writeConfirmedMatchEndAuthorizationError(context, err) {
 			return
 		}
@@ -1228,7 +1290,7 @@ func PutMatchEndsTotalScoresById(context *gin.Context) {
 //
 //	@Summary		Update one MatchEnd scores
 //	@Description	Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids
-//	@Description	MatchScore ids and scores must be the same length. Confirmed MatchEnds require the owning competition Admin, every MatchScore exactly once, and a server-computed total.
+//	@Description	Approved Judges may update the active current stage, Players their own current match's unconfirmed end, and Admins may perform rescue updates. A confirmed MatchEnd requires Judge or Admin and every MatchScore exactly once; confirmation remains set and total/outcome are recomputed atomically.
 //	@Tags			MatchEnd
 //	@Accept			json
 //	@Param			id					path		int													true	"MatchEnd ID"
@@ -1237,7 +1299,7 @@ func PutMatchEndsTotalScoresById(context *gin.Context) {
 //	@Failure		400					{object}	response.ErrorIdResponse							"invalid match end ID, maybe not exist, or matchScore ids not exist, or matchScore ids and scores length not match"
 //	@Failure		500					{object}	response.ErrorInternalErrorResponse					"internal db failed for updating scores"
 //	@Failure		409	{object}	response.ErrorResponse	"empty bracket slot or roster conflict"
-//	@Failure		403					{object}	response.ErrorResponse							"confirmed MatchEnd updates require the owning competition Admin"
+//	@Failure		403					{object}	response.ErrorResponse							"approved scoring role for the target competition required"
 //	@Router			/matchresult/matchend/scores/{id} [patch]
 func PutMatchEndsScoresById(context *gin.Context) {
 	type matchEndScoresData struct {
@@ -1281,17 +1343,23 @@ func PutMatchEndsScoresById(context *gin.Context) {
 		if err != nil {
 			return err
 		}
-		if err := requireOccupiedMatchResult(tx, matchResultID); err != nil {
+		matchID, err := matchForMatchEnd(tx, matchEndId)
+		if err != nil {
+			return err
+		}
+		actor, err := authorizeEliminationScore(context, tx, eliminationID, matchID, &matchEndId)
+		if err != nil {
+			return err
+		}
+		if err := requireOccupiedMatch(tx, matchID); err != nil {
 			return err
 		}
 		var lockedEnd database.MatchEnd
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&lockedEnd, matchEndId).Error; err != nil {
 			return err
 		}
-		if lockedEnd.IsConfirmed {
-			if err := requireConfirmedMatchEndCompetitionAdmin(context, tx, eliminationID); err != nil {
-				return err
-			}
+		if lockedEnd.IsConfirmed && actor == scoreActorPlayer {
+			return errScoreForbidden
 		}
 		var lockedScores []database.MatchScore
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
@@ -1329,6 +1397,9 @@ func PutMatchEndsScoresById(context *gin.Context) {
 		return applyAutomaticOutcomeForMatchResult(tx, eliminationID, matchResultID)
 	})
 	if err != nil {
+		if writeScoreAuthorizationError(context, err) {
+			return
+		}
 		if writeConfirmedMatchEndAuthorizationError(context, err) {
 			return
 		}
@@ -1345,7 +1416,7 @@ func PutMatchEndsScoresById(context *gin.Context) {
 // Put MatchEnd isConfirmed godoc
 //
 //	@Summary		Update one MatchEnd isConfirmed
-//	@Description	Update one MatchEnd isConfirmed by id
+//	@Description	Confirm an eligible MatchEnd as Player, Judge, or Admin. Only the owning competition Admin may change a confirmed MatchEnd back to unconfirmed.
 //	@Tags			MatchEnd
 //	@Accept			json
 //	@Param			id			path		int																true	"MatchEnd ID"
@@ -1354,7 +1425,7 @@ func PutMatchEndsScoresById(context *gin.Context) {
 //	@Failure		400			{object}	response.ErrorIdResponse										"invalid match end ID, maybe not exist"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse								"internal db failed for updating isConfirmed"
 //	@Failure		409	{object}	response.ErrorResponse	"empty bracket slot or roster conflict"
-//	@Failure		403			{object}	response.ErrorResponse							"changing a confirmed MatchEnd to unconfirmed requires the owning competition Admin"
+//	@Failure		403			{object}	response.ErrorResponse							"approved scoring role required; unconfirm requires the owning competition Admin"
 //	@Router			/matchresult/matchend/isconfirmed/{id} [patch]
 func PutMatchEndsIsConfirmedById(context *gin.Context) {
 	type matchEndIsConfirmedData struct {
@@ -1377,25 +1448,30 @@ func PutMatchEndsIsConfirmedById(context *gin.Context) {
 		if err := lockRosterForEliminationScoring(tx, eliminationID); err != nil {
 			return err
 		}
-		matchResultID, err := matchResultForMatchEnd(tx, id)
+		matchID, err := matchForMatchEnd(tx, id)
 		if err != nil {
 			return err
 		}
-		if err := requireOccupiedMatchResult(tx, matchResultID); err != nil {
+		actor, err := authorizeEliminationScore(context, tx, eliminationID, matchID, &id)
+		if err != nil {
+			return err
+		}
+		if err := requireOccupiedMatch(tx, matchID); err != nil {
 			return err
 		}
 		var lockedEnd database.MatchEnd
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&lockedEnd, id).Error; err != nil {
 			return err
 		}
-		if lockedEnd.IsConfirmed && !data.IsConfirmed {
-			if err := requireConfirmedMatchEndCompetitionAdmin(context, tx, eliminationID); err != nil {
-				return err
-			}
+		if lockedEnd.IsConfirmed && !data.IsConfirmed && actor != scoreActorAdmin {
+			return errScoreForbidden
 		}
 		return tx.Model(&database.MatchEnd{}).Where("id = ?", id).Update("is_confirmed", data.IsConfirmed).Error
 	})
 	if err != nil {
+		if writeScoreAuthorizationError(context, err) {
+			return
+		}
 		if writeConfirmedMatchEndAuthorizationError(context, err) {
 			return
 		}
@@ -1409,8 +1485,7 @@ func PutMatchEndsIsConfirmedById(context *gin.Context) {
 // Put MatchScore score godoc
 //
 //	@Summary		Update one MatchScore score
-//	@Description	Update one MatchScore score by id
-//	@Description	Also update related MatchEnd totalScores
+//	@Description	Update one MatchScore score and recompute its MatchEnd total. Approved Judges may update the active current stage, Players their own current match's unconfirmed end, and Admins may perform rescue updates. Confirmed ends require the aggregate endpoint.
 //	@Tags			MatchScore
 //	@Accept			json
 //	@Param			id			path		int												true	"MatchScore ID"
@@ -1419,6 +1494,7 @@ func PutMatchEndsIsConfirmedById(context *gin.Context) {
 //	@Failure		400			{object}	response.ErrorIdResponse						"invalid match score ID, maybe not exist"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse				"internal db failed for updating score, get matchEnd by id, get matchScore, update matchEnd totalScores"
 //	@Failure		409	{object}	response.ErrorResponse	"empty bracket slot or roster conflict"
+//	@Failure		403	{object}	response.ErrorResponse	"approved scoring role for the target competition required"
 //	@Router			/matchresult/matchscore/score/{id} [patch]
 func PutMatchScoreScoreById(context *gin.Context) {
 	type matchScoreData struct {
@@ -1450,11 +1526,18 @@ func PutMatchScoreScoreById(context *gin.Context) {
 		if err != nil {
 			return err
 		}
-		if err := requireOccupiedMatchResult(tx, matchResultID); err != nil {
+		matchID, err := matchForMatchScore(tx, id)
+		if err != nil {
 			return err
 		}
 		var oldScore database.MatchScore
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&oldScore, id).Error; err != nil {
+			return err
+		}
+		if _, err := authorizeEliminationScore(context, tx, eliminationID, matchID, &oldScore.MatchEndId); err != nil {
+			return err
+		}
+		if err := requireOccupiedMatch(tx, matchID); err != nil {
 			return err
 		}
 		var matchEnd database.MatchEnd
@@ -1484,6 +1567,9 @@ func PutMatchScoreScoreById(context *gin.Context) {
 		return applyAutomaticOutcomeForMatchResult(tx, eliminationID, matchResultID)
 	})
 	if err != nil {
+		if writeScoreAuthorizationError(context, err) {
+			return
+		}
 		if err.Error() == "MatchEnd already confirmed, cannot update scores" {
 			response.ErrorReceiveDataFormat(context, err.Error())
 			return
