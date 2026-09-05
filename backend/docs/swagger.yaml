@@ -3387,7 +3387,8 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Update one MatchEnd isConfirmed by id
+      description: Confirm an eligible MatchEnd as Player, Judge, or Admin. Only the
+        owning competition Admin may change a confirmed MatchEnd back to unconfirmed.
       parameters:
       - description: MatchEnd ID
         in: path
@@ -3410,7 +3411,7 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
         "403":
-          description: changing a confirmed MatchEnd to unconfirmed requires the owning
+          description: approved scoring role required; unconfirm requires the owning
             competition Admin
           schema:
             $ref: '#/definitions/response.ErrorResponse'
@@ -3431,7 +3432,7 @@ paths:
       - application/json
       description: |-
         Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids
-        MatchScore ids and scores must be the same length. Confirmed MatchEnds require the owning competition Admin, every MatchScore exactly once, and a server-computed total.
+        Approved Judges may update the active current stage, Players their own current match's unconfirmed end, and Admins may perform rescue updates. A confirmed MatchEnd requires Judge or Admin and every MatchScore exactly once; confirmation remains set and total/outcome are recomputed atomically.
       parameters:
       - description: MatchEnd ID
         in: path
@@ -3455,7 +3456,7 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
         "403":
-          description: confirmed MatchEnd updates require the owning competition Admin
+          description: approved scoring role for the target competition required
           schema:
             $ref: '#/definitions/response.ErrorResponse'
         "409":
@@ -3473,8 +3474,10 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Update one MatchEnd totalScores by id. Confirmed MatchEnds must
-        use the aggregate scores endpoint and are rejected here.
+      description: Recompute one MatchEnd total score from its arrows. Approved Judges
+        may update the active current stage, Players their own current match's unconfirmed
+        end, and Admins may perform rescue updates. Confirmed ends must use the aggregate
+        scores endpoint.
       parameters:
       - description: MatchEnd ID
         in: path
@@ -3497,6 +3500,10 @@ paths:
             scores endpoint
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: approved scoring role for the target competition required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "409":
           description: empty bracket slot or roster conflict
           schema:
@@ -3512,9 +3519,10 @@ paths:
     patch:
       consumes:
       - application/json
-      description: |-
-        Update one MatchScore score by id
-        Also update related MatchEnd totalScores
+      description: Update one MatchScore score and recompute its MatchEnd total. Approved
+        Judges may update the active current stage, Players their own current match's
+        unconfirmed end, and Admins may perform rescue updates. Confirmed ends require
+        the aggregate endpoint.
       parameters:
       - description: MatchScore ID
         in: path
@@ -3536,6 +3544,10 @@ paths:
           description: invalid match score ID, maybe not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: approved scoring role for the target competition required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "409":
           description: empty bracket slot or roster conflict
           schema:
@@ -3590,7 +3602,9 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Update one MatchResult shootOffScore by id
+      description: Update one MatchResult shootOffScore by id. An approved Judge may
+        update an active elimination's current stage; an approved Admin may perform
+        rescue updates.
       parameters:
       - description: MatchResult ID
         in: path
@@ -3612,6 +3626,10 @@ paths:
           description: invalid match result ID, maybe not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: approved Judge or Admin required for the target competition
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "409":
           description: empty bracket slot or roster conflict
           schema:
@@ -4110,9 +4128,8 @@ paths:
       consumes:
       - application/json
       description: |-
-        Update all scores of one end by end id
-        Will auto update player total score
-        Should have a 6 element array scores array
+        Atomically update every arrow in one qualification end and recompute round/player totals. Approved Judge/Admin may edit confirmed ends; a Player is limited to an unconfirmed current end on their own lane.
+        The score count must exactly match the stored RoundScore collection.
       parameters:
       - description: End ID
         in: path
@@ -4136,6 +4153,10 @@ paths:
           description: invalid end id / length of scores not equal to 6
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: approved target-competition scoring role required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db error / updating player end scores / get round
             score ids
@@ -4269,7 +4290,9 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Update one Player isConfirmed by id.
+      description: Confirm a qualification end as an approved Judge/Admin, or as a
+        Player scoring the current end on their own lane. Only an Admin may unconfirm
+        an already confirmed end.
       parameters:
       - description: RoundEnd ID
         in: path
@@ -4293,6 +4316,11 @@ paths:
           description: invalid roundend id parameter, may not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: approved target-competition scoring role required; unconfirm
+            requires Admin
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db error for updating player isConfirmed
           schema:
@@ -4529,6 +4557,7 @@ paths:
         Just in case api.
         Create one RoundEnd by round id, IsComfirmed is false.
         Should not be used, just in case function, PostPlayer is used to create player, rounds, roundends, roundscores.
+        Structural rescue operation restricted to an approved Admin of the target competition; cannot exceed six ends per round.
       parameters:
       - description: RoundEnd
         in: body
@@ -4552,6 +4581,10 @@ paths:
           description: invalid round id parameter, may not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: approved Admin required for the target competition
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db error / creating roundend
           schema:
@@ -4569,6 +4602,7 @@ paths:
         Create one RoundScore by roundend id.
         Update total score in player, round, roundend for one arrow score.
         Should not be used, just in case function, PostPlayer is used to create player, rounds, roundends, roundscores.
+        Structural rescue operation restricted to an approved Admin of the target competition; cannot append to a confirmed end or exceed six arrows.
       parameters:
       - description: RoundScore
         in: body
@@ -4588,6 +4622,10 @@ paths:
             parameter, may not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: approved Admin required for the target competition
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db error / creating roundscore / get old score / update
             total score
@@ -4600,9 +4638,9 @@ paths:
     patch:
       consumes:
       - application/json
-      description: |-
-        Update one Player score by id.
-        Will auto update player total score.
+      description: Update one qualification arrow and atomically recompute round/player
+        totals. Approved Judge/Admin may edit confirmed ends; a Player is limited
+        to an unconfirmed current end on their own lane.
       parameters:
       - description: RoundScore ID
         in: path
@@ -4626,6 +4664,10 @@ paths:
           description: invalid roundscore id / player id / round id / roundend id
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: approved target-competition scoring role required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db error / updating player score / get old score /
             update total score
@@ -4683,7 +4725,8 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Update one Player shootoffScore by id.
+      description: Update one Player shootoffScore by id. Rescue operation restricted
+        to an approved Judge or Admin of the target competition.
       parameters:
       - description: Player ID
         in: path
@@ -4714,6 +4757,10 @@ paths:
           description: invalid player id parameter, may not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: approved Judge or Admin required for the target competition
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db error for updating player shootoffScore / get player
             info
@@ -4728,7 +4775,7 @@ paths:
       - application/json
       description: |-
         Just in case api.
-        Update one Player total score by id.
+        Recompute one Player total score from persisted arrows. Rescue operation restricted to an approved Judge or Admin of the target competition; the submitted aggregate is ignored.
       parameters:
       - description: Player ID
         in: path
@@ -4756,6 +4803,10 @@ paths:
           description: invalid player id parameter, may not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: approved Judge or Admin required for the target competition
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db error for updating player total score
           schema:

@@ -80,6 +80,8 @@ func (suite *EliminationBracketIntegrationTestSuite) SetupTest() {
 	suite.router.PATCH("/matchresult/matchend/scores/:id", PutMatchEndsScoresById)
 	suite.router.PATCH("/matchresult/matchend/isconfirmed/:id", PutMatchEndsIsConfirmedById)
 	suite.router.PATCH("/matchresult/matchscore/score/:id", PutMatchScoreScoreById)
+	suite.router.PATCH("/player/all-endscores/:endid", PutPlayerAllEndScoresByEndId)
+	suite.router.PATCH("/player/isconfirmed/:roundendid", PutPlayerIsConfirmed)
 	suite.router.DELETE("/matchresult/:id", DeleteMatchResultById)
 	suite.router.PATCH("/medal/playersetid/:id", PutMedalPlayerSetIdById)
 }
@@ -1158,7 +1160,7 @@ func (suite *EliminationBracketIntegrationTestSuite) TestManualMatchPlayerSetAss
 	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/elimination/match/playerset/%d", finalStageMatch.Match.ID), map[string]any{"player_set_ids": []uint{playerSets[2].ID, playerSets[3].ID}}, adminCookies)
 	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
 
-	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/shootoffscore/%d", loaded.MatchResults[0].ID), map[string]int{"shoot_off_score": 2}, nil)
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/shootoffscore/%d", loaded.MatchResults[0].ID), map[string]int{"shoot_off_score": 2}, adminCookies)
 	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
 	recorder = suite.requestJSON(http.MethodPatch, path, map[string]any{"player_set_ids": []uint{playerSets[0].ID, playerSets[1].ID}}, adminCookies)
 	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
@@ -1236,7 +1238,7 @@ func (suite *EliminationBracketIntegrationTestSuite) TestManualCorrectionReproje
 	goldTarget := bracket.Stages[1].Matchs[0].MatchResults[0]
 	suite.Require().NotNil(source.MatchResults[0].PlayerSetId)
 	suite.Require().NotNil(source.MatchResults[1].PlayerSetId)
-	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/shootoffscore/%d", goldTarget.ID), map[string]int{"shoot_off_score": 17}, nil)
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/shootoffscore/%d", goldTarget.ID), map[string]int{"shoot_off_score": 17}, adminCookies)
 	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
 
 	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/elimination/match/playerset/%d", source.ID), map[string]any{"player_set_ids": []uint{*source.MatchResults[1].PlayerSetId, *source.MatchResults[0].PlayerSetId}}, adminCookies)
@@ -1269,7 +1271,7 @@ func (suite *EliminationBracketIntegrationTestSuite) TestManualLaterRoundCorrect
 
 	bracket = suite.loadBracket(elimination.ID)
 	gold = bracket.Stages[1].Matchs[0]
-	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/shootoffscore/%d", gold.MatchResults[0].ID), map[string]int{"shoot_off_score": 19}, nil)
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/shootoffscore/%d", gold.MatchResults[0].ID), map[string]int{"shoot_off_score": 19}, adminCookies)
 	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
 	recorder, _ = suite.putMatchWinner(gold.ID, &gold.MatchResults[0].ID, adminCookies)
 	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
@@ -1311,7 +1313,7 @@ func (suite *EliminationBracketIntegrationTestSuite) TestManualSourceCorrectionA
 	suite.Require().NotNil(source.MatchResults[1].PlayerSetId)
 	suite.Require().NotNil(gold.MatchResults[0].PlayerSetId)
 	suite.Require().NotNil(bronze.MatchResults[0].PlayerSetId)
-	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/shootoffscore/%d", gold.MatchResults[0].ID), map[string]int{"shoot_off_score": 23}, nil)
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/shootoffscore/%d", gold.MatchResults[0].ID), map[string]int{"shoot_off_score": 23}, adminCookies)
 	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
 	suite.markWinner(bracket, 1, 0, 0)
 	suite.markWinner(bracket, 1, 1, 0)
@@ -1777,12 +1779,12 @@ func (suite *EliminationBracketIntegrationTestSuite) TestEmptySlotWritersRollbac
 		body    any
 		cookies []*http.Cookie
 	}{
-		{fmt.Sprintf("/matchresult/shootoffscore/%d", emptyResult.ID), map[string]int{"shoot_off_score": 10}, nil},
+		{fmt.Sprintf("/matchresult/shootoffscore/%d", emptyResult.ID), map[string]int{"shoot_off_score": 10}, adminCookies},
 		{fmt.Sprintf("/matchresult/iswinner/%d", emptyResult.ID), map[string]bool{"is_winner": true}, adminCookies},
-		{fmt.Sprintf("/matchresult/matchend/totalscore/%d", emptyEnd.ID), map[string]int{"total_scores": 30}, nil},
-		{fmt.Sprintf("/matchresult/matchend/scores/%d", emptyEnd.ID), map[string]any{"total_scores": 30, "match_score_ids": scoreIDs, "scores": scores}, nil},
-		{fmt.Sprintf("/matchresult/matchend/isconfirmed/%d", emptyEnd.ID), map[string]bool{"is_confirmed": true}, nil},
-		{fmt.Sprintf("/matchresult/matchscore/score/%d", scoreIDs[0]), map[string]int{"score": 10}, nil},
+		{fmt.Sprintf("/matchresult/matchend/totalscore/%d", emptyEnd.ID), map[string]int{"total_scores": 30}, adminCookies},
+		{fmt.Sprintf("/matchresult/matchend/scores/%d", emptyEnd.ID), map[string]any{"total_scores": 30, "match_score_ids": scoreIDs, "scores": scores}, adminCookies},
+		{fmt.Sprintf("/matchresult/matchend/isconfirmed/%d", emptyEnd.ID), map[string]bool{"is_confirmed": true}, adminCookies},
+		{fmt.Sprintf("/matchresult/matchscore/score/%d", scoreIDs[0]), map[string]int{"score": 10}, adminCookies},
 	}
 	for _, write := range writes {
 		recorder = suite.requestJSON(http.MethodPatch, write.path, write.body, write.cookies)
@@ -1814,7 +1816,7 @@ func (suite *EliminationBracketIntegrationTestSuite) TestConfirmationValidatesTh
 	bracket := suite.loadBracket(elimination.ID)
 	matchEndID := bracket.Stages[0].Matchs[0].MatchResults[0].MatchEnds[0].ID
 
-	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/matchend/isconfirmed/%d", matchEndID), map[string]bool{"is_confirmed": true}, nil)
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/matchend/isconfirmed/%d", matchEndID), map[string]bool{"is_confirmed": true}, adminCookies)
 	suite.Equal(http.StatusOK, recorder.Code)
 	stored, err := database.GetOnlyEliminationById(elimination.ID)
 	suite.Require().NoError(err)
@@ -1830,7 +1832,7 @@ func (suite *EliminationBracketIntegrationTestSuite) TestConfirmedMatchEndUpdate
 	suite.Require().Len(end.MatchScores, 3)
 
 	// The ordinary scoring path can still confirm an unconfirmed end.
-	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/matchend/isconfirmed/%d", end.ID), map[string]bool{"is_confirmed": true}, nil)
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/matchend/isconfirmed/%d", end.ID), map[string]bool{"is_confirmed": true}, adminCookies)
 	suite.Require().Equal(http.StatusOK, recorder.Code, recorder.Body.String())
 
 	foreignCompetition, err := database.PostCompetition(database.Competition{Title: "foreign scoring admin", StartTime: time.Now(), EndTime: time.Now().Add(time.Hour)})
@@ -1914,12 +1916,107 @@ func (suite *EliminationBracketIntegrationTestSuite) TestConfirmedMatchEndUpdate
 	suite.False(storedEnd.IsConfirmed)
 
 	// Existing unconfirmed score editing stays available to the scoring flow.
-	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/matchend/scores/%d", end.ID), map[string]any{"total_scores": 28, "match_score_ids": matchScoreIDs, "scores": []int{10, 9, 9}}, nil)
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/matchend/scores/%d", end.ID), map[string]any{"total_scores": 28, "match_score_ids": matchScoreIDs, "scores": []int{10, 9, 9}}, adminCookies)
 	suite.Require().Equal(http.StatusOK, recorder.Code, recorder.Body.String())
 	storedEnd, err = database.GetMatchEndById(end.ID)
 	suite.Require().NoError(err)
 	suite.False(storedEnd.IsConfirmed)
 	suite.Equal(28, storedEnd.TotalScore)
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestJudgeScoresOnlyActiveCurrentStageAndKeepsConfirmedEndLocked() {
+	elimination, _, adminCookies, _ := suite.createFixture(1, 4, nil)
+	recorder, _ := suite.postBracket(elimination.ID, adminCookies)
+	suite.Require().Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	group, err := database.GetGroupInfoById(elimination.GroupId)
+	suite.Require().NoError(err)
+	judgeUserID := uint(81005)
+	_, err = database.CreateParticipant(database.Participant{UserID: judgeUserID, CompetitionID: group.CompetitionId, Role: pkg.RoleToString(pkg.RJudge), Status: "approved"})
+	suite.Require().NoError(err)
+	judgeCookies := suite.login(judgeUserID)
+	suite.Require().NoError(database.DB.Model(&database.Competition{}).Where("id = ?", group.CompetitionId).Update("elimination_is_active", true).Error)
+
+	bracket := suite.loadBracket(elimination.ID)
+	end := bracket.Stages[0].Matchs[0].MatchResults[0].MatchEnds[0]
+	recorder = suite.putMatchEndScores(*end, []int{10, 9, 8}, 0, judgeCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/matchend/isconfirmed/%d", end.ID), map[string]bool{"is_confirmed": true}, judgeCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	recorder = suite.putMatchEndScores(*end, []int{11, 9, 8}, 0, judgeCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	storedEnd, err := database.GetMatchEndById(end.ID)
+	suite.Require().NoError(err)
+	suite.True(storedEnd.IsConfirmed)
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/matchend/isconfirmed/%d", end.ID), map[string]bool{"is_confirmed": false}, judgeCookies)
+	suite.Equal(http.StatusForbidden, recorder.Code, recorder.Body.String())
+
+	suite.Require().NoError(database.DB.Model(&database.Elimination{}).Where("id = ?", elimination.ID).Update("current_stage", 1).Error)
+	recorder = suite.putMatchEndScores(*end, []int{10, 9, 8}, 0, judgeCookies)
+	suite.Equal(http.StatusForbidden, recorder.Code, recorder.Body.String())
+	// Competition Admin remains able to repair an older stage.
+	recorder = suite.putMatchEndScores(*end, []int{10, 9, 8}, 0, adminCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+}
+
+func (suite *EliminationBracketIntegrationTestSuite) TestQualificationLaneScoringIsAtomicAndJudgeMayOverwriteConfirmedEnd() {
+	competition, err := database.PostCompetition(database.Competition{Title: "qualification scoring", StartTime: time.Now(), EndTime: time.Now().Add(time.Hour), QualificationCurrentEnd: 0})
+	suite.Require().NoError(err)
+	group, err := database.CreateGroupInfo(database.Group{CompetitionId: competition.ID, GroupName: "qualification", GroupIndex: 1})
+	suite.Require().NoError(err)
+	qualification, err := database.PostQualification(database.Qualification{})
+	suite.Require().NoError(err)
+	lane, err := database.PostLane(database.Lane{CompetitionId: competition.ID, QualificationId: qualification.ID, LaneNumber: 1})
+	suite.Require().NoError(err)
+	targetUserID, scorerUserID, judgeUserID := uint(82001), uint(82002), uint(82003)
+	targetParticipant, err := database.CreateParticipant(database.Participant{UserID: targetUserID, CompetitionID: competition.ID, Role: pkg.RoleToString(pkg.RPlayer), Status: "approved"})
+	suite.Require().NoError(err)
+	scorerParticipant, err := database.CreateParticipant(database.Participant{UserID: scorerUserID, CompetitionID: competition.ID, Role: pkg.RoleToString(pkg.RPlayer), Status: "approved"})
+	suite.Require().NoError(err)
+	_, err = database.CreateParticipant(database.Participant{UserID: judgeUserID, CompetitionID: competition.ID, Role: pkg.RoleToString(pkg.RJudge), Status: "approved"})
+	suite.Require().NoError(err)
+	targetPlayer, err := database.CreatePlayer(database.Player{GroupId: group.ID, ParticipantId: targetParticipant.ID, LaneId: lane.ID, Name: "target"})
+	suite.Require().NoError(err)
+	_, err = database.CreatePlayer(database.Player{GroupId: group.ID, ParticipantId: scorerParticipant.ID, LaneId: lane.ID, Name: "lane scorer"})
+	suite.Require().NoError(err)
+	round, err := database.CreateRound(database.Round{PlayerId: targetPlayer.ID})
+	suite.Require().NoError(err)
+	end, err := database.CreateRoundEnd(database.RoundEnd{RoundId: round.ID})
+	suite.Require().NoError(err)
+	for range 3 {
+		_, err = database.CreateRoundScore(database.RoundScore{RoundEndId: end.ID, Score: -1})
+		suite.Require().NoError(err)
+	}
+
+	scorerCookies := suite.login(scorerUserID)
+	recorder := suite.requestJSON(http.MethodPatch, fmt.Sprintf("/player/all-endscores/%d", end.ID), map[string]any{"scores": []int{10, 9, 8}}, scorerCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	var storedRound database.Round
+	suite.Require().NoError(database.DB.First(&storedRound, round.ID).Error)
+	storedPlayer, err := database.GetOnlyPlayer(targetPlayer.ID)
+	suite.Require().NoError(err)
+	suite.Equal(27, storedRound.TotalScore)
+	suite.Equal(27, storedPlayer.TotalScore)
+
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/player/isconfirmed/%d", end.ID), map[string]bool{"is_confirmed": true}, scorerCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/player/all-endscores/%d", end.ID), map[string]any{"scores": []int{10, 10, 10}}, scorerCookies)
+	suite.Equal(http.StatusForbidden, recorder.Code, recorder.Body.String())
+	judgeCookies := suite.login(judgeUserID)
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/player/all-endscores/%d", end.ID), map[string]any{"scores": []int{10, 10, 10}}, judgeCookies)
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	var storedEnd database.RoundEnd
+	suite.Require().NoError(database.DB.First(&storedEnd, end.ID).Error)
+	suite.True(storedEnd.IsConfirmed)
+	suite.Require().NoError(database.DB.First(&storedRound, round.ID).Error)
+	storedPlayer, err = database.GetOnlyPlayer(targetPlayer.ID)
+	suite.Require().NoError(err)
+	suite.Equal(30, storedRound.TotalScore)
+	suite.Equal(30, storedPlayer.TotalScore)
+
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/player/all-endscores/%d", end.ID), map[string]any{"scores": []int{10, 12, 10}}, judgeCookies)
+	suite.Equal(http.StatusBadRequest, recorder.Code, recorder.Body.String())
+	suite.Require().NoError(database.DB.First(&storedRound, round.ID).Error)
+	suite.Equal(30, storedRound.TotalScore)
 }
 
 func (suite *EliminationBracketIntegrationTestSuite) TestConfirmationRejectsDuplicateUntilManualIdentityCorrection() {
@@ -1929,7 +2026,7 @@ func (suite *EliminationBracketIntegrationTestSuite) TestConfirmationRejectsDupl
 	bracket := suite.loadBracket(elimination.ID)
 	firstResult := bracket.Stages[0].Matchs[0].MatchResults[0]
 	suite.Require().NoError(database.DB.Model(&database.MatchResult{}).Where("id = ?", firstResult.ID).Update("player_set_id", playerSets[1].ID).Error)
-	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/matchend/isconfirmed/%d", firstResult.MatchEnds[0].ID), map[string]bool{"is_confirmed": true}, nil)
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/matchend/isconfirmed/%d", firstResult.MatchEnds[0].ID), map[string]bool{"is_confirmed": true}, adminCookies)
 	suite.Equal(http.StatusConflict, recorder.Code, recorder.Body.String())
 	stored, err := database.GetOnlyEliminationById(elimination.ID)
 	suite.Require().NoError(err)
@@ -1937,7 +2034,7 @@ func (suite *EliminationBracketIntegrationTestSuite) TestConfirmationRejectsDupl
 
 	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/elimination/match/playerset/%d", bracket.Stages[0].Matchs[0].ID), map[string]any{"player_set_ids": []uint{playerSets[0].ID, playerSets[3].ID}}, adminCookies)
 	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
-	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/matchend/isconfirmed/%d", firstResult.MatchEnds[0].ID), map[string]bool{"is_confirmed": true}, nil)
+	recorder = suite.requestJSON(http.MethodPatch, fmt.Sprintf("/matchresult/matchend/isconfirmed/%d", firstResult.MatchEnds[0].ID), map[string]bool{"is_confirmed": true}, adminCookies)
 	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
 }
 
