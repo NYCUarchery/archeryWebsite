@@ -3429,7 +3429,7 @@ const docTemplate = `{
         },
         "/matchresult/matchend/isconfirmed/{id}": {
             "patch": {
-                "description": "Update one MatchEnd isConfirmed by id",
+                "description": "Confirm an eligible MatchEnd as Player, Judge, or Admin. Only the owning competition Admin may change a confirmed MatchEnd back to unconfirmed.",
                 "consumes": [
                     "application/json"
                 ],
@@ -3469,7 +3469,7 @@ const docTemplate = `{
                         }
                     },
                     "403": {
-                        "description": "changing a confirmed MatchEnd to unconfirmed requires the owning competition Admin",
+                        "description": "approved scoring role required; unconfirm requires the owning competition Admin",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
@@ -3491,7 +3491,7 @@ const docTemplate = `{
         },
         "/matchresult/matchend/scores/{id}": {
             "patch": {
-                "description": "Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids\nMatchScore ids and scores must be the same length. Confirmed MatchEnds require the owning competition Admin, every MatchScore exactly once, and a server-computed total.",
+                "description": "Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids\nApproved Judges may update the active current stage, Players their own current match's unconfirmed end, and Admins may perform rescue updates. A confirmed MatchEnd requires Judge or Admin and every MatchScore exactly once; confirmation remains set and total/outcome are recomputed atomically.",
                 "consumes": [
                     "application/json"
                 ],
@@ -3531,7 +3531,7 @@ const docTemplate = `{
                         }
                     },
                     "403": {
-                        "description": "confirmed MatchEnd updates require the owning competition Admin",
+                        "description": "approved scoring role for the target competition required",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
@@ -3553,7 +3553,7 @@ const docTemplate = `{
         },
         "/matchresult/matchend/totalscore/{id}": {
             "patch": {
-                "description": "Update one MatchEnd totalScores by id. Confirmed MatchEnds must use the aggregate scores endpoint and are rejected here.",
+                "description": "Recompute one MatchEnd total score from its arrows. Approved Judges may update the active current stage, Players their own current match's unconfirmed end, and Admins may perform rescue updates. Confirmed ends must use the aggregate scores endpoint.",
                 "consumes": [
                     "application/json"
                 ],
@@ -3592,6 +3592,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
+                    "403": {
+                        "description": "approved scoring role for the target competition required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "409": {
                         "description": "empty bracket slot or roster conflict",
                         "schema": {
@@ -3609,7 +3615,7 @@ const docTemplate = `{
         },
         "/matchresult/matchscore/score/{id}": {
             "patch": {
-                "description": "Update one MatchScore score by id\nAlso update related MatchEnd totalScores",
+                "description": "Update one MatchScore score and recompute its MatchEnd total. Approved Judges may update the active current stage, Players their own current match's unconfirmed end, and Admins may perform rescue updates. Confirmed ends require the aggregate endpoint.",
                 "consumes": [
                     "application/json"
                 ],
@@ -3646,6 +3652,12 @@ const docTemplate = `{
                         "description": "invalid match score ID, maybe not exist",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "approved scoring role for the target competition required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "409": {
@@ -3730,7 +3742,7 @@ const docTemplate = `{
         },
         "/matchresult/shootoffscore/{id}": {
             "patch": {
-                "description": "Update one MatchResult shootOffScore by id",
+                "description": "Update one MatchResult shootOffScore by id. An approved Judge may update an active elimination's current stage; an approved Admin may perform rescue updates.",
                 "consumes": [
                     "application/json"
                 ],
@@ -3767,6 +3779,12 @@ const docTemplate = `{
                         "description": "invalid match result ID, maybe not exist",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "approved Judge or Admin required for the target competition",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "409": {
@@ -4433,7 +4451,7 @@ const docTemplate = `{
         },
         "/player/all-endscores/{endid}": {
             "patch": {
-                "description": "Update all scores of one end by end id\nWill auto update player total score\nShould have a 6 element array scores array",
+                "description": "Atomically update every arrow in one qualification end and recompute round/player totals. Approved Judge/Admin may edit confirmed ends; a Player is limited to an unconfirmed current end on their own lane.\nThe score count must exactly match the stored RoundScore collection.",
                 "consumes": [
                     "application/json"
                 ],
@@ -4473,6 +4491,12 @@ const docTemplate = `{
                         "description": "invalid end id / length of scores not equal to 6",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "approved target-competition scoring role required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
@@ -4675,7 +4699,7 @@ const docTemplate = `{
         },
         "/player/isconfirmed/{roundendid}": {
             "patch": {
-                "description": "Update one Player isConfirmed by id.",
+                "description": "Confirm a qualification end as an approved Judge/Admin, or as a Player scoring the current end on their own lane. Only an Admin may unconfirm an already confirmed end.",
                 "consumes": [
                     "application/json"
                 ],
@@ -4715,6 +4739,12 @@ const docTemplate = `{
                         "description": "invalid roundend id parameter, may not exist",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "approved target-competition scoring role required; unconfirm requires Admin",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
@@ -5072,7 +5102,7 @@ const docTemplate = `{
         },
         "/player/roundend": {
             "post": {
-                "description": "Just in case api.\nCreate one RoundEnd by round id, IsComfirmed is false.\nShould not be used, just in case function, PostPlayer is used to create player, rounds, roundends, roundscores.",
+                "description": "Just in case api.\nCreate one RoundEnd by round id, IsComfirmed is false.\nShould not be used, just in case function, PostPlayer is used to create player, rounds, roundends, roundscores.\nStructural rescue operation restricted to an approved Admin of the target competition; cannot exceed six ends per round.",
                 "consumes": [
                     "application/json"
                 ],
@@ -5119,6 +5149,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
+                    "403": {
+                        "description": "approved Admin required for the target competition",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "internal db error / creating roundend",
                         "schema": {
@@ -5130,7 +5166,7 @@ const docTemplate = `{
         },
         "/player/roundscore": {
             "post": {
-                "description": "Just in case api.\nNeed to modify to refresh total scores.\nCreate one RoundScore by roundend id.\nUpdate total score in player, round, roundend for one arrow score.\nShould not be used, just in case function, PostPlayer is used to create player, rounds, roundends, roundscores.",
+                "description": "Just in case api.\nNeed to modify to refresh total scores.\nCreate one RoundScore by roundend id.\nUpdate total score in player, round, roundend for one arrow score.\nShould not be used, just in case function, PostPlayer is used to create player, rounds, roundends, roundscores.\nStructural rescue operation restricted to an approved Admin of the target competition; cannot append to a confirmed end or exceed six arrows.",
                 "consumes": [
                     "application/json"
                 ],
@@ -5165,6 +5201,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
+                    "403": {
+                        "description": "approved Admin required for the target competition",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "internal db error / creating roundscore / get old score / update total score",
                         "schema": {
@@ -5176,7 +5218,7 @@ const docTemplate = `{
         },
         "/player/roundscore/{roundscoreid}": {
             "patch": {
-                "description": "Update one Player score by id.\nWill auto update player total score.",
+                "description": "Update one qualification arrow and atomically recompute round/player totals. Approved Judge/Admin may edit confirmed ends; a Player is limited to an unconfirmed current end on their own lane.",
                 "consumes": [
                     "application/json"
                 ],
@@ -5216,6 +5258,12 @@ const docTemplate = `{
                         "description": "invalid roundscore id / player id / round id / roundend id",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "approved target-competition scoring role required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
@@ -5309,7 +5357,7 @@ const docTemplate = `{
         },
         "/player/shootoffscore/{id}": {
             "patch": {
-                "description": "Update one Player shootoffScore by id.",
+                "description": "Update one Player shootoffScore by id. Rescue operation restricted to an approved Judge or Admin of the target competition.",
                 "consumes": [
                     "application/json"
                 ],
@@ -5366,6 +5414,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
+                    "403": {
+                        "description": "approved Judge or Admin required for the target competition",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "internal db error for updating player shootoffScore / get player info",
                         "schema": {
@@ -5377,7 +5431,7 @@ const docTemplate = `{
         },
         "/player/totalscore/{id}": {
             "patch": {
-                "description": "Just in case api.\nUpdate one Player total score by id.",
+                "description": "Just in case api.\nRecompute one Player total score from persisted arrows. Rescue operation restricted to an approved Judge or Admin of the target competition; the submitted aggregate is ignored.",
                 "consumes": [
                     "application/json"
                 ],
@@ -5423,6 +5477,12 @@ const docTemplate = `{
                         "description": "invalid player id parameter, may not exist",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "approved Judge or Admin required for the target competition",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {

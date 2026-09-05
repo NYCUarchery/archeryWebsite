@@ -5,6 +5,7 @@ import (
 	"backend/internal/pkg"
 	response "backend/internal/response"
 
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -210,6 +211,7 @@ func PostPlayer(context *gin.Context) {
 //	@Description	Just in case api.
 //	@Description	Create one RoundEnd by round id, IsComfirmed is false.
 //	@Description	Should not be used, just in case function, PostPlayer is used to create player, rounds, roundends, roundscores.
+//	@Description	Structural rescue operation restricted to an approved Admin of the target competition; cannot exceed six ends per round.
 //	@Tags			Player
 //	@Accept			json
 //	@Produce		json
@@ -217,6 +219,7 @@ func PostPlayer(context *gin.Context) {
 //	@Success		200			{object}	database.RoundEnd												"success, return roundend info"
 //	@Failure		400			{object}	response.ErrorIdResponse										"invalid round id parameter, may not exist"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse								"internal db error / creating roundend"
+//	@Failure		403	{object}	response.ErrorResponse	"approved Admin required for the target competition"
 //	@Router			/player/roundend [post]
 func PostRoundEnd(context *gin.Context) {
 	type RoundEndData struct {
@@ -230,8 +233,37 @@ func PostRoundEnd(context *gin.Context) {
 	} else if response.ErrorIdTest(context, data.RoundId, database.GetRoundIsExist(data.RoundId), "Round when creating RoundEnd") {
 		return
 	}
-	data.IsConfirmed = false
-	data, err = database.CreateRoundEnd(data)
+	err = database.DB.Transaction(func(tx *gorm.DB) error {
+		var round database.Round
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&round, data.RoundId).Error; err != nil {
+			return err
+		}
+		actor, err := authorizeQualificationRescue(context, tx, round.PlayerId)
+		if err != nil {
+			return err
+		}
+		if actor != scoreActorAdmin {
+			return errScoreForbidden
+		}
+		var endCount int64
+		if err := tx.Model(&database.RoundEnd{}).Where("round_id = ?", round.ID).Count(&endCount).Error; err != nil {
+			return err
+		}
+		if endCount >= 6 {
+			return errQualificationCardinality
+		}
+		data.ID = 0
+		data.IsConfirmed = false
+		data.RoundScores = nil
+		return tx.Create(&data).Error
+	})
+	if writeScoreAuthorizationError(context, err) {
+		return
+	}
+	if errors.Is(err, errQualificationCardinality) {
+		response.ErrorReceiveDataFormat(context, err.Error())
+		return
+	}
 	if response.ErrorInternalErrorTest(context, data.ID, "Create RoundEnd", err) {
 		return
 	}
@@ -247,6 +279,7 @@ func PostRoundEnd(context *gin.Context) {
 //	@Description	Create one RoundScore by roundend id.
 //	@Description	Update total score in player, round, roundend for one arrow score.
 //	@Description	Should not be used, just in case function, PostPlayer is used to create player, rounds, roundends, roundscores.
+//	@Description	Structural rescue operation restricted to an approved Admin of the target competition; cannot append to a confirmed end or exceed six arrows.
 //	@Tags			Player
 //	@Accept			json
 //	@Produce		json
@@ -254,33 +287,59 @@ func PostRoundEnd(context *gin.Context) {
 //	@Success		200			{object}	database.RoundScore					"success, return roundscore info"
 //	@Failure		400			{object}	response.ErrorIdResponse			"invalid roundend id / invalid player id / invalid round id parameter, may not exist"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse	"internal db error / creating roundscore / get old score / update total score"
+//	@Failure		403	{object}	response.ErrorResponse	"approved Admin required for the target competition"
 //	@Router			/player/roundscore [post]
 func PostRoundScore(context *gin.Context) {
 	var data UpdateTotalScoreData
 	err := context.BindJSON(&data)
-	playerId := data.PlayerId
-	roundId := data.RoundId
 	roundEndId := data.RoundEndId
-	score := data.Score
-	var roundScore database.RoundScore
-	roundScore.RoundEndId = roundEndId
-	roundScore.Score = score
 	if response.ErrorReceiveDataTest(context, 0, "Create RoundScore", err) {
 		return
-	} else if response.ErrorIdTest(context, roundEndId, database.GetRoundEndIsExist(roundEndId), "RoundEnd when creating RoundScore") {
-		return
-	} else if response.ErrorIdTest(context, playerId, database.GetPlayerIsExist(playerId), "Player when creating RoundScore") {
-		return
-	} else if response.ErrorIdTest(context, roundId, database.GetRoundIsExist(roundId), "Round when creating RoundScore") {
+	}
+	if response.ErrorIdTest(context, roundEndId, database.GetRoundEndIsExist(roundEndId), "RoundEnd when creating RoundScore") {
 		return
 	}
-	newRoundScore, err := database.CreateRoundScore(roundScore)
+	if data.Score < -1 || data.Score > 11 {
+		response.ErrorReceiveDataFormat(context, "round score must be -1 or between 0 and 11")
+		return
+	}
+	var newRoundScore database.RoundScore
+	err = database.DB.Transaction(func(tx *gorm.DB) error {
+		actor, target, err := authorizeQualificationScore(context, tx, roundEndId)
+		if err != nil {
+			return err
+		}
+		if actor != scoreActorAdmin {
+			return errScoreForbidden
+		}
+		var end database.RoundEnd
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&end, roundEndId).Error; err != nil {
+			return err
+		}
+		if end.IsConfirmed {
+			return errScoreForbidden
+		}
+		var scoreCount int64
+		if err := tx.Model(&database.RoundScore{}).Where("round_end_id = ?", roundEndId).Count(&scoreCount).Error; err != nil {
+			return err
+		}
+		if scoreCount >= 6 {
+			return errQualificationCardinality
+		}
+		newRoundScore = database.RoundScore{RoundEndId: roundEndId, Score: data.Score}
+		if err := tx.Create(&newRoundScore).Error; err != nil {
+			return err
+		}
+		return recalculateQualificationTotals(tx, target.PlayerID, target.RoundID)
+	})
+	if writeScoreAuthorizationError(context, err) {
+		return
+	}
+	if errors.Is(err, errQualificationCardinality) {
+		response.ErrorReceiveDataFormat(context, err.Error())
+		return
+	}
 	if response.ErrorInternalErrorTest(context, newRoundScore.ID, "Create RoundScore", err) {
-		return
-	}
-	/*auto update total score in rounds when create score*/
-	score = Scorefmt(score)
-	if !UpdatePlayerTotalScoreWithOneScore(context, playerId, roundId, score) {
 		return
 	}
 	context.IndentedJSON(200, newRoundScore)
@@ -543,7 +602,7 @@ func PatchPlayerLaneOrder(context *gin.Context) {
 // Update one Player IsConfirmed By ID godoc
 //
 //	@Summary		Update one Player isConfirmed by id.
-//	@Description	Update one Player isConfirmed by id.
+//	@Description	Confirm a qualification end as an approved Judge/Admin, or as a Player scoring the current end on their own lane. Only an Admin may unconfirm an already confirmed end.
 //	@Tags			Player
 //	@Accept			json
 //	@Produce		json
@@ -552,6 +611,7 @@ func PatchPlayerLaneOrder(context *gin.Context) {
 //	@Success		200			{object}	response.Nill										"success, return nil"
 //	@Failure		400			{object}	response.ErrorIdResponse							"invalid roundend id parameter, may not exist"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse					"internal db error for updating player isConfirmed"
+//	@Failure		403	{object}	response.ErrorResponse	"approved target-competition scoring role required; unconfirm requires Admin"
 //	@Router			/player/isconfirmed/{roundendid} [patch]
 func PutPlayerIsConfirmed(context *gin.Context) {
 	type UpdateIsConfirmedData struct {
@@ -568,7 +628,23 @@ func PutPlayerIsConfirmed(context *gin.Context) {
 		return
 	}
 
-	err = database.UpdatePlayerIsConfirmed(roundEndId, newRoundEnd.IsConfirmed)
+	err = database.DB.Transaction(func(tx *gorm.DB) error {
+		actor, _, err := authorizeQualificationScore(context, tx, roundEndId)
+		if err != nil {
+			return err
+		}
+		var lockedEnd database.RoundEnd
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&lockedEnd, roundEndId).Error; err != nil {
+			return err
+		}
+		if lockedEnd.IsConfirmed && !newRoundEnd.IsConfirmed && actor != scoreActorAdmin {
+			return errScoreForbidden
+		}
+		return tx.Model(&database.RoundEnd{}).Where("id = ?", roundEndId).Update("is_confirmed", newRoundEnd.IsConfirmed).Error
+	})
+	if writeScoreAuthorizationError(context, err) {
+		return
+	}
 	if response.ErrorInternalErrorTest(context, roundEndId, "Update Player isConfirmed", err) {
 		return
 	}
@@ -605,7 +681,7 @@ func UpdatePlayerTotalScoreWithOneScore(context *gin.Context, playerId uint, rou
 //
 //	@Summary		Update one Player total score by id.
 //	@Description	Just in case api.
-//	@Description	Update one Player total score by id.
+//	@Description	Recompute one Player total score from persisted arrows. Rescue operation restricted to an approved Judge or Admin of the target competition; the submitted aggregate is ignored.
 //	@Tags			Player
 //	@Accept			json
 //	@Produce		json
@@ -615,6 +691,7 @@ func UpdatePlayerTotalScoreWithOneScore(context *gin.Context, playerId uint, rou
 //	@Success		204		{object}	response.Nill												"no change"
 //	@Failure		400		{object}	response.ErrorIdResponse									"invalid player id parameter, may not exist"
 //	@Failure		500		{object}	response.ErrorInternalErrorResponse							"internal db error for updating player total score"
+//	@Failure		403	{object}	response.ErrorResponse	"approved Judge or Admin required for the target competition"
 //	@Router			/player/totalscore/{id} [patch]
 func PutPlayerTotalScoreByplayerId(context *gin.Context) {
 	type UpdateTotalScoreData struct {
@@ -631,7 +708,35 @@ func PutPlayerTotalScoreByplayerId(context *gin.Context) {
 		return
 	}
 
-	err, isChanged := database.UpdatePlayerTotalScore(playerId, data.NewScore)
+	isChanged := false
+	err = database.DB.Transaction(func(tx *gorm.DB) error {
+		if _, err := authorizeQualificationRescue(context, tx, playerId); err != nil {
+			return err
+		}
+		var current database.Player
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&current, playerId).Error; err != nil {
+			return err
+		}
+		var playerScores []int
+		if err := tx.Table("round_scores").
+			Select("round_scores.score").
+			Joins("JOIN round_ends ON round_ends.id = round_scores.round_end_id").
+			Joins("JOIN rounds ON rounds.id = round_ends.round_id").
+			Where("rounds.player_id = ?", playerId).
+			Find(&playerScores).Error; err != nil {
+			return err
+		}
+		total := 0
+		for _, score := range playerScores {
+			total += Scorefmt(score)
+		}
+		isChanged = current.TotalScore != total
+		result := tx.Model(&database.Player{}).Where("id = ?", playerId).Update("total_score", total)
+		return result.Error
+	})
+	if writeScoreAuthorizationError(context, err) {
+		return
+	}
 	if response.ErrorInternalErrorTest(context, playerId, "Update Player total score", err) {
 		return
 	}
@@ -645,8 +750,7 @@ func PutPlayerTotalScoreByplayerId(context *gin.Context) {
 // Update one Player Score By ID godoc
 //
 //	@Summary		Update one Player score by id.
-//	@Description	Update one Player score by id.
-//	@Description	Will auto update player total score.
+//	@Description	Update one qualification arrow and atomically recompute round/player totals. Approved Judge/Admin may edit confirmed ends; a Player is limited to an unconfirmed current end on their own lane.
 //	@Tags			Player
 //	@Accept			json
 //	@Produce		json
@@ -655,6 +759,7 @@ func PutPlayerTotalScoreByplayerId(context *gin.Context) {
 //	@Success		200				{object}	response.Nill						"success"
 //	@Failure		400				{object}	response.ErrorIdResponse			"invalid roundscore id / player id / round id / roundend id"
 //	@Failure		500				{object}	response.ErrorInternalErrorResponse	"internal db error / updating player score / get old score / update total score"
+//	@Failure		403	{object}	response.ErrorResponse	"approved target-competition scoring role required"
 //	@Router			/player/roundscore/{roundscoreid} [patch]
 func PutPlayerScore(context *gin.Context) {
 	var data UpdateTotalScoreData
@@ -667,28 +772,44 @@ func PutPlayerScore(context *gin.Context) {
 	if response.ErrorIdTest(context, roundScoreId, database.GetRoundScoreIsExist(roundScoreId), "RoundScore when updating score") {
 		return
 	}
-	if response.ErrorIdTest(context, data.PlayerId, database.GetPlayerIsExist(data.PlayerId), "Player when updating score") {
+	if data.Score < -1 || data.Score > 11 {
+		response.ErrorReceiveDataFormat(context, "round score must be -1 or between 0 and 11")
 		return
 	}
-	if response.ErrorIdTest(context, data.RoundId, database.GetRoundIsExist(data.RoundId), "Round when updating score") {
+	err = database.DB.Transaction(func(tx *gorm.DB) error {
+		var roundScore database.RoundScore
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&roundScore, roundScoreId).Error; err != nil {
+			return err
+		}
+		actor, target, err := authorizeQualificationScore(context, tx, roundScore.RoundEndId)
+		if err != nil {
+			return err
+		}
+		var lockedEnd database.RoundEnd
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&lockedEnd, roundScore.RoundEndId).Error; err != nil {
+			return err
+		}
+		if lockedEnd.IsConfirmed && actor == scoreActorPlayer {
+			return errScoreForbidden
+		}
+		if err := tx.Model(&database.RoundScore{}).Where("id = ?", roundScoreId).Update("score", data.Score).Error; err != nil {
+			return err
+		}
+		return recalculateQualificationTotals(tx, target.PlayerID, target.RoundID)
+	})
+	if writeScoreAuthorizationError(context, err) {
 		return
 	}
-	if response.ErrorIdTest(context, data.RoundEndId, database.GetRoundEndIsExist(data.RoundEndId), "RoundEnd when updating score") {
-		return
-	}
-	/*update one score*/
-	err, _ = database.UpdatePlayerScore(roundScoreId, data.Score)
 	if response.ErrorInternalErrorTest(context, roundScoreId, "Update Player score", err) {
 		return
 	}
-	RefreshPlayerTotalScore(context, data.PlayerId)
 	context.IndentedJSON(200, nil)
 }
 
 // Update one Player ShootoffScore By ID godoc
 //
 //	@Summary		Update one Player shootoffScore by id.
-//	@Description	Update one Player shootoffScore by id.
+//	@Description	Update one Player shootoffScore by id. Rescue operation restricted to an approved Judge or Admin of the target competition.
 //	@Tags			Player
 //	@Accept			json
 //	@Produce		json
@@ -697,6 +818,7 @@ func PutPlayerScore(context *gin.Context) {
 //	@Success		200		{object}	database.Player{rounds=response.Nill,player_sets=response.Nill}	"success, return player info"
 //	@Failure		400		{object}	response.ErrorIdResponse										"invalid player id parameter, may not exist"
 //	@Failure		500		{object}	response.ErrorInternalErrorResponse								"internal db error for updating player shootoffScore / get player info"
+//	@Failure		403	{object}	response.ErrorResponse	"approved Judge or Admin required for the target competition"
 //	@Router			/player/shootoffscore/{id} [patch]
 func PutPlayerShootoffScore(context *gin.Context) {
 	type UpdateShootoffScoreData struct {
@@ -714,7 +836,15 @@ func PutPlayerShootoffScore(context *gin.Context) {
 		return
 	}
 
-	err = database.UpdatePlayerShootoffScore(playerId, shootoffScore)
+	err = database.DB.Transaction(func(tx *gorm.DB) error {
+		if _, err := authorizeQualificationRescue(context, tx, playerId); err != nil {
+			return err
+		}
+		return tx.Model(&database.Player{}).Where("id = ?", playerId).Update("shoot_off_score", shootoffScore).Error
+	})
+	if writeScoreAuthorizationError(context, err) {
+		return
+	}
 	if response.ErrorInternalErrorTest(context, playerId, "Update Player shootoffScore", err) {
 		return
 	}
@@ -729,9 +859,8 @@ func PutPlayerShootoffScore(context *gin.Context) {
 // Update all scores of one end by end id godoc
 //
 //	@Summary		Update all scores of one end by end id
-//	@Description	Update all scores of one end by end id
-//	@Description	Will auto update player total score
-//	@Description	Should have a 6 element array scores array
+//	@Description	Atomically update every arrow in one qualification end and recompute round/player totals. Approved Judge/Admin may edit confirmed ends; a Player is limited to an unconfirmed current end on their own lane.
+//	@Description	The score count must exactly match the stored RoundScore collection.
 //	@Tags			Player
 //	@Accept			json
 //	@Produce		json
@@ -740,6 +869,7 @@ func PutPlayerShootoffScore(context *gin.Context) {
 //	@Success		200		{object}	response.Nill									"success"
 //	@Failure		400		{object}	response.ErrorIdResponse						"invalid end id / length of scores not equal to 6"
 //	@Failure		500		{object}	response.ErrorInternalErrorResponse				"internal db error / updating player end scores / get round score ids"
+//	@Failure		403	{object}	response.ErrorResponse	"approved target-competition scoring role required"
 //	@Router			/player/all-endscores/{endid} [patch]
 func PutPlayerAllEndScoresByEndId(context *gin.Context) {
 	type EndScores struct {
@@ -755,23 +885,101 @@ func PutPlayerAllEndScoresByEndId(context *gin.Context) {
 		return
 	}
 
-	roundScoreIds, err := database.GetRoundScoreIdByRoundEndId(endId)
-	if response.ErrorInternalErrorTest(context, endId, "Get round score ids by round end id", err) {
-		return
-	}
-	if len(roundScoreIds) != len(data.Scores) {
-		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Length of scores not equal to length of round scores" + fmt.Sprint(len(roundScoreIds)) + fmt.Sprint(len(data.Scores))})
-		return
-	}
-	for i, roundScoreId := range roundScoreIds {
-		err, _ := database.UpdatePlayerScore(roundScoreId, data.Scores[i])
-		if response.ErrorInternalErrorTest(context, roundScoreId, "Update player score by round score id", err) {
+	for _, score := range data.Scores {
+		if score < -1 || score > 11 {
+			response.ErrorReceiveDataFormat(context, "round scores must be -1 or between 0 and 11")
 			return
 		}
 	}
-	playerId, _ := database.GetPlayerIdByRoundEndId(endId)
-	RefreshPlayerTotalScore(context, playerId)
+	err = database.DB.Transaction(func(tx *gorm.DB) error {
+		actor, target, err := authorizeQualificationScore(context, tx, endId)
+		if err != nil {
+			return err
+		}
+		var lockedEnd database.RoundEnd
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&lockedEnd, endId).Error; err != nil {
+			return err
+		}
+		if lockedEnd.IsConfirmed && actor == scoreActorPlayer {
+			return errScoreForbidden
+		}
+		var scores []database.RoundScore
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+			Where("round_end_id = ?", endId).Order("id ASC").Find(&scores).Error; err != nil {
+			return err
+		}
+		if len(scores) != len(data.Scores) {
+			return errQualificationScoreCount
+		}
+		for index, score := range scores {
+			if err := tx.Model(&database.RoundScore{}).Where("id = ?", score.ID).Update("score", data.Scores[index]).Error; err != nil {
+				return err
+			}
+		}
+		return recalculateQualificationTotals(tx, target.PlayerID, target.RoundID)
+	})
+	if writeScoreAuthorizationError(context, err) {
+		return
+	}
+	if err == errQualificationScoreCount {
+		context.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Length of scores not equal to length of round scores"})
+		return
+	}
+	if response.ErrorInternalErrorTest(context, endId, "Update player end scores", err) {
+		return
+	}
 	context.IndentedJSON(200, nil)
+}
+
+var (
+	errQualificationScoreCount  = fmt.Errorf("round score count does not match request")
+	errQualificationCardinality = errors.New("qualification round/end already has its configured six children")
+)
+
+// recalculateQualificationTotals is called in the score-write transaction.
+// Locking the owning Round then Player serializes writes to different ends of
+// the same round and prevents a stale total from surviving a concurrent edit.
+func recalculateQualificationTotals(tx *gorm.DB, playerID, roundID uint) error {
+	var round database.Round
+	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&round, roundID).Error; err != nil {
+		return err
+	}
+	if round.PlayerId != playerID {
+		return errScoreForbidden
+	}
+	var player database.Player
+	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&player, playerID).Error; err != nil {
+		return err
+	}
+	var roundScores []int
+	if err := tx.Table("round_scores").
+		Select("round_scores.score").
+		Joins("JOIN round_ends ON round_ends.id = round_scores.round_end_id").
+		Where("round_ends.round_id = ?", roundID).
+		Find(&roundScores).Error; err != nil {
+		return err
+	}
+	roundTotal := 0
+	for _, score := range roundScores {
+		roundTotal += Scorefmt(score)
+	}
+	if err := tx.Model(&database.Round{}).Where("id = ?", roundID).Update("total_score", roundTotal).Error; err != nil {
+		return err
+	}
+	var playerScores []int
+	if err := tx.Table("round_scores").
+		Select("round_scores.score").
+		Joins("JOIN round_ends ON round_ends.id = round_scores.round_end_id").
+		Joins("JOIN rounds ON rounds.id = round_ends.round_id").
+		Where("rounds.player_id = ?", playerID).
+		Find(&playerScores).Error; err != nil {
+		return err
+	}
+	playerTotal := 0
+	for _, score := range playerScores {
+		playerTotal += Scorefmt(score)
+	}
+	return tx.Model(&database.Player{}).Where("id = ?", playerID).Update("total_score", playerTotal).Error
 }
 
 func RefreshPlayerTotalScore(context *gin.Context, playerId uint) {
