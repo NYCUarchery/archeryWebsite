@@ -2251,7 +2251,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request POST:/participant
      */
     participantCreate: (NewParticipantInfo: EndpointNewParticipantInfo, params: RequestParams = {}) =>
-      this.request<DatabaseParticipant, ResponseErrorReceiveDataFormatResponse | ResponseErrorInternalErrorResponse>({
+      this.request<
+        DatabaseParticipant,
+        ResponseErrorReceiveDataFormatResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/participant`,
         method: "POST",
         body: NewParticipantInfo,
@@ -2369,7 +2372,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Delete one Participant by id. This api is intentionally designed not to delete related data, because a user may drop out of competition, but competition still need the record.
+     * @description Delete one Participant by id. Requires an approved Admin of the target competition; the last approved Admin cannot be deleted. This api is intentionally designed not to delete related data, because a user may drop out of competition, but competition still need the record.
      *
      * @tags Participant
      * @name ParticipantDelete
@@ -2377,7 +2380,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request DELETE:/participant/{id}
      */
     participantDelete: (id: number, params: RequestParams = {}) =>
-      this.request<ResponseDeleteSuccessResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<
+        ResponseDeleteSuccessResponse,
+        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/participant/${id}`,
         method: "DELETE",
         format: "json",
@@ -2452,7 +2458,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Update one Player groupId by id, and change player laneid to Unassigned lane.
+     * @description Update one Player groupId by id, and change player laneid to Unassigned lane. Requires an approved Admin of the Player's competition; the target group must belong to that competition.
      *
      * @tags Player
      * @name GroupPartialUpdate
@@ -2465,7 +2471,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           player_sets?: ResponseNill;
           rounds?: ResponseNill;
         },
-        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
       >({
         path: `/player/group/${id}`,
         method: "PATCH",
@@ -2498,7 +2504,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Update one Player order and landID By by id.
+     * @description Update one Player order and landID By by id. Requires an approved Admin of the Player's competition; the target lane must belong to that competition.
      *
      * @tags Player
      * @name LaneOrderPartialUpdate
@@ -2515,7 +2521,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           player_sets?: ResponseNill;
           rounds?: ResponseNill;
         },
-        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
       >({
         path: `/player/lane-order/${id}`,
         method: "PATCH",
@@ -2526,7 +2532,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Update one Player laneId by id, update lane playernum.
+     * @description Update one Player laneId by id, update lane playernum. Requires an approved Admin of the Player's competition; the target lane must belong to that competition.
      *
      * @tags Player
      * @name LanePartialUpdate
@@ -2539,7 +2545,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           player_sets?: ResponseNill;
           rounds?: ResponseNill;
         },
-        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
       >({
         path: `/player/lane/${id}`,
         method: "PATCH",
@@ -2550,7 +2556,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Update one Player order by id.
+     * @description Update one Player order by id. Requires an approved Admin of the Player's competition.
      *
      * @tags Player
      * @name OrderPartialUpdate
@@ -2563,7 +2569,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           player_sets?: ResponseNill;
           rounds?: ResponseNill;
         },
-        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
       >({
         path: `/player/order/${id}`,
         method: "PATCH",
@@ -2772,7 +2778,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Delete one Player by id, delete related round, roundend, roundscore data, and playerNum minus one in lane.
+     * @description Delete one Player by id, delete related round, roundend, roundscore data, and playerNum minus one in lane. Requires an approved Admin of the Player's competition.
      *
      * @tags Player
      * @name PlayerDelete
@@ -2780,7 +2786,10 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request DELETE:/player/{id}
      */
     playerDelete: (id: number, params: RequestParams = {}) =>
-      this.request<ResponseDeleteSuccessResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<
+        ResponseDeleteSuccessResponse,
+        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
+      >({
         path: `/player/${id}`,
         method: "DELETE",
         format: "json",
@@ -2788,7 +2797,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Create one Player by participant id. Create related rounds by laneNum of competition, create 6 roundscores for each 6 roundends, UnassignedLane playerNum ++. Order is 0, TotalScore is 0, ShootOffScore is -1, Rank is 0. Group is unassigned group, Lane is unassigned lane. Will copy data from participant, user, competition.
+     * @description Create one Player by participant id. Create related rounds by laneNum of competition, create 6 roundscores for each 6 roundends, UnassignedLane playerNum ++. Order is 0, TotalScore is 0, ShootOffScore is -1, Rank is 0. Group is unassigned group, Lane is unassigned lane. Will copy data from participant, user, competition. Requires an approved target-competition Admin and an approved Player Participant. Judge Participants can never create a Player. Creation of Player, rounds, ends, and arrows is atomic.
      *
      * @tags Player
      * @name PlayerCreate
@@ -2801,7 +2810,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           player_sets?: ResponseNill;
           rounds?: ResponseNill;
         },
-        ResponseErrorIdResponse | ResponseErrorInternalErrorResponse
+        ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse
       >({
         path: `/player/${participantid}`,
         method: "POST",

@@ -54,20 +54,37 @@ export default function Page({ params }: { params: { id: string } }) {
 
   const handleApprove = () => {
     for (let i = 0; i < rowSelectionModel.length; i++) {
+      const participant = participants?.find(
+        (candidate) => candidate.id === rowSelectionModel[i]
+      );
       const config =
         i === rowSelectionModel.length - 1
           ? {
               mudationKeys: ["participantApprove", rowSelectionModel[i]],
               onSuccess: () => {
+                if (
+                  participant?.role === "Player" &&
+                  participant.status !== "approved"
+                ) {
+                  createPlayer(rowSelectionModel[i] as number);
+                }
                 queryClient.invalidateQueries([
                   "participantCompetitionList",
                   params.id,
                 ]);
               },
             }
-          : {};
+          : {
+              onSuccess: () => {
+                if (
+                  participant?.role === "Player" &&
+                  participant.status !== "approved"
+                ) {
+                  createPlayer(rowSelectionModel[i] as number);
+                }
+              },
+            };
       approveParticipant(rowSelectionModel[i] as number, config);
-      createPlayer(rowSelectionModel[i] as number);
     }
     setRowSelectionModel([]);
   };
