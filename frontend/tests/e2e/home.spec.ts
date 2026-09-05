@@ -29,4 +29,15 @@ test.describe("Home", () => {
     await page.getByRole("button", { name: "申請為選手" }).click();
     await logoutUser(page);
   });
+  test("apply to competition as judge", async ({ page }) => {
+    const judge = new User(`裁判申請者-${Date.now()}`);
+    await registerUser(page, judge);
+    await loginUser(page, judge);
+    await page.getByLabel("menu").click();
+    await page.getByRole("button", { name: "比賽" }).click();
+    await page.getByRole("button", { name: "近期比賽" }).click();
+    await page.getByRole("button", { name: "申請加入" }).nth(1).click();
+    await page.getByRole("button", { name: "申請為裁判" }).click();
+    await logoutUser(page);
+  });
 });

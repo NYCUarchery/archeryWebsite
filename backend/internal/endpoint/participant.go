@@ -4,10 +4,13 @@ import (
 	"backend/internal/database"
 	"backend/internal/pkg"
 	"backend/internal/response"
+	"errors"
 	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type Participants struct {
@@ -27,6 +30,8 @@ type NewParticipantInfo struct {
 	Role          string `json:"role"`
 }
 
+var errParticipantAlreadyExists = errors.New("participant exists")
+
 //JSON
 
 // PostParticipant godoc
@@ -42,6 +47,7 @@ type NewParticipantInfo struct {
 //	@Param			NewParticipantInfo	body		endpoint.NewParticipantInfo				true	"role"
 //	@Success		200					{object}	database.Participant					"success, return participant"
 //	@Failure		400					{object}	response.ErrorReceiveDataFormatResponse	"invalid info / role is not defined / participant exists / invalid user ID / invalid competition ID"
+//	@Failure		403					{object}	response.ErrorResponse					"applications may only be submitted for the authenticated user"
 //	@Failure		500					{object}	response.ErrorInternalErrorResponse		"db error"
 //	@Router			/participant [post]
 func PostParticipant(c *gin.Context) {
@@ -50,6 +56,12 @@ func PostParticipant(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "invalid info"})
 		return
 	}
+	sessionUserID, ok := pkg.QuerySession(c, "userid").(uint)
+	if !ok || sessionUserID == 0 || (newParticipantInfo.UserID != 0 && newParticipantInfo.UserID != sessionUserID) {
+		c.JSON(http.StatusForbidden, gin.H{"result": "participant applications must use the authenticated user"})
+		return
+	}
+	newParticipantInfo.UserID = sessionUserID
 	if response.ErrorIdTest(c, newParticipantInfo.CompetitionID, database.GetCompetitionIsExist(newParticipantInfo.CompetitionID), "Competition ID when posting participant") {
 		return
 	}
@@ -57,22 +69,42 @@ func PostParticipant(c *gin.Context) {
 		return
 	}
 
-	if database.CheckParticipantExist(newParticipantInfo.UserID, newParticipantInfo.CompetitionID) {
-		c.JSON(http.StatusBadRequest, gin.H{"result": "participant exists"})
-		return
-	}
 	if !pkg.EnsureRoleInGameRoleSet(pkg.StringToRole(newParticipantInfo.Role)) {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "role is not defined"})
 		return
 	}
 
-	var par database.Participant
-	par.UserID = newParticipantInfo.UserID
-	par.CompetitionID = newParticipantInfo.CompetitionID
-	par.Role = newParticipantInfo.Role
-	par.Status = "pending"
-
-	database.AddParticipant(&par)
+	par := database.Participant{
+		UserID:        newParticipantInfo.UserID,
+		CompetitionID: newParticipantInfo.CompetitionID,
+		Role:          newParticipantInfo.Role,
+		Status:        "pending",
+	}
+	err := database.DB.Transaction(func(tx *gorm.DB) error {
+		// Lock the competition row so concurrent self-applications for the same
+		// competition cannot both pass the existence check.
+		var competition database.Competition
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Select("id").First(&competition, newParticipantInfo.CompetitionID).Error; err != nil {
+			return err
+		}
+		var count int64
+		if err := tx.Model(&database.Participant{}).
+			Where("user_id = ? AND competition_id = ?", newParticipantInfo.UserID, newParticipantInfo.CompetitionID).
+			Count(&count).Error; err != nil {
+			return err
+		}
+		if count != 0 {
+			return errParticipantAlreadyExists
+		}
+		return tx.Create(&par).Error
+	})
+	if errors.Is(err, errParticipantAlreadyExists) {
+		c.JSON(http.StatusBadRequest, gin.H{"result": "participant exists"})
+		return
+	}
+	if response.ErrorInternalErrorTest(c, par.ID, "Create Participant", err) {
+		return
+	}
 	c.JSON(http.StatusOK, par)
 }
 
@@ -294,7 +326,7 @@ func PutParticipant(context *gin.Context) {
 // Delete Participant by id godoc
 //
 //	@Summary		Delete one Participant.
-//	@Description	Delete one Participant by id.
+//	@Description	Delete one Participant by id. Requires an approved Admin of the target competition; the last approved Admin cannot be deleted.
 //	@Description	This api is intentionally designed not to delete related data, because a user may drop out of competition, but competition still need the record.
 //	@Tags			Participant
 //	@Produce		json
@@ -302,10 +334,45 @@ func PutParticipant(context *gin.Context) {
 //	@Success		200	{object}	response.DeleteSuccessResponse		"success"
 //	@Failure		400	{object}	response.ErrorIdResponse			"invalid participant id"
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error / Delete Participant"
+//	@Failure		403	{object}	response.ErrorResponse				"target competition admin required"
+//	@Failure		409	{object}	response.ErrorResponse				"cannot delete the last approved competition admin"
 //	@Router			/participant/{id} [delete]
 func DeleteParticipantById(context *gin.Context) {
 	id := Convert2uint(context, "id")
-	DeleteParticipaint(context, id)
+	if response.ErrorIdTest(context, id, database.GetParticipantIsExist(id), "Participant") {
+		return
+	}
+	isChanged := false
+	err := database.DB.Transaction(func(tx *gorm.DB) error {
+		var target database.Participant
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&target, id).Error; err != nil {
+			return err
+		}
+		if err := requireCompetitionAdminTx(context, tx, target.CompetitionID); err != nil {
+			return err
+		}
+		if target.Status == "approved" && pkg.StringToRole(target.Role) == pkg.RAdmin {
+			var approvedAdmins []database.Participant
+			if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+				Where("competition_id = ? AND status = ? AND role = ?", target.CompetitionID, "approved", pkg.RoleToString(pkg.RAdmin)).
+				Find(&approvedAdmins).Error; err != nil {
+				return err
+			}
+			if len(approvedAdmins) <= 1 {
+				return errControlLastAdmin
+			}
+		}
+		result := tx.Delete(&database.Participant{}, id)
+		isChanged = result.RowsAffected != 0
+		return result.Error
+	})
+	if writeControlAuthorizationError(context, err) {
+		return
+	}
+	if response.ErrorInternalErrorTest(context, id, "Delete Participant", err) {
+		return
+	}
+	response.AcceptDeleteSuccess(context, id, isChanged, "Participant")
 }
 
 func DeleteParticipaint(context *gin.Context, id uint) bool {

@@ -57,6 +57,14 @@ export default function MyCompetitionPage() {
     });
   };
 
+  const handleJudgeApplication = (competitionId: number) => {
+    apply({
+      competition_id: competitionId,
+      user_id: uid,
+      role: "Judge",
+    });
+  };
+
   const handleSnackbarsClose = () => {
     setSnackbarSuccess(false);
     setSnackbarError(false);
@@ -103,6 +111,7 @@ export default function MyCompetitionPage() {
             competitions={competitions}
             uid={uid}
             onPlayerApply={handlePlayeApplication}
+            onJudgeApply={handleJudgeApplication}
             onAdminApply={handleAdminApplication}
           />
         )}

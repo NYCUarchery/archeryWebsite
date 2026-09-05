@@ -3748,6 +3748,10 @@ paths:
             user ID / invalid competition ID
           schema:
             $ref: '#/definitions/response.ErrorReceiveDataFormatResponse'
+        "403":
+          description: applications may only be submitted for the authenticated user
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: db error
           schema:
@@ -3758,7 +3762,7 @@ paths:
   /participant/{id}:
     delete:
       description: |-
-        Delete one Participant by id.
+        Delete one Participant by id. Requires an approved Admin of the target competition; the last approved Admin cannot be deleted.
         This api is intentionally designed not to delete related data, because a user may drop out of competition, but competition still need the record.
       parameters:
       - description: Participant ID
@@ -3777,6 +3781,14 @@ paths:
           description: invalid participant id
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: target competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: cannot delete the last approved competition admin
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db error / Delete Participant
           schema:
@@ -3981,7 +3993,8 @@ paths:
   /player/{id}:
     delete:
       description: Delete one Player by id, delete related round, roundend, roundscore
-        data, and playerNum minus one in lane.
+        data, and playerNum minus one in lane. Requires an approved Admin of the Player's
+        competition.
       parameters:
       - description: Player ID
         in: path
@@ -3999,6 +4012,10 @@ paths:
           description: invalid player id parameter, may not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: target competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db error for deleting player
           schema:
@@ -4047,6 +4064,7 @@ paths:
         Order is 0, TotalScore is 0, ShootOffScore is -1, Rank is 0.
         Group is unassigned group, Lane is unassigned lane.
         Will copy data from participant, user, competition.
+        Requires an approved target-competition Admin and an approved Player Participant. Judge Participants can never create a Player. Creation of Player, rounds, ends, and arrows is atomic.
       parameters:
       - description: Participant ID
         in: path
@@ -4071,6 +4089,14 @@ paths:
           description: invalid participant id parameter, may not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: target competition admin and approved Player participant required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: participant already has a Player
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db error / create player / create round / create roundend
             / create roundscore
@@ -4195,7 +4221,8 @@ paths:
       consumes:
       - application/json
       description: Update one Player groupId by id, and change player laneid to Unassigned
-        lane.
+        lane. Requires an approved Admin of the Player's competition; the target group
+        must belong to that competition.
       parameters:
       - description: Player ID
         in: path
@@ -4226,6 +4253,10 @@ paths:
           description: invalid player id / invalid group id parameter, may not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: target competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db error / updating player groupId / get player info
             / get unassigned lane id
@@ -4273,7 +4304,8 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Update one Player order and landID By by id.
+      description: Update one Player order and landID By by id. Requires an approved
+        Admin of the Player's competition; the target lane must belong to that competition.
       parameters:
       - description: Player ID
         in: path
@@ -4304,6 +4336,10 @@ paths:
           description: invalid player id / invalid lane id / invalid order parameter
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: target competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db error / updating player order / updating player
             laneid / get player info
@@ -4316,7 +4352,9 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Update one Player laneId by id, update lane playernum.
+      description: Update one Player laneId by id, update lane playernum. Requires
+        an approved Admin of the Player's competition; the target lane must belong
+        to that competition.
       parameters:
       - description: Player ID
         in: path
@@ -4347,6 +4385,10 @@ paths:
           description: invalid player id / invalid lane id parameter
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: target competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db error / updating player laneid / get player info
           schema:
@@ -4358,7 +4400,8 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Update one Player order by id.
+      description: Update one Player order by id. Requires an approved Admin of the
+        Player's competition.
       parameters:
       - description: Player ID
         in: path
@@ -4389,6 +4432,10 @@ paths:
           description: invalid player id parameter, may not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "403":
+          description: target competition admin required
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db error / updating player order / get player info
           schema:

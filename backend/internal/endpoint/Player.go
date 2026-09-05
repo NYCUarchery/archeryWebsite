@@ -2,12 +2,15 @@ package endpoint
 
 import (
 	"backend/internal/database"
+	"backend/internal/pkg"
 	response "backend/internal/response"
 
 	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type UpdateTotalScoreData struct {
@@ -117,75 +120,88 @@ func GetPlayerWPlayerSetsByIDEliminationID(context *gin.Context) {
 //	@Description	Order is 0, TotalScore is 0, ShootOffScore is -1, Rank is 0.
 //	@Description	Group is unassigned group, Lane is unassigned lane.
 //	@Description	Will copy data from participant, user, competition.
+//	@Description	Requires an approved target-competition Admin and an approved Player Participant. Judge Participants can never create a Player. Creation of Player, rounds, ends, and arrows is atomic.
 //	@Tags			Player
 //	@Produce		json
 //	@Param			participantid	path		int																true	"Participant ID"
 //	@Success		200				{object}	database.Player{rounds=response.Nill,player_sets=response.Nill}	"success, return player info"
 //	@Failure		400				{object}	response.ErrorIdResponse										"invalid participant id parameter, may not exist"
+//	@Failure		403				{object}	response.ErrorResponse											"target competition admin and approved Player participant required"
+//	@Failure		409				{object}	response.ErrorResponse											"participant already has a Player"
 //	@Failure		500				{object}	response.ErrorInternalErrorResponse								"internal db error / create player / create round / create roundend / create roundscore"
 //	@Router			/player/{participantid} [post]
 func PostPlayer(context *gin.Context) {
-	var data database.Player
-	/*only get participant_id*/
 	participantId := Convert2uint(context, "participantid")
-	data.ParticipantId = participantId
 	if response.ErrorIdTest(context, participantId, database.GetParticipantIsExist(participantId), "Participant when creating Player") {
 		return
 	}
-
-	/*copy data from participant, user, competition*/
-	participant, _ := database.GetParticipant(participantId)
-	userID := participant.UserID
-	competitionId := participant.CompetitionID
-	roundsNum := database.GetCompetitionRoundsNum(competitionId)
-	user, _ := database.FindByUserID(userID)
-	data.GroupId = database.GetCompetitionUnassignedGroupId(competitionId)
-	data.LaneId = database.GetCompetitionUnassignedLaneId(competitionId)
-	data.Name = user.RealName
-	data.TotalScore = 0
-	data.ShootOffScore = -1
-	data.Rank = 0
-	data.Order = 0
-
-	data, err := database.CreatePlayer(data)
-	if response.ErrorInternalErrorTest(context, data.ID, "Create Player", err) {
+	var data database.Player
+	err := database.DB.Transaction(func(tx *gorm.DB) error {
+		var participant database.Participant
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&participant, participantId).Error; err != nil {
+			return err
+		}
+		if err := requireCompetitionAdminTx(context, tx, participant.CompetitionID); err != nil {
+			return err
+		}
+		if participant.Status != "approved" || pkg.StringToRole(participant.Role) != pkg.RPlayer {
+			return errControlForbidden
+		}
+		var playerCount int64
+		if err := tx.Model(&database.Player{}).Where("participant_id = ?", participant.ID).Count(&playerCount).Error; err != nil {
+			return err
+		}
+		if playerCount != 0 {
+			return errControlPlayerExists
+		}
+		var competition database.Competition
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&competition, participant.CompetitionID).Error; err != nil {
+			return err
+		}
+		var user database.User
+		if err := tx.First(&user, participant.UserID).Error; err != nil {
+			return err
+		}
+		data = database.Player{
+			ParticipantId: participant.ID,
+			GroupId:       competition.UnassignedGroupId,
+			LaneId:        competition.UnassignedLaneId,
+			Name:          user.RealName,
+			TotalScore:    0,
+			ShootOffScore: -1,
+			Rank:          0,
+			Order:         0,
+		}
+		if err := tx.Create(&data).Error; err != nil {
+			return err
+		}
+		for range competition.RoundsNum {
+			round := database.Round{PlayerId: data.ID, TotalScore: 0}
+			if err := tx.Create(&round).Error; err != nil {
+				return err
+			}
+			for range 6 {
+				roundEnd := database.RoundEnd{RoundId: round.ID, IsConfirmed: false}
+				if err := tx.Create(&roundEnd).Error; err != nil {
+					return err
+				}
+				for range 6 {
+					if err := tx.Create(&database.RoundScore{RoundEndId: roundEnd.ID, Score: -1}).Error; err != nil {
+						return err
+					}
+				}
+			}
+		}
+		return nil
+	})
+	if writeControlAuthorizationError(context, err) {
+		return
+	}
+	if response.ErrorInternalErrorTest(context, data.ID, "Create Player graph", err) {
 		return
 	}
 	response.AcceptPrint(data.ID, fmt.Sprint(data), "Create Player")
-	/*create rounds*/
-	for i := 0; i < roundsNum; i++ {
-		var round database.Round
-		round.PlayerId = data.ID
-		round.TotalScore = 0
-		round, err = database.CreateRound(round)
-		if response.ErrorInternalErrorTest(context, round.ID, "Create Round when creating player ", err) {
-			return
-		}
-		response.AcceptPrint(round.ID, fmt.Sprint(round), "Create Round when creating player ")
-		/*create roundends*/
-		for j := 0; j < 6; j++ {
-			var roundEnd database.RoundEnd
-			roundEnd.RoundId = round.ID
-			roundEnd.IsConfirmed = false
-			roundEnd, err = database.CreateRoundEnd(roundEnd)
-			if response.ErrorInternalErrorTest(context, roundEnd.ID, "Create RoundEnd when creating player ", err) {
-				return
-			}
-			response.AcceptPrint(roundEnd.ID, fmt.Sprint(roundEnd), "Create RoundEnd when creating player ")
-			/*create roundscores*/
-			for k := 0; k < 6; k++ {
-				var roundScore database.RoundScore
-				roundScore.RoundEndId = roundEnd.ID
-				roundScore.Score = -1
-				roundScore, err = database.CreateRoundScore(roundScore)
-				if response.ErrorInternalErrorTest(context, roundScore.ID, "Create RoundScore when creating player ", err) {
-					return
-				}
-				response.AcceptPrint(roundScore.ID, fmt.Sprint(roundScore), "Create RoundScore when creating player ")
-			}
-		}
-	}
-	context.IndentedJSON(200, data)
+	context.IndentedJSON(http.StatusOK, data)
 }
 
 // Post one RoundEnd By Round ID godoc
@@ -304,7 +320,7 @@ func IsUpdatePlayerOrder(context *gin.Context, playerId uint, order int) bool {
 // Update one Player GroupId By ID godoc
 //
 //	@Summary		Update one Player groupId by id.
-//	@Description	Update one Player groupId by id, and change player laneid to Unassigned lane.
+//	@Description	Update one Player groupId by id, and change player laneid to Unassigned lane. Requires an approved Admin of the Player's competition; the target group must belong to that competition.
 //	@Tags			Player
 //	@Accept			json
 //	@Produce		json
@@ -313,6 +329,7 @@ func IsUpdatePlayerOrder(context *gin.Context, playerId uint, order int) bool {
 //	@Success		200		{object}	database.Player{rounds=response.Nill,player_sets=response.Nill}	"success, return player info"
 //	@Failure		400		{object}	response.ErrorIdResponse										"invalid player id / invalid group id parameter, may not exist"
 //	@Failure		500		{object}	response.ErrorInternalErrorResponse								"internal db error / updating player groupId / get player info / get unassigned lane id"
+//	@Failure		403		{object}	response.ErrorResponse									"target competition admin required"
 //	@Router			/player/group/{id} [patch]
 func PutPlayerGroupId(context *gin.Context) {
 	type UpdateGroupIdData struct {
@@ -333,27 +350,40 @@ func PutPlayerGroupId(context *gin.Context) {
 		return
 	}
 
-	if !IsUpdatePlayerGroupId(context, playerId, groupId) {
+	var updated database.Player
+	err = database.DB.Transaction(func(tx *gorm.DB) error {
+		_, participant, err := authorizePlayerControl(context, tx, playerId)
+		if err != nil {
+			return err
+		}
+		if _, err := lockedControlGroup(tx, groupId, participant.CompetitionID); err != nil {
+			return err
+		}
+		unassignedLane, err := lockedCompetitionUnassignedLane(tx, participant.CompetitionID)
+		if err != nil {
+			return err
+		}
+		if err := tx.Model(&database.Player{}).Where("id = ?", playerId).Updates(map[string]interface{}{
+			"group_id": groupId,
+			"lane_id":  unassignedLane.ID,
+		}).Error; err != nil {
+			return err
+		}
+		return tx.First(&updated, playerId).Error
+	})
+	if writeControlAuthorizationError(context, err) {
 		return
 	}
-	/*change player laneid to Unassigned lane*/
-	_, group := IsGetGroupInfo(context, groupId)
-	UnassignedLaneId := database.GetCompetitionUnassignedLaneId(group.CompetitionId)
-	if !IsUpdatePlayerLaneId(context, playerId, UnassignedLaneId) {
+	if response.ErrorInternalErrorTest(context, playerId, "Update Player groupId", err) {
 		return
 	}
-
-	isExist, data := IsGetOnlyPlayer(context, playerId)
-	if !isExist {
-		return
-	}
-	context.IndentedJSON(200, data)
+	context.IndentedJSON(http.StatusOK, updated)
 }
 
 // Update one Player LaneId By ID godoc
 //
 //	@Summary		Update one Player laneId by id.
-//	@Description	Update one Player laneId by id, update lane playernum.
+//	@Description	Update one Player laneId by id, update lane playernum. Requires an approved Admin of the Player's competition; the target lane must belong to that competition.
 //	@Tags			Player
 //	@Accept			json
 //	@Produce		json
@@ -362,6 +392,7 @@ func PutPlayerGroupId(context *gin.Context) {
 //	@Success		200		{object}	database.Player{rounds=response.Nill,player_sets=response.Nill}	"success, return player info"
 //	@Failure		400		{object}	response.ErrorIdResponse										"invalid player id / invalid lane id parameter"
 //	@Failure		500		{object}	response.ErrorInternalErrorResponse								"internal db error / updating player laneid / get player info"
+//	@Failure		403		{object}	response.ErrorResponse									"target competition admin required"
 //	@Router			/player/lane/{id} [patch]
 func PutPlayerLaneId(context *gin.Context) {
 	type UpdateLaneIdData struct {
@@ -375,20 +406,39 @@ func PutPlayerLaneId(context *gin.Context) {
 	if response.ErrorReceiveDataTest(context, playerId, "Update Player laneId", err) {
 		return
 	}
-	if !IsUpdatePlayerLaneId(context, playerId, laneId) {
+	if response.ErrorIdTest(context, playerId, database.GetPlayerIsExist(playerId), "Player when updating laneId") {
 		return
 	}
-	isExist, data := IsGetOnlyPlayer(context, playerId)
-	if !isExist {
+	if response.ErrorIdTest(context, laneId, database.GetLaneIsExist(laneId), "Lane when updating player laneId") {
 		return
 	}
-	context.IndentedJSON(200, data)
+	var updated database.Player
+	err = database.DB.Transaction(func(tx *gorm.DB) error {
+		_, participant, err := authorizePlayerControl(context, tx, playerId)
+		if err != nil {
+			return err
+		}
+		if _, err := lockedControlLane(tx, laneId, participant.CompetitionID); err != nil {
+			return err
+		}
+		if err := tx.Model(&database.Player{}).Where("id = ?", playerId).Update("lane_id", laneId).Error; err != nil {
+			return err
+		}
+		return tx.First(&updated, playerId).Error
+	})
+	if writeControlAuthorizationError(context, err) {
+		return
+	}
+	if response.ErrorInternalErrorTest(context, playerId, "Update Player laneId", err) {
+		return
+	}
+	context.IndentedJSON(http.StatusOK, updated)
 }
 
 // Update one Player Order By ID godoc
 //
 //	@Summary		Update one Player order by id.
-//	@Description	Update one Player order by id.
+//	@Description	Update one Player order by id. Requires an approved Admin of the Player's competition.
 //	@Tags			Player
 //	@Accept			json
 //	@Produce		json
@@ -397,6 +447,7 @@ func PutPlayerLaneId(context *gin.Context) {
 //	@Success		200		{object}	database.Player{rounds=response.Nill,player_sets=response.Nill}	"success, return player info"
 //	@Failure		400		{object}	response.ErrorIdResponse										"invalid player id parameter, may not exist"
 //	@Failure		500		{object}	response.ErrorInternalErrorResponse								"internal db error / updating player order / get player info"
+//	@Failure		403		{object}	response.ErrorResponse									"target competition admin required"
 //	@Router			/player/order/{id} [patch]
 func PutPlayerOrder(context *gin.Context) {
 	type UpdateOrderData struct {
@@ -410,21 +461,32 @@ func PutPlayerOrder(context *gin.Context) {
 	if response.ErrorReceiveDataTest(context, playerId, "Update Player order", err) {
 		return
 	}
-	if !IsUpdatePlayerOrder(context, playerId, order) {
+	if response.ErrorIdTest(context, playerId, database.GetPlayerIsExist(playerId), "Player when updating order") {
 		return
 	}
-
-	isExist, data := IsGetOnlyPlayer(context, playerId)
-	if !isExist {
+	var updated database.Player
+	err = database.DB.Transaction(func(tx *gorm.DB) error {
+		if _, _, err := authorizePlayerControl(context, tx, playerId); err != nil {
+			return err
+		}
+		if err := tx.Model(&database.Player{}).Where("id = ?", playerId).Update("order_number", order).Error; err != nil {
+			return err
+		}
+		return tx.First(&updated, playerId).Error
+	})
+	if writeControlAuthorizationError(context, err) {
 		return
 	}
-	context.IndentedJSON(200, data)
+	if response.ErrorInternalErrorTest(context, playerId, "Update Player order", err) {
+		return
+	}
+	context.IndentedJSON(http.StatusOK, updated)
 }
 
 // Update one Player LandID & Order By ID godoc
 //
 //	@Summary		Update one Player order and landID By by id.
-//	@Description	Update one Player order and landID By by id.
+//	@Description	Update one Player order and landID By by id. Requires an approved Admin of the Player's competition; the target lane must belong to that competition.
 //	@Tags			Player
 //	@Accept			json
 //	@Produce		json
@@ -433,6 +495,7 @@ func PutPlayerOrder(context *gin.Context) {
 //	@Success		200		{object}	database.Player{rounds=response.Nill,player_sets=response.Nill}	"success, return player info"
 //	@Failure		400		{object}	response.ErrorIdResponse										"invalid player id / invalid lane id / invalid order parameter"
 //	@Failure		500		{object}	response.ErrorInternalErrorResponse								"internal db error / updating player order / updating player laneid / get player info"
+//	@Failure		403		{object}	response.ErrorResponse									"target competition admin required"
 //	@Router			/player/lane-order/{id} [patch]
 func PatchPlayerLaneOrder(context *gin.Context) {
 	type UpdateLaneIdOrderData struct {
@@ -445,17 +508,36 @@ func PatchPlayerLaneOrder(context *gin.Context) {
 	if response.ErrorReceiveDataTest(context, playerId, "Update Player laneId and order", err) {
 		return
 	}
-	if !IsUpdatePlayerLaneId(context, playerId, updateLaneIdOrderData.LaneId) {
+	if response.ErrorIdTest(context, playerId, database.GetPlayerIsExist(playerId), "Player when updating laneId and order") {
 		return
 	}
-	if !IsUpdatePlayerOrder(context, playerId, updateLaneIdOrderData.Order) {
+	if response.ErrorIdTest(context, updateLaneIdOrderData.LaneId, database.GetLaneIsExist(updateLaneIdOrderData.LaneId), "Lane when updating player laneId and order") {
 		return
 	}
-	isExist, data := IsGetOnlyPlayer(context, playerId)
-	if !isExist {
+	var updated database.Player
+	err = database.DB.Transaction(func(tx *gorm.DB) error {
+		_, participant, err := authorizePlayerControl(context, tx, playerId)
+		if err != nil {
+			return err
+		}
+		if _, err := lockedControlLane(tx, updateLaneIdOrderData.LaneId, participant.CompetitionID); err != nil {
+			return err
+		}
+		if err := tx.Model(&database.Player{}).Where("id = ?", playerId).Updates(map[string]interface{}{
+			"lane_id":      updateLaneIdOrderData.LaneId,
+			"order_number": updateLaneIdOrderData.Order,
+		}).Error; err != nil {
+			return err
+		}
+		return tx.First(&updated, playerId).Error
+	})
+	if writeControlAuthorizationError(context, err) {
 		return
 	}
-	context.IndentedJSON(200, data)
+	if response.ErrorInternalErrorTest(context, playerId, "Update Player laneId and order", err) {
+		return
+	}
+	context.IndentedJSON(http.StatusOK, updated)
 }
 
 // Update one Player IsConfirmed By ID godoc
@@ -737,6 +819,9 @@ func RefreshPlayerTotalScoresByCompetitionId(context *gin.Context) {
 	if response.ErrorIdTest(context, competition_id, database.GetCompetitionIsExist(competition_id), "Competition when refreshing player total scores") {
 		return
 	}
+	if !requireCompetitionAdmin(context, competition_id) {
+		return
+	}
 
 	competition, err := database.GetCompetitionWGroupsPlayers(competition_id)
 	if response.ErrorInternalErrorTest(context, competition_id, "Get Competition with groups and players", err) {
@@ -754,13 +839,14 @@ func RefreshPlayerTotalScoresByCompetitionId(context *gin.Context) {
 // Delete one Player By ID godoc
 //
 //	@Summary		Delete one Player by id.
-//	@Description	Delete one Player by id, delete related round, roundend, roundscore data, and playerNum minus one in lane.
+//	@Description	Delete one Player by id, delete related round, roundend, roundscore data, and playerNum minus one in lane. Requires an approved Admin of the Player's competition.
 //	@Tags			Player
 //	@Produce		json
 //	@Param			id	path		int									true	"Player ID"
 //	@Success		200	{object}	response.DeleteSuccessResponse		"successfully delete player"
 //	@Failure		400	{object}	response.ErrorIdResponse			"invalid player id parameter, may not exist"
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error for deleting player"
+//	@Failure		403	{object}	response.ErrorResponse				"target competition admin required"
 //	@Router			/player/{id} [delete]
 func DeletePlayer(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -768,7 +854,18 @@ func DeletePlayer(context *gin.Context) {
 	if !isExist {
 		return
 	}
-	isChanged, err := database.DeletePlayer(id)
+	isChanged := false
+	err := database.DB.Transaction(func(tx *gorm.DB) error {
+		if _, _, err := authorizePlayerControl(context, tx, id); err != nil {
+			return err
+		}
+		result := tx.Delete(&database.Player{}, id)
+		isChanged = result.RowsAffected != 0
+		return result.Error
+	})
+	if writeControlAuthorizationError(context, err) {
+		return
+	}
 	if response.ErrorInternalErrorTest(context, id, "Delete Player", err) {
 		return
 	}
