@@ -93,13 +93,23 @@ export type EliminationMatchScoreComparisonProps = {
   onEditEnd?: (end: DatabaseMatchEnd) => void;
   /** 正在寫入的波次 ID；該波所有操作會暫停。 */
   updatingEndIds?: number[];
+  /** 裁判頁不得把已確認波次改回未確認；管理監控頁保留原本解除功能。 */
+  allowUnconfirm?: boolean;
+  /** 目前賽事進行中的波次（0-based），以外框標示。 */
+  currentEndIndex?: number;
   disabled?: boolean;
 };
 
-function SideHeader({ side }: { side: EliminationMatchScoreComparisonSide }) {
+function SideHeader({
+  side,
+  sideIndex,
+}: {
+  side: EliminationMatchScoreComparisonSide;
+  sideIndex: 1 | 2;
+}) {
   const { matchResult } = side;
   return (
-    <Stack useFlexGap spacing={1} alignItems="stretch">
+    <Stack data-testid={`match-score-side-${sideIndex}`} useFlexGap spacing={1} alignItems="stretch" sx={{ minWidth: 0, overflowWrap: "anywhere" }}>
       <Box sx={{ minHeight: 24, display: "flex", alignItems: "center", justifyContent: "center" }}>
         {matchResult?.is_winner && <Chip label="勝方" color="success" size="small" />}
       </Box>
@@ -184,6 +194,9 @@ function EndCell({
   onEditEnd,
   isUpdating = false,
   disabled = false,
+  allowUnconfirm = true,
+  isCurrentEnd = false,
+  sideLabel,
 }: {
   end?: DatabaseMatchEnd;
   otherEnd?: DatabaseMatchEnd;
@@ -192,6 +205,9 @@ function EndCell({
   onEditEnd?: (end: DatabaseMatchEnd) => void;
   isUpdating?: boolean;
   disabled?: boolean;
+  allowUnconfirm?: boolean;
+  isCurrentEnd?: boolean;
+  sideLabel?: string;
 }) {
   if (!end) return <Typography color="text.secondary">—</Typography>;
 
@@ -204,10 +220,13 @@ function EndCell({
       alignItems="center"
       aria-label={`${status}波次比分`}
       data-status={confirmed ? "confirmed" : "unconfirmed"}
+      data-current-end={isCurrentEnd ? "true" : undefined}
       sx={{
         backgroundColor: confirmed
           ? "rgba(46, 125, 50, 0.12)"
           : "rgba(211, 47, 47, 0.12)",
+        border: isCurrentEnd ? 2 : 0,
+        borderColor: isCurrentEnd ? "primary.main" : "transparent",
         borderRadius: 1,
         minHeight: 104,
         p: 1,
@@ -217,6 +236,11 @@ function EndCell({
         justifyContent: "center",
       }}
     >
+      {sideLabel && (
+        <Typography sx={{ display: { xs: "block", md: "none" }, overflowWrap: "anywhere" }} variant="subtitle2" fontWeight={700} align="center">
+          {sideLabel}
+        </Typography>
+      )}
       <Stack direction="row" spacing={0.5} justifyContent="center" flexWrap="wrap">
         {(end.match_scores ?? []).map((matchScore, index) =>
           matchScore.score !== undefined && matchScore.score >= 0 ? (
@@ -232,11 +256,11 @@ function EndCell({
         <ScoreMetric icon={<FunctionsIcon aria-label="累積點數" fontSize="inherit" />} label="累積點數" value={end.cumulative_points ?? cumulativePoints} />
       </Stack>
       <Stack direction="row" spacing={0.25} alignItems="center" justifyContent="center">
-        <Tooltip title={onToggleConfirmation ? `切換為${confirmed ? "未確認" : "已確認"}` : status}>
+        <Tooltip title={onToggleConfirmation && (!confirmed || allowUnconfirm) ? `切換為${confirmed ? "未確認" : "已確認"}` : status}>
           <span>
             <ButtonBase
-              aria-label={onToggleConfirmation ? `切換為${confirmed ? "未確認" : "已確認"}` : status}
-              disabled={disabled || isUpdating || !onToggleConfirmation}
+              aria-label={onToggleConfirmation && (!confirmed || allowUnconfirm) ? `切換為${confirmed ? "未確認" : "已確認"}` : status}
+              disabled={disabled || isUpdating || !onToggleConfirmation || (confirmed && !allowUnconfirm)}
               onClick={() => onToggleConfirmation?.(end, !confirmed)}
               sx={{ borderRadius: 0.75, px: 0.5, py: 0.25 }}
             >
@@ -287,6 +311,8 @@ export default function EliminationMatchScoreComparison({
   onToggleConfirmation,
   onEditEnd,
   updatingEndIds = [],
+  allowUnconfirm = true,
+  currentEndIndex,
   disabled = false,
 }: EliminationMatchScoreComparisonProps) {
   const side1Ends = side1.matchResult?.match_ends ?? [];
@@ -300,9 +326,9 @@ export default function EliminationMatchScoreComparison({
       variant="outlined"
       data-testid="elimination-match-score-comparison"
       tabIndex={0}
-      aria-label="淘汰賽比分比較，可左右捲動"
+      aria-label="淘汰賽比分比較；手機版依波次直向排列，桌機版以雙方對照呈現"
       sx={{
-        overflowX: "auto",
+        overflowX: { xs: "visible", md: "auto" },
         p: 1,
         "&:focus-visible": {
           outline: "2px solid",
@@ -312,39 +338,63 @@ export default function EliminationMatchScoreComparison({
       }}
     >
       <Box
+        data-testid="elimination-match-score-header"
         sx={{
           display: "grid",
+          gridTemplateAreas: {
+            xs: '"side1" "side2"',
+            md: '"side1 versus side2"',
+          },
           gap: 0.75,
-          gridTemplateColumns: "minmax(360px, 1fr) 72px minmax(360px, 1fr)",
-          minWidth: 792,
+          gridTemplateColumns: { xs: "minmax(0, 1fr)", md: "minmax(360px, 1fr) 72px minmax(360px, 1fr)" },
+          minWidth: { md: 792 },
         }}
       >
-        <Box data-testid="match-score-side-1"><SideHeader side={side1} /></Box>
-        <Stack alignItems="center" justifyContent="center" spacing={0.25}>
+        <Box sx={{ gridArea: "side1", minWidth: 0 }}><SideHeader side={side1} sideIndex={1} /></Box>
+        <Stack sx={{ gridArea: "versus", display: { xs: "none", md: "flex" } }} alignItems="center" justifyContent="center" spacing={0.25}>
           <Tooltip title="對抗">
             <SportsKabaddiIcon aria-label="對抗" color="primary" fontSize="small" />
           </Tooltip>
           <Typography variant="caption" color="text.secondary">對抗</Typography>
         </Stack>
-        <Box data-testid="match-score-side-2"><SideHeader side={side2} /></Box>
-        {endCount === 0 ? (
-          <Typography gridColumn="1 / -1" align="center" color="text.secondary" sx={{ py: 2 }}>
-            尚無比分
-          </Typography>
-        ) : (
-          Array.from({ length: endCount }, (_, index) => (
-            <Box key={index} display="contents">
-              <Box data-testid={`match-score-end-${index + 1}-side-1`} sx={{ display: "flex", minWidth: 0, alignItems: "stretch" }}>
-                <EndCell end={side1Ends[index]} otherEnd={side2Ends[index]} cumulativePoints={side1Cumulative[index]} onToggleConfirmation={onToggleConfirmation} onEditEnd={onEditEnd} isUpdating={updatingEndIds.includes(side1Ends[index]?.id ?? -1)} disabled={disabled} />
-              </Box>
-              <Stack alignItems="center" justifyContent="center"><WaveIcon index={index} /></Stack>
-              <Box data-testid={`match-score-end-${index + 1}-side-2`} sx={{ display: "flex", minWidth: 0, alignItems: "stretch" }}>
-                <EndCell end={side2Ends[index]} otherEnd={side1Ends[index]} cumulativePoints={side2Cumulative[index]} onToggleConfirmation={onToggleConfirmation} onEditEnd={onEditEnd} isUpdating={updatingEndIds.includes(side2Ends[index]?.id ?? -1)} disabled={disabled} />
-              </Box>
-            </Box>
-          ))
-        )}
+        <Box sx={{ gridArea: "side2", minWidth: 0 }}><SideHeader side={side2} sideIndex={2} /></Box>
       </Box>
+      {endCount === 0 ? (
+        <Typography align="center" color="text.secondary" sx={{ py: 2 }}>
+          尚無比分
+        </Typography>
+      ) : Array.from({ length: endCount }, (_, index) => (
+        <Paper
+          key={index}
+          variant="outlined"
+          data-testid={`match-score-wave-${index + 1}`}
+          sx={{
+            display: "grid",
+            gridTemplateAreas: { xs: '"wave" "side1" "side2"', md: '"side1 wave side2"' },
+            gridTemplateColumns: { xs: "minmax(0, 1fr)", md: "minmax(360px, 1fr) 72px minmax(360px, 1fr)" },
+            gap: 0.75,
+            minWidth: { md: 792 },
+            mt: 1,
+            p: 1,
+          }}
+        >
+          <Stack sx={{ gridArea: "wave" }} alignItems="center" justifyContent="center">
+            <WaveIcon index={index} />
+            <Typography
+              variant="subtitle2"
+              sx={{ display: { xs: "block", md: "none" }, mt: 0.25 }}
+            >
+              第 {index + 1} 波
+            </Typography>
+          </Stack>
+          <Box data-testid={`match-score-end-${index + 1}-side-1`} sx={{ gridArea: "side1", display: "flex", minWidth: 0, alignItems: "stretch" }}>
+            <EndCell end={side1Ends[index]} otherEnd={side2Ends[index]} cumulativePoints={side1Cumulative[index]} onToggleConfirmation={onToggleConfirmation} onEditEnd={onEditEnd} isUpdating={updatingEndIds.includes(side1Ends[index]?.id ?? -1)} disabled={disabled} allowUnconfirm={allowUnconfirm} isCurrentEnd={currentEndIndex === index} sideLabel={side1.label} />
+          </Box>
+          <Box data-testid={`match-score-end-${index + 1}-side-2`} sx={{ gridArea: "side2", display: "flex", minWidth: 0, alignItems: "stretch" }}>
+            <EndCell end={side2Ends[index]} otherEnd={side1Ends[index]} cumulativePoints={side2Cumulative[index]} onToggleConfirmation={onToggleConfirmation} onEditEnd={onEditEnd} isUpdating={updatingEndIds.includes(side2Ends[index]?.id ?? -1)} disabled={disabled} allowUnconfirm={allowUnconfirm} isCurrentEnd={currentEndIndex === index} sideLabel={side2.label} />
+          </Box>
+        </Paper>
+      ))}
     </Paper>
   );
 }
