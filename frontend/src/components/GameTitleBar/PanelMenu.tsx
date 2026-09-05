@@ -25,7 +25,7 @@ const boardNameSets: BoardNameSet[] = [
   { id: "scoreboard", name: "分數榜", path: "/scoreboard" },
   { id: "scoring", name: "紀錄分數", path: "/scoring" },
   { id: "admin", name: "監控", path: "/admin" },
-  { id: "judge", name: "裁判", path: "/admin/score-editing" },
+  { id: "judge", name: "裁判", path: "/judge" },
 ];
 
 interface Props {
@@ -39,7 +39,7 @@ export default function PanelMenu({ panelName, participant }: Props) {
   const currentPath = usePathname();
   const currentPenalRootPath = prunePath(currentPath, 3);
 
-  let indicatorCharacter: string = boardAbbreviations.get(panelName) as string;
+  const indicatorCharacter = boardAbbreviations.get(panelName) ?? "分";
 
   const handleClose = () => {
     setAnchorEl(null);
@@ -55,20 +55,25 @@ export default function PanelMenu({ panelName, participant }: Props) {
         set.id !== "scoreboard"
       ) {
         return null;
-      } else if (
-        participant?.role === "Player" &&
-        (set.id === "admin" || set.id === "judge")
-      ) {
+      } else if (participant?.role === "Player" && (set.id === "admin" || set.id === "judge")) {
+        return null;
+      } else if (participant?.role === "Judge" && (set.id === "admin" || set.id === "scoring")) {
         return null;
       } else if (participant?.role === "Admin" && set.id === "scoring") {
+        return null;
+      } else if (
+        participant?.role !== "Player" &&
+        participant?.role !== "Judge" &&
+        participant?.role !== "Admin" &&
+        set.id !== "scoreboard"
+      ) {
         return null;
       }
       return (
         <MenuItem
           key={set.id}
           onClick={() => {
-            router.push(currentPenalRootPath + "/" + set.path);
-            indicatorCharacter = boardAbbreviations.get(set.id) as string;
+            router.push(`${currentPenalRootPath}${set.path}`);
             handleClose();
           }}
         >

@@ -12,6 +12,7 @@ type QualificationRoutes = {
   playerScoreGetCount: () => number;
   holdNextPlayerScoreSave: () => void;
   releasePendingPlayerScoreSave: () => void;
+  failNextPlayerScoreSave: () => void;
 };
 
 function clone<T>(value: T): T {
@@ -86,6 +87,8 @@ function buildDetailedPlayer() {
               { id: 9782, round_end_id: 9780, score: 7 },
               { id: 9783, round_end_id: 9780, score: 7 },
               { id: 9784, round_end_id: 9780, score: 0 },
+              { id: 9785, round_end_id: 9780, score: -1 },
+              { id: 9786, round_end_id: 9780, score: -1 },
             ],
           },
         ],
@@ -109,12 +112,12 @@ function buildDetailedPlayer() {
           {
             id: 9810,
             round_id: 9790,
-            is_confirmed: true,
+            is_confirmed: false,
             round_scores: [
               { id: 9811, round_end_id: 9810, score: 11 },
               { id: 9812, round_end_id: 9810, score: 10 },
-              { id: 9813, round_end_id: 9810, score: -1 },
-              { id: 9814, round_end_id: 9810, score: -1 },
+              { id: 9813, round_end_id: 9810, score: 0 },
+              { id: 9814, round_end_id: 9810, score: 0 },
             ],
           },
         ],
@@ -130,6 +133,7 @@ async function registerQualificationRoutes(page: Page): Promise<QualificationRou
   const playerScoreRequests: ScoreRequest[] = [];
   let playerScoreGets = 0;
   let holdNextPlayerScoreSave = false;
+  let failNextPlayerScoreSave = false;
   let releasePendingPlayerScoreSave: (() => void) | undefined;
 
   const competition = {
@@ -190,7 +194,12 @@ async function registerQualificationRoutes(page: Page): Promise<QualificationRou
     await route.fulfill({ json: { id: userId, username: "score-admin", real_name: "分數管理員" } });
   });
   await page.route(`**/participant/competition/user/${competitionId}/${userId}`, async (route) => {
-    await route.fulfill({ json: [] });
+    await route.fulfill({
+      json: [{ id: 9740, userID: userId, competitionID: competitionId, role: "Admin", status: "approved" }],
+    });
+  });
+  await page.route(`**/competition/${competitionId}`, async (route) => {
+    await route.fulfill({ json: competition });
   });
   await page.route(`**/competition/groups/${competitionId}`, async (route) => {
     await route.fulfill({ json: competition });
@@ -239,6 +248,11 @@ async function registerQualificationRoutes(page: Page): Promise<QualificationRou
     const endId = Number(route.request().url().split("/").pop());
     const body = route.request().postDataJSON() as { scores: number[] };
     playerScoreRequests.push({ endId, body });
+    if (failNextPlayerScoreSave) {
+      failNextPlayerScoreSave = false;
+      await route.fulfill({ status: 500, json: { error: "mock 儲存失敗" } });
+      return;
+    }
     if (holdNextPlayerScoreSave) {
       holdNextPlayerScoreSave = false;
       await new Promise<void>((resolve) => {
@@ -259,6 +273,19 @@ async function registerQualificationRoutes(page: Page): Promise<QualificationRou
     refreshTotals(serverPlayer);
     await route.fulfill({ status: 200, json: null });
   });
+  await page.route("**/player/isconfirmed/*", async (route) => {
+    const endId = Number(route.request().url().split("/").pop());
+    const body = route.request().postDataJSON() as { is_confirmed: boolean };
+    const end = serverPlayer.rounds
+      .flatMap((round: any) => round.round_ends)
+      .find((roundEnd: any) => roundEnd.id === endId);
+    if (!end) {
+      await route.fulfill({ status: 404, json: { message: "round end not found" } });
+      return;
+    }
+    end.is_confirmed = body.is_confirmed;
+    await route.fulfill({ status: 200, json: null });
+  });
 
   return {
     playerScoreRequests,
@@ -272,6 +299,9 @@ async function registerQualificationRoutes(page: Page): Promise<QualificationRou
       }
       releasePendingPlayerScoreSave();
     },
+    failNextPlayerScoreSave: () => {
+      failNextPlayerScoreSave = true;
+    },
   };
 }
 
@@ -284,7 +314,7 @@ async function gotoPublicQualificationScoreboard(page: Page) {
 
 async function selectPlayerForScoreEditing(page: Page) {
   const baseUrl = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1";
-  await page.goto(`${baseUrl}/competition/${competitionId}/admin/score-editing/qualification`);
+  await page.goto(`${baseUrl}/competition/${competitionId}/judge`);
   await page.getByLabel("選手姓名").fill("甲");
   await page.getByRole("option", { name: "甲選手" }).click();
   await expect(page.getByText("1-1", { exact: true })).toBeVisible();
@@ -337,7 +367,67 @@ test.describe("Qualification score summaries", () => {
     await expect(table.getByText("138", { exact: true })).toBeVisible();
   });
 
-  test("取消編輯只捨棄本地草稿，不寫入也不重新抓取", async ({ page }) => {
+  test("390px 裁判資格賽沿用桌機表格，箭分、統計與操作均不橫向溢出", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await registerQualificationRoutes(page);
+    const baseUrl = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1";
+    await page.goto(`${baseUrl}/competition/${competitionId}/judge`);
+    await page.getByLabel("選手姓名").fill("甲");
+    await page.getByRole("option", { name: "甲選手" }).click();
+
+    const table = page.getByTestId("qualification-score-editor-table");
+    await expect(table).toBeVisible();
+    expect(await table.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    await expect(table.getByText("1-1", { exact: true })).toBeVisible();
+    await expect(table.getByText("28", { exact: true }).first()).toBeVisible();
+    await expect(table).toContainText(/X\s*2\s*10\s*3\s*Total\s*81/);
+    await expect(table).toContainText(/X\s*3\s*10\s*5\s*Total\s*129/);
+    await expect(table.getByRole("button", { name: "編輯第1局第1波分數" })).toBeVisible();
+    // 六箭波含兩個未填占位；所有格子必須落在同一列，不能因手機寬度換行。
+    const sixArrowEnd = table.getByTestId("qualification-end-scores-9780");
+    const sixArrowSlots = sixArrowEnd.locator(
+      ".score_block, .qualification-score-placeholder",
+    );
+    await expect(sixArrowSlots).toHaveCount(6);
+    const sixArrowSlotBoxes = await sixArrowSlots.evaluateAll((nodes) =>
+      nodes.map((node) => node.getBoundingClientRect()),
+    );
+    expect(new Set(sixArrowSlotBoxes.map((bounds) => Math.round(bounds.top))).size).toBe(1);
+    const [lastRoundOneEnd, firstRoundTwoEnd] = await Promise.all([
+      table.getByText("1-3", { exact: true }).boundingBox(),
+      table.getByText("2-1", { exact: true }).boundingBox(),
+    ]);
+    if (!lastRoundOneEnd || !firstRoundTwoEnd) {
+      throw new Error("手機資格賽表格未取得位置");
+    }
+    expect(lastRoundOneEnd.y).toBeLessThan(firstRoundTwoEnd.y);
+
+    await table.getByRole("button", { name: "編輯第1局第3波分數" }).click();
+    const editDialog = page.getByRole("dialog", { name: "編輯分數" });
+    await expect(editDialog).toBeVisible();
+    const dialogScoreSlots = editDialog.locator(
+      ".score_block, .qualification-score-placeholder",
+    );
+    await expect(dialogScoreSlots).toHaveCount(6);
+    const dialogScoreSlotBoxes = await dialogScoreSlots.evaluateAll((nodes) =>
+      nodes.map((node) => node.getBoundingClientRect()),
+    );
+    expect(new Set(dialogScoreSlotBoxes.map((bounds) => Math.round(bounds.top))).size).toBe(1);
+    expect(
+      await editDialog.evaluate((node) => {
+        const bounds = node.getBoundingClientRect();
+        return (
+          node.scrollWidth <= node.clientWidth &&
+          bounds.left >= 0 &&
+          bounds.right <= window.innerWidth
+        );
+      }),
+    ).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  });
+
+  test("返回會保留本地草稿，不寫入也不重新抓取", async ({ page }) => {
     const routes = await registerQualificationRoutes(page);
     await selectPlayerForScoreEditing(page);
 
@@ -345,13 +435,48 @@ test.describe("Qualification score summaries", () => {
     await table.getByRole("button", { name: "編輯第1局第1波分數" }).click();
     const editDialog = page.getByRole("dialog", { name: "編輯分數" });
     await editDialog.getByRole("button", { name: "9", exact: true }).click();
-    await editDialog.getByRole("button", { name: "取消", exact: true }).click();
+    await editDialog.getByRole("button", { name: "保留草稿並返回", exact: true }).click();
 
     expect(routes.playerScoreRequests).toEqual([]);
     expect(routes.playerScoreGetCount()).toBe(1);
+    await expect(page.getByText("請先送出或放棄目前草稿後再編輯其他波次。")).toHaveCount(0);
+    await expect(page.getByText("1-1", { exact: true })).toBeVisible();
     await expect(table.getByText("28", { exact: true }).first()).toBeVisible();
     await expect(table.getByText("81", { exact: true })).toBeVisible();
     await expect(table.getByText("129", { exact: true })).toBeVisible();
+
+    await table.getByRole("button", { name: "編輯第1局第1波分數" }).click();
+    await expect(editDialog.locator(".score_block").nth(2)).toHaveText("9");
+  });
+
+  test("儲存失敗保留草稿，未確認波成功確認後重開呈已確認", async ({ page }) => {
+    const routes = await registerQualificationRoutes(page);
+    await selectPlayerForScoreEditing(page);
+
+    const table = page.getByRole("table");
+    await table.getByRole("button", { name: "編輯第1局第1波分數" }).click();
+    const editDialog = page.getByRole("dialog", { name: "編輯分數" });
+    await editDialog.getByRole("button", { name: "9", exact: true }).click();
+    routes.failNextPlayerScoreSave();
+    await editDialog.getByRole("button", { name: "送出", exact: true }).click();
+    await expect(editDialog.getByText("mock 儲存失敗")).toBeVisible();
+    await expect(editDialog.locator(".score_block").nth(2)).toHaveText("9");
+
+    await editDialog.getByRole("button", { name: "保留草稿並返回", exact: true }).click();
+    await table.getByRole("button", { name: "編輯第1局第1波分數" }).click();
+    await expect(editDialog.locator(".score_block").nth(2)).toHaveText("9");
+    page.once("dialog", (dialog) => dialog.accept());
+    await editDialog.getByRole("button", { name: "放棄草稿", exact: true }).click();
+
+    await table.getByRole("button", { name: "編輯第2局第2波分數" }).click();
+    await expect(editDialog.getByRole("button", { name: "確認", exact: true })).toBeVisible();
+    await editDialog.getByRole("button", { name: "確認", exact: true }).click();
+    await expect(editDialog).not.toBeVisible();
+    await expect.poll(() => routes.playerScoreGetCount()).toBe(2);
+
+    await table.getByRole("button", { name: "編輯第2局第2波分數" }).click();
+    await expect(editDialog.getByText("已確認（改分後維持確認）")).toBeVisible();
+    await expect(editDialog.getByRole("button", { name: "確認", exact: true })).toHaveCount(0);
   });
 
   test("儲存中不可取消或以 Escape／backdrop 關閉，完成後才關閉並剛好重抓一次", async ({
@@ -361,14 +486,14 @@ test.describe("Qualification score summaries", () => {
     await selectPlayerForScoreEditing(page);
 
     const table = page.getByRole("table");
-    await table.getByRole("button", { name: "編輯第2局第2波分數" }).click();
+    await table.getByRole("button", { name: "編輯第1局第1波分數" }).click();
     const editDialog = page.getByRole("dialog", { name: "編輯分數" });
     await editDialog.getByRole("button", { name: "9", exact: true }).click();
     routes.holdNextPlayerScoreSave();
     await editDialog.getByRole("button", { name: "送出", exact: true }).click();
     await expect.poll(() => routes.playerScoreRequests).toHaveLength(1);
 
-    await expect(editDialog.getByRole("button", { name: "取消", exact: true })).toBeDisabled();
+    await expect(editDialog.getByRole("button", { name: "保留草稿並返回", exact: true })).toBeDisabled();
     await expect(editDialog.getByRole("button", { name: "送出", exact: true })).toBeDisabled();
     await expect(editDialog.getByRole("button", { name: "8", exact: true })).toBeDisabled();
     await expect(editDialog.getByTestId("BackspaceIcon").locator("..")).toBeDisabled();

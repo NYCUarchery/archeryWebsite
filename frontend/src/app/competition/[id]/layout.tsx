@@ -9,6 +9,7 @@ import { useGetCurrentUserDetail } from "@/utils/QueryHooks/useGetCurrentUserDet
 import useGetPlayersByParticipant from "@/utils/QueryHooks/useGetPlayersByParticipant";
 import { useEffect } from "react";
 import { useQueryClient } from "react-query";
+import { usePathname } from "next/navigation";
 
 export default function Layout({
   children,
@@ -19,6 +20,7 @@ export default function Layout({
 }) {
   const { data: user } = useGetCurrentUserDetail();
   const queryClient = useQueryClient();
+  const pathname = usePathname();
   const competitionId = parseInt(params.id);
   const {
     data: competition,
@@ -38,6 +40,12 @@ export default function Layout({
     isLoadingCompetition || isLoadingParticipant || isLoadingPlayer;
 
   if (isLoading) return <span>Loading...</span>;
+
+  // 裁判頁是現場手機工具，不承載一般賽事的標題列與組別列；其 own layout
+  // 僅渲染小型 panel menu。其餘頁面維持既有外框。
+  if (pathname.startsWith(`/competition/${competitionId}/judge`)) {
+    return <>{children}</>;
+  }
 
   return (
     <>

@@ -7,7 +7,7 @@ export default function useGetCurrentParticipentDetail(
   userId: number | undefined
 ) {
   return useQuery(
-    "currentParticipent",
+    ["currentParticipent", competitionId, userId],
     () => apiClient.participant.competitionUserDetail(competitionId!, userId!),
     {
       select: (data) => data.data[0],
