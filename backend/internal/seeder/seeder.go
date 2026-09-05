@@ -23,6 +23,9 @@ const (
 	seedPassword = "archery-seed-password"
 	seedPrefix   = "development-seeder/"
 
+	seedJudgeUserName = "seeder.judge"
+	seedJudgeEmail    = "seeder.judge@example.invalid"
+
 	// One qualification round of six ends with six arrows each, exactly what
 	// the application creates for a competition whose RoundsNum is one.
 	roundsNum    = 1
@@ -163,11 +166,18 @@ func Seed(db *gorm.DB, scenario Scenario) (Result, error) {
 		if err != nil {
 			return err
 		}
+		judge, err := ensureJudge(tx)
+		if err != nil {
+			return err
+		}
 		competition, err := createCompetition(tx, scenario, host.ID)
 		if err != nil {
 			return err
 		}
 		if err := addHostAdmin(tx, competition.ID, host.ID); err != nil {
+			return err
+		}
+		if err := addJudge(tx, competition.ID, judge.ID); err != nil {
 			return err
 		}
 		for index, spec := range itemSpecs {
@@ -234,6 +244,36 @@ func ensurePlayers(tx *gorm.DB) ([]database.User, error) {
 		players = append(players, user)
 	}
 	return players, nil
+}
+
+// ensureJudge owns the one shared referee login used by every development
+// fixture. Existing accounts are only reused when they exactly match the
+// development fixture contract; a real account must never be overwritten.
+func ensureJudge(tx *gorm.DB) (database.User, error) {
+	var judge database.User
+	err := tx.Where("user_name = ?", seedJudgeUserName).First(&judge).Error
+	switch {
+	case err == nil:
+		if judge.Role != pkg.RoleToString(pkg.RUser) || judge.Email != seedJudgeEmail || judge.InstitutionID != database.NoInstitutionID || pkg.Compare(judge.Password, seedPassword) != nil {
+			return judge, fmt.Errorf("existing user %q is not this seeder's development account; refusing to modify it", seedJudgeUserName)
+		}
+	case errors.Is(err, gorm.ErrRecordNotFound):
+		judge = database.User{
+			Role:          pkg.RoleToString(pkg.RUser),
+			UserName:      seedJudgeUserName,
+			RealName:      "種子裁判",
+			Password:      pkg.EncryptPassword(seedPassword),
+			Email:         seedJudgeEmail,
+			InstitutionID: database.NoInstitutionID,
+			Overview:      "development seeder judge account",
+		}
+		if err := tx.Create(&judge).Error; err != nil {
+			return judge, fmt.Errorf("create %q: %w", seedJudgeUserName, err)
+		}
+	default:
+		return judge, fmt.Errorf("find %q: %w", seedJudgeUserName, err)
+	}
+	return judge, nil
 }
 
 // createCompetition builds the competition shell: the unassigned group with its
@@ -334,6 +374,14 @@ func addHostAdmin(tx *gorm.DB, competitionID, hostID uint) error {
 	host := database.Participant{UserID: hostID, CompetitionID: competitionID, Role: pkg.RoleToString(pkg.RAdmin), Status: "approved"}
 	if err := tx.Create(&host).Error; err != nil {
 		return fmt.Errorf("add Dictator as competition admin: %w", err)
+	}
+	return nil
+}
+
+func addJudge(tx *gorm.DB, competitionID, judgeID uint) error {
+	judge := database.Participant{UserID: judgeID, CompetitionID: competitionID, Role: pkg.RoleToString(pkg.RJudge), Status: "approved"}
+	if err := tx.Create(&judge).Error; err != nil {
+		return fmt.Errorf("add seeder judge: %w", err)
 	}
 	return nil
 }
@@ -677,7 +725,7 @@ func assertLanes(db *gorm.DB, competition database.Competition, groups []databas
 
 // assertParticipantsAndUsers checks the competition wide participant counts and
 // that every seeded account is an approved player of this competition exactly
-// once.
+// once, while the shared judge is an approved Judge and never a Player.
 func assertParticipantsAndUsers(db *gorm.DB, competition database.Competition) error {
 	var hostAdmins, playerParticipants, seededUsers, seededParticipants, players, distinctParticipants int64
 	if err := db.Model(&database.Participant{}).
@@ -701,6 +749,30 @@ func assertParticipantsAndUsers(db *gorm.DB, competition database.Competition) e
 			competition.ID, pkg.RoleToString(pkg.RPlayer), "approved", "seeder.archer.%").
 		Count(&seededParticipants).Error; err != nil || seededParticipants != int64(seededUserCount()) {
 		return fmt.Errorf("every seeder account must be an approved player of this competition, got %d: %w", seededParticipants, err)
+	}
+	var judge database.User
+	if err := db.Where("user_name = ?", seedJudgeUserName).First(&judge).Error; err != nil {
+		return fmt.Errorf("find seeder judge account: %w", err)
+	}
+	if judge.Role != pkg.RoleToString(pkg.RUser) || judge.Email != seedJudgeEmail || judge.InstitutionID != database.NoInstitutionID || pkg.Compare(judge.Password, seedPassword) != nil {
+		return fmt.Errorf("seeder judge account %q does not match the development account contract", seedJudgeUserName)
+	}
+	var judgeParticipants, judgePlayers, otherJudgeParticipants int64
+	if err := db.Model(&database.Participant{}).
+		Where("competition_id = ? AND user_id = ? AND role = ? AND status = ?", competition.ID, judge.ID, pkg.RoleToString(pkg.RJudge), "approved").
+		Count(&judgeParticipants).Error; err != nil || judgeParticipants != 1 {
+		return fmt.Errorf("competition must have exactly one approved seeder judge participant, got %d: %w", judgeParticipants, err)
+	}
+	if err := db.Model(&database.Participant{}).
+		Where("competition_id = ? AND user_id = ?", competition.ID, judge.ID).
+		Count(&otherJudgeParticipants).Error; err != nil || otherJudgeParticipants != 1 {
+		return fmt.Errorf("seeder judge must have exactly one participant role in this competition, got %d: %w", otherJudgeParticipants, err)
+	}
+	if err := db.Model(&database.Player{}).
+		Joins("JOIN participants ON participants.id = players.participant_id").
+		Where("participants.competition_id = ? AND participants.user_id = ?", competition.ID, judge.ID).
+		Count(&judgePlayers).Error; err != nil || judgePlayers != 0 {
+		return fmt.Errorf("seeder judge participant must not be linked to a player, got %d: %w", judgePlayers, err)
 	}
 	// Every participant is used by exactly one player, and every player of this
 	// competition belongs to one of its own groups.
