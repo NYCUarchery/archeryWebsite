@@ -703,41 +703,44 @@ test("進度頁：對抗組面板以雙方對照呈現比分，並保留缺少�
   if (!firstTeamCardBox || !secondTeamCardBox) {
     throw new Error("對抗組卡片未取得可比較的位置");
   }
-  expect(
-    Math.abs(secondTeamCardBox.y - firstTeamCardBox.y),
-  ).toBeLessThanOrEqual(1);
-  expect(secondTeamCardBox.x).toBeGreaterThan(firstTeamCardBox.x);
   const comparison = dialog.getByTestId("elimination-match-score-comparison");
   await expect(comparison).toBeVisible();
   expect(
     await comparison.evaluate(
-      (element) => element.scrollWidth > element.clientWidth,
+      (element) => element.scrollWidth <= element.clientWidth,
+    ),
+  ).toBe(true);
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= window.innerWidth,
     ),
   ).toBe(true);
   await comparison.focus();
   await expect(comparison).toBeFocused();
-  const side1 = comparison.getByTestId("match-score-side-1");
-  const side2 = comparison.getByTestId("match-score-side-2");
-  await expect(side1.getByLabel("隊伍 1", { exact: true })).toHaveValue(
+  const side1Summary = comparison.getByTestId("match-score-side-1");
+  const side2Summary = comparison.getByTestId("match-score-side-2");
+  const firstWave = comparison.getByTestId("match-score-wave-1");
+  const side1 = firstWave.getByTestId("match-score-end-1-side-1");
+  const side2 = firstWave.getByTestId("match-score-end-1-side-2");
+  await expect(side1Summary.getByLabel("隊伍 1", { exact: true })).toHaveValue(
     new RegExp(fixture.setNameMine),
   );
-  await expect(side1).toContainText("勝方");
-  await expect(side1).toContainText("對抗點數：3");
-  await expect(side1).toContainText("加射：10");
-  await expect(side2.getByLabel("隊伍 2", { exact: true })).toHaveValue(
+  await expect(side1Summary).toContainText("勝方");
+  await expect(side1Summary).toContainText("對抗點數：3");
+  await expect(side1Summary).toContainText("加射：10");
+  await expect(side2Summary.getByLabel("隊伍 2", { exact: true })).toHaveValue(
     new RegExp(fixture.setNameOpponent),
   );
-  await expect(side2).toContainText("對抗點數：1");
-  await expect(side2).toContainText("加射：9");
-  await expect(comparison.getByLabel("對抗")).toBeVisible();
-  await expect(comparison.getByLabel("第 1 波")).toBeVisible();
-  await expect(comparison.getByLabel("第 2 波")).toBeVisible();
-  await expect(comparison.getByLabel("第 3 波")).toBeVisible();
+  await expect(side2Summary).toContainText("對抗點數：1");
+  await expect(side2Summary).toContainText("加射：9");
+  await expect(firstWave.getByText("第 1 波", { exact: true })).toBeVisible();
+  await expect(comparison.getByTestId("match-score-wave-2").getByLabel("第 2 波")).toBeVisible();
+  await expect(comparison.getByTestId("match-score-wave-3").getByLabel("第 3 波")).toBeVisible();
 
-  const firstEndSide1 = comparison.getByTestId("match-score-end-1-side-1");
-  const secondEndSide1ForLayout = comparison.getByTestId(
-    "match-score-end-2-side-1",
-  );
+  const firstEndSide1 = firstWave.getByTestId("match-score-end-1-side-1");
+  const secondEndSide1ForLayout = comparison
+    .getByTestId("match-score-wave-2")
+    .getByTestId("match-score-end-2-side-1");
   const [firstEndCellBox, firstEndContentBox, secondEndCellBox] =
     await Promise.all([
       firstEndSide1.boundingBox(),
@@ -750,7 +753,7 @@ test("進度頁：對抗組面板以雙方對照呈現比分，並保留缺少�
   expect(
     Math.abs(firstEndCellBox.width - firstEndContentBox.width),
   ).toBeLessThanOrEqual(1);
-  expect(firstEndContentBox.height).toBeLessThanOrEqual(110);
+  expect(firstEndContentBox.height).toBeLessThanOrEqual(140);
   expect(secondEndCellBox.y).toBeGreaterThanOrEqual(
     firstEndCellBox.y + firstEndCellBox.height,
   );
@@ -769,7 +772,9 @@ test("進度頁：對抗組面板以雙方對照呈現比分，並保留缺少�
     "background-color",
     "rgba(46, 125, 50, 0.12)",
   );
-  const secondEndSide1 = comparison.getByTestId("match-score-end-2-side-1");
+  const secondEndSide1 = comparison
+    .getByTestId("match-score-wave-2")
+    .getByTestId("match-score-end-2-side-1");
   await expect(secondEndSide1).toContainText("10");
   await expect(secondEndSide1).toContainText("9");
   await expect(secondEndSide1).toContainText("8");
@@ -790,10 +795,12 @@ test("進度頁：對抗組面板以雙方對照呈現比分，並保留缺少�
   await expect(firstEndSide2).toContainText("未確認");
   await expect(firstEndSide2.getByLabel("箭分總分：9")).toBeVisible();
   await expect(firstEndSide2.getByLabel("本波點數：0（預估）")).toBeVisible();
-  const secondEndSide2 = comparison.getByTestId("match-score-end-2-side-2");
+  const secondEndSide2 = comparison
+    .getByTestId("match-score-wave-2")
+    .getByTestId("match-score-end-2-side-2");
   await expect(secondEndSide2.getByLabel("本波點數：1（預估）")).toBeVisible();
   await expect(secondEndSide2.getByLabel("累積點數：1")).toBeVisible();
-  await expect(comparison.getByTestId("match-score-end-3-side-2")).toHaveText(
+  await expect(comparison.getByTestId("match-score-wave-3").getByTestId("match-score-end-3-side-2")).toHaveText(
     "—",
   );
 });
