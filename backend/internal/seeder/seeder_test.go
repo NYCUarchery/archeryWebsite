@@ -112,6 +112,15 @@ func TestQualificationSeedScoresAreRankedAndRepresentable(t *testing.T) {
 	}
 }
 
+func TestSeedJudgeAccountContract(t *testing.T) {
+	if seedJudgeUserName != "seeder.judge" || seedJudgeEmail != "seeder.judge@example.invalid" {
+		t.Fatalf("judge account = %q / %q", seedJudgeUserName, seedJudgeEmail)
+	}
+	if seedPassword != "archery-seed-password" {
+		t.Fatalf("judge password contract changed")
+	}
+}
+
 func TestBracketRoundsIsAConsistentEightArcherBracket(t *testing.T) {
 	if got := []int{len(bracketRounds[0]), len(bracketRounds[1]), len(bracketRounds[2])}; len(bracketRounds) != 3 || got[0] != 4 || got[1] != 2 || got[2] != 2 {
 		t.Fatalf("bracket must be 4, 2 and 2 matches deep, got %v", got)
@@ -198,10 +207,50 @@ func TestSeedScenarioInvariants(t *testing.T) {
 	assertScenariosDoNotShareRows(t, competitions)
 }
 
+// This is deliberately separate from the successful all-scenarios test: an
+// account collision must abort before the first fixture can be created.
+func TestSeedRejectsConflictingJudgeAccount(t *testing.T) {
+	if os.Getenv("SEEDER_INTEGRATION_TEST") != "1" {
+		t.Skip("set SEEDER_INTEGRATION_TEST=1 with a disposable backend test database")
+	}
+	database.SetupDatabaseByMode("test")
+	conflicting := database.User{
+		Role:          "User",
+		UserName:      seedJudgeUserName,
+		RealName:      "not the fixture judge",
+		Password:      "not-a-seeder-password",
+		Email:         seedJudgeEmail,
+		InstitutionID: database.NoInstitutionID,
+	}
+	if err := database.DB.Create(&conflicting).Error; err != nil {
+		t.Fatalf("create conflicting judge account: %v", err)
+	}
+	if _, err := Seed(database.DB, Registered); err == nil {
+		t.Fatal("seed accepted a conflicting judge account")
+	}
+	var competitions int64
+	if err := database.DB.Model(&database.Competition{}).Where("script = ?", marker(Registered)).Count(&competitions).Error; err != nil {
+		t.Fatalf("count competitions after rejected collision: %v", err)
+	}
+	if competitions != 0 {
+		t.Fatalf("collision must roll back fixture creation, got %d competitions", competitions)
+	}
+}
+
 // assertScenarioCounts spells out the per-item row counts the scenarios promise,
 // independently of AssertInvariants walking the same graph.
 func assertScenarioCounts(t *testing.T, scenario Scenario, competitionID uint) {
 	t.Helper()
+	var judge database.User
+	if err := database.DB.Where("user_name = ?", seedJudgeUserName).First(&judge).Error; err != nil {
+		t.Fatalf("%s find judge user: %v", scenario, err)
+	}
+	countIs(t, fmt.Sprintf("%s approved judge participant", scenario), 1,
+		database.DB.Model(&database.Participant{}).Where("competition_id = ? AND user_id = ? AND role = ? AND status = ?", competitionID, judge.ID, "Judge", "approved"))
+	countIs(t, fmt.Sprintf("%s judge players", scenario), 0,
+		database.DB.Model(&database.Player{}).
+			Joins("JOIN participants ON participants.id = players.participant_id").
+			Where("participants.competition_id = ? AND participants.user_id = ?", competitionID, judge.ID))
 	groupIDs := itemGroupIDs(t, competitionID)
 	if len(groupIDs) != len(itemSpecs) {
 		t.Fatalf("%s must have %d item groups, got %d", scenario, len(itemSpecs), len(groupIDs))
