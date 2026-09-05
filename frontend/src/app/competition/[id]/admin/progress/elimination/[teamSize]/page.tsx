@@ -775,7 +775,10 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
         <Box
           sx={{
             display: "grid",
-            gridTemplateColumns: "minmax(150px, 1fr) 96px 96px",
+            gridTemplateColumns: {
+              xs: "minmax(0, 1fr)",
+              md: "minmax(150px, 1fr) 96px 96px",
+            },
             gap: 0.5,
             alignItems: "start",
           }}
