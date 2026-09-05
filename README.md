@@ -93,7 +93,14 @@ go run ./cmd/seeder -scenario all
 - `qualification_finished`：另有各項目完成的排名賽、項目內獨立名次 1-8、資格賽啟用狀態。
 - `elimination_finished`：各項目另有完整個人對抗賽（8 強 4 場、4 強 2 場、冠軍賽與銅牌戰各 1 場）、結果、箭位及獎牌；末階段第一場為冠軍賽，與前端 `parseStagesToTree` 的讀取順序一致。
 - seeder 建立的登入帳號為 `seeder.archer.01` 至 `seeder.archer.32`，其中複合弓項目使用 `seeder.archer.25` 至 `seeder.archer.32`；密碼皆為 `archery-seed-password`；僅可在 `db.yaml` 的 `dev` 或 `test` mode 使用，其他 mode 一律拒絕執行。
-- `Competition.Script` 的 seeder marker 保持不變，seeder 不遷移既有三項 fixture；欲採用四項 fixture，須於全新且可丟棄的 dev/test DB 重建。
+- 三場賽事各有一位 approved `Judge`，共用以下裁判帳號；此帳號不會建立 Player：
+
+| 帳號 | 密碼 | 可登入情境 |
+| --- | --- | --- |
+| `seeder.judge` | `archery-seed-password` | `registered`、`qualification_finished`、`elimination_finished` |
+
+- 此 Judge 帳號及所有 seeder 帳號**僅限 development/test**；不可用於 production。
+- `Competition.Script` 的 seeder marker 保持不變，seeder 不遷移既有三項 fixture。舊 seeded DB 因缺少 Judge 不符合新版 invariant；欲採用新版 fixture，須於全新且可丟棄的 dev/test DB 重建。
 
 可在可丟棄的 test DB 驗證資料不變量與冪等性：
 
