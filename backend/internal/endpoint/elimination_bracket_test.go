@@ -135,34 +135,50 @@ func TestExpectedFirstRoundSlotsHasOneByePerMissingEntrant(t *testing.T) {
 	}
 }
 
-func TestValidateRosterForLockAllowsGapsButRejectsSetupRanksAndDuplicates(t *testing.T) {
-	valid := []database.PlayerSet{{Rank: 1}, {Rank: 3}, {Rank: 5}}
-	if err := validateRosterForLock(valid, 8); err != nil {
-		t.Fatalf("gapped roster rejected: %v", err)
+func TestValidateRosterForLock(t *testing.T) {
+	tests := []struct {
+		name      string
+		roster    []database.PlayerSet
+		seedCount int
+		wantErr   bool
+	}{
+		{name: "allows rank gaps", roster: []database.PlayerSet{{Rank: 1}, {Rank: 3}, {Rank: 5}}, seedCount: 8},
+		{name: "rejects unranked player set", roster: []database.PlayerSet{{Rank: 0}}, seedCount: 8, wantErr: true},
+		{name: "rejects negative rank", roster: []database.PlayerSet{{Rank: -1}}, seedCount: 8, wantErr: true},
+		{name: "rejects rank above seed count", roster: []database.PlayerSet{{Rank: 9}}, seedCount: 8, wantErr: true},
+		{name: "rejects duplicate rank", roster: []database.PlayerSet{{Rank: 1}, {Rank: 1}}, seedCount: 8, wantErr: true},
+		{name: "rejects more player sets than seeds", roster: []database.PlayerSet{{Rank: 1}, {Rank: 2}, {Rank: 3}, {Rank: 4}, {Rank: 5}}, seedCount: 4, wantErr: true},
 	}
-	for _, invalid := range [][]database.PlayerSet{
-		{{Rank: 0}},
-		{{Rank: 1}, {Rank: 1}},
-		{{Rank: 9}},
-	} {
-		if err := validateRosterForLock(invalid, 8); err == nil {
-			t.Fatalf("invalid entrants accepted: %+v", invalid)
-		}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := validateRosterForLock(test.roster, test.seedCount)
+			if (err != nil) != test.wantErr {
+				t.Fatalf("validateRosterForLock(%+v, %d) error = %v, wantErr %v", test.roster, test.seedCount, err, test.wantErr)
+			}
+		})
 	}
 }
 
-func TestValidateRosterForSetupAllowsUnrankedPlaceholders(t *testing.T) {
-	if err := validateRosterForSetup([]database.PlayerSet{{Rank: 0}, {Rank: 1}, {Rank: 4}}, 8); err != nil {
-		t.Fatalf("setup roster rejected: %v", err)
+func TestValidateRosterForSetup(t *testing.T) {
+	tests := []struct {
+		name      string
+		roster    []database.PlayerSet
+		seedCount int
+		wantErr   bool
+	}{
+		{name: "allows unranked placeholders and rank gaps", roster: []database.PlayerSet{{Rank: 0}, {Rank: 1}, {Rank: 4}}, seedCount: 8},
+		{name: "rejects negative rank", roster: []database.PlayerSet{{Rank: -1}}, seedCount: 8, wantErr: true},
+		{name: "rejects rank above seed count", roster: []database.PlayerSet{{Rank: 9}}, seedCount: 8, wantErr: true},
+		{name: "rejects duplicate rank", roster: []database.PlayerSet{{Rank: 1}, {Rank: 1}}, seedCount: 8, wantErr: true},
+		{name: "rejects more player sets than seeds", roster: []database.PlayerSet{{Rank: 0}, {Rank: 1}, {Rank: 2}, {Rank: 3}, {Rank: 4}}, seedCount: 4, wantErr: true},
 	}
-	for _, roster := range [][]database.PlayerSet{
-		{{Rank: 9}},
-		{{Rank: 1}, {Rank: 1}},
-		{{Rank: 1}, {Rank: 2}, {Rank: 3}, {Rank: 4}, {Rank: 5}},
-	} {
-		if err := validateRosterForSetup(roster, 4); err == nil {
-			t.Fatalf("invalid setup roster accepted: %+v", roster)
-		}
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			err := validateRosterForSetup(test.roster, test.seedCount)
+			if (err != nil) != test.wantErr {
+				t.Fatalf("validateRosterForSetup(%+v, %d) error = %v, wantErr %v", test.roster, test.seedCount, err, test.wantErr)
+			}
+		})
 	}
 }
 
