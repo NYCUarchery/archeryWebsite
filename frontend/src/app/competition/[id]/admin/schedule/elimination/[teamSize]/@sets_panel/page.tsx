@@ -45,8 +45,6 @@ import { useEffect, useId, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "react-query";
 import { apiClient } from "@/utils/ApiClient";
 import useGetPlayerSetDetail from "@/utils/QueryHooks/useGetPlayerSetDetail";
-import useGetEliminationDetail from "@/utils/QueryHooks/useGetEliminationDetail";
-import { isBracketRosterLocked } from "@/utils/eliminationBracket";
 import type { DatabasePlayerSetRanking } from "@/types/Api";
 
 type RankingRow = Required<DatabasePlayerSetRanking>;
@@ -162,16 +160,11 @@ export default function Page({
           "playerSetRanking",
           elimination!.elimination_id,
         ]);
-        // 刪隊會令後端重算第一輪空位，須刷新含 bracket slot 的 detail。
-        queryClient.invalidateQueries([
-          "eliminationDetail",
-          elimination!.elimination_id,
-        ]);
       },
       onError: (error: any) => {
         setDeleteError(
           error?.response?.status === 409
-            ? "已有對抗階段，無法刪除隊伍。"
+            ? "此隊伍已被對戰引用，請先在對抗表中移除或更換其引用，再刪除隊伍。"
             : "刪除隊伍失敗，請稍後再試。"
         );
       },
@@ -180,10 +173,6 @@ export default function Page({
   const { isFetching: isPlayerSetFetching } = useGetPlayerSets(
     elimination?.elimination_id
   );
-  const { data: eliminationDetail } = useGetEliminationDetail(
-    elimination?.elimination_id
-  );
-  const rosterLocked = isBracketRosterLocked(eliminationDetail);
   const { data: playerSet } = useGetPlayerSetDetail(playerSetId);
 
   const {
@@ -266,29 +255,10 @@ export default function Page({
           "playerSetRanking",
           elimination!.elimination_id,
         ]);
-        // 重排成功後，後端已同步第一輪 seed；detail 使用 Infinity cache，
-        // 不主動失效便會持續顯示舊 slot。
-        queryClient.invalidateQueries([
-          "eliminationDetail",
-          elimination!.elimination_id,
-        ]);
       },
       onError: (error: any) => {
         const status = error?.response?.status;
         if (status === 409) {
-          queryClient.invalidateQueries([
-            "eliminationDetail",
-            elimination!.elimination_id,
-          ]);
-          const errorText = error?.response?.data?.error;
-          if (
-            typeof errorText === "string" &&
-            errorText.includes("after bracket initialization")
-          ) {
-            setRankingConflict(false);
-            setRankingSaveError("已有對抗階段，無法調整排名。");
-            return;
-          }
           setRankingConflict(true);
           setRankingSaveError(null);
           return;
@@ -306,8 +276,8 @@ export default function Page({
   );
 
   const rowCount = rows.length;
-  const dragDisabled = rosterLocked || isSavingRanking || rowCount < 2;
-  const rankingButtonsDisabled = rosterLocked || isSavingRanking || rowCount < 2;
+  const dragDisabled = isSavingRanking || rowCount < 2;
+  const rankingButtonsDisabled = isSavingRanking || rowCount < 2;
 
   const handleDragEnd = ({ active, over }: DragEndEvent) => {
     if (dragDisabled || !over || active.id === over.id) return;
@@ -430,7 +400,7 @@ export default function Page({
                       row={row}
                       index={index}
                       dragDisabled={dragDisabled}
-                      canDelete={!rosterLocked}
+                      canDelete
                       onOpenDetail={(id) => {
                         setPlayerSetId(id);
                         setPlayerSetDialogOpen(true);

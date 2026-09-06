@@ -495,7 +495,7 @@ test.describe("對抗賽隊伍排名（PlayerSet ranking）", () => {
 
   for (const [status, message] of [
     [403, "您沒有更新此對抗賽排名的權限。"],
-    [409, "已有對抗階段，未更新排名。"],
+    [409, "隊伍資料已變更，請重新載入後再更新排名。"],
     [500, "伺服器暫時無法更新排名，請稍後再試。"],
   ] as const) {
     test(`自動更新排名失敗（${status}）顯示對應錯誤訊息`, async ({ page }) => {
@@ -515,7 +515,7 @@ test.describe("對抗賽隊伍排名（PlayerSet ranking）", () => {
     });
   }
 
-  test("已有對抗階段時，拖曳／儲存／還原／自動更新排名皆停用，且刪除按鈕隱藏", async ({
+  test("已有對抗階段時，隊伍與排名仍可編輯", async ({
     page,
   }) => {
     await setupElimination(page, { stagesFactory: completeBracketStages });
@@ -523,11 +523,29 @@ test.describe("對抗賽隊伍排名（PlayerSet ranking）", () => {
     await gotoEliminationSchedule(page, 9100);
 
     await expect(page.getByText("建立狀態：完整對抗樹已建立")).toBeVisible();
-    await expect(dragHandle(page, "藍鷹隊")).toBeDisabled();
-    await expect(page.getByRole("button", { name: "儲存排名" })).toBeDisabled();
-    await expect(page.getByRole("button", { name: "還原" })).toBeDisabled();
-    await expect(page.getByRole("button", { name: "自動更新排名" })).toBeDisabled();
+    await expect(dragHandle(page, "藍鷹隊")).toBeEnabled();
+    await moveRowDownWithKeyboard(page, "藍鷹隊");
+    await expect(page.getByRole("button", { name: "儲存排名" })).toBeEnabled();
+    await expect(page.getByRole("button", { name: "還原" })).toBeEnabled();
+    await expect(page.getByRole("button", { name: "自動更新排名" })).toBeEnabled();
     const deleteButtons = rankingTable(page).locator("tbody tr td:last-child").getByRole("button");
-    await expect(deleteButtons).toHaveCount(0);
+    await expect(deleteButtons).toHaveCount(4);
+  });
+
+  test("刪除被對戰引用的隊伍時保留列表並提示先移除引用", async ({ page }) => {
+    const { fixture } = await setupElimination(page, { stagesFactory: completeBracketStages });
+    await page.route(`**/playerset/1002`, async (route) => {
+      if (route.request().method() === "DELETE") {
+        await route.fulfill({ status: 409, json: { error: "player set is referenced by a match" } });
+        return;
+      }
+      await route.fallback();
+    });
+    await gotoEliminationSchedule(page, fixture.competitionId);
+
+    await rowByName(page, "紅鶴隊").locator("td:last-child").getByRole("button").click();
+    await page.getByRole("dialog").getByRole("button", { name: "確定" }).click();
+    await expect(page.getByText("此隊伍已被對戰引用，請先在對抗表中移除或更換其引用，再刪除隊伍。")).toBeVisible();
+    await expect(rowByName(page, "紅鶴隊")).toBeVisible();
   });
 });

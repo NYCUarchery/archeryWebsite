@@ -7,20 +7,11 @@ import {
 import { nextPowerOfTwo } from "../../src/utils/eliminationBracket";
 import {
   hasEliminationMatchStarted,
-  isBracketRosterLocked,
 } from "../../src/utils/eliminationBracket";
 
 test("靶位配置：0 隊、128 名額、兩種模式與手動形狀皆合契約", () => {
   expect(nextPowerOfTwo(0)).toBe(0);
   expect(nextPowerOfTwo(128)).toBe(128);
-  expect(isBracketRosterLocked({})).toBe(false);
-  expect(
-    isBracketRosterLocked({ bracket_seed_count: 8, bracket_roster_locked: true })
-  ).toBe(true);
-  expect(
-    isBracketRosterLocked({ bracket_seed_count: 8, stages: [{ id: 1 }] })
-  ).toBe(false);
-  expect(isBracketRosterLocked({ stages: [{ id: 1 }] })).toBe(true);
   expect(
     hasEliminationMatchStarted({
       match_results: [{ shoot_off_score: -1 }],

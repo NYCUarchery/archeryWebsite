@@ -1217,7 +1217,7 @@ const docTemplate = `{
         },
         "/elimination/bracket/{id}": {
             "post": {
-                "description": "Creates a standard seeded bracket, including stages, gold and bronze finals, match results, ends, and scores. Requires a competition Admin.",
+                "description": "Creates an empty bracket with stages, gold and bronze finals, match results, ends, and scores. Team ranks and slots are unchanged until an administrator explicitly updates the first round. Requires a competition Admin.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1282,14 +1282,14 @@ const docTemplate = `{
         },
         "/elimination/bracket/{id}/sync-first-round": {
             "post": {
-                "description": "Locks the elimination and PlayerSet rows, validates the complete bracket shape and current setup ranks, then fills or clears only unstarted first-round seed slots. Requires a competition Admin. It is idempotent and does not lock the roster or advance matches.",
+                "description": "Applies saved, unique in-range nonzero team ranks to first-round slots atomically. Rejects affected matches with scores, confirmation, winners, or affected downstream results. Requires a competition Admin. Repeated calls are idempotent and do not advance matches.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Elimination"
                 ],
-                "summary": "Synchronize an open elimination bracket's first round",
+                "summary": "Update an elimination bracket's first round from team ranks",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1793,7 +1793,7 @@ const docTemplate = `{
         },
         "/elimination/match/winner/{matchid}": {
             "put": {
-                "description": "Locks the elimination, match, and both match results. winner_match_result_id is required and must identify an occupied result of this match, or be null to clear both winner flags. Requires a competition Admin. Generated brackets validate and lock their roster, and cannot change a source after it has advanced.",
+                "description": "Locks the elimination, match, and both match results. winner_match_result_id is required and must identify an occupied result of this match, or be null to clear both winner flags. Requires a competition Admin. Generated brackets validate their current structure and cannot change a source after it has advanced.",
                 "consumes": [
                     "application/json"
                 ],
@@ -5718,12 +5718,6 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
-                    "409": {
-                        "description": "bracket roster is locked or incompatible",
-                        "schema": {
-                            "$ref": "#/definitions/response.ErrorResponse"
-                        }
-                    },
                     "500": {
                         "description": "internal db error for create player set / get player / create player set match table / get elimination",
                         "schema": {
@@ -5932,7 +5926,7 @@ const docTemplate = `{
                 }
             },
             "patch": {
-                "description": "Updates every player set of the elimination as one transaction. expected_player_set_ids must equal the ranking order loaded by the caller. A player set ID that belongs to a different elimination returns 400; a stale snapshot (order changed, or a set added/removed concurrently) returns 409. Requires a competition Admin. It remains available while a new bracket roster is open.",
+                "description": "Updates every player set of the elimination as one transaction. expected_player_set_ids must equal the ranking order loaded by the caller. A player set ID that belongs to a different elimination returns 400; a stale snapshot (order changed, or a set added/removed concurrently) returns 409. Requires a competition Admin. It does not update bracket slots.",
                 "consumes": [
                     "application/json"
                 ],
@@ -5997,7 +5991,7 @@ const docTemplate = `{
         },
         "/playerset/elimination/{eliminationid}/ranking/auto": {
             "patch": {
-                "description": "Recomputes and writes a contiguous rank for every player set of the elimination, ordered by team total score, X count, then pure ten count. Requires a competition Admin. It remains available while a new bracket roster is open.",
+                "description": "Recomputes and writes a contiguous rank for every player set of the elimination, ordered by team total score, X count, then pure ten count. Requires a competition Admin. It does not update bracket slots.",
                 "produces": [
                     "application/json"
                 ],
@@ -6217,7 +6211,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Delete player set, and delete player set match table",
+                "description": "Delete an unreferenced player set and its membership links. Match or medal references must be removed or replaced first.",
                 "tags": [
                     "PlayerSet"
                 ],
@@ -6251,7 +6245,7 @@ const docTemplate = `{
                         }
                     },
                     "409": {
-                        "description": "bracket roster is locked or incompatible",
+                        "description": "player set is referenced by a match or medal",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorResponse"
                         }
@@ -6989,9 +6983,6 @@ const docTemplate = `{
         "database.Elimination": {
             "type": "object",
             "properties": {
-                "bracket_roster_locked": {
-                    "type": "boolean"
-                },
                 "bracket_seed_count": {
                     "type": "integer"
                 },

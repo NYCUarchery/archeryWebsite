@@ -14,7 +14,7 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-var errPlayerSetMutationLocked = errors.New("player sets cannot change after the bracket roster is locked")
+var errPlayerSetReferenced = errors.New("player set is referenced by a match or medal")
 
 var (
 	errAutoPlayerSetsInvalidCount         = errors.New("count must be between 4 and the number of ranked players")
@@ -56,32 +56,16 @@ type UpdatePlayerSetRankingRequest struct {
 	PlayerSetIDs         []uint `json:"player_set_ids" binding:"required,min=1"`
 }
 
-// withPlayerSetMutationLock serializes roster changes with bracket creation.
-// New brackets (seed_count > 0) remain synchronised until their first scoring,
-// confirmation, winner, or advance action locks the roster. Historical
-// brackets use seed_count == 0 and preserve their previous immutable rule.
+// withPlayerSetMutationLock serializes PlayerSet changes with bracket
+// initialization and explicit first-round seeding. It deliberately does not
+// project ranks into the bracket or impose a persistent roster lock.
 func withPlayerSetMutationLock(eliminationID uint, mutation func(*gorm.DB) error) error {
 	return database.DB.Transaction(func(tx *gorm.DB) error {
 		var elimination database.Elimination
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&elimination, eliminationID).Error; err != nil {
 			return err
 		}
-		if elimination.BracketSeedCount == 0 {
-			var stageCount int64
-			if err := tx.Model(&database.Stage{}).Where("elimination_id = ?", eliminationID).Count(&stageCount).Error; err != nil {
-				return err
-			}
-			if stageCount > 0 {
-				return errPlayerSetMutationLocked
-			}
-		} else if elimination.BracketRosterLocked {
-			return errPlayerSetMutationLocked
-		}
-		if err := mutation(tx); err != nil {
-			return err
-		}
-		_, err := syncFirstRoundRoster(tx, elimination)
-		return err
+		return mutation(tx)
 	})
 
 }
@@ -90,7 +74,7 @@ func writePlayerSetMutationError(context *gin.Context, id uint, action string, e
 	if err == nil {
 		return false
 	}
-	if errors.Is(err, errPlayerSetMutationLocked) || errors.Is(err, errBracketConflict) {
+	if errors.Is(err, errPlayerSetReferenced) || errors.Is(err, errBracketConflict) {
 		context.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		return true
 	}
@@ -200,18 +184,6 @@ func AutoCreateIndividualPlayerSets(context *gin.Context) {
 			return errAutoPlayerSetsTeamSize
 		}
 
-		if elimination.BracketSeedCount == 0 {
-			var stageCount int64
-			if err := tx.Model(&database.Stage{}).Where("elimination_id = ?", eliminationID).Count(&stageCount).Error; err != nil {
-				return err
-			}
-			if stageCount != 0 {
-				return errPlayerSetMutationLocked
-			}
-		} else if elimination.BracketRosterLocked {
-			return errPlayerSetMutationLocked
-		}
-
 		// Qualification and Group deliberately share their ID in this data model.
 		var qualification database.Qualification
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&qualification, elimination.GroupId).Error; err != nil {
@@ -311,12 +283,11 @@ func AutoCreateIndividualPlayerSets(context *gin.Context) {
 			}
 			result.PlayerSets = append(result.PlayerSets, playerSet)
 		}
-		_, err := syncFirstRoundRoster(tx, elimination)
-		return err
+		return nil
 	})
 	if err != nil {
 		switch {
-		case errors.Is(err, errPlayerSetMutationLocked), errors.Is(err, errAutoPlayerSetsConflict), errors.Is(err, errBracketConflict):
+		case errors.Is(err, errAutoPlayerSetsConflict), errors.Is(err, errBracketConflict):
 			context.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		case errors.Is(err, errAutoPlayerSetsInvalidCount),
 			errors.Is(err, errAutoPlayerSetsInvalidAdvancingNum),
@@ -383,7 +354,6 @@ func GetPlayerSetsByMedalByEliminationId(context *gin.Context) {
 //	@Failure		400		{object}	response.ErrorIdResponse					"invalid elimination id, player id maybe not exist / player set's length and teamsize does not match"
 //	@Failure		403		{object}	response.ErrorResponse						"competition admin required"
 //	@Failure		500		{object}	response.ErrorInternalErrorResponse			"internal db error for create player set / get player / create player set match table / get elimination"
-//	@Failure		409		{object}	response.ErrorResponse						"bracket roster is locked or incompatible"
 //	@Router			/playerset [post]
 func PostPlayerSet(context *gin.Context) {
 	type playerSetData struct {
@@ -530,7 +500,7 @@ func GetPlayerSetRanking(context *gin.Context) {
 // Auto-rank elimination player sets
 //
 //	@Summary		Auto-rank an elimination's player sets by score
-//	@Description	Recomputes and writes a contiguous rank for every player set of the elimination, ordered by team total score, X count, then pure ten count. Requires a competition Admin. It remains available while a new bracket roster is open.
+//	@Description	Recomputes and writes a contiguous rank for every player set of the elimination, ordered by team total score, X count, then pure ten count. Requires a competition Admin. It does not update bracket slots.
 //	@Tags			PlayerSet
 //	@Produce		json
 //	@Param			eliminationid	path		uint	true	"Elimination ID"
@@ -569,7 +539,7 @@ func AutoRankPlayerSetsByEliminationId(context *gin.Context) {
 // Update elimination player set ranking
 //
 //	@Summary		Manually reorder an elimination's player set ranking
-//	@Description	Updates every player set of the elimination as one transaction. expected_player_set_ids must equal the ranking order loaded by the caller. A player set ID that belongs to a different elimination returns 400; a stale snapshot (order changed, or a set added/removed concurrently) returns 409. Requires a competition Admin. It remains available while a new bracket roster is open.
+//	@Description	Updates every player set of the elimination as one transaction. expected_player_set_ids must equal the ranking order loaded by the caller. A player set ID that belongs to a different elimination returns 400; a stale snapshot (order changed, or a set added/removed concurrently) returns 409. Requires a competition Admin. It does not update bracket slots.
 //	@Tags			PlayerSet
 //	@Accept			json
 //	@Produce		json
@@ -659,14 +629,14 @@ func PutPlayerSetPreRankingByEliminationId(context *gin.Context) {
 // Delete player set
 //
 //	@Summary		Delete player set
-//	@Description	Delete player set, and delete player set match table
+//	@Description	Delete an unreferenced player set and its membership links. Match or medal references must be removed or replaced first.
 //	@Tags			PlayerSet
 //	@Param			id	path		uint								true	"Player Set ID"
 //	@Success		200	{object}	response.DeleteSuccessResponse		"success"
 //	@Failure		400	{object}	response.ErrorIdResponse			"invalid plyer set id"
 //	@Failure		403	{object}	response.ErrorResponse				"competition admin required"
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error / Get Player Set By Id / Delete Player Set Match Table By Player Set Id / Delete Player Set By Id"
-//	@Failure		409	{object}	response.ErrorResponse				"bracket roster is locked or incompatible"
+//	@Failure		409	{object}	response.ErrorResponse				"player set is referenced by a match or medal"
 //	@Router			/playerset/{id} [delete]
 func DeletePlayerSet(context *gin.Context) {
 	id := Convert2uint(context, "id")
@@ -683,6 +653,17 @@ func DeletePlayerSet(context *gin.Context) {
 	}
 	isChanged := false
 	err = withPlayerSetMutationLock(playerSet.EliminationId, func(tx *gorm.DB) error {
+		var matchReferences int64
+		if err := tx.Model(&database.MatchResult{}).Where("player_set_id = ?", id).Count(&matchReferences).Error; err != nil {
+			return err
+		}
+		var medalReferences int64
+		if err := tx.Model(&database.Medal{}).Where("player_set_id = ?", id).Count(&medalReferences).Error; err != nil {
+			return err
+		}
+		if matchReferences != 0 || medalReferences != 0 {
+			return errPlayerSetReferenced
+		}
 		if err := tx.Where("player_set_id = ?", id).Delete(&database.PlayerSetMatchTable{}).Error; err != nil {
 			return err
 		}
