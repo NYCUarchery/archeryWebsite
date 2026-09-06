@@ -24,7 +24,6 @@ import useGetEliminationDetail from "@/utils/QueryHooks/useGetEliminationDetail"
 import useGetPlayerSets from "@/utils/QueryHooks/useGetPlayerSets";
 import {
   isCompleteEliminationBracket,
-  isBracketRosterLocked,
   nextPowerOfTwo,
 } from "@/utils/eliminationBracket";
 import { createEliminationBracket } from "@/utils/eliminationPlacementApi";
@@ -93,12 +92,6 @@ export default function Page({
           "playerSetRanking",
           elimination!.elimination_id,
         ]);
-        // 建樹後後端會在同一 transaction 依目前排名重填第一輪；
-        // 此 query 含 MatchResult.player_set_id，故不可只刷新隊伍列表。
-        queryClient.invalidateQueries([
-          "eliminationDetail",
-          elimination!.elimination_id,
-        ]);
       },
     }
   );
@@ -124,11 +117,6 @@ export default function Page({
             "playerSets",
             elimination!.elimination_id,
           ]);
-          // 自動排名會同步既有對抗樹的第一輪 seed。
-          queryClient.invalidateQueries([
-            "eliminationDetail",
-            elimination!.elimination_id,
-          ]);
           setAutoRankingError(null);
         },
         onError: (error: any) => {
@@ -137,7 +125,7 @@ export default function Page({
             status === 403
               ? "您沒有更新此對抗賽排名的權限。"
               : status === 409
-                ? "已有對抗階段，未更新排名。"
+                ? "隊伍資料已變更，請重新載入後再更新排名。"
                 : status !== undefined && status >= 500
                   ? "伺服器暫時無法更新排名，請稍後再試。"
                   : error?.response?.data?.error ??
@@ -238,16 +226,12 @@ export default function Page({
     }));
   const playerSetCount = playerSets?.length ?? 0;
   const bracketExists = isCompleteEliminationBracket(eliminationDetail?.stages);
-  const rosterLocked = isBracketRosterLocked(eliminationDetail);
   const parsedBracketAdvancingCount = Number(bracketAdvancingCount);
   const isBracketAdvancingCountValid =
     Number.isInteger(parsedBracketAdvancingCount) &&
     parsedBracketAdvancingCount >= 4 &&
     parsedBracketAdvancingCount <= 128;
   const bracketSize = nextPowerOfTwo(parsedBracketAdvancingCount);
-  const reservePlayerSetCount = isBracketAdvancingCountValid
-    ? Math.max(0, playerSetCount - parsedBracketAdvancingCount)
-    : 0;
   const eligiblePlayerCount = (group?.players ?? []).filter(
     (player) => (player.rank ?? -1) >= 1
   ).length;
@@ -315,9 +299,6 @@ export default function Page({
             <Typography variant="body2">
               可排名選手數：{eligiblePlayerCount}
             </Typography>
-            {rosterLocked && (
-              <Alert severity="info">對抗樹名單已鎖定，不能再自動建立隊伍。</Alert>
-            )}
             {autoCreateError && <Alert severity="error">{autoCreateError}</Alert>}
             <TextField
               label="建立人數"
@@ -333,7 +314,6 @@ export default function Page({
               disabled={
                 isQualificationLoading ||
                 qualification === undefined ||
-                rosterLocked ||
                 isAutoCreating
               }
             />
@@ -344,7 +324,6 @@ export default function Page({
                 isQualificationLoading ||
                 qualification === undefined ||
                 elimination?.elimination_id === undefined ||
-                rosterLocked ||
                 isAutoCreating ||
                 !isAutoCreateCountValid
               }
@@ -367,8 +346,9 @@ export default function Page({
         </Button>
       </Stack>
       <Alert severity="info" sx={{ mt: 2 }}>
-        自動更新排名將覆寫手動調整結果。右側未儲存的拖曳調整將失效，需重新載入。
+        隊伍與排名變更不會自動更新對抗表，請至第一階段手動更新。
       </Alert>
+      <Alert severity="warning" sx={{ mt: 1 }}>自動更新排名將覆寫手動調整結果。</Alert>
       {autoRankingError && (
         <Alert severity="error" sx={{ mt: 1 }}>
           {autoRankingError}
@@ -377,7 +357,6 @@ export default function Page({
       <Button
         onClick={handleAutoRanking}
         disabled={
-          rosterLocked ||
           isAutoRanking ||
           elimination?.elimination_id === undefined
         }
@@ -395,7 +374,6 @@ export default function Page({
               id="player-select"
               value={selectedPlayers[index]}
               inputValue={inputValues[index]}
-              disabled={rosterLocked}
               onChange={(_: any, newValue: AutocompletePlayerValue) => {
                 setSelectedPlayers((oldValue) => {
                   const newValues = [...oldValue];
@@ -418,7 +396,7 @@ export default function Page({
         })}
 
       <TextField
-        disabled={params.teamSize === "1" || rosterLocked}
+        disabled={params.teamSize === "1"}
         value={setName}
         onChange={(e) => setSetName(e.target.value)}
         sx={{ width: "100%", mb: 2 }}
@@ -427,7 +405,6 @@ export default function Page({
       <Button
         variant="contained"
         onClick={handleCreatePlayerSet}
-        disabled={rosterLocked}
       >
         創建隊伍
       </Button>
@@ -483,11 +460,9 @@ export default function Page({
               晉級數必須介於 4 與 128。
             </Alert>
           )}
-          {reservePlayerSetCount > 0 && (
-            <Alert severity="info" sx={{ mt: 2 }}>
-              前 {parsedBracketAdvancingCount} 隊依排名排入第一階段，其餘 {reservePlayerSetCount} 隊保留為後備。
-            </Alert>
-          )}
+          <Alert severity="info" sx={{ mt: 2 }}>
+            建立後第一階段會保持空白；請在對抗表中依隊伍排名手動更新。
+          </Alert>
         </DialogContent>
         <DialogActions>
           <Button

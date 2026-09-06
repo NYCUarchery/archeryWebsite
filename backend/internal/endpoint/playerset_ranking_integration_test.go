@@ -484,41 +484,23 @@ func (suite *PlayerSetRankingIntegrationTestSuite) TestRankingEndpointsRequireCo
 	}
 }
 
-// TestExistingStageLocksAutoAndManualRanking covers case 9 and the 409 half
-// of case 10 for an elimination whose bracket has already started.
-func (suite *PlayerSetRankingIntegrationTestSuite) TestExistingStageLocksAutoAndManualRanking() {
+// Creating a stage no longer freezes the roster or its draft ranks.
+func (suite *PlayerSetRankingIntegrationTestSuite) TestExistingStageAllowsAutoAndManualRanking() {
 	elimination, group, lane, participant, admin, _ := suite.newElimination(1)
 	setA := suite.singlePlayerSet(elimination.ID, group.ID, lane.ID, participant, "a", 100, nil)
 	setB := suite.singlePlayerSet(elimination.ID, group.ID, lane.ID, participant, "b", 90, nil)
-	before := suite.currentRanks(elimination.ID)
-
 	_, err := database.CreateStage(database.Stage{EliminationId: elimination.ID})
 	suite.Require().NoError(err)
-
 	recorder, _ := suite.autoRank(elimination.ID, admin)
-	suite.Equal(http.StatusConflict, recorder.Code)
-	suite.Equal(before, suite.currentRanks(elimination.ID))
-
+	suite.Equal(http.StatusOK, recorder.Code)
+	suite.Equal(map[uint]int{setA.ID: 1, setB.ID: 2}, suite.currentRanks(elimination.ID))
 	recorder, _ = suite.reorder(elimination.ID, UpdatePlayerSetRankingRequest{ExpectedPlayerSetIDs: []uint{setA.ID, setB.ID}, PlayerSetIDs: []uint{setB.ID, setA.ID}}, admin)
-	suite.Equal(http.StatusConflict, recorder.Code)
-	suite.Equal(before, suite.currentRanks(elimination.ID))
+	suite.Equal(http.StatusOK, recorder.Code)
+	suite.Equal(map[uint]int{setA.ID: 2, setB.ID: 1}, suite.currentRanks(elimination.ID))
 }
 
-// TestRankingMutationConflictsWithConcurrentBracketInitialization covers
-// case 11. Rather than racing two full handler calls blindly (which is only
-// guaranteed to conflict when bracket initialization happens to win the
-// underlying row lock first -- if the ranking mutation commits first, a
-// subsequent bracket initialization legitimately also succeeds, since
-// nothing about a successful reorder makes the bracket shape invalid), this
-// deterministically forces bracket initialization to win: it holds the same
-// elimination-row FOR UPDATE lock production code uses, inserts the Stage
-// that marks the bracket as started, and only then commits. Because a
-// locking read always observes the latest committed row once the lock is
-// released, the ranking mutation issued concurrently is guaranteed to see
-// the new Stage and lose the race with a 409, regardless of exact goroutine
-// scheduling -- matching how the existing elimination-bracket integration
-// tests use goroutines and channels to assert locking behavior.
-func (suite *PlayerSetRankingIntegrationTestSuite) TestRankingMutationConflictsWithConcurrentBracketInitialization() {
+// A concurrent stage creation and ranking update serialize and both succeed.
+func (suite *PlayerSetRankingIntegrationTestSuite) TestRankingMutationSerializesWithConcurrentBracketInitialization() {
 	elimination, group, lane, participant, admin, _ := suite.newElimination(1)
 	suite.singlePlayerSet(elimination.ID, group.ID, lane.ID, participant, "a", 100, nil)
 	suite.singlePlayerSet(elimination.ID, group.ID, lane.ID, participant, "b", 90, nil)
@@ -548,15 +530,14 @@ func (suite *PlayerSetRankingIntegrationTestSuite) TestRankingMutationConflictsW
 	close(release)
 	suite.Require().NoError(<-txDone)
 	recorder := <-responses
-	suite.Equal(http.StatusConflict, recorder.Code, recorder.Body.String())
-	suite.Equal(before, suite.currentRanks(elimination.ID))
+	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+	suite.NotEqual(before, suite.currentRanks(elimination.ID))
 }
 
 // TestDeprecatedPrerankingMatchesAutoRankTieBreakAndGating covers case 12:
 // the deprecated PATCH /playerset/preranking/{eliminationid} route must use
 // the same auto-ranking rule (X before ten in the tie-break, X excluded from
-// ten_count), still return 200, and be subject to the same 403 / stage-409
-// gating as /ranking/auto.
+// ten_count), still return 200, and require a competition admin even when stages exist.
 func (suite *PlayerSetRankingIntegrationTestSuite) TestDeprecatedPrerankingMatchesAutoRankTieBreakAndGating() {
 	elimination, group, lane, participant, admin, _ := suite.newElimination(1)
 	xWinner := suite.singlePlayerSet(elimination.ID, group.ID, lane.ID, participant, "x-winner", 100, [][]int{{11, 11}})
@@ -578,13 +559,12 @@ func (suite *PlayerSetRankingIntegrationTestSuite) TestDeprecatedPrerankingMatch
 	recorder = suite.preranking(elimination.ID, nil)
 	suite.Equal(http.StatusForbidden, recorder.Code)
 
-	// 409 once a Stage exists, matching /ranking/auto's gating.
+	// A stage does not prevent explicit ranking updates.
 	staged, stagedGroup, stagedLane, stagedParticipant, stagedAdmin, _ := suite.newElimination(1)
-	suite.singlePlayerSet(staged.ID, stagedGroup.ID, stagedLane.ID, stagedParticipant, "solo", 10, nil)
-	before := suite.currentRanks(staged.ID)
+	solo := suite.singlePlayerSet(staged.ID, stagedGroup.ID, stagedLane.ID, stagedParticipant, "solo", 10, nil)
 	_, err := database.CreateStage(database.Stage{EliminationId: staged.ID})
 	suite.Require().NoError(err)
 	recorder = suite.preranking(staged.ID, stagedAdmin)
-	suite.Equal(http.StatusConflict, recorder.Code)
-	suite.Equal(before, suite.currentRanks(staged.ID))
+	suite.Equal(http.StatusOK, recorder.Code)
+	suite.Equal(1, suite.currentRanks(staged.ID)[solo.ID])
 }

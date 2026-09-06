@@ -33,7 +33,6 @@ export interface DatabaseCompetition {
 }
 
 export interface DatabaseElimination {
-  bracket_roster_locked?: boolean;
   bracket_seed_count?: number;
   current_end?: number;
   current_stage?: number;
@@ -1220,7 +1219,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Creates a standard seeded bracket, including stages, gold and bronze finals, match results, ends, and scores. Requires a competition Admin.
+     * @description Creates an empty bracket with stages, gold and bronze finals, match results, ends, and scores. Team ranks and slots are unchanged until an administrator explicitly updates the first round. Requires a competition Admin.
      *
      * @tags Elimination
      * @name BracketCreate
@@ -1238,11 +1237,11 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Locks the elimination and PlayerSet rows, validates the complete bracket shape and current setup ranks, then fills or clears only unstarted first-round seed slots. Requires a competition Admin. It is idempotent and does not lock the roster or advance matches.
+     * @description Applies saved, unique in-range nonzero team ranks to first-round slots atomically. Rejects affected matches with scores, confirmation, winners, or affected downstream results. Requires a competition Admin. Repeated calls are idempotent and do not advance matches.
      *
      * @tags Elimination
      * @name BracketSyncFirstRoundCreate
-     * @summary Synchronize an open elimination bracket's first round
+     * @summary Update an elimination bracket's first round from team ranks
      * @request POST:/elimination/bracket/{id}/sync-first-round
      */
     bracketSyncFirstRoundCreate: (id: number, params: RequestParams = {}) =>
@@ -1410,7 +1409,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Locks the elimination, match, and both match results. winner_match_result_id is required and must identify an occupied result of this match, or be null to clear both winner flags. Requires a competition Admin. Generated brackets validate and lock their roster, and cannot change a source after it has advanced.
+     * @description Locks the elimination, match, and both match results. winner_match_result_id is required and must identify an occupied result of this match, or be null to clear both winner flags. Requires a competition Admin. Generated brackets validate their current structure and cannot change a source after it has advanced.
      *
      * @tags Elimination
      * @name MatchWinnerUpdate
@@ -2922,7 +2921,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Updates every player set of the elimination as one transaction. expected_player_set_ids must equal the ranking order loaded by the caller. A player set ID that belongs to a different elimination returns 400; a stale snapshot (order changed, or a set added/removed concurrently) returns 409. Requires a competition Admin. It remains available while a new bracket roster is open.
+     * @description Updates every player set of the elimination as one transaction. expected_player_set_ids must equal the ranking order loaded by the caller. A player set ID that belongs to a different elimination returns 400; a stale snapshot (order changed, or a set added/removed concurrently) returns 409. Requires a competition Admin. It does not update bracket slots.
      *
      * @tags PlayerSet
      * @name EliminationRankingPartialUpdate
@@ -2944,7 +2943,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Recomputes and writes a contiguous rank for every player set of the elimination, ordered by team total score, X count, then pure ten count. Requires a competition Admin. It remains available while a new bracket roster is open.
+     * @description Recomputes and writes a contiguous rank for every player set of the elimination, ordered by team total score, X count, then pure ten count. Requires a competition Admin. It does not update bracket slots.
      *
      * @tags PlayerSet
      * @name EliminationRankingAutoPartialUpdate
@@ -3017,7 +3016,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Delete player set, and delete player set match table
+     * @description Delete an unreferenced player set and its membership links. Match or medal references must be removed or replaced first.
      *
      * @tags PlayerSet
      * @name PlayersetDelete

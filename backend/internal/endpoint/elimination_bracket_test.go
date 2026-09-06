@@ -135,7 +135,7 @@ func TestExpectedFirstRoundSlotsHasOneByePerMissingEntrant(t *testing.T) {
 	}
 }
 
-func TestValidateRosterForLock(t *testing.T) {
+func TestValidateRosterForFirstRound(t *testing.T) {
 	tests := []struct {
 		name      string
 		roster    []database.PlayerSet
@@ -151,9 +151,9 @@ func TestValidateRosterForLock(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			err := validateRosterForLock(test.roster, test.seedCount)
+			err := validateRosterForFirstRound(test.roster, test.seedCount)
 			if (err != nil) != test.wantErr {
-				t.Fatalf("validateRosterForLock(%+v, %d) error = %v, wantErr %v", test.roster, test.seedCount, err, test.wantErr)
+				t.Fatalf("validateRosterForFirstRound(%+v, %d) error = %v, wantErr %v", test.roster, test.seedCount, err, test.wantErr)
 			}
 		})
 	}

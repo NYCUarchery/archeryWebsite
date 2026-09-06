@@ -22,9 +22,8 @@ type BracketInitResponse struct {
 	Created        bool `json:"created"`
 }
 
-// BracketInitRequest fixes the size of a bracket before a roster exists.  The
-// roster remains editable until scoring, confirmation, winner selection, or
-// explicit advancement locks it.
+// BracketInitRequest fixes the size of an initially empty bracket. Team
+// ranks are applied only through the explicit first-round update endpoint.
 type BracketInitRequest struct {
 	AdvancingCount int `json:"advancing_count" binding:"required,min=4,max=128"`
 }
@@ -37,8 +36,8 @@ type BracketAdvanceResponse struct {
 	Changed       bool  `json:"changed"`
 }
 
-// BracketFirstRoundSyncResponse reports whether an open bracket's initial
-// seed slots changed. The endpoint never advances a match or locks the roster.
+// BracketFirstRoundSyncResponse reports whether first-round slots changed.
+// The endpoint never advances a match.
 type BracketFirstRoundSyncResponse struct {
 	EliminationID uint `json:"elimination_id"`
 	Changed       bool `json:"changed"`
@@ -268,20 +267,10 @@ func expectedFirstRoundSlots(playerSets []database.PlayerSet, bracketSize int) [
 	return firstSlots
 }
 
-func rankedRoster(playerSets []database.PlayerSet, seedCount int) []database.PlayerSet {
-	roster := make([]database.PlayerSet, 0, seedCount)
-	for _, playerSet := range playerSets {
-		if playerSet.Rank > 0 && playerSet.Rank <= seedCount {
-			roster = append(roster, playerSet)
-		}
-	}
-	return roster
-}
-
-// validateRosterForLock validates the roster before applying its ranks to the
+// validateRosterForFirstRound validates the roster before applying its ranks to the
 // first round. Every PlayerSet must have exactly one in-range rank; missing
 // ranks are permitted and become empty slots in the bracket.
-func validateRosterForLock(playerSets []database.PlayerSet, seedCount int) error {
+func validateRosterForFirstRound(playerSets []database.PlayerSet, seedCount int) error {
 	if len(playerSets) > seedCount {
 		return errBracketConflict
 	}
@@ -310,18 +299,6 @@ func validateRosterForSetup(playerSets []database.PlayerSet, seedCount int) erro
 		seen[playerSet.Rank] = true
 	}
 	return nil
-}
-
-func rosterHasOnlyUnsetRanks(playerSets []database.PlayerSet) bool {
-	if len(playerSets) == 0 {
-		return false
-	}
-	for _, playerSet := range playerSets {
-		if playerSet.Rank != 0 {
-			return false
-		}
-	}
-	return true
 }
 
 func sameOptionalID(left, right *uint) bool {
@@ -480,8 +457,9 @@ func createBracketMatch(tx *gorm.DB, stageID uint, slots [2]*uint, teamSize int)
 	return created, nil
 }
 
-func createBracket(tx *gorm.DB, elimination database.Elimination, playerSets []database.PlayerSet, bracketSize int) ([]bracketStage, error) {
-	firstSlots := expectedFirstRoundSlots(playerSets, bracketSize)
+func createBracket(tx *gorm.DB, elimination database.Elimination, bracketSize int) ([]bracketStage, error) {
+	// Bracket creation deliberately leaves every slot empty. Ranking is a
+	// separate administrative action through sync-first-round.
 
 	counts := expectedBracketMatchCounts(bracketSize)
 	bracket := make([]bracketStage, len(counts))
@@ -494,9 +472,6 @@ func createBracket(tx *gorm.DB, elimination database.Elimination, playerSets []d
 		bracket[stageIndex].Matches = make([]bracketMatch, matchCount)
 		for matchIndex := 0; matchIndex < matchCount; matchIndex++ {
 			var slots [2]*uint
-			if stageIndex == 0 {
-				slots = [2]*uint{firstSlots[matchIndex*2], firstSlots[matchIndex*2+1]}
-			}
 			match, err := createBracketMatch(tx, stage.ID, slots, elimination.TeamSize)
 			if err != nil {
 				return nil, err
@@ -507,11 +482,12 @@ func createBracket(tx *gorm.DB, elimination database.Elimination, playerSets []d
 	return bracket, nil
 }
 
-// syncFirstRoundRoster is the sole writer for a roster-open bracket's first
-// round.  It tolerates an empty roster and rank gaps, but refuses to erase a
-// result that has started scoring or has been decided.
+// syncFirstRoundRoster is the explicit administrative writer for the first
+// round. It first validates the complete intended projection, then rejects the
+// whole operation if any changed first-round match or later bracket state has
+// started. No partial first-round rewrite is permitted.
 func syncFirstRoundRoster(tx *gorm.DB, elimination database.Elimination) (bool, error) {
-	if elimination.BracketSeedCount == 0 || elimination.BracketRosterLocked {
+	if elimination.BracketSeedCount == 0 {
 		return false, nil
 	}
 	bracketSize := nextPowerOfTwo(elimination.BracketSeedCount)
@@ -526,52 +502,104 @@ func syncFirstRoundRoster(tx *gorm.DB, elimination database.Elimination) (bool, 
 	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("elimination_id = ?", elimination.ID).Order("`rank` asc, id asc").Find(&playerSets).Error; err != nil {
 		return false, err
 	}
-	if rosterHasOnlyUnsetRanks(playerSets) {
-		if _, err := database.AutoRankPlayerSets(tx, elimination.ID); err != nil {
-			return false, err
-		}
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("elimination_id = ?", elimination.ID).Order("`rank` asc, id asc").Find(&playerSets).Error; err != nil {
-			return false, err
-		}
-	}
-	if err := validateRosterForSetup(playerSets, elimination.BracketSeedCount); err != nil {
+	if err := validateRosterForFirstRound(playerSets, elimination.BracketSeedCount); err != nil {
 		return false, err
 	}
-	expected := expectedFirstRoundSlots(rankedRoster(playerSets, elimination.BracketSeedCount), bracketSize)
-	changed := false
+	expected := expectedFirstRoundSlots(playerSets, bracketSize)
+	changedMatches := make(map[int]bool)
 	for matchIndex, match := range bracket[0].Matches {
 		for resultIndex := range match.Results {
-			result := &match.Results[resultIndex]
+			result := match.Results[resultIndex]
 			want := expected[matchIndex*2+resultIndex]
 			if sameOptionalID(result.PlayerSetId, want) {
 				continue
 			}
-			started, err := bracketSlotHasStarted(tx, *result)
-			if err != nil {
-				return false, err
-			}
-			if started {
-				return false, errBracketConflict
-			}
-			if err := tx.Model(&database.MatchResult{}).Where("id = ?", result.ID).Update("player_set_id", want).Error; err != nil {
-				return false, err
-			}
-			result.PlayerSetId = want
-			changed = true
+			changedMatches[matchIndex] = true
 		}
 	}
-	return changed, nil
-}
-
-func lockBracketRoster(tx *gorm.DB, elimination *database.Elimination) error {
-	if elimination.BracketSeedCount == 0 || elimination.BracketRosterLocked {
-		return nil
+	if len(changedMatches) == 0 {
+		return false, nil
 	}
-	if err := tx.Model(&database.Elimination{}).Where("id = ?", elimination.ID).Update("bracket_roster_locked", true).Error; err != nil {
-		return err
+	for matchIndex := range changedMatches {
+		for _, result := range bracket[0].Matches[matchIndex].Results {
+			started, err := bracketSlotHasStarted(tx, result)
+			if err != nil || started {
+				if err != nil {
+					return false, err
+				}
+				return false, errBracketConflict
+			}
+		}
 	}
-	elimination.BracketRosterLocked = true
-	return nil
+	// Follow only the affected destination slots. A sibling slot belongs to a
+	// different first-round source and may already be populated safely.
+	affectedMatches := changedMatches
+	for stageIndex := 0; stageIndex < len(bracket)-1 && len(affectedMatches) != 0; stageIndex++ {
+		nextSlots := make(map[int]map[int]bool)
+		for matchIndex := range affectedMatches {
+			if stageIndex == len(bracket)-2 && len(bracket[stageIndex+1].Matches) == 2 {
+				for finalMatchIndex := range bracket[stageIndex+1].Matches {
+					if nextSlots[finalMatchIndex] == nil {
+						nextSlots[finalMatchIndex] = make(map[int]bool)
+					}
+					nextSlots[finalMatchIndex][matchIndex] = true
+				}
+				continue
+			}
+			targetMatch, targetSlot := matchIndex/2, matchIndex%2
+			if nextSlots[targetMatch] == nil {
+				nextSlots[targetMatch] = make(map[int]bool)
+			}
+			nextSlots[targetMatch][targetSlot] = true
+		}
+		for matchIndex, slots := range nextSlots {
+			if matchIndex >= len(bracket[stageIndex+1].Matches) {
+				return false, errBracketConflict
+			}
+			for _, result := range bracket[stageIndex+1].Matches[matchIndex].Results {
+				started, err := bracketSlotHasStarted(tx, result)
+				if err != nil {
+					return false, err
+				}
+				if started {
+					return false, errBracketConflict
+				}
+			}
+			for resultIndex := range slots {
+				if resultIndex >= len(bracket[stageIndex+1].Matches[matchIndex].Results) {
+					return false, errBracketConflict
+				}
+				result := bracket[stageIndex+1].Matches[matchIndex].Results[resultIndex]
+				started, err := bracketSlotHasStarted(tx, result)
+				if err != nil {
+					return false, err
+				}
+				if result.PlayerSetId != nil || started {
+					return false, errBracketConflict
+				}
+			}
+		}
+		affectedMatches = make(map[int]bool, len(nextSlots))
+		for matchIndex := range nextSlots {
+			affectedMatches[matchIndex] = true
+		}
+	}
+	if len(bracket) > 0 {
+		var awardedMedals int64
+		if err := tx.Model(&database.Medal{}).Where("elimination_id = ? AND player_set_id <> 0", elimination.ID).Count(&awardedMedals).Error; err != nil {
+			return false, err
+		}
+		if awardedMedals != 0 {
+			return false, errBracketConflict
+		}
+	}
+	projections := make([]bracketSlotProjection, 0, len(changedMatches)*2)
+	for matchIndex := range changedMatches {
+		for resultIndex := range bracket[0].Matches[matchIndex].Results {
+			projections = append(projections, bracketSlotProjection{result: &bracket[0].Matches[matchIndex].Results[resultIndex], playerSetID: expected[matchIndex*2+resultIndex]})
+		}
+	}
+	return overwriteBracketSlots(tx, &bracket[0], projections)
 }
 
 // resolvedWinnerAndLoser accepts empty and one-entrant matches. A one-entrant
@@ -1158,7 +1186,7 @@ func finalizeBracket(tx *gorm.DB, eliminationID uint, final bracketStage) (bool,
 // conflict so that an operator never loses entered match data by accident.
 //
 //	@Summary		Initialize an elimination bracket
-//	@Description	Creates a standard seeded bracket, including stages, gold and bronze finals, match results, ends, and scores. Requires a competition Admin.
+//	@Description	Creates an empty bracket with stages, gold and bronze finals, match results, ends, and scores. Team ranks and slots are unchanged until an administrator explicitly updates the first round. Requires a competition Admin.
 //	@Tags			Elimination
 //	@Accept		json
 //	@Produce		json
@@ -1199,17 +1227,6 @@ func PostEliminationBracket(context *gin.Context) {
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("elimination_id = ?", id).Order("`rank` asc, id asc").Find(&playerSets).Error; err != nil {
 			return err
 		}
-		// Legacy manual PlayerSet creation leaves Rank at its zero value. When
-		// no rank has been saved at all, derive the normal score-oriented rank
-		// before seeding. A partially or fully saved ranking remains authoritative.
-		if rosterHasOnlyUnsetRanks(playerSets) {
-			if _, err := database.AutoRankPlayerSets(tx, id); err != nil {
-				return err
-			}
-			if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("elimination_id = ?", id).Order("`rank` asc, id asc").Find(&playerSets).Error; err != nil {
-				return err
-			}
-		}
 		if err := validateRosterForSetup(playerSets, request.AdvancingCount); err != nil {
 			return err
 		}
@@ -1230,18 +1247,6 @@ func PostEliminationBracket(context *gin.Context) {
 			if elimination.BracketSeedCount == 0 || elimination.BracketSeedCount != request.AdvancingCount {
 				return errBracketConflict
 			}
-			if !elimination.BracketRosterLocked {
-				if _, err := syncFirstRoundRoster(tx, elimination); err != nil {
-					return err
-				}
-				bracket, err = loadBracket(tx, id)
-				if err != nil {
-					return err
-				}
-				if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("elimination_id = ?", id).Order("`rank` asc, id asc").Find(&playerSets).Error; err != nil {
-					return err
-				}
-			}
 			compatible, err := bracketShapeIsCompatible(tx, bracket, playerSets, request.AdvancingCount, bracketSize, elimination.TeamSize)
 			if err != nil {
 				return err
@@ -1251,17 +1256,12 @@ func PostEliminationBracket(context *gin.Context) {
 			}
 		} else {
 			elimination.BracketSeedCount = request.AdvancingCount
-			elimination.BracketRosterLocked = false
 			if err := tx.Model(&database.Elimination{}).Where("id = ?", id).Updates(map[string]interface{}{
-				"bracket_seed_count":    request.AdvancingCount,
-				"bracket_roster_locked": false,
+				"bracket_seed_count": request.AdvancingCount,
 			}).Error; err != nil {
 				return err
 			}
-			if _, err := createBracket(tx, elimination, rankedRoster(playerSets, request.AdvancingCount), bracketSize); err != nil {
-				return err
-			}
-			if _, err := syncFirstRoundRoster(tx, elimination); err != nil {
+			if _, err := createBracket(tx, elimination, bracketSize); err != nil {
 				return err
 			}
 			created = true
@@ -1277,12 +1277,11 @@ func PostEliminationBracket(context *gin.Context) {
 }
 
 // PostEliminationBracketFirstRoundSync reconciles an unstarted bracket's
-// first-round slots with the persisted PlayerSet ranks. It is intentionally
-// separate from stage advancement so an administrator can inspect the seeded
-// bracket before locking it by scoring or advancing.
+// first-round slots with the persisted PlayerSet ranks. Only this explicit
+// administrator action applies ranks; scoring and advancing use current slots.
 //
-//	@Summary		Synchronize an open elimination bracket's first round
-//	@Description	Locks the elimination and PlayerSet rows, validates the complete bracket shape and current setup ranks, then fills or clears only unstarted first-round seed slots. Requires a competition Admin. It is idempotent and does not lock the roster or advance matches.
+//	@Summary		Update an elimination bracket's first round from team ranks
+//	@Description	Applies saved, unique in-range nonzero team ranks to first-round slots atomically. Rejects affected matches with scores, confirmation, winners, or affected downstream results. Requires a competition Admin. Repeated calls are idempotent and do not advance matches.
 //	@Tags			Elimination
 //	@Produce		json
 //	@Param			id	path	int	true	"Elimination ID"
@@ -1308,7 +1307,7 @@ func PostEliminationBracketFirstRoundSync(context *gin.Context) {
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&elimination, id).Error; err != nil {
 			return err
 		}
-		if elimination.BracketSeedCount == 0 || elimination.BracketRosterLocked {
+		if elimination.BracketSeedCount == 0 {
 			return errBracketConflict
 		}
 		bracketSize := nextPowerOfTwo(elimination.BracketSeedCount)
@@ -1321,9 +1320,6 @@ func PostEliminationBracketFirstRoundSync(context *gin.Context) {
 		}
 		var playerSets []database.PlayerSet
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("elimination_id = ?", id).Order("`rank` asc, id asc").Find(&playerSets).Error; err != nil {
-			return err
-		}
-		if err := validateRosterForSetup(playerSets, elimination.BracketSeedCount); err != nil {
 			return err
 		}
 		changed, err := syncFirstRoundRoster(tx, elimination)
@@ -1380,17 +1376,9 @@ func PostEliminationStageAdvance(context *gin.Context) {
 			// previous immutable contract rather than guessing a seed count.
 			return errBracketConflict
 		}
-		if !elimination.BracketRosterLocked {
-			if _, err := syncFirstRoundRoster(tx, elimination); err != nil {
-				return err
-			}
-		}
 		bracketSize := nextPowerOfTwo(elimination.BracketSeedCount)
 		var playerSets []database.PlayerSet
 		if err := tx.Where("elimination_id = ?", elimination.ID).Find(&playerSets).Error; err != nil {
-			return err
-		}
-		if err := validateRosterForLock(playerSets, elimination.BracketSeedCount); err != nil {
 			return err
 		}
 		bracket, err := loadBracket(tx, elimination.ID)
@@ -1403,9 +1391,6 @@ func PostEliminationStageAdvance(context *gin.Context) {
 		}
 		if !compatible {
 			return errBracketConflict
-		}
-		if err := lockBracketRoster(tx, &elimination); err != nil {
-			return err
 		}
 		sourceIndex := -1
 		for index, candidate := range bracket {

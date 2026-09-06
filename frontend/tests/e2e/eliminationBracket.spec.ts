@@ -127,7 +127,7 @@ for (const [variant, teamSize] of [
   ["mixed", 2],
   ["team", 3],
 ] as Array<[EliminationVariant, number]>) {
-  test(`對抗賽設定：${variant} 可建立完整樹並保持名單開放`, async ({ page }) => {
+  test(`對抗賽設定：${variant} 可建立空白完整樹且隊伍仍可編輯`, async ({ page }) => {
     const fixture = buildEliminationFixture(variant);
     const playerSets = rankedPlayerSets(fixture.eliminationId);
     fixture.elimination.player_sets = playerSets;
@@ -165,7 +165,6 @@ for (const [variant, teamSize] of [
       async (route) => {
         bracketRequests.push(route.request().postDataJSON());
         fixture.elimination.bracket_seed_count = 4;
-        fixture.elimination.bracket_roster_locked = false;
         stages = completeFourEntrantStages(fixture.eliminationId);
         await route.fulfill({
           status: 200,
@@ -239,12 +238,11 @@ test("對抗賽設定：409 顯示不覆寫既有資料", async ({ page }) => {
   ).toBeVisible();
 });
 
-test("新增隊伍後重新取得已同步之第一輪籤表", async ({ page }) => {
+test("新增隊伍不會自動更新第一輪籤表", async ({ page }) => {
   const fixture = buildEliminationFixture("individual");
   const playerSets = rankedPlayerSets(fixture.eliminationId);
   fixture.elimination.player_sets = playerSets;
   fixture.elimination.bracket_seed_count = 4;
-  fixture.elimination.bracket_roster_locked = false;
   fixture.elimination.stages = completeFourEntrantStages(fixture.eliminationId);
   fixture.groupsWithPlayers.groups.unshift({
     id: 9299,
@@ -254,21 +252,12 @@ test("新增隊伍後重新取得已同步之第一輪籤表", async ({ page }) 
   });
   await registerEliminationRoutes(page, fixture);
 
-  let firstRoundSynced = false;
   let bracketDetailRequests = 0;
   await page.route(
     `**/elimination/stages/scores/medals/${fixture.eliminationId}`,
     async (route) => {
       bracketDetailRequests++;
       const stages = JSON.parse(JSON.stringify(fixture.elimination.stages)) as DatabaseStage[];
-      if (firstRoundSynced) {
-        const firstRoundSlots = playerSets.map((playerSet) => playerSet.id);
-        stages[0].matchs?.forEach((match, matchIndex) =>
-          match.match_results?.forEach((result, resultIndex) => {
-            result.player_set_id = firstRoundSlots[matchIndex * 2 + resultIndex];
-          })
-        );
-      }
       await route.fulfill({
         status: 200,
         contentType: "application/json",
@@ -281,7 +270,6 @@ test("新增隊伍後重新取得已同步之第一輪籤表", async ({ page }) 
       await route.fallback();
       return;
     }
-    firstRoundSynced = true;
     await route.fulfill({
       status: 200,
       contentType: "application/json",
@@ -303,9 +291,8 @@ test("新增隊伍後重新取得已同步之第一輪籤表", async ({ page }) 
   await page.getByRole("option", { name: "我方選手 rank: undefined" }).click();
   await page.getByRole("button", { name: "創建隊伍" }).click();
 
-  // `eliminationDetail` 的 stages 含第一輪 MatchResult.player_set_id；
-  // 若未在成功後失效，此處只會停在首次載入的空籤表。
-  await expect.poll(() => bracketDetailRequests).toBeGreaterThanOrEqual(2);
+  // 排名或隊伍異動只更新隊伍資料；首輪格位只能由進度頁的明確按鈕更新。
+  await expect.poll(() => bracketDetailRequests).toBe(1);
 });
 
 test("單人對抗賽：自動建組預填 advancing_num，可覆寫並刷新隊伍", async ({ page }) => {
@@ -342,7 +329,6 @@ test("單人對抗賽：自動建組預填 advancing_num，可覆寫並刷新隊
     async (route) => {
       bracketRequests.push(route.request().postDataJSON());
       setup.fixture.elimination.bracket_seed_count = 8;
-      setup.fixture.elimination.bracket_roster_locked = false;
       setup.setStages(completeEightEntrantStages(setup.fixture.eliminationId));
       await route.fulfill({
         status: 200,

@@ -84,7 +84,10 @@ func completeConfirmedMatchEndScores(lockedScores []database.MatchScore, matchSc
 	return updatedScores, nil
 }
 
-func lockRosterForEliminationScoring(tx *gorm.DB, eliminationID uint) error {
+// lockEliminationForScoring serializes score writes with administrative
+// bracket changes. Ranks remain draft state, but the existing bracket shape
+// and each current slot's score invariants are still verified.
+func lockEliminationForScoring(tx *gorm.DB, eliminationID uint) error {
 	var elimination database.Elimination
 	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&elimination, eliminationID).Error; err != nil {
 		return err
@@ -94,9 +97,6 @@ func lockRosterForEliminationScoring(tx *gorm.DB, eliminationID uint) error {
 	}
 	var playerSets []database.PlayerSet
 	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("elimination_id = ?", eliminationID).Find(&playerSets).Error; err != nil {
-		return err
-	}
-	if err := validateRosterForLock(playerSets, elimination.BracketSeedCount); err != nil {
 		return err
 	}
 	bracketSize := nextPowerOfTwo(elimination.BracketSeedCount)
@@ -111,7 +111,7 @@ func lockRosterForEliminationScoring(tx *gorm.DB, eliminationID uint) error {
 	if !compatible {
 		return errBracketConflict
 	}
-	return lockBracketRoster(tx, &elimination)
+	return nil
 }
 
 func rosterEliminationForMatchResult(tx *gorm.DB, matchResultID uint) (uint, error) {
@@ -429,7 +429,7 @@ func PutMatchResultShootOffScoreById(context *gin.Context) {
 		if err != nil {
 			return err
 		}
-		if err := lockRosterForEliminationScoring(tx, eliminationID); err != nil {
+		if err := lockEliminationForScoring(tx, eliminationID); err != nil {
 			return err
 		}
 		matchID, err := matchForMatchResult(tx, id)
@@ -506,10 +506,8 @@ func eliminationForMatch(matchID uint) (database.Elimination, error) {
 	return database.GetOnlyEliminationById(relation.EliminationID)
 }
 
-// setMatchWinner serializes a complete match decision. For new generated
-// brackets it also synchronizes an open first round before validating and
-// locking the roster, so a legitimate rank update cannot leave a stale slot
-// blocking the first winner selection.
+// lockMatchWinnerRows serializes a decision against the currently assigned
+// match. Draft PlayerSet ranks are applied only by explicit first-round sync.
 func lockMatchWinnerRows(tx *gorm.DB, eliminationID, matchID uint) (database.Elimination, []database.MatchResult, error) {
 	var elimination database.Elimination
 	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&elimination, eliminationID).Error; err != nil {
@@ -568,16 +566,6 @@ func setMatchWinner(tx *gorm.DB, eliminationID, matchID uint, winnerMatchResultI
 		}
 	}
 
-	if elimination.BracketSeedCount > 0 {
-		if !elimination.BracketRosterLocked {
-			if _, err := syncFirstRoundRoster(tx, elimination); err != nil {
-				return false, err
-			}
-		}
-	}
-
-	// syncFirstRoundRoster may have filled one of this match's nil slots, so
-	// load the two locked rows only after it completes.
 	results, err = loadPlacementMatchResults(tx, matchID)
 	if err != nil {
 		return false, err
@@ -651,32 +639,8 @@ func setMatchWinner(tx *gorm.DB, eliminationID, matchID uint, winnerMatchResultI
 			return false, err
 		}
 	}
-	if elimination.BracketSeedCount > 0 {
-		var playerSets []database.PlayerSet
-		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("elimination_id = ?", elimination.ID).Find(&playerSets).Error; err != nil {
-			return false, err
-		}
-		if err := validateRosterForLock(playerSets, elimination.BracketSeedCount); err != nil {
-			return false, err
-		}
-		bracket, err := loadBracket(tx, elimination.ID)
-		if err != nil {
-			return false, err
-		}
-		bracketSize := nextPowerOfTwo(elimination.BracketSeedCount)
-		if !bracketStageMatchShapeIsComplete(bracket, bracketSize) {
-			return false, errBracketConflict
-		}
-		compatible, err := bracketShapeIsCompatible(tx, bracket, playerSets, elimination.BracketSeedCount, bracketSize, elimination.TeamSize)
-		if err != nil {
-			return false, err
-		}
-		if !compatible {
-			return false, errBracketConflict
-		}
-		if err := lockBracketRoster(tx, &elimination); err != nil {
-			return false, err
-		}
+	if err := lockEliminationForScoring(tx, elimination.ID); err != nil {
+		return false, err
 	}
 	return true, nil
 }
@@ -686,7 +650,7 @@ func setMatchWinner(tx *gorm.DB, eliminationID, matchID uint, winnerMatchResultI
 // source match whose downstream bracket slot has already been populated.
 //
 //	@Summary		Select an elimination match winner
-//	@Description	Locks the elimination, match, and both match results. winner_match_result_id is required and must identify an occupied result of this match, or be null to clear both winner flags. Requires a competition Admin. Generated brackets validate and lock their roster, and cannot change a source after it has advanced.
+//	@Description	Locks the elimination, match, and both match results. winner_match_result_id is required and must identify an occupied result of this match, or be null to clear both winner flags. Requires a competition Admin. Generated brackets validate their current structure and cannot change a source after it has advanced.
 //	@Tags			Elimination
 //	@Accept			json
 //	@Produce		json
@@ -923,14 +887,6 @@ func applyManualMatchPlayerSets(tx *gorm.DB, elimination database.Elimination, m
 	changed, err := overwriteBracketSlots(tx, &bracket[stageIndex], projections)
 	if err != nil {
 		return false, nil, err
-	}
-	if elimination.BracketSeedCount > 0 && !elimination.BracketRosterLocked {
-		// A forced correction becomes authoritative over the auto-seeding view.
-		// Keep the lock's original purpose: rank synchronization may no longer
-		// overwrite a manually corrected bracket.
-		if err := lockBracketRoster(tx, &elimination); err != nil {
-			return false, nil, err
-		}
 	}
 	if !cascade {
 		return changed, affectedMatches, nil
@@ -1231,7 +1187,7 @@ func PutMatchEndsTotalScoresById(context *gin.Context) {
 		if err != nil {
 			return err
 		}
-		if err := lockRosterForEliminationScoring(tx, eliminationID); err != nil {
+		if err := lockEliminationForScoring(tx, eliminationID); err != nil {
 			return err
 		}
 		matchResultID, err := matchResultForMatchEnd(tx, id)
@@ -1330,13 +1286,13 @@ func PutMatchEndsScoresById(context *gin.Context) {
 			return
 		}
 	}
-	/* update the end and all arrows atomically with the roster lock */
+	/* update the end and all arrows atomically under the elimination row lock */
 	err = database.DB.Transaction(func(tx *gorm.DB) error {
 		eliminationID, err := rosterEliminationForMatchEnd(tx, matchEndId)
 		if err != nil {
 			return err
 		}
-		if err := lockRosterForEliminationScoring(tx, eliminationID); err != nil {
+		if err := lockEliminationForScoring(tx, eliminationID); err != nil {
 			return err
 		}
 		matchResultID, err := matchResultForMatchEnd(tx, matchEndId)
@@ -1445,7 +1401,7 @@ func PutMatchEndsIsConfirmedById(context *gin.Context) {
 		if err != nil {
 			return err
 		}
-		if err := lockRosterForEliminationScoring(tx, eliminationID); err != nil {
+		if err := lockEliminationForScoring(tx, eliminationID); err != nil {
 			return err
 		}
 		matchID, err := matchForMatchEnd(tx, id)
@@ -1519,7 +1475,7 @@ func PutMatchScoreScoreById(context *gin.Context) {
 		if err != nil {
 			return err
 		}
-		if err := lockRosterForEliminationScoring(tx, eliminationID); err != nil {
+		if err := lockEliminationForScoring(tx, eliminationID); err != nil {
 			return err
 		}
 		matchResultID, err := matchResultForMatchScore(tx, id)

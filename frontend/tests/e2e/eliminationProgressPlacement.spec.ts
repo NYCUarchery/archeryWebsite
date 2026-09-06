@@ -336,7 +336,6 @@ test("進度頁：未計分的完整籤表 Match 仍可手動改派隊伍", asyn
     })),
   });
   fixture.elimination.bracket_seed_count = 4;
-  fixture.elimination.bracket_roster_locked = false;
   fixture.elimination.player_sets?.forEach((playerSet, index) => {
     playerSet.rank = index + 1;
   });
@@ -402,14 +401,13 @@ test("進度頁：未計分的完整籤表 Match 仍可手動改派隊伍", asyn
     ]);
 });
 
-test("進度頁：已開始且名單鎖定的對抗組仍可救援更正隊伍", async ({ page }) => {
+test("進度頁：已開始的對抗組仍可救援更正隊伍", async ({ page }) => {
   const fixture = buildEliminationFixture("individual");
   const firstResult =
     fixture.elimination.stages?.[0]?.matchs?.[0]?.match_results?.[0];
   if (!firstResult) throw new Error("fixture 缺少第一方 MatchResult");
 
   fixture.elimination.bracket_seed_count = 4;
-  fixture.elimination.bracket_roster_locked = true;
   firstResult.total_points = 6;
   firstResult.is_winner = true;
   fixture.elimination.player_sets?.push({
@@ -471,10 +469,9 @@ test("進度頁：已開始且名單鎖定的對抗組仍可救援更正隊伍",
     ]);
 });
 
-test("進度頁：未鎖定對抗樹可依 schedule 排名填入第一階段", async ({ page }) => {
+test("進度頁：管理員可依隊伍排名更新第一階段", async ({ page }) => {
   const fixture = buildEliminationFixture("individual");
   fixture.elimination.bracket_seed_count = 4;
-  fixture.elimination.bracket_roster_locked = false;
   fixture.elimination.player_sets?.forEach((playerSet, index) => {
     playerSet.rank = index + 1;
   });
@@ -511,6 +508,7 @@ test("進度頁：未鎖定對抗樹可依 schedule 排名填入第一階段", a
 
   const syncRequests: string[] = [];
   let firstRoundSynced = false;
+  let syncAttempt = 0;
   await page.route(
     `**/elimination/stages/scores/medals/${fixture.eliminationId}`,
     async (route) => {
@@ -537,6 +535,15 @@ test("進度頁：未鎖定對抗樹可依 schedule 排名填入第一階段", a
     `**/elimination/bracket/${fixture.eliminationId}/sync-first-round`,
     async (route) => {
       syncRequests.push(route.request().method());
+      syncAttempt++;
+      if (syncAttempt === 1) {
+        await route.fulfill({
+          status: 409,
+          contentType: "application/json",
+          body: JSON.stringify({ error: "affected first-round match already has results" }),
+        });
+        return;
+      }
       firstRoundSynced = true;
       await route.fulfill({
         status: 200,
@@ -557,8 +564,12 @@ test("進度頁：未鎖定對抗樹可依 schedule 排名填入第一階段", a
   await expect(
     page.getByText(fixture.setNameMine, { exact: true }),
   ).toHaveCount(0);
-  await page.getByRole("button", { name: "依排名填入第一階段" }).click();
-  await expect.poll(() => syncRequests).toEqual(["POST"]);
+  const syncButton = page.getByRole("button", { name: "依隊伍排名更新第一階段" });
+  await syncButton.click();
+  await expect(page.getByText("affected first-round match already has results")).toBeVisible();
+  await expect(page.getByText(fixture.setNameMine, { exact: true })).toHaveCount(0);
+  await syncButton.click();
+  await expect.poll(() => syncRequests).toEqual(["POST", "POST"]);
   await expect(
     page.getByText(fixture.setNameMine, { exact: true }),
   ).toBeVisible();

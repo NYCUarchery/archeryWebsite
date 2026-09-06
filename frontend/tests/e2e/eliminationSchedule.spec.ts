@@ -41,7 +41,7 @@ test("個人賽：0 隊亦可開建樹 dialog，128 晉級數只顯示必要摘�
   await expect(dialog.getByText("對抗樹大小：128")).toBeVisible();
 });
 
-test("建樹成功：送出固定晉級數並刷新排名、隊伍與首輪籤表", async ({
+test("建樹成功：送出固定晉級數，首輪仍保持空白", async ({
   page,
 }) => {
   const fixture = buildEliminationFixture("individual");
@@ -69,10 +69,6 @@ test("建樹成功：送出固定晉級數並刷新排名、隊伍與首輪籤�
     JSON.stringify(fixture.elimination)
   ) as typeof fixture.elimination;
   seededElimination.bracket_seed_count = 4;
-  seededElimination.bracket_roster_locked = false;
-  seededElimination.player_sets?.forEach((playerSet, index) => {
-    playerSet.rank = index + 1;
-  });
 
   await page.route(
     `**/elimination/stages/scores/medals/${fixture.eliminationId}`,
@@ -135,7 +131,7 @@ test("建樹成功：送出固定晉級數並刷新排名、隊伍與首輪籤�
   const dialog = page.getByRole("dialog", { name: "建立完整對抗樹" });
   await dialog.getByLabel("晉級數").fill("4");
   await expect(
-    dialog.getByText("前 4 隊依排名排入第一階段，其餘 1 隊保留為後備。")
+    dialog.getByText("建立後第一階段會保持空白；請在對抗表中依隊伍排名手動更新。")
   ).toBeVisible();
   await expect(dialog.getByRole("button", { name: "建立" })).toBeEnabled();
   await dialog.getByRole("button", { name: "建立" }).click();

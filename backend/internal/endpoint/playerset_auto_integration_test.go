@@ -201,7 +201,7 @@ func (suite *AutoPlayerSetIntegrationTestSuite) TestAutoRejectsUnauthorizedInval
 	_, err = database.CreateStage(database.Stage{EliminationId: staged.ID})
 	suite.Require().NoError(err)
 	recorder, _ = suite.auto(staged.ID, nil, stagedAdmin)
-	suite.Equal(http.StatusConflict, recorder.Code)
+	suite.Equal(http.StatusOK, recorder.Code)
 
 	team, _, teamAdmin, _ := suite.fixture(2, 4, []int{1, 2, 3, 4})
 	recorder, _ = suite.auto(team.ID, nil, teamAdmin)
