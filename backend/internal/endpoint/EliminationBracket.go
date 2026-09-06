@@ -278,16 +278,16 @@ func rankedRoster(playerSets []database.PlayerSet, seedCount int) []database.Pla
 	return roster
 }
 
-// validateRosterForLock permits unranked/out-of-cut reserves. Callers also
-// validate the complete first-round rank projection before locking play, so a
-// reserve can never be mistaken for an active slot.
+// validateRosterForLock validates the roster before applying its ranks to the
+// first round. Every PlayerSet must have exactly one in-range rank; missing
+// ranks are permitted and become empty slots in the bracket.
 func validateRosterForLock(playerSets []database.PlayerSet, seedCount int) error {
+	if len(playerSets) > seedCount {
+		return errBracketConflict
+	}
 	seen := make(map[int]bool, len(playerSets))
 	for _, playerSet := range playerSets {
-		if playerSet.Rank == 0 {
-			continue
-		}
-		if playerSet.Rank < 0 || seen[playerSet.Rank] {
+		if playerSet.Rank <= 0 || playerSet.Rank > seedCount || seen[playerSet.Rank] {
 			return errBracketConflict
 		}
 		seen[playerSet.Rank] = true
@@ -296,12 +296,15 @@ func validateRosterForLock(playerSets []database.PlayerSet, seedCount int) error
 }
 
 func validateRosterForSetup(playerSets []database.PlayerSet, seedCount int) error {
+	if len(playerSets) > seedCount {
+		return errBracketConflict
+	}
 	seen := make(map[int]bool, len(playerSets))
 	for _, playerSet := range playerSets {
 		if playerSet.Rank == 0 {
 			continue
 		}
-		if playerSet.Rank < 0 || seen[playerSet.Rank] {
+		if playerSet.Rank < 0 || playerSet.Rank > seedCount || seen[playerSet.Rank] {
 			return errBracketConflict
 		}
 		seen[playerSet.Rank] = true
