@@ -1,19 +1,8 @@
 import type {
-  DatabaseElimination,
   DatabaseMatch,
   DatabasePlayerSet,
   DatabaseStage,
 } from "@/types/Api";
-
-export function isBracketRosterLocked(elimination?: DatabaseElimination) {
-  if ((elimination?.bracket_seed_count ?? 0) > 0) {
-    return Boolean(elimination?.bracket_roster_locked);
-  }
-
-  // Legacy brackets predate bracket_seed_count/roster locking. Their backend
-  // contract remains immutable once any stage exists.
-  return (elimination?.stages?.length ?? 0) > 0;
-}
 
 export function nextPowerOfTwo(value: number) {
   if (!Number.isFinite(value) || value < 1) return 0;

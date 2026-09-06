@@ -46,7 +46,6 @@ import ScoreBlock from "@/components/ScoreBlock";
 import EliminationProgressControl from "./EliminationProgressControl";
 import {
   hasEliminationMatchStarted,
-  isBracketRosterLocked,
   isCompleteEliminationBracket,
 } from "@/utils/eliminationBracket";
 import {
@@ -217,7 +216,6 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
 
   const bracketExists = isCompleteEliminationBracket(eliminationDetail?.stages);
   const hasGeneratedBracket = (eliminationDetail?.bracket_seed_count ?? 0) > 0;
-  const rosterLocked = isBracketRosterLocked(eliminationDetail);
 
   const { mutate: createStage } = useMutation(
     (data: EndpointPostStagePostStageData) =>
@@ -301,7 +299,7 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
         onError: (error: any) => {
           setFirstRoundSyncError(
             error?.response?.data?.error ??
-              "依排名填入第一階段失敗，請檢查隊伍排名。"
+              "依隊伍排名更新第一階段失敗，請檢查隊伍排名或既有賽果。"
           );
         },
       }
@@ -743,7 +741,7 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
       (setOption2?.id ?? null) !== initialPlayerSetIds[1]);
   const showPlayerSetCorrectionWarning =
     playerSetsChangedInDialog &&
-    (rosterLocked || hasEliminationMatchStarted(selectedMatch));
+    hasEliminationMatchStarted(selectedMatch);
   const matchDialogTeams = [
     {
       number: 1,
@@ -954,15 +952,20 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
                     <Button
                       variant="outlined"
                       disabled={
-                        !stage.id || rosterLocked || isFirstRoundSyncing
+                        !stage.id || isFirstRoundSyncing
                       }
                       onClick={() => syncFirstRound()}
                       sx={{ width: "100%", mb: 1 }}
                     >
                       {isFirstRoundSyncing
                         ? "填入中…"
-                        : "依排名填入第一階段"}
+                        : "依隊伍排名更新第一階段"}
                     </Button>
+                  )}
+                  {hasGeneratedBracket && stageIndex === 0 && (
+                    <Typography variant="body2" sx={{ mb: 1 }}>
+                      依已儲存排名更新，將覆寫尚未開始的首輪人工安排；涉及既有賽果時不予更新。
+                    </Typography>
                   )}
                   <Button
                     variant="outlined"

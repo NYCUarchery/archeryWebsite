@@ -199,8 +199,7 @@ func placementEliminationForMatchResult(matchResultID uint) (database.Eliminatio
 }
 
 // PutEliminationStagePlacement assigns every match in a stage to a lane range.
-// It does not inspect the lanes table, and placement remains editable after the
-// bracket roster has been locked.
+// It does not inspect the lanes table. Placement does not change team identities.
 //
 // @Summary      Place every match in an elimination stage
 // @Description  Requires a competition Admin. mode is one_player_set_per_target or two_player_sets_per_target; no lane records are required.

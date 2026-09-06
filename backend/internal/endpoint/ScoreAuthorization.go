@@ -175,7 +175,7 @@ func requireMatchSidesUnconfirmed(tx *gorm.DB, matchID uint, targetEndID uint) e
 	return nil
 }
 
-// authorizeEliminationScore must run after lockRosterForEliminationScoring.
+// authorizeEliminationScore must run after lockEliminationForScoring.
 // It observes current_stage and score confirmation under the same transaction
 // as the eventual write.
 func authorizeEliminationScore(context *gin.Context, tx *gorm.DB, eliminationID, matchID uint, matchEndID *uint) (scoreActor, error) {
