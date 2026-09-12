@@ -1,3 +1,5 @@
+//go:build integration
+
 package endpoint
 
 import (
@@ -8,6 +10,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -36,6 +39,9 @@ func (suite *PlayerTestSuite) TearDownTest() {
 }
 
 func TestPlayerTestSuite(t *testing.T) {
+	if os.Getenv("ARCHERY_MYSQL_INTEGRATION") != "1" {
+		t.Skip("set ARCHERY_MYSQL_INTEGRATION=1 to run destructive MySQL integration tests")
+	}
 	suite.Run(t, new(PlayerTestSuite))
 }
 
