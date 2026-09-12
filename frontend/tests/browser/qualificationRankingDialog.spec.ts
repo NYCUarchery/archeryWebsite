@@ -1,4 +1,5 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "./fixtures";
+import type { Page } from "@playwright/test";
 
 const competitionId = 9801;
 const userId = 9802;
@@ -230,7 +231,12 @@ test.describe("Qualification ranking dialog", () => {
     const dialog = rankingRows(page);
     await expect(dialog.getByText("總分", { exact: true })).toBeVisible();
     await expect(dialog.getByText("X", { exact: true })).toBeVisible();
-    await expect(dialog.getByText("10", { exact: true })).toBeVisible();
+    await expect(
+      dialog
+        .locator("div")
+        .filter({ hasText: /^10$/ })
+        .filter({ hasNot: dialog.locator("p") }),
+    ).toBeVisible();
     await expect(dialog.getByText("王小明")).toBeVisible();
     await expect(dialog.getByText("650", { exact: true }).first()).toBeVisible();
     await expect(dialog.getByText("12", { exact: true })).toBeVisible();
