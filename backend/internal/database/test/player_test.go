@@ -1,8 +1,11 @@
+//go:build integration
+
 package database
 
 import (
 	. "backend/internal/database"
 	"fmt"
+	"os"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -30,10 +33,16 @@ func (suite *PlayerTestSuite) TearDownTest() {
 }
 
 func TestPlayerTestSuite(t *testing.T) {
+	if os.Getenv("ARCHERY_MYSQL_INTEGRATION") != "1" {
+		t.Skip("set ARCHERY_MYSQL_INTEGRATION=1 to run destructive MySQL integration tests")
+	}
 	suite.Run(t, new(PlayerTestSuite))
 }
 
 func TestInitPlayer(t *testing.T) {
+	if os.Getenv("ARCHERY_MYSQL_INTEGRATION") != "1" {
+		t.Skip("set ARCHERY_MYSQL_INTEGRATION=1 to run destructive MySQL integration tests")
+	}
 	DropTables()
 	Convey("Test InitPlayer", t, func() {
 		/*precondition*/
