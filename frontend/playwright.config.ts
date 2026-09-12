@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
+process.env.PLAYWRIGHT_BASE_URL ??= 'http://127.0.0.1:3000';
+
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -11,27 +13,21 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './tests/e2e',
-  /* Run tests in files in parallel */
-  fullyParallel: true,
+  fullyParallel: false,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  retries: 0,
+  workers: 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  reporter: [['html', { open: 'never', outputFolder: 'playwright-report/e2e' }]],
+  outputDir: 'test-results/e2e',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
-    // baseURL: 'http://127.0.0.1:3000',
+    baseURL: process.env.PLAYWRIGHT_BASE_URL ?? 'http://127.0.0.1:3000',
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
-    viewport: null,                  // 放開固定 viewport，跟隨實際視窗
-    launchOptions: {
-      args: ['--start-maximized'],   // 讓瀏覽器啟動就最大化
-    },
+    trace: 'retain-on-failure',
   },
 
   /* Configure projects for major browsers */

@@ -520,6 +520,16 @@ export async function registerEliminationRoutes(
     }
   );
 
+  // Phase polling can briefly render the qualification lane board before it
+  // returns to elimination.  Keep that transient read explicit as well.
+  await page.route("**/lane/scores/*", async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ lanes: [] }),
+    });
+  });
+
   await page.route(
     `**/elimination/stages/scores/medals/${fixture.eliminationId}`,
     async (route) => {
@@ -541,6 +551,33 @@ export async function registerEliminationRoutes(
         body: JSON.stringify(serverElimination),
       });
     }
+  );
+
+  // 排程控制器同時讀取資格賽晉級數與隊伍排名；這兩個讀取端點也須由
+  // 每一組 fixture 明確宣告，避免 mock browser 靜默落到真服務。
+  await page.route(`**/qualification/${fixture.elimination.group_id}`, async (route) => {
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        id: fixture.elimination.group_id,
+        advancing_num: 4,
+      }),
+    });
+  });
+
+  await page.route(
+    `**/playerset/elimination/${fixture.eliminationId}/ranking`,
+    async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          elimination_id: fixture.eliminationId,
+          player_sets: serverElimination.player_sets ?? [],
+        }),
+      });
+    },
   );
 
   // current_stage/current_end 採輕量輪詢；完整籤表與分數仍由上方端點提供。
