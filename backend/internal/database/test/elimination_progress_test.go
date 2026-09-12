@@ -1,7 +1,10 @@
+//go:build integration
+
 package database
 
 import (
 	. "backend/internal/database"
+	"os"
 	"testing"
 
 	. "github.com/smartystreets/goconvey/convey"
@@ -21,6 +24,9 @@ func (suite *EliminationProgressTestSuite) SetupTest() {
 }
 
 func TestEliminationProgressTestSuite(t *testing.T) {
+	if os.Getenv("ARCHERY_MYSQL_INTEGRATION") != "1" {
+		t.Skip("set ARCHERY_MYSQL_INTEGRATION=1 to run destructive MySQL integration tests")
+	}
 	suite.Run(t, new(EliminationProgressTestSuite))
 }
 
