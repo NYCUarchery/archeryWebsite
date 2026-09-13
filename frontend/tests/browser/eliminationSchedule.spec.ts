@@ -5,6 +5,28 @@ import {
   registerEliminationRoutes,
 } from "./eliminationFixtures";
 
+test("管理對抗進度：tablist 個人→團體→個人以實際路由切換", async ({ page }) => {
+  const fixture = buildEliminationFixture("individual");
+  fixture.competition.elimination_is_active = true;
+  fixture.competition.team_elimination_is_active = true;
+  fixture.eliminationsByGroup.group_data[0]!.elimination_data = [
+    { elimination_id: fixture.eliminationId, team_size: 1 },
+    // This navigation-only fixture deliberately shares an inert detail. The
+    // regression is that the visible MUI tablist controls the route; it makes
+    // no business write and does not assert event data from the wrong tab.
+    { elimination_id: fixture.eliminationId, team_size: 3 },
+  ];
+  await registerEliminationRoutes(page, fixture);
+
+  await page.goto(`/competition/${fixture.competitionId}/admin/progress/elimination/1`);
+  const tabs = page.getByRole("tablist", { name: "schedule panel" });
+  await expect(tabs).toBeVisible();
+  await tabs.getByRole("tab", { name: "團體對抗賽", exact: true }).click();
+  await expect(page).toHaveURL(`/competition/${fixture.competitionId}/admin/progress/elimination/3`);
+  await tabs.getByRole("tab", { name: "個人對抗賽", exact: true }).click();
+  await expect(page).toHaveURL(`/competition/${fixture.competitionId}/admin/progress/elimination/1`);
+});
+
 test("個人賽：0 隊亦可開建樹 dialog，128 晉級數只顯示必要摘要", async ({ page }) => {
   const fixture = buildEliminationFixture("individual");
   fixture.elimination.player_sets = [];
