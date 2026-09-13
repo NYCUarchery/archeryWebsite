@@ -16,16 +16,16 @@ type EliminationProgressTestSuite struct {
 }
 
 func (suite *EliminationProgressTestSuite) SetupSuite() {
-	SetupDatabaseByMode("test")
+	suite.Require().NoError(ResetTestDatabase("legacy"))
 }
 
 func (suite *EliminationProgressTestSuite) SetupTest() {
-	TestDBRestore()
+	suite.Require().NoError(ResetTestDatabase("legacy"))
 }
 
 func TestEliminationProgressTestSuite(t *testing.T) {
 	if os.Getenv("ARCHERY_MYSQL_INTEGRATION") != "1" {
-		t.Skip("set ARCHERY_MYSQL_INTEGRATION=1 to run destructive MySQL integration tests")
+		t.Fatal("integration tests require scripts/test.sh go-integration")
 	}
 	suite.Run(t, new(EliminationProgressTestSuite))
 }

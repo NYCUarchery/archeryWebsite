@@ -36,13 +36,13 @@ type PlayerSetRankingIntegrationTestSuite struct {
 
 func TestPlayerSetRankingIntegrationTestSuite(t *testing.T) {
 	if os.Getenv("ARCHERY_MYSQL_INTEGRATION") != "1" {
-		t.Skip("set ARCHERY_MYSQL_INTEGRATION=1 to run destructive MySQL integration tests")
+		t.Fatal("integration tests require scripts/test.sh go-integration")
 	}
 	suite.Run(t, new(PlayerSetRankingIntegrationTestSuite))
 }
 
 func (suite *PlayerSetRankingIntegrationTestSuite) SetupSuite() {
-	database.SetupDatabaseByMode("test")
+	suite.Require().NoError(database.ResetTestDatabase("legacy"))
 	file, err := os.CreateTemp("", "archery-playerset-ranking-session-*.yaml")
 	suite.Require().NoError(err)
 	suite.sessionFile = file.Name()
@@ -57,7 +57,7 @@ func (suite *PlayerSetRankingIntegrationTestSuite) TearDownSuite() {
 }
 
 func (suite *PlayerSetRankingIntegrationTestSuite) SetupTest() {
-	database.TestDBRestore()
+	suite.Require().NoError(database.ResetTestDatabase("legacy"))
 	suite.userIDCounter = 96000
 	gin.SetMode(gin.TestMode)
 	suite.router = gin.New()

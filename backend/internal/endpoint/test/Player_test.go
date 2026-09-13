@@ -6,15 +6,12 @@ import (
 	"backend/internal/database"
 	. "backend/internal/endpoint"
 	"bytes"
-	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 
-	"github.com/gin-gonic/gin"
-	. "github.com/smartystreets/goconvey/convey"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -23,7 +20,7 @@ type PlayerTestSuite struct {
 }
 
 func (suite *PlayerTestSuite) SetupSuite() {
-	database.SetupDatabaseByMode("test")
+	suite.Require().NoError(database.ResetTestDatabase("legacy"))
 }
 
 func (suite *PlayerTestSuite) TearDownSuite() {
@@ -31,7 +28,7 @@ func (suite *PlayerTestSuite) TearDownSuite() {
 }
 
 func (suite *PlayerTestSuite) SetupTest() {
-	database.TestDBRestore()
+	suite.Require().NoError(database.ResetTestDatabase("legacy"))
 }
 
 func (suite *PlayerTestSuite) TearDownTest() {
@@ -40,62 +37,52 @@ func (suite *PlayerTestSuite) TearDownTest() {
 
 func TestPlayerTestSuite(t *testing.T) {
 	if os.Getenv("ARCHERY_MYSQL_INTEGRATION") != "1" {
-		t.Skip("set ARCHERY_MYSQL_INTEGRATION=1 to run destructive MySQL integration tests")
+		t.Fatal("integration tests require scripts/test.sh go-integration")
 	}
 	suite.Run(t, new(PlayerTestSuite))
 }
 
-func SetUpRouter() *gin.Engine {
-	router := gin.Default()
-	return router
+func (suite *PlayerTestSuite) TestPutPlayerScoreAuthorizationAndValidation() {
+	router := newScoreTestRouter(suite.T())
+	router.PATCH("/api/player/roundscore/:roundscoreid", PutPlayerScore)
+
+	var score database.RoundScore
+	suite.Require().NoError(database.DB.First(&score).Error)
+	original := score.Score
+	body := []byte(`{"score":10}`)
+
+	suite.Run("approved competition Admin may update an arrow", func() {
+		request := authenticatedScoreRequest(router, 1, http.MethodPatch, "/api/player/roundscore/"+uintString(score.ID), body)
+		recorder := httptest.NewRecorder()
+		router.ServeHTTP(recorder, request)
+		suite.Equal(http.StatusOK, recorder.Code)
+		assertRoundScore(suite.T(), score.ID, 10)
+	})
+
+	suite.Run("anonymous request is denied without a write", func() {
+		suite.Require().NoError(database.DB.Model(&database.RoundScore{}).Where("id = ?", score.ID).Update("score", original).Error)
+		request := httptest.NewRequest(http.MethodPatch, "/api/player/roundscore/"+uintString(score.ID), bytes.NewReader(body))
+		recorder := httptest.NewRecorder()
+		router.ServeHTTP(recorder, request)
+		suite.Equal(http.StatusForbidden, recorder.Code)
+		assertRoundScore(suite.T(), score.ID, original)
+	})
+
+	for _, invalidScore := range []int{-2, 12} {
+		suite.Run("invalid score is rejected", func() {
+			suite.Require().NoError(database.DB.Model(&database.RoundScore{}).Where("id = ?", score.ID).Update("score", original).Error)
+			request := authenticatedScoreRequest(router, 1, http.MethodPatch, "/api/player/roundscore/"+uintString(score.ID), []byte(`{"score":`+intString(invalidScore)+`}`))
+			recorder := httptest.NewRecorder()
+			router.ServeHTTP(recorder, request)
+			suite.Equal(http.StatusBadRequest, recorder.Code)
+			assertRoundScore(suite.T(), score.ID, original)
+		})
+	}
 }
 
-func (suite *PlayerTestSuite) TestUpdatePlayerScore() {
-	/* bcc */
-	/*
-		| Characteristic     | b1           | b2          | b3             |
-		| ------------------ | ------------ | ----------- | -------------- |
-		| A:PlayerId valid   | True         | False       |                |
-		| B:RoundId valid    | True         | False       |                |
-		| C:RoundEndId valid | True         | False       |                |
-		| D:Score            | less than -1 | -1 ≤ x ≤ 11 | larger than 11 |
-
-		Base choice : A1 B1 C1 D2
-		Number of tests = 1 + (1 + 1 + 1 + 2) = 6
-
-		| Base | A1 B1 C1 D2 |
-		| ---- | ----------- |
-		| A    | A2 b1 c1 d2 |
-		| B    | a1 B2 c1 d2 |
-		| C    | a1 b1 C2 d2 |
-		| D    | a1 b1 c1 D1 |
-		| D    | a1 b1 c1 D3 |
-
-	*/
-	r := SetUpRouter()
-	r.PATCH("/api/player/roundscore/:roundscoreid", PutPlayerScore)
-
-	Convey("Test UpdatePlayerScore using BCC", suite.T(), func() {
-		testcases := []struct {
-			testName     string
-			expectedCode int
-			data         UpdateTotalScoreData
-		}{
-			{testName: "A1 B1 C1 D2", expectedCode: 200, data: UpdateTotalScoreData{PlayerId: 1, RoundId: 1, RoundEndId: 1, Score: 10}},
-			{testName: "A2 b1 c1 d2", expectedCode: 400, data: UpdateTotalScoreData{PlayerId: 0, RoundId: 1, RoundEndId: 1, Score: 10}},
-			{testName: "a1 B2 c1 d2", expectedCode: 400, data: UpdateTotalScoreData{PlayerId: 1, RoundId: 0, RoundEndId: 1, Score: 10}},
-			{testName: "a1 b1 C2 d2", expectedCode: 400, data: UpdateTotalScoreData{PlayerId: 1, RoundId: 1, RoundEndId: 0, Score: 10}},
-			{testName: "a1 b1 c1 D1", expectedCode: 200, data: UpdateTotalScoreData{PlayerId: 1, RoundId: 1, RoundEndId: 1, Score: -2}},
-			{testName: "a1 b1 c1 D3", expectedCode: 200, data: UpdateTotalScoreData{PlayerId: 1, RoundId: 1, RoundEndId: 1, Score: 12}},
-		}
-		for _, tc := range testcases {
-			Convey(tc.testName, func() {
-				jsonValue, _ := json.Marshal(tc.data)
-				w := httptest.NewRecorder()
-				req, _ := http.NewRequest("PATCH", "/api/player/roundscore/"+fmt.Sprint(tc.data.PlayerId), bytes.NewBuffer(jsonValue))
-				r.ServeHTTP(w, req)
-				So(w.Code, ShouldEqual, tc.expectedCode)
-			})
-		}
-	})
+func assertRoundScore(t *testing.T, id uint, expected int) {
+	t.Helper()
+	var score database.RoundScore
+	require.NoError(t, database.DB.First(&score, id).Error)
+	require.Equal(t, expected, score.Score)
 }
