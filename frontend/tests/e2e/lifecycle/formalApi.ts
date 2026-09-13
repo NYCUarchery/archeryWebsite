@@ -17,11 +17,12 @@ export type ScopedActor = {
   groupName: string;
 };
 
-type User = { id?: number; user_name?: string };
+type User = { id?: number };
+type UserInfo = { id?: number; user_name?: string };
 type Participant = { id?: number; user_id?: number; role?: string; status?: string };
 type Score = { id?: number; score?: number };
 type QualificationEnd = { id?: number; is_confirmed?: boolean; round_scores?: Score[] };
-type Player = { id?: number; name?: string; participant_id?: number; rounds?: Array<{ round_ends?: QualificationEnd[] }> };
+type Player = { id?: number; name?: string; participant_id?: number; lane_id?: number; total_score?: number; rounds?: Array<{ id?: number; total_score?: number; round_ends?: QualificationEnd[] }> };
 type Group = { id?: number; group_id?: number; group_name?: string; players?: Player[] };
 type Competition = { id?: number; qualification_current_end?: number; current_phase?: number; groups?: Group[] };
 type PlayerSet = { id?: number; set_name?: string; players?: Array<{ id?: number; name?: string }> };
@@ -36,6 +37,7 @@ export type QualificationEndRef = {
   groupId: number;
   playerId: number;
   playerName: string;
+  laneId: number;
   participantId: number;
   endId: number;
   endIndex: number;
@@ -48,6 +50,7 @@ export type MatchEndRef = {
   eliminationId: number;
   groupId: number;
   teamSize: 1 | 3;
+  stageIndex: number;
   stageId: number;
   matchId: number;
   matchResultId: number;
@@ -95,10 +98,16 @@ async function requireSuccess(response: ApiResponse, operation: string) {
 }
 
 /** Verify the session identity and approved competition role before any write. */
-export async function assertApprovedScopedActor(request: ApiRequest, actor: ScopedActor): Promise<{ userId: number; participantId: number }> {
+export async function readAuthenticatedUser(request: ApiRequest, expectedUsername: string): Promise<number> {
   const user = await readJson<User>(await request.get("/api/user/me"), "current user lookup");
   const userId = id(user.id, "current user");
-  if (user.user_name !== actor.username) throw new Error(`authenticated user ${JSON.stringify(user.user_name)} is not ${actor.username}`);
+  const detail = await readJson<UserInfo>(await request.get(`/api/user/${userId}`), "current user detail lookup");
+  if (detail.id !== userId || detail.user_name !== expectedUsername) throw new Error(`authenticated user ${JSON.stringify(detail.user_name)} is not ${expectedUsername}`);
+  return userId;
+}
+
+export async function assertApprovedScopedActor(request: ApiRequest, actor: ScopedActor): Promise<{ userId: number; participantId: number }> {
+  const userId = await readAuthenticatedUser(request, actor.username);
   const participants = await readJson<Participant[]>(
     await request.get(`/api/participant/competition/${actor.competitionId}`),
     "participant lookup",
@@ -150,13 +159,34 @@ export async function resolveQualificationEnd(
     groupId,
     playerId,
     playerName: input.playerName,
+    laneId: id(player.lane_id, `player ${input.playerName} lane`),
     participantId: identity.participantId,
     endId: id(end.id, "qualification end"),
     endIndex: input.endIndex,
-    scoreIds: uniqueIds(end.round_scores, 6, "qualification end"),
+    scoreIds: uniqueIds(end.round_scores, 6, "qualification end").sort((left, right) => left - right),
     scoreCount: 6,
     qualificationCurrentEnd: currentEnd,
   };
+}
+
+/** Resolve the current end ID solely from official GET data for hybrid API fills. */
+export async function resolveCurrentQualificationEnd(
+  request: ApiRequest,
+  actor: ScopedActor,
+  playerName: string,
+): Promise<QualificationEndRef> {
+  const identity = await assertApprovedScopedActor(request, actor);
+  const { competition, player } = await groupAndActorPlayer(request, actor, identity.participantId, playerName);
+  const endIndex = required(competition.qualification_current_end, "qualification current end");
+  const playerId = id(player.id, `player ${playerName}`);
+  const detail = await readJson<Player>(await request.get(`/api/player/scores/${playerId}`), "qualification current end lookup");
+  const end = detail.rounds?.flatMap((round) => round.round_ends ?? [])[endIndex];
+  return await resolveQualificationEnd(request, actor, {
+    playerName,
+    endId: id(end?.id, `qualification current end ${endIndex}`),
+    endIndex,
+    requireCurrentQualificationEnd: true,
+  });
 }
 
 /** Resolve an elimination ID from a competition/group/team-size relation. */
@@ -209,6 +239,7 @@ export async function resolveMatchEnd(
       eliminationId,
       groupId,
       teamSize: input.teamSize,
+      stageIndex,
       stageId: id(stage.id, "current stage"),
       matchId: id(match.id, "current match"),
       matchResultId: id(own.id, "match result"),
@@ -224,11 +255,55 @@ export async function resolveMatchEnd(
   throw new Error(`end ${input.endId} is not in active ${input.playerSetName} vs ${input.opponentSetName} match`);
 }
 
+/** Resolve a current-stage match side from official bracket data; no UI selection is needed. */
+export async function resolveCurrentMatchEnd(
+  request: ApiRequest,
+  actor: ScopedActor,
+  input: { teamSize: 1 | 3; matchIndex: number; side: 1 | 2 },
+): Promise<MatchEndRef> {
+  const eliminationId = await resolveEliminationId(request, actor, input.teamSize);
+  const detail = await readJson<Elimination>(await request.get(`/api/elimination/stages/scores/medals/${eliminationId}`), "current match lookup");
+  const stage = required(detail.stages?.[required(detail.current_stage, "elimination current stage")], "current stage");
+  const match = required(stage.matchs?.[input.matchIndex], `match ${input.matchIndex + 1}`);
+  const result = required(match.match_results?.[input.side - 1], `match ${input.matchIndex + 1} side ${input.side}`);
+  const set = required(detail.player_sets?.find((candidate) => candidate.id === result.player_set_id), "current player set");
+  const opponent = required(match.match_results?.[input.side === 1 ? 1 : 0], "current opponent result");
+  const opponentSet = required(detail.player_sets?.find((candidate) => candidate.id === opponent.player_set_id), "current opponent player set");
+  const endIndex = required(detail.current_end, "elimination current end");
+  const endId = id(result.match_ends?.[endIndex]?.id, `match ${input.matchIndex + 1} current end`);
+  return await resolveMatchEnd(request, actor, {
+    teamSize: input.teamSize,
+    playerSetName: required(set.set_name, "current player set name"),
+    opponentSetName: required(opponentSet.set_name, "current opponent set name"),
+    endId,
+    endIndex,
+  });
+}
+
+function arithmeticQualificationTotals(player: Player, ref: QualificationEndRef, expectedScores: readonly number[]) {
+  let playerTotal = 0;
+  let selectedRoundTotal: number | undefined;
+  for (const round of player.rounds ?? []) {
+    const roundTotal = (round.round_ends ?? []).reduce((sum, end) => sum + (end.round_scores ?? []).reduce((endSum, score) => {
+      const replacement = end.id === ref.endId ? expectedScores[ref.scoreIds.indexOf(id(score.id, "qualification readback score"))] : score.score;
+      return endSum + Math.max(0, replacement ?? 0);
+    }, 0), 0);
+    playerTotal += roundTotal;
+    if ((round.round_ends ?? []).some((end) => end.id === ref.endId)) selectedRoundTotal = roundTotal;
+  }
+  return { roundTotal: required(selectedRoundTotal, "qualification end round"), playerTotal };
+}
+
 export async function readQualificationEnd(request: ApiRequest, ref: QualificationEndRef, expectedScores: readonly number[]) {
   const player = await readJson<Player>(await request.get(`/api/player/scores/${ref.playerId}`), "qualification score readback");
   const end = required(player.rounds?.flatMap((round) => round.round_ends ?? []).find((candidate) => candidate.id === ref.endId), `qualification end ${ref.endId} vanished`);
   if (!end.is_confirmed) throw new Error(`qualification end ${ref.endId} is not confirmed`);
   sameScores(end.round_scores, ref.scoreIds, expectedScores, "qualification");
+  const expected = arithmeticQualificationTotals(player, ref, expectedScores);
+  const round = required(player.rounds?.find((candidate) => candidate.round_ends?.some((candidateEnd) => candidateEnd.id === ref.endId)), "qualification end round");
+  if (round.total_score !== expected.roundTotal || player.total_score !== expected.playerTotal) {
+    throw new Error(`qualification total readback differs: expected round/player ${expected.roundTotal}/${expected.playerTotal}, got ${round.total_score}/${player.total_score}`);
+  }
 }
 
 export async function readMatchEnd(request: ApiRequest, ref: MatchEndRef, expectedScores: readonly number[]) {
@@ -238,6 +313,8 @@ export async function readMatchEnd(request: ApiRequest, ref: MatchEndRef, expect
   const resolved = required(end, `match end ${ref.endId} vanished`);
   if (!resolved.is_confirmed) throw new Error(`match end ${ref.endId} is not confirmed`);
   sameScores(resolved.match_scores, ref.scoreIds, expectedScores, "elimination");
+  const expectedTotal = expectedScores.reduce((sum, score) => sum + score, 0);
+  if (resolved.total_scores !== expectedTotal) throw new Error(`match total readback differs: expected ${expectedTotal}, got ${resolved.total_scores}`);
 }
 
 export async function writeQualificationEnd(
