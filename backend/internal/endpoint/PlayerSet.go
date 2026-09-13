@@ -432,6 +432,7 @@ func PostPlayerSet(context *gin.Context) {
 //	@Failure		400		{object}	response.ErrorIdResponse				"invalid player set id"
 //	@Failure		400		{object}	response.ErrorReceiveDataFormatResponse	"invalid player set data format"
 //	@Failure		400		{object}	response.ErrorReceiveDataFormatResponse	"teamsize of elimination should not be 1"
+//	@Failure		403		{object}	response.ErrorResponse				"competition admin required"
 //	@Failure		500		{object}	response.ErrorInternalErrorResponse		"internal db error / Get Player Set By Id / Update Player Set Name"
 //	@Router			/playerset/name/{id} [patch]
 func PutPlayerSetName(context *gin.Context) {
@@ -450,7 +451,13 @@ func PutPlayerSetName(context *gin.Context) {
 		response.ErrorReceiveDataFormat(context, "player set data")
 		return
 	}
-	elimination, _ := database.GetOnlyEliminationById(playerSet.EliminationId)
+	elimination, err := database.GetOnlyEliminationById(playerSet.EliminationId)
+	if response.ErrorInternalErrorTest(context, playerSet.EliminationId, "Get elimination when updating player set name", err) {
+		return
+	}
+	if !requireEliminationCompetitionAdmin(context, elimination) {
+		return
+	}
 	if elimination.TeamSize == 1 {
 		response.ErrorReceiveDataFormat(context, "team size is 1, cannot update player set name")
 		return
