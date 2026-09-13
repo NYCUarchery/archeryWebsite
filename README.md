@@ -138,17 +138,9 @@ scripts/test.sh e2e
 scripts/test.sh all
 ```
 
-真 E2E 與 Go 整合每次建立自己的 tmpfs MySQL／Compose project。MySQL 不公開 host port；runner 產生隨機憑證及設定，不讀取開發 DB 憑證。E2E 以專用 production frontend 映像與隨機 loopback port 執行，結束保存 `test-artifacts/<suite>/<run ID>` 報告與服務 log，再清除本次服務。
+真 E2E 與 Go 整合由 runner 建立各自的 tmpfs MySQL／Compose project，不讀取開發 DB 憑證；請使用上述入口，不要直接連開發資料庫。Server 重啟不清賽事，亦無 `/api/test/restore`。
 
-E2E 案例之間，fixture 先關閉所有 browser contexts，再請外部 runner 停止 backend、以 `testdb reset --fixture ...` 重建專屬資料庫並重啟。長流程中途不 reset；`restartBackend` fixture 只重啟，不清資料。手動直跑 Playwright 真 E2E 而缺 runner manifest 會失敗，不會回退連向開發環境。
-
-真 E2E 固定單 worker、零 retry，首個失敗即停止並清理整個 project。一般中斷會終止子程序群組、清除 reset container 與控制鎖；若 control 遭強制終止而留下鎖，不在同一環境強行恢復，須由主 runner 清理後重新執行。主 runner 本身若遭 `SIGKILL` 或主機斷電，作業系統無法執行 cleanup，須檢查該次專屬 `archery-test-<run ID>` project，勿清除開發服務。
-
-`/api/test/restore` 已取消。所有 server mode 啟動均只做 schema 與必要基礎初始化，重啟不清賽事。需要 development 情境仍可使用既有 Seeder CLI，不以啟動服務代替清表／灌資料。
-
-案例保留、搬移與依賴見 [後端盤點](docs/testing-inventory.md) 與 [前端分層](docs/testing-frontend.md)。測試報告中的 timeout 是防止執行永久掛起，不是 lifecycle 效能驗收門檻；預設不 retry。
-
-PR 測試入口、coverage 基線範圍、報告位置與 Firefox／WebKit 手動入口見 [CI 測試](docs/testing-ci.md)。
+測試分層、資料庫隔離、`hybrid`／`full-ui`、headed／debug 指令、CI、報告與故障排查，統一見 [測試操作指引](docs/testing.md)。
 
 ## Deployment
 

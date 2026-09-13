@@ -10,6 +10,12 @@ on:
         type: choice
         default: chromium
         options: [chromium, firefox, webkit]
+      mode:
+        description: Lifecycle scoring execution mode
+        required: false
+        type: choice
+        default: hybrid
+        options: [hybrid, full-ui]
 
 jobs:
   runner-safety:
@@ -23,7 +29,7 @@ jobs:
         with:
           go-version: '1.23.x'
           cache-dependency-path: backend/go.sum
-      - run: node --test scripts/test-env.test.mjs scripts/test-env-control.test.mjs
+      - run: node --test scripts/test-env.test.mjs scripts/test-env-control.test.mjs scripts/compare-lifecycle-results.test.mjs
 
   go-unit:
     runs-on: ubuntu-latest
@@ -70,7 +76,7 @@ jobs:
           if-no-files-found: ignore
 
   frontend:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: frontend
@@ -101,7 +107,9 @@ jobs:
 
   e2e:
     if: github.event_name == 'pull_request' || inputs.browser == 'chromium'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    env:
+      ARCHERY_E2E_MODE: ${{ github.event_name == 'pull_request' && 'hybrid' || inputs.mode }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -133,7 +141,9 @@ jobs:
 
   e2e-manual-engine:
     if: github.event_name == 'workflow_dispatch' && inputs.browser != 'chromium'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    env:
+      ARCHERY_E2E_MODE: ${{ inputs.mode }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

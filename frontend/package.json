@@ -51,7 +51,7 @@
     "sort-by": "^0.0.2"
   },
   "devDependencies": {
-    "@playwright/test": "^1.44.1",
+    "@playwright/test": "1.63.0",
     "@types/d3": "^7.4.3",
     "@types/node": "^20.14.2",
     "@types/react": "^18.2.48",
