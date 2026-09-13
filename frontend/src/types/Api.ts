@@ -3143,7 +3143,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       Qualification: EndpointPutQualificationByIDQualificationPutData,
       params: RequestParams = {},
     ) =>
-      this.request<DatabaseQualification, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<DatabaseQualification, ResponseErrorIdResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse>({
         path: `/qualification/${id}`,
         method: "PUT",
         body: Qualification,
