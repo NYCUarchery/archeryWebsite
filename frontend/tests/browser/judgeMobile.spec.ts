@@ -3,6 +3,7 @@ import {
   buildEliminationFixture,
   registerEliminationRoutes,
 } from "./eliminationFixtures";
+import { chooseJudgeIndividual, chooseJudgeTeam } from "../e2e/lifecycle/elimination";
 
 test.describe("Judge mobile scoring page", () => {
   test("360px：Admin 亦使用直向逐波比分，無水平溢位", async ({ page }) => {
@@ -41,6 +42,72 @@ test.describe("Judge mobile scoring page", () => {
     if (!side1 || !wave || !side2) throw new Error("桌機比分欄位未取得位置");
     expect(side1.x).toBeLessThan(wave.x);
     expect(wave.x).toBeLessThan(side2.x);
+  });
+
+  test("390px：裁判組別與項目 Select A→B→A、個人→團體→個人均會關閉選單", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const fixture = buildEliminationFixture("individual", { targets: ["A", "B"] });
+    const teamFixture = buildEliminationFixture("team", { targets: ["A", "B"] });
+    fixture.participants[0].role = "Judge";
+    fixture.participants[0].status = "approved";
+    fixture.competition.unassigned_group_id = 9999;
+    fixture.competition.team_elimination_is_active = true;
+    const details = new Map([
+      [9400, fixture.elimination],
+      [9401, detailForJudgeSelect(teamFixture.elimination, 9401, 9300)],
+      [9402, detailForJudgeSelect(fixture.elimination, 9402, 9301)],
+      [9403, detailForJudgeSelect(teamFixture.elimination, 9403, 9301)],
+    ]);
+    fixture.eliminationsByGroup.group_data = [
+      {
+        group_id: 9300,
+        group_name: "A 組",
+        elimination_data: [
+          { elimination_id: 9400, team_size: 1 },
+          { elimination_id: 9401, team_size: 3 },
+        ],
+      },
+      {
+        group_id: 9301,
+        group_name: "B 組",
+        elimination_data: [
+          { elimination_id: 9402, team_size: 1 },
+          { elimination_id: 9403, team_size: 3 },
+        ],
+      },
+    ];
+    await registerEliminationRoutes(page, fixture);
+    for (const [eliminationId, detail] of details) {
+      if (eliminationId === fixture.eliminationId) continue;
+      await page.route(`**/elimination/stages/scores/medals/${eliminationId}`, async (route) => {
+        await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(detail) });
+      });
+      await page.route(`**/elimination/playersets/${eliminationId}`, async (route) => {
+        await route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify(detail) });
+      });
+    }
+    await page.goto(`/competition/${fixture.competitionId}/judge`);
+
+    const group = page.getByRole("combobox", { name: "組別", exact: true });
+    const event = page.getByRole("combobox", { name: "項目", exact: true });
+    await chooseJudgeIndividual(page, "A 組");
+    await expect(group).toContainText("A 組");
+    await expect(event).toContainText("個人對抗賽");
+    await expect(page.getByRole("listbox")).toHaveCount(0);
+
+    await chooseJudgeTeam(page, "A 組");
+    await expect(event).toContainText("團體對抗賽");
+    await expect(page.getByRole("listbox")).toHaveCount(0);
+
+    await chooseJudgeTeam(page, "B 組");
+    await expect(group).toContainText("B 組");
+    await expect(event).toContainText("團體對抗賽");
+    await expect(page.getByRole("listbox")).toHaveCount(0);
+
+    await chooseJudgeIndividual(page, "A 組");
+    await expect(group).toContainText("A 組");
+    await expect(event).toContainText("個人對抗賽");
+    await expect(page.getByRole("listbox")).toHaveCount(0);
   });
 
   test("390px：乾淨裁判殼、啟用項目、確認波重編與草稿", async ({ page }) => {
@@ -131,3 +198,12 @@ test.describe("Judge mobile scoring page", () => {
     await expect(page.getByText("此波草稿尚未儲存；範圍切換已暫停。")).toHaveCount(0);
   });
 });
+
+function detailForJudgeSelect<T extends { id: number; group_id: number; player_sets?: Array<{ elimination_id: number }>; stages?: Array<{ elimination_id: number }> }>(detail: T, eliminationId: number, groupId: number) {
+  const copy = structuredClone(detail);
+  copy.id = eliminationId;
+  copy.group_id = groupId;
+  for (const set of copy.player_sets ?? []) set.elimination_id = eliminationId;
+  for (const stage of copy.stages ?? []) stage.elimination_id = eliminationId;
+  return copy;
+}
