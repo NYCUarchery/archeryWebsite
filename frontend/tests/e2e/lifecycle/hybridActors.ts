@@ -1,10 +1,9 @@
 import type { APIRequest, APIRequestContext } from "@playwright/test";
 import { assertHybridApiWriteAllowed, type LifecycleExecutionMode } from "./execution";
-import { assertApprovedScopedActor, type ApiRequest, type ApiResponse, type ScopedActor } from "./formalApi";
+import { assertApprovedScopedActor, readAuthenticatedUser, type ApiRequest, type ApiResponse, type ScopedActor } from "./formalApi";
 
 type ApiRequestFactory = Pick<APIRequest, "newContext">;
 type ApiContext = ApiRequest & { dispose(): Promise<void> };
-type CurrentUser = { id?: number; user_name?: string };
 type Participant = { id?: number; user_id?: number; role?: string; status?: string };
 
 function positiveId(value: number | undefined, label: string): number {
@@ -27,8 +26,7 @@ async function loginIndependentContext(
   try {
     const login = await request.post("/api/session/", { data: { user_name: username, password } });
     if (!login.ok()) throw new Error(`API login for ${username} failed with HTTP ${login.status()}`);
-    const user = await json<CurrentUser>(await request.get("/api/user/me"), "API current-user lookup");
-    if (user.user_name !== username) throw new Error(`API login identity ${JSON.stringify(user.user_name)} is not ${username}`);
+    await readAuthenticatedUser(request, username);
     return request;
   } catch (error) {
     await request.dispose();
@@ -38,7 +36,7 @@ async function loginIndependentContext(
 
 /**
  * One unapproved Player application in its own cookie jar. It always disposes
- * the context: CP2 creates a fresh approved scorer context after Admin approval.
+ * the context: CP2 uses the already approved Judge session for score API calls.
  */
 export async function applyIndependentApiApplicant(
   mode: LifecycleExecutionMode,
@@ -48,8 +46,7 @@ export async function applyIndependentApiApplicant(
   assertHybridApiWriteAllowed(mode);
   const request = await loginIndependentContext(requestFactory, input.baseURL, input.username, input.password);
   try {
-    const user = await json<CurrentUser>(await request.get("/api/user/me"), "applicant current-user lookup");
-    const userId = positiveId(user.id, "applicant user");
+    const userId = await readAuthenticatedUser(request, input.username);
     await json<unknown>(await request.post("/api/participant", { data: { competition_id: input.competitionId, role: "Player" } }), "Player application");
     const participants = await json<Participant[]>(
       await request.get(`/api/participant/competition/${input.competitionId}`),
@@ -65,12 +62,12 @@ export async function applyIndependentApiApplicant(
   }
 }
 
-/** Admin approval is explicit and never creates a Player row; UI owns that later action. */
+/** Admin approval mirrors its UI workflow, including exactly one Player creation. */
 export async function approvePendingApiApplicant(
   mode: LifecycleExecutionMode,
   request: ApiRequest,
   admin: ScopedActor,
-  input: { participantId: number; applicantUserId: number },
+  input: { participantId: number; applicantUserId: number; expectedPlayerName: string },
 ) {
   assertHybridApiWriteAllowed(mode);
   if (admin.role !== "Admin") throw new Error("participant approval requires an Admin actor");
@@ -90,4 +87,18 @@ export async function approvePendingApiApplicant(
   if (!approved || approved.user_id !== input.applicantUserId || approved.role !== "Player" || approved.status !== "approved") {
     throw new Error("Player approval readback differs");
   }
+  const beforeRoster = await json<{ groups?: Array<{ players?: Array<{ participant_id?: number }> }> }>(
+    await request.get(`/api/competition/groups/players/${admin.competitionId}`),
+    "Player creation precondition lookup",
+  );
+  if (beforeRoster.groups?.flatMap((group) => group.players ?? []).some((player) => player.participant_id === input.participantId)) {
+    throw new Error("approved Player already has a Player record");
+  }
+  await json<unknown>(await request.post(`/api/player/${input.participantId}`), "Player creation");
+  const afterRoster = await json<{ groups?: Array<{ players?: Array<{ participant_id?: number; name?: string }> }> }>(
+    await request.get(`/api/competition/groups/players/${admin.competitionId}`),
+    "Player creation readback",
+  );
+  const created = afterRoster.groups?.flatMap((group) => group.players ?? []).filter((player) => player.participant_id === input.participantId) ?? [];
+  if (created.length !== 1 || created[0]?.name !== input.expectedPlayerName) throw new Error("Player creation readback differs");
 }

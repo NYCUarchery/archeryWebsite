@@ -1,12 +1,36 @@
 # 完整比賽 E2E
 
-## UI／API 雙模式改造檢查點
+## 共用 UI／API 雙模式
 
-本次加速改造分三個提交驗收：先加入角色與資源範圍檢查的策略／API helper，再接入固定 UI 抽樣，最後切換預設及 CI。第一個檢查點不改動現有 lifecycle 的業務寫入；仍全部走 UI。API helper 不得成為 UI 失敗後的備援路徑，亦不得直接寫入資料庫、總分、勝者或獎牌。
+`ARCHERY_E2E_MODE` 支援 `full-ui` 與 `hybrid`，非法值失敗。兩模式共用單一 lifecycle、固定資料及結果斷言；CP2 暫保留預設 `full-ui`，完成驗收後才於 CP3 切換預設及 CI。`full-ui` 的業務寫入全部經 UI；`hybrid` 只把下表的重複操作換成正式 API，沒有 Seeder 灌分、直接寫 DB、新增後門或 UI 失敗後 fallback。
 
-預定 hybrid 抽樣固定為 Archer 01、13 及 Judge 經 UI 申請／核准；資格賽 Archer 02、14 每波由 Judge UI 填分，另保留 Archer 01、13 自行填首波。四項對抗賽首場全部波次走 UI；後續各階段 Match 1 第一波雙方走 UI。更正、草稿、組別切換、管理端推進及頒牌始終走 UI。
+| 操作 | hybrid UI | hybrid API |
+| --- | --- | --- |
+| 申請及核准 | Archer 01、13 與 Judge，共 3 人 | 其餘 22 人各自登入、本人申請，Admin 核准 |
+| 資格賽填分／確認 | 2 次選手首波；Judge 替 Archer 02、14 各填 6 波，共 14 個選手波次 | Judge 填其餘 130 個選手波次 |
+| 個人／團體填分／確認 | 四項首場全部波次，加上後續各階段 Match 1 第一波；共 21 雙方波次／42 側 | Judge 填其餘 71 雙方波次／142 側 |
+
+建賽、分組、靶位、建隊、排名、建表／同步、每波管理端進度、晉級、頒牌、更正／草稿、切組及跨角色讀回始終走 UI。抽樣不依成功次數動態變更，也不縮減兩組個人／團體四項的結果斷言。
+
+API applicant 每人使用獨立 cookie context，完成即釋放；先以 `/api/user/me` 取得 ID，再讀 `/api/user/{id}` 核對帳號。Admin API 核准會重現 UI 的兩步操作：更新 Participant 為 approved，再 `POST /api/player/{participantid}` 建立該選手的 Player；Judge 不建立 Player。API 填分則一律使用真正 approved Judge 的 browser session，不以 Admin 或 Player 代填。
+
+填分前逐一解析及驗證角色、賽事、組別、隊伍、階段、目前波次和箭 ID；API 不覆寫已確認波次，以免覆蓋 UI 抽樣。UI 寫入同樣核對 request ID／payload。保存、確認及讀回皆驗證；後端計算總分及勝負。裁判更正仍由原 UI helper 執行，保留原暫定箭值與更正時機。
 
 CP1 全 UI 基線：`r1789281695278_29a279ec`，Chromium 1 passed、0 skipped、0 retries；test 耗時 805,841 ms（13.4 分鐘），報告耗時 812,663 ms。此時策略 helper 尚未接入流程，故此證據只證明既有全 UI 路徑，並非 hybrid 驗收。相同工作環境 Chromium mock browser 72／72 通過；lint 僅既有 warnings。
+
+CP2 首次接線時，兩個全新 run 曾明確失敗：`r1789283260112_039c531b` 揭露 helper 誤以為 `/api/user/me` 含帳號名稱；`r1789283552268_b902a152` 揭露選手記分頁會同時送出 selected 與同靶 mate，而非單筆送出。現已按正式契約補上 user detail 核對，以及兩人、各六箭、唯一 end ID 的完整批次驗證；順序可變，但遺漏、跨靶、錯 payload 皆失敗。兩者皆是測試 helper 修正，未修改產品、未 retry 或 API fallback。首個修正後 hybrid run `r1789283811932_58e93cfa` 完整通過，test 360,497 ms；正式凍結版驗收另列。
+
+CP2 正式驗收（同機循序、各 run 全新 tmpfs MySQL）：
+
+| 模式 | Run | Test 耗時 | 結果 |
+| --- | --- | --- | --- |
+| hybrid 1 | `r1789284340284_279902ef` | 359,863 ms | 1 passed、0 skipped、0 retries |
+| hybrid 2 | `r1789284788496_ae1465c4` | 359,014 ms | 1 passed、0 skipped、0 retries |
+| full-ui | `r1789285211578_13f8dab9` | 847,392 ms | 1 passed、0 skipped、0 retries |
+
+兩次 hybrid 的完整正規化快照相同，抽樣計數均為申請／核准 UI 3＋API 22、資格賽 UI 14＋API 130、對抗賽 UI 42＋API 142 側。角色 session、API scope、UI 替換與單元覆蓋經 Sol 審查，無剩餘 P1／P2。
+
+正式比較器已核對以上三份報告，exit 0：完整資格分數／排名、個人及團體籤表、確認狀態與四項獎牌完全一致；full-ui 的申請／核准、資格及對抗 API 補齊計數皆為零。三輪皆包含 backend 重啟後驗收，服務已各自清理，報告保留。前端單元 13／13、Chromium mock browser 72／72、runner／比較器安全測試 23／23，以及型別、lint、build 均通過；lint/build 僅既有 warnings。
 
 `frontend/tests/e2e/competitionLifecycle.spec.ts` 使用單一 test 與具名 `test.step`，由帳號 fixture 經 UI 建立同一場比賽。Checkpoint 8 已通過：兩組資格賽、個人八強及團體四強至頒牌、第 8／9 名邊界、未晉級者參團、同隊成員讀回、組別／賽制隔離、裁判更正／草稿及重啟持久化；完整流程已連續於兩個全新環境通過。
 
@@ -27,7 +51,7 @@ Checkpoint 8 連續兩次全新環境驗收：
 scripts/test.sh e2e competitionLifecycle.spec.ts
 ```
 
-Runner 建立本次專屬 tmpfs MySQL、服務及 Chromium，使用一個 worker、零 retries。`accounts` 僅建立組織與帳號，不建立比賽、participant、分數或賽果。所有業務寫入必須由 UI 觸發；正式 GET 僅用來解析新 ID 及核對持久化結果。中途不 reset。
+Runner 建立本次專屬 tmpfs MySQL、服務及 Chromium，使用一個 worker、零 retries。`accounts` 僅建立組織與帳號，不建立比賽、participant、分數或賽果。業務寫入依上方模式分工；正式 GET 用來解析新 ID、驗證身分／範圍及核對持久化結果。中途不 reset。
 
 ## 固定資料與驗證邊界
 
@@ -54,7 +78,20 @@ Checkpoint 8 更正固定於排名／晉級之前：反曲第一名資格首波 
 
 ## 報告與短測試分工
 
-報告位於 `test-artifacts/e2e/<run ID>/`，包含 JSON、HTML、失敗 trace、截圖及服務 log。失敗先按角色、組別、階段、對戰及波次定位，再區分測試操作錯誤、環境失敗與產品缺陷；不可改用 API 補分或 retry 掩蓋問題。
+報告位於 `test-artifacts/e2e/<run ID>/`，包含 JSON、HTML、失敗 trace、截圖及服務 log。失敗先按模式、UI／API、角色、組別、階段、對戰及波次定位，再區分測試操作錯誤、環境失敗與產品缺陷；不可改用另一條路徑或 retry 掩蓋問題。
+
+`lifecycle-coverage-ledger` attachment 記錄模式、申請／核准及填分的固定預期與實際計數，失敗時亦附目前計數。`lifecycle-result-snapshot` 保存不含本次生成 ID 的語意快照，保留 24 人資格賽每箭、排名、四項隊伍／成員、每場每側各波、確認狀態、進度與獎牌；不以僅總分相等代替完整比對。
+
+使用比較器驗證三份成功報告：
+
+```bash
+node scripts/compare-lifecycle-results.mjs \
+  full-ui test-artifacts/e2e/<full-ui-run>/results.json \
+  hybrid test-artifacts/e2e/<hybrid-run-1>/results.json \
+  hybrid test-artifacts/e2e/<hybrid-run-2>/results.json
+```
+
+缺 attachment、錯誤模式／計數、失敗、skip、retry 或語意快照不同，皆回傳非零。比較器列出 test.step 耗時；測量須在同機循序跑，環境初始化與 Docker cache 狀態另列，不預設效能門檻。
 
 Lifecycle 的失敗 trace 保留 DOM snapshot、網路、動作及 source，僅關閉連續 screenshot filmstrip；失敗頁面截圖仍保留。大量填箭動作曾使 filmstrip trace 在報告收尾超時，故減少重複影像，不放寬業務 assertion 或增加 retry。
 

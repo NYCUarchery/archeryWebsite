@@ -1,4 +1,5 @@
 import { test, expect } from "./fixtures";
+import { request as apiRequest } from "@playwright/test";
 import {
   admin,
   applyToCompetition,
@@ -12,7 +13,7 @@ import {
   signedInPage,
 } from "./lifecycle/actors";
 import { assignPlayersToGroup, assignQualificationLanes, saveQualificationSettings } from "./lifecycle/groups";
-import { activateQualification, advanceQualification, scoreJudgeQualificationEnd, scorePlayerQualificationEnd, updateQualificationRanking } from "./lifecycle/qualification";
+import { activateQualification, advanceQualification, scoreQualificationEndByMode, scorePlayerQualificationEnd, updateQualificationRanking } from "./lifecycle/qualification";
 import { advanceStage, chooseJudgeIndividual, scoreJudgeEliminationMatch, setIndividualProgress, syncFirstRound } from "./lifecycle/elimination";
 import { compoundQualificationOracle, recurveQualificationOracle, type QualificationOracle } from "./lifecycle/data";
 import { assertCompletedIndividualBracket, assertIndividualProgressIsolation, resolveIndividualEliminationId, snapshotIndividualEvent } from "./lifecycle/verification";
@@ -21,6 +22,11 @@ import { correctConfirmedEliminationEnd, correctConfirmedQualificationEnd } from
 import { assertJudgeEventAvailability, assertDivergedEliminationScopes, assertQualificationRankingDialogScopes, assertQualificationScheduleScopes } from "./lifecycle/scopeNavigation";
 import { assertArcher01ReadsConfirmedQualificationFirstEnd, assertPlayerReadsConfirmedCurrentMatch, assertPublicQualificationRanking } from "./lifecycle/crossRoleReadback";
 import { assertLifecyclePersistsAfterRestart } from "./lifecycle/persistence";
+import { parseLifecycleExecutionMode, qualificationWriteActor } from "./lifecycle/execution";
+import { applyIndependentApiApplicant, approvePendingApiApplicant } from "./lifecycle/hybridActors";
+import { collectLifecycleResultSnapshot } from "./lifecycle/resultSnapshotCollector";
+import { normalizeLifecycleSnapshot } from "./lifecycle/resultSnapshot";
+import { resolveCurrentQualificationEnd } from "./lifecycle/formalApi";
 
 test.use({
   databaseFixture: "accounts",
@@ -50,7 +56,9 @@ function escapedText(text: string) {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-test("完成兩組資格賽、個人及團體頒牌與跨角色隔離", async ({ browser, page, request, restartBackend }) => {
+test("完成兩組資格賽、個人及團體頒牌與跨角色隔離", async ({ browser, page, request, restartBackend }, testInfo) => {
+  const mode = parseLifecycleExecutionMode();
+  const coverage = { mode, enrollment: { expected: 25, uiApplied: 0, apiApplied: 0, uiApproved: 0, apiApproved: 0 }, qualification: { ui: 0, api: 0, expected: 144 }, elimination: { uiSides: 0, apiSides: 0, expectedSides: 184 } };
   let competitionId: number;
   await page.goto("/");
   const baseURL = new URL(page.url()).origin;
@@ -62,19 +70,43 @@ test("完成兩組資格賽、個人及團體頒牌與跨角色隔離", async ({
   let ninthPlaceSession: Awaited<ReturnType<typeof signedInPage>> | undefined;
 
   try {
-    await test.step("主辦人建賽、24 位選手與裁判經 UI 申請及核准", async () => {
+    await test.step("申請與核准", async () => {
       await signIn(page, admin);
       competitionId = await createCompetition(page, title);
-      for (const account of archers) {
-        const session = await signedInPage(browser, baseURL, account);
-        try {
-          await applyToCompetition(session.page, title, "選手");
-        } finally {
-          await session.context.close();
+      if (mode === "full-ui") {
+        for (const account of archers) {
+          const session = account === archers[0] ? recurvePlayerSession : account === archers[12] ? compoundPlayerSession : await signedInPage(browser, baseURL, account);
+          await test.step(`申請 UI 選手 ${account}`, async () => {
+            try { await applyToCompetition(session.page, title, "選手"); } finally { if (session !== recurvePlayerSession && session !== compoundPlayerSession) await session.context.close(); }
+          });
+          coverage.enrollment.uiApplied += 1;
         }
+        await test.step(`申請 UI 裁判 ${judge}`, async () => { await applyToCompetition(judgeSession.page, title, "裁判"); });
+        coverage.enrollment.uiApplied += 1;
+        await test.step("核准 Admin UI 全部 25 位申請", async () => { await approveAllApplicants(page, competitionId, 25); });
+        coverage.enrollment.uiApproved += 25;
+      } else {
+        await test.step(`申請 UI 選手 ${archers[0]}`, async () => { await applyToCompetition(recurvePlayerSession.page, title, "選手"); });
+        await test.step(`申請 UI 選手 ${archers[12]}`, async () => { await applyToCompetition(compoundPlayerSession.page, title, "選手"); });
+        await test.step(`申請 UI 裁判 ${judge}`, async () => { await applyToCompetition(judgeSession.page, title, "裁判"); });
+        coverage.enrollment.uiApplied += 3;
+        await test.step("核准 Admin UI 首批 3 位申請", async () => { await approveAllApplicants(page, competitionId, 3); });
+        coverage.enrollment.uiApproved += 3;
+        const adminActor = { role: "Admin" as const, username: admin, competitionId, groupName: recurve };
+        for (const [index, account] of archers.entries()) {
+          if (index === 0 || index === 12) continue;
+          const applicant = await test.step(`申請 API 選手 ${account}`, async () =>
+            await applyIndependentApiApplicant(mode, apiRequest, { baseURL, username: account, password: "archery-e2e-password", competitionId }));
+          coverage.enrollment.apiApplied += 1;
+          await test.step(`核准 Admin API 選手 ${account}`, async () =>
+            await approvePendingApiApplicant(mode, page.request, adminActor, { participantId: applicant.participantId, applicantUserId: applicant.userId, expectedPlayerName: playerName(index + 1) }));
+          coverage.enrollment.apiApproved += 1;
+        }
+        expect(coverage.enrollment).toMatchObject({ uiApplied: 3, apiApplied: 22, uiApproved: 3, apiApproved: 22 });
       }
-      await applyToCompetition(judgeSession.page, title, "裁判");
-      await approveAllApplicants(page, competitionId, 25);
+    });
+
+    await test.step("建立組別、靶位與資格賽", async () => {
       const [adminIdentity, judgeIdentity, participantsResponse] = await Promise.all([
         page.request.get("/api/user/me"),
         judgeSession.page.request.get("/api/user/me"),
@@ -91,10 +123,15 @@ test("完成兩組資格賽、個人及團體頒牌與跨角色隔離", async ({
       expect(participants.find((participant) => participant.user_id === adminId)).toMatchObject({ role: "Admin", status: "approved" });
       const judgeParticipant = participants.find((participant) => participant.user_id === judgeId);
       expect(judgeParticipant).toMatchObject({ role: "Judge", status: "approved" });
+      const approvedPlayers = participants.filter((participant) => participant.role === "Player" && participant.status === "approved");
+      expect(approvedPlayers).toHaveLength(24);
       const rosterResponse = await page.request.get(`/api/competition/groups/players/${competitionId}`);
       expect(rosterResponse.ok()).toBeTruthy();
       const roster = await rosterResponse.json() as { groups: Array<{ players: Array<{ name: string; participant_id: number }> }> };
       expect(roster.groups.flatMap((group) => group.players).some((player) => player.participant_id === judgeParticipant!.id)).toBe(false);
+      const playerParticipantIds = roster.groups.flatMap((group) => group.players).map((player) => player.participant_id);
+      expect(new Set(playerParticipantIds).size).toBe(24);
+      expect([...new Set(playerParticipantIds)].sort((left, right) => left - right)).toEqual(approvedPlayers.map((participant) => participant.id).sort((left, right) => left - right));
       await page.goto(`/competition/${competitionId}/admin/groups`);
       await createGroup(page, competitionId, recurve, "反曲弓");
       await createGroup(page, competitionId, compound, "複合弓");
@@ -109,24 +146,42 @@ test("完成兩組資格賽、個人及團體頒牌與跨角色隔離", async ({
       await page.getByRole("group", { name: "直接選擇選手畫面" }).getByRole("button", { name: "資格賽" }).click();
     });
 
-    await test.step("裁判以手機 UI 寫入兩組六波，選手各自完成第一波", async () => {
+    await test.step("資格賽 UI/API 分配寫入兩組六波，選手各自完成第一波", async () => {
       // The player-board interactions prove that an approved Player can score
       // its own group; Judge performs the remaining deterministic arrows.
       for (let groupOffset = 0; groupOffset <= 12; groupOffset += 12) {
         const playerPage = groupOffset === 0 ? recurvePlayerSession.page : compoundPlayerSession.page;
         await playerPage.goto(`/competition/${competitionId}/scoring`);
         await expect(playerPage.getByText("End 1")).toBeVisible();
-        await scorePlayerQualificationEnd(playerPage, groupOffset === 0
+        const playerIndex = groupOffset + 1;
+        const playerScores = groupOffset === 0
           ? ["9", "10", "10", "10", "10", "10"]
-          : endScores(compoundQualificationOracle[0], 0));
+          : endScores(compoundQualificationOracle[0], 0);
+        const playerRef = await resolveCurrentQualificationEnd(playerPage.request, {
+          role: "Player", username: groupOffset === 0 ? archers[0] : archers[12], competitionId,
+          groupName: groupOffset === 0 ? recurve : compound,
+        }, playerName(playerIndex));
+        await test.step(`資格賽 Player UI ${groupOffset === 0 ? recurve : compound} ${playerName(playerIndex)} 第 1 波`, async () => {
+          await scorePlayerQualificationEnd(playerPage, playerScores, playerRef);
+        });
+        coverage.qualification.ui += 1;
       }
       for (let end = 0; end < 6; end += 1) {
         for (let index = 0; index < 24; index += 1) {
           if (end === 0 && (index === 0 || index === 12)) continue;
           const oracle = index < 12 ? recurveQualificationOracle[index] : compoundQualificationOracle[index - 12];
-          await test.step(`資格賽 ${index < 12 ? recurve : compound} ${playerName(index + 1)} 第 ${end + 1} 波`, async () => {
-            await judgeSession.page.goto(`/competition/${competitionId}/judge`);
-            await scoreJudgeQualificationEnd(judgeSession.page, playerName(index + 1), end, endScores(oracle, end));
+          await test.step(`資格賽 ${mode === "full-ui" || qualificationWriteActor(index + 1, end) === "judge-ui" ? "Judge UI" : "Judge API"} ${index < 12 ? recurve : compound} ${playerName(index + 1)} 第 ${end + 1} 波`, async () => {
+            const strategy = qualificationWriteActor(index + 1, end);
+            if (mode === "full-ui" || strategy === "judge-ui") await judgeSession.page.goto(`/competition/${competitionId}/judge`);
+            await scoreQualificationEndByMode({
+              mode,
+              judgePage: judgeSession.page,
+              judgeActor: { role: "Judge", username: judge, competitionId },
+              playerName: playerName(index + 1), archerIndex: index + 1,
+              groupName: index < 12 ? recurve : compound, endIndex: end, scores: endScores(oracle, end),
+              recordUi: () => { coverage.qualification.ui += 1; },
+              recordApi: () => { coverage.qualification.api += 1; },
+            });
           });
         }
         if (end === 0) {
@@ -236,7 +291,7 @@ test("完成兩組資格賽、個人及團體頒牌與跨角色隔離", async ({
       }
     });
 
-    await test.step("裁判完成兩組個人八強至金銅戰，管理端依結果晉級及頒牌", async () => {
+    await test.step("兩組個人賽 UI/API 分配至金銅戰，管理端依結果晉級及頒牌", async () => {
       await page.goto(`/competition/${competitionId}/admin/schedule/activation`);
       const activated = page.waitForResponse((candidate) => candidate.request().method() === "PATCH" &&
         new URL(candidate.url()).pathname === `/api/competition/elimination-isactive/${competitionId}` && candidate.status() === 200);
@@ -281,6 +336,10 @@ test("完成兩組資格賽、個人及團體頒牌與跨角色隔離", async ({
                 groupName,
                 teamSize: 1,
                 stage,
+                mode,
+                apiActor: { role: "Judge", username: judge, competitionId },
+                recordUiSide: () => { coverage.elimination.uiSides += 1; },
+                recordApiSide: () => { coverage.elimination.apiSides += 1; },
                 lastWaveWinnerScores: groupName === recurve && roundIndex === 0 && matchIndex === 0
                   ? ["10", "10", "9"] : undefined,
               });
@@ -326,12 +385,26 @@ test("完成兩組資格賽、個人及團體頒牌與跨角色隔離", async ({
           { name: recurve, bow: "recurve", firstLane: 1 },
           { name: compound, bow: "compound", firstLane: 7 },
         ],
+        mode,
+        recordUiSide: () => { coverage.elimination.uiSides += 1; },
+        recordApiSide: () => { coverage.elimination.apiSides += 1; },
       });
     });
     await test.step("重啟後以新登入完整讀回資格排名、四項賽果及獎牌", async () => {
+      const expected = mode === "hybrid"
+        ? { qualification: { ui: 14, api: 130 }, elimination: { uiSides: 42, apiSides: 142 } }
+        : { qualification: { ui: 144, api: 0 }, elimination: { uiSides: 184, apiSides: 0 } };
+      expect(coverage.enrollment).toMatchObject(mode === "hybrid"
+        ? { expected: 25, uiApplied: 3, apiApplied: 22, uiApproved: 3, apiApproved: 22 }
+        : { expected: 25, uiApplied: 25, apiApplied: 0, uiApproved: 25, apiApproved: 0 });
+      expect(coverage.qualification).toMatchObject(expected.qualification);
+      expect(coverage.elimination).toMatchObject(expected.elimination);
+      const snapshot = normalizeLifecycleSnapshot(await collectLifecycleResultSnapshot(page.request, competitionId));
+      await testInfo.attach("lifecycle-result-snapshot", { body: JSON.stringify(snapshot), contentType: "application/json" });
       await assertLifecyclePersistsAfterRestart({ browser, baseURL, competitionId, restartBackend });
     });
   } finally {
+    await testInfo.attach("lifecycle-coverage-ledger", { body: JSON.stringify(coverage), contentType: "application/json" });
     await Promise.all([
       judgeSession.context.close(),
       recurvePlayerSession.context.close(),

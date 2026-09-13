@@ -6,6 +6,8 @@
 | --- | --- | --- |
 | `eliminationPlacement.logic.spec.ts` | 純函式：排名、獎牌、空位；無瀏覽器／API | 搬至 `tests/unit`，由 Vitest 執行 |
 | `lifecycleOracle.spec.ts` | 固定每箭、資格總分、晉級邊界及團體加總 oracle 的一致性；無 API | 保留於 `tests/unit`，不呼叫產品計分函式 |
+| `hybridExecution.spec.ts` | 固定 UI／API 抽樣、模式 guard、角色與資源範圍、兩側及六箭映射、失敗即停；使用假 request | 新增至 `tests/unit`，保護正式 API helper，不取代真 E2E |
+| `lifecycleResultSnapshot.spec.ts` | 排除生成 ID 的語意對齊、缺資料拒絕與結果差異；無服務依賴 | 新增至 `tests/unit`；Node 比較器另驗報告模式、計數、skip 及 retry |
 | `eliminationBracket.spec.ts` | 籤表呈現、BYE、手動操作與 request；API mock | 保留，搬至 `tests/browser` |
 | `eliminationPlayerSetRanking.spec.ts` | 建隊與隊伍排名互動、排名請求；API mock | 保留，搬至 browser |
 | `eliminationProgressPlacement.spec.ts` | 階段推進、獎牌設定、錯誤回饋及非均分箭序的保存／重載；API mock | 保留，搬至 browser；補正式 GET 降序契約的短回歸 |
@@ -16,7 +18,7 @@
 | `qualificationScoreSummary.spec.ts` | 資格賽分數顯示與響應式介面；API mock | 保留，搬至 browser |
 | `home.spec.ts` | 註冊、登入與申請；真服務與資料庫 | 保留於 `tests/e2e`；每例由外部 runner reset legacy fixture，正式 GET 解析 fixture 賽事 |
 | `recordingBoard.spec.ts` | 記分、確認與跨帳號同步；真服務與資料庫 | 保留於 E2E；以固定分數序列取代隨機 Fuzzing，保留跨帳號讀回與排名更新 |
-| `competitionLifecycle.spec.ts` | 24 人、兩組別、個人／團體完整流程；真服務與資料庫 | 單一案例逐 checkpoint 擴充；實跑範圍與驗收狀態見 `testing-lifecycle.md` |
+| `competitionLifecycle.spec.ts` | 24 人、兩組別、個人／團體完整流程；真服務與資料庫 | 同一案例支援 `hybrid`／`full-ui`，固定抽樣不動態 fallback；模式與驗收見 `testing-lifecycle.md` |
 | `competition.spec.ts` | 空白檔案，無案例 | 移除；無覆蓋損失 |
 
 `eliminationFixtures.ts` 僅提供 mock 資料，隨 browser 案例搬移。既有有效案例均保留，尚未用長流程取代其短測試。
