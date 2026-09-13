@@ -1,5 +1,13 @@
 # 完整比賽 E2E
 
+## UI／API 雙模式改造檢查點
+
+本次加速改造分三個提交驗收：先加入角色與資源範圍檢查的策略／API helper，再接入固定 UI 抽樣，最後切換預設及 CI。第一個檢查點不改動現有 lifecycle 的業務寫入；仍全部走 UI。API helper 不得成為 UI 失敗後的備援路徑，亦不得直接寫入資料庫、總分、勝者或獎牌。
+
+預定 hybrid 抽樣固定為 Archer 01、13 及 Judge 經 UI 申請／核准；資格賽 Archer 02、14 每波由 Judge UI 填分，另保留 Archer 01、13 自行填首波。四項對抗賽首場全部波次走 UI；後續各階段 Match 1 第一波雙方走 UI。更正、草稿、組別切換、管理端推進及頒牌始終走 UI。
+
+CP1 全 UI 基線：`r1789281695278_29a279ec`，Chromium 1 passed、0 skipped、0 retries；test 耗時 805,841 ms（13.4 分鐘），報告耗時 812,663 ms。此時策略 helper 尚未接入流程，故此證據只證明既有全 UI 路徑，並非 hybrid 驗收。相同工作環境 Chromium mock browser 72／72 通過；lint 僅既有 warnings。
+
 `frontend/tests/e2e/competitionLifecycle.spec.ts` 使用單一 test 與具名 `test.step`，由帳號 fixture 經 UI 建立同一場比賽。Checkpoint 8 已通過：兩組資格賽、個人八強及團體四強至頒牌、第 8／9 名邊界、未晉級者參團、同隊成員讀回、組別／賽制隔離、裁判更正／草稿及重啟持久化；完整流程已連續於兩個全新環境通過。
 
 2026-09-13 隔離實跑 `r1789270044129_fa0de4a6`：Chromium 1 passed、0 skipped、0 retries；個人流程耗時 10.6 分鐘。PR 的 E2E job 自動收錄此案例。
