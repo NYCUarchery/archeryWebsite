@@ -6,10 +6,13 @@ import { appendFileSync, mkdirSync } from 'node:fs';
 const args = process.argv.slice(2);
 const mode = process.env.FAKE_DOCKER_MODE ?? 'success';
 const logFile = process.env.FAKE_DOCKER_LOG;
-const command = args.includes('down') ? 'down'
+const command = args[0] === 'container' ? args[1]
+  : args.includes('down') ? 'down'
   : args.includes('logs') ? 'logs'
     : args.includes('run') ? 'run'
-      : args.includes('up') ? 'up' : 'other';
+      : args.includes('up') ? 'up'
+        : args.includes('stop') ? 'stop'
+          : args.includes('start') ? 'start' : 'other';
 
 function record(event) {
   if (logFile) appendFileSync(logFile, JSON.stringify({
@@ -18,6 +21,10 @@ function record(event) {
 }
 
 record('invoke');
+if (command === 'inspect') {
+  const project = args.at(-1).replace(/-reset$/, '');
+  process.stdout.write(JSON.stringify([{ Config: { Labels: { 'com.docker.compose.project': project } } }]));
+}
 if (command === 'run') {
   if (mode === 'go-fail') process.exit(7);
   if (mode === 'log-write-fail') {

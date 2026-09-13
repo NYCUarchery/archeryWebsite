@@ -9,7 +9,9 @@ services:
       MYSQL_USER: archery_test
       MYSQL_PASSWORD: ${ARCHERY_TEST_DB_PASSWORD:?runner required}
     healthcheck:
-      test: [CMD, mysqladmin, ping, -h, localhost]
+      # The entrypoint's temporary initialization server exposes a socket but
+      # disables networking. Only the final TCP server is usable by backend.
+      test: [CMD, mysqladmin, ping, --protocol=tcp, -h, 127.0.0.1]
       interval: 1s
       timeout: 3s
       retries: 60
@@ -33,3 +35,18 @@ services:
       mysql:
         condition: service_healthy
     command: [go, run, .]
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.test
+    environment:
+      NEXT_TELEMETRY_DISABLED: "1"
+  proxy:
+    image: nginx:1.27-alpine
+    ports:
+      - "127.0.0.1::80"
+    volumes:
+      - ./scripts/test-proxy.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - frontend
+      - backend

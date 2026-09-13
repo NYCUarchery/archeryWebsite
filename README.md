@@ -27,7 +27,7 @@ archeryWebsite
 └───└───└── session.yaml
 ```
 - db.yaml: 資料庫的設定檔。
-- dictator.yaml: 用來設定唯一最高權限的設定檔。
+- dictator.yaml: 初次建立最高權限帳號的設定檔；重啟不覆寫既有帳號的密碼或個人資料。同名普通帳號不會被升權，啟動會明確失敗。
 - session.yaml: 用來設定session token key的設定檔。
 
 ### 前端
@@ -105,7 +105,7 @@ go run ./cmd/seeder -scenario all
 可在可丟棄的 test DB 驗證資料不變量與冪等性：
 
 ```bash
-SEEDER_INTEGRATION_TEST=1 go test ./internal/seeder -run TestSeedScenarioInvariants
+scripts/test.sh go-integration -run TestSeedScenarioInvariants
 ```
 
 ## 對抗賽首輪更新
@@ -116,24 +116,35 @@ SEEDER_INTEGRATION_TEST=1 go test ./internal/seeder -run TestSeedScenarioInvaria
 
 此操作會覆寫尚未開始的首輪人工安排。若要更換的對戰已有成績、確認、勝方或受影響的後續賽果，整次更新會被拒絕；請使用人工修正流程處理。隊伍若仍被對戰或獎牌引用，須先移除或更換引用才可刪除。
 
-## Run E2E Test
+## Tests
 
-你需要先下載前端的packages跟安裝Playwright的使用的瀏覽器。
+需要 Go 1.23、Node 22、Docker Compose，以及 Chromium。先下載依賴：
+
 ```bash
-cd frontend
-npm install
-npx playwright install  
+(cd backend && go mod download)
+(cd frontend && npm ci && npx playwright install --with-deps chromium)
 ```
 
-啟動一個測試用的docker-compose:
-```
-docker compose up -f docker-compose.test.yml up --build
+從根目錄使用統一入口：
+
+```bash
+scripts/test.sh go-unit
+scripts/test.sh go-integration
+scripts/test.sh frontend-unit
+scripts/test.sh browser
+scripts/test.sh e2e
+scripts/test.sh all
 ```
 
-然後在`./frontend`執行下面的指令來跑主要的 E2E 測試。
-```
-npx playwright test tests/e2e/recordingBoard.spec.ts --project=chromium --headed --workers=1
-```
+真 E2E 與 Go 整合每次建立自己的 tmpfs MySQL／Compose project。MySQL 不公開 host port；runner 產生隨機憑證及設定，不讀取開發 DB 憑證。E2E 以專用 production frontend 映像與隨機 loopback port 執行，結束保存 `test-artifacts/<suite>/<run ID>` 報告與服務 log，再清除本次服務。
+
+E2E 案例之間，fixture 先關閉所有 browser contexts，再請外部 runner 停止 backend、以 `testdb reset --fixture ...` 重建專屬資料庫並重啟。長流程中途不 reset；`restartBackend` fixture 只重啟，不清資料。手動直跑 Playwright 真 E2E 而缺 runner manifest 會失敗，不會回退連向開發環境。
+
+真 E2E 固定單 worker、零 retry，首個失敗即停止並清理整個 project。一般中斷會終止子程序群組、清除 reset container 與控制鎖；若 control 遭強制終止而留下鎖，不在同一環境強行恢復，須由主 runner 清理後重新執行。主 runner 本身若遭 `SIGKILL` 或主機斷電，作業系統無法執行 cleanup，須檢查該次專屬 `archery-test-<run ID>` project，勿清除開發服務。
+
+`/api/test/restore` 已取消。所有 server mode 啟動均只做 schema 與必要基礎初始化，重啟不清賽事。需要 development 情境仍可使用既有 Seeder CLI，不以啟動服務代替清表／灌資料。
+
+案例保留、搬移與依賴見 [後端盤點](docs/testing-inventory.md) 與 [前端分層](docs/testing-frontend.md)。測試報告中的 timeout 是防止執行永久掛起，不是 lifecycle 效能驗收門檻；預設不 retry。
 
 ## Deployment
 
@@ -165,7 +176,7 @@ http://localhost/swagger/index.html#/
 目前只有 frontend_scoring 實作了此項目。
 
 ## Tips
-- 整個系統中，目前只會有一個dictator帳號可以創建比賽，該按鈕會在"我的比賽"頁面底下。這個帳號的帳密是由dictator.yml這個檔案決定的。 
+- Dictator 帳號可以創建比賽，按鈕位於「我的比賽」頁面底下。初次帳密由 `dictator.yaml` 設定；帳號建立後，以資料庫保存的密碼為準。
 
 #### 一些問題
 

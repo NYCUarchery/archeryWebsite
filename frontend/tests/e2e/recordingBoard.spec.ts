@@ -1,220 +1,118 @@
-import { test, expect } from "@playwright/test";
-import resetDB from "./resetDB";
+import { test, expect } from "./fixtures";
+import { gotoQualificationScoreboard, legacyCompetition, legacyTitles } from "./legacy";
+import { loginUser } from "./utils";
+
+const fixtureAdmin = { username: "Oatmeal", password: "Waaaaaaaa" };
+const recorder = { username: "1C", password: "1c1c1c1c" };
+const viewer = { username: "1B", password: "1b1b1b1b" };
+
+test.use({ databaseFixture: "legacy" });
 
 test.describe("Recording Board", () => {
   test.beforeEach(async ({ page }) => {
-    await resetDB();
-    await page.goto("http://127.0.0.1/login");
-    await page.getByLabel('帳號').click();
-    await page.getByLabel('帳號').fill('1C');
-    await page.getByLabel('密碼').fill('1c1c1c1c');
-    await Promise.all([
-      page.waitForURL("http://127.0.0.1/**"),
-      page.getByRole("button", { name: "登入" }).click(),
-    ]);
-    await expect(await page.getByText("公告欄")).toBeVisible();
-    await page.goto("http://127.0.0.1/competition/2/scoreboard/0/qualification");
-    await page.getByRole("button", { name: "分" }).click();
-    await page.getByRole("menuitem", { name: "紀錄分數" }).click();
+    await loginUser(page, recorder);
+    await gotoRecordingBoard(page);
   });
 
-  test("Pre competiion prompt", async ({ page }) => {
-    await page.goto("http://127.0.0.1/competition/1/scoreboard/0/qualification");
-    await page.getByRole("button", { name: "分" }).click();
-    await page.getByRole("menuitem", { name: "紀錄分數" }).click();
-    await expect(
-      await page.getByRole("heading", {
-        name: "還沒開始，我知道你很急但你先別急。",
-      })
-    ).toBeVisible();
-  });
-  test("Lane player names", async ({ page }) => {
-    await expect(await page.getByText("吳柏橙")).toBeVisible();
-    await expect(await page.getByText("蕭邦聿")).toBeVisible();
-    await expect(
-      await page
-        .getByRole("button", { name: "✔ 李峻 9 9 9 7 6" })
-        .getByText("李峻")
-    ).toBeVisible();
-    await expect(await page.getByText("盧均祐")).toBeVisible();
+  test("pre-competition prompt", async ({ page }) => {
+    await gotoQualificationScoreboard(page, legacyTitles.registered);
+    await openScoreboardMenu(page, "紀錄分數");
+    await expect(page.getByRole("heading", { name: "還沒開始，我知道你很急但你先別急。" })).toBeVisible();
   });
 
-  test("Score editing", async ({ page }) => {
-    await unconfirm(page);
-
-    await page.goto("http://127.0.0.1/competition/2/scoring");
-    await page.getByRole("button", { name: "- 李峻 9 9 9 7 6" }).click();
-    for (let i = 0; i < 6; i++) {
-      await page.locator('div').filter({ hasText: /^確認送出$/ }).getByRole('button').nth(2).click();
-    }
-    await expect(page.getByRole("button", { name: "- 李峻" })).toBeVisible();
-    await page.getByRole("button", { name: "9", exact: true }).click();
-    await page.getByRole("button", { name: "9", exact: true }).click();
-    await page.getByRole("button", { name: "9", exact: true }).click();
-    await page.getByRole("button", { name: "7", exact: true }).click();
-    await page.getByRole("button", { name: "6", exact: true }).click();
-    await page.getByRole("button", { name: "4", exact: true }).click();
-
-    await expect(
-      await page.getByRole("button", { name: "- 李峻 9 9 9 7 6" })
-    ).toBeVisible();
+  test("lane player names", async ({ page }) => {
+    for (const name of ["吳柏橙", "蕭邦聿", "盧均祐"]) await expect(playerButton(page, name)).toBeVisible();
+    await expectPlayerEnd(page, "李峻", true, 44, [9, 9, 9, 7, 6, 4]);
   });
 
-  test("Confirmations", async ({ page }) => {
-    {
-      await unconfirm(page);
-      let names = [
-        "- 吳柏橙 9 9 8 7 6",
-        "- 蕭邦聿 9 8 8 8 8",
-        "- 李峻 9 9 9 7 6",
-        "- 盧均祐 9 8 8 8 6",
-      ];
-      names = shuffleArray(names);
-
-      for (const name of names) {
-        await page.getByRole("button", { name: name }).click();
-        await page.getByRole("button", { name: "確認" }).click();
-        const confirmedName = name.replace("-", "✔");
-        await expect(
-          await page.getByRole("button", { name: confirmedName })
-        ).toBeVisible();
-      }
-    }
+  test("score editing", async ({ page }) => {
+    await unconfirmAndReturn(page);
+    const competition = await legacyCompetition(page, legacyTitles.qualificationFinished);
+    await page.goto(`/competition/${competition.id}/scoring`);
+    await selectPlayerAndClearEnd(page, "李峻");
+    await enterScores(page, [9, 9, 9, 7, 6, 4]);
+    await expectPlayerEnd(page, "李峻", false, 44, [9, 9, 9, 7, 6, 4]);
   });
-  test("Score syncing", async ({ page }) => {
-    {
-      await unconfirm(page);
-      await page.getByRole("button", { name: "- 吳柏橙 9 9 8 7 6" }).click();
-      for (let i = 0; i < 6; i++) {
-        await page.locator('div').filter({ hasText: /^確認送出$/ }).getByRole('button').nth(2).click();
-      }
 
-      for (let i = 0; i < 3; i++) {
-        await page.getByRole("button", { name: "6", exact: true }).click();
-      }
-      await page.getByRole('button', { name: '送出' }).click();
-      await page.goto("http://127.0.0.1/");
-      await page.getByLabel("account of current user").click();
-      await page.getByRole("menuitem", { name: "登出" }).click();
-      await page.getByLabel("account of current user").click();
-      await page.getByRole("menuitem", { name: "登入" }).click();
-      await page.getByLabel("帳號").fill("1B");
-      await page.getByLabel("密碼").fill("1b1b1b1b");
-      await page.getByRole("button", { name: "登入" }).click();
-      await expect(await page.getByText("公告欄")).toBeVisible();
-      await page.goto("http://127.0.0.1/competition/2/scoreboard/0/qualification");
-      await page.getByRole("button", { name: "分" }).click();
-      await page.getByRole("menuitem", { name: "紀錄分數" }).click();
-      await expect(
-        await page.getByRole("button", { name: "- 吳柏橙 6 6 6" })
-      ).toBeVisible();
+  test("confirmations", async ({ page }) => {
+    await unconfirmAndReturn(page);
+    for (const player of [
+      { name: "李峻", total: 44, scores: [9, 9, 9, 7, 6, 4] },
+      { name: "吳柏橙", total: 44, scores: [9, 9, 8, 7, 6, 5] },
+      { name: "盧均祐", total: 45, scores: [9, 8, 8, 8, 6, 6] },
+      { name: "蕭邦聿", total: 48, scores: [9, 8, 8, 8, 8, 7] },
+    ]) {
+      await playerButton(page, player.name).click();
+      await page.getByRole("button", { name: "確認" }).click();
+      await expectPlayerEnd(page, player.name, true, player.total, player.scores);
     }
   });
 
-  test("Fuzzing", async ({ browser, page }) => {
-    test.setTimeout(120000);
-    const admin = await browser.newContext();
-    const adminPage = await admin.newPage();
+  test("score syncing across player accounts", async ({ browser, page }) => {
+    await unconfirmAndReturn(page);
+    await selectPlayerAndClearEnd(page, "吳柏橙");
+    await enterScores(page, [6, 6, 6]);
+    await page.getByRole("button", { name: "送出" }).click();
+    const viewerContext = await browser.newContext({ baseURL: process.env.PLAYWRIGHT_BASE_URL });
+    const viewerPage = await viewerContext.newPage();
+    await loginUser(viewerPage, viewer);
+    await gotoRecordingBoard(viewerPage);
+    await expectPlayerEnd(viewerPage, "吳柏橙", false, 18, [6, 6, 6, -1, -1, -1]);
+    await viewerContext.close();
+  });
 
-    await unconfirm(adminPage, true);
-    adminPage.getByRole("tab", { name: "進度" }).click();
-    await page.goto("http://127.0.0.1/competition/2/scoreboard/0/qualification");
-    await page.getByRole("button", { name: "分" }).click();
-    await page.getByRole("menuitem", { name: "紀錄分數" }).click();
-    let users = [
-      {
-        buttonName: "- 吳柏橙",
-        rowName: "91A吳柏橙",
-        scores: [9, 9, 8, 7, 6, 5],
-        totalScore: 710,
-      },
-      {
-        buttonName: "- 蕭邦聿",
-        rowName: "61B蕭邦聿",
-        scores: [9, 8, 8, 8, 8, 7],
-        totalScore: 827,
-      },
-      {
-        buttonName: "- 李峻",
-        rowName: "81C李峻",
-        scores: [9, 9, 9, 7, 6, 4],
-        totalScore: 727,
-      },
-      {
-        buttonName: "- 盧均祐",
-        rowName: "51D盧均祐",
-        scores: [9, 8, 8, 8, 6, 6],
-        totalScore: 830,
-      },
-    ];
-    for (let i = 0; i < 10; i++) {
-      users = shuffleArray(users);
-      const user = users[0];
-      user.scores = shuffleArray(user.scores);
-      await page.getByRole("button", { name: user.buttonName }).click();
-      for (let j = 0; j < 6; j++) {
-        await page.locator('div').filter({ hasText: /^確認送出$/ }).getByRole('button').nth(2).click();
-      }
-      for (let j = 0; j < 6; j++) {
-        await page
-          .getByRole("button", { name: user.scores[j].toString(), exact: true })
-          .click();
-      }
-      updateScore(adminPage);
-      await await page.getByRole("button", { name: "記" }).click();
-      await page.getByRole("menuitem", { name: "分數榜" }).click();
-      await expect(
-        page.getByText(user.rowName).getByText(user.totalScore.toString())
-      ).toBeVisible();
-      await page.goto("http://127.0.0.1/competition/2/scoreboard/0/qualification");
-      await page.getByRole("button", { name: "分" }).click();
-      await page.getByRole("menuitem", { name: "紀錄分數" }).click();
+  test("fixed score sequences keep ranking updates observable", async ({ browser, page }) => {
+    test.setTimeout(120_000);
+    const adminContext = await browser.newContext({ baseURL: process.env.PLAYWRIGHT_BASE_URL });
+    const adminPage = await adminContext.newPage();
+    await unconfirm(adminPage);
+    await gotoRecordingBoard(page);
+    for (const sequence of [
+      { player: "吳柏橙", scores: [9, 8, 7, 6, 5, 4], row: "吳柏橙", total: "705" },
+      { player: "李峻", scores: [9, 9, 7, 6, 5, 4], row: "李峻", total: "723" },
+    ]) {
+      await playerButton(page, sequence.player).click();
+      await clearCurrentEnd(page);
+      await enterScores(page, sequence.scores);
+      await page.getByRole("button", { name: "送出" }).click();
+      await updateRanking(adminPage);
+      await gotoQualificationScoreboard(page);
+      await openScoreboardMenu(page, "分數榜");
+      await expect(page.getByText(sequence.row, { exact: true }).locator("xpath=..").getByText(sequence.total, { exact: true })).toBeVisible();
+      await gotoRecordingBoard(page);
     }
+    await adminContext.close();
   });
 });
 
-async function unconfirm(page, adminOnly = false) {
-  await page.goto("http://127.0.0.1/");
-  if (!adminOnly) {
-    await page.getByLabel("account of current user").click();
-    await page.getByRole("menuitem", { name: "登出" }).click();
-  }
-  await page.getByLabel("account of current user").click();
-  await page.getByRole("menuitem", { name: "登入" }).click();
-  await page.getByLabel("帳號").fill("Oatmeal");
-  await page.getByLabel("密碼").fill("Waaaaaaaa");
-  await page.getByRole("button", { name: "登入" }).click();
-  await expect(await page.getByText("公告欄")).toBeVisible();
-  await page.goto("http://127.0.0.1/competition/2/scoreboard/0/qualification");
-  await page.getByRole("button", { name: "分" }).click();
-  await page.getByRole("menuitem", { name: "監控" }).click();
+type Page = import("@playwright/test").Page;
+async function gotoRecordingBoard(page: Page) { await gotoQualificationScoreboard(page); await openScoreboardMenu(page, "紀錄分數"); }
+async function openScoreboardMenu(page: Page, name: string) { await page.getByRole("button", { name: "分" }).click(); await page.getByRole("menuitem", { name }).click(); }
+async function unconfirm(page: Page) {
+  await loginUser(page, fixtureAdmin);
+  await gotoQualificationScoreboard(page);
+  await openScoreboardMenu(page, "監控");
   await page.getByRole("tab", { name: "進度" }).click();
-  await page.getByText("1C").click();
-  await page.getByText("1B").click();
-  await page.getByText("1A").click();
-  await page.getByText("1D").click();
-  if (adminOnly) return;
-  await page.goto("http://127.0.0.1/");
-  await page.getByLabel("account of current user").click();
-  await page.getByRole("menuitem", { name: "登出" }).click();
-  await page.goto("http://127.0.0.1/login");
-  await page.getByLabel("帳號").fill("1C");
-  await page.getByLabel("密碼").fill("1c1c1c1c");
-  await page.getByRole("button", { name: "登入" }).click();
-  await expect(await page.getByText("公告欄")).toBeVisible();
-  await page.goto("http://127.0.0.1/competition/2/scoreboard/0/qualification");
-  await page.getByRole("button", { name: "分" }).click();
-  await page.getByRole("menuitem", { name: "紀錄分數" }).click();
+  for (const lane of ["1C", "1B", "1A", "1D"]) await page.getByText(lane, { exact: true }).click();
 }
-
-async function updateScore(page) {
-  await page.getByRole("button", { name: "更新排名" }).click();
+async function unconfirmAndReturn(page: Page) {
+  const browser = page.context().browser();
+  if (!browser) throw new Error("錄分 context 缺少 browser");
+  const adminContext = await browser.newContext({ baseURL: new URL(page.url()).origin });
+  const adminPage = await adminContext.newPage();
+  await unconfirm(adminPage);
+  await adminContext.close();
+  await page.reload();
+  await gotoRecordingBoard(page);
 }
-
-function shuffleArray(array: any[]): any[] {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
-  }
-  return array;
+async function clearCurrentEnd(page: Page) { for (let index = 0; index < 6; index++) await page.locator("div").filter({ hasText: /^確認送出$/ }).getByRole("button").nth(2).click(); }
+function playerButton(page: Page, name: string) { return page.getByRole("button").filter({ hasText: name }); }
+async function expectPlayerEnd(page: Page, name: string, confirmed: boolean, total: number, scores: number[]) {
+  const button = playerButton(page, name);
+  await expect(button).toContainText(confirmed ? "✔" : "-");
+  await expect(button).toContainText(String(total));
+  await expect.poll(() => button.locator(".score_block").allTextContents()).toEqual(scores.map(String));
 }
+async function selectPlayerAndClearEnd(page: Page, name: string) { await playerButton(page, name).click(); await clearCurrentEnd(page); }
+async function enterScores(page: Page, scores: number[]) { for (const score of scores) await page.getByRole("button", { name: String(score), exact: true }).click(); }
+async function updateRanking(page: Page) { await page.getByRole("button", { name: "更新排名" }).click(); }
