@@ -32,8 +32,8 @@ func DatabaseInitial() {
 }
 
 // DatabaseInitialForSeeder prepares the schema needed by the development
-// seeder. Unlike DatabaseInitial it never updates an existing Dictator user.
-// This keeps an explicit seeding command from overwriting application data.
+// seeder and leaves an existing Dictator unchanged. This keeps an explicit
+// seeding command from overwriting application data.
 func DatabaseInitialForSeeder() {
 	connectDB()
 	setTables()
@@ -88,17 +88,27 @@ func connectDB() {
 	var err error
 
 	for retry := 0; retry < 5; retry++ {
-		DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
-		if err != nil {
-			fmt.Println("database connection error: ", err)
+		connection, openErr := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+		if openErr == nil {
+			if DB != nil {
+				if previous, closeErr := DB.DB(); closeErr == nil {
+					_ = previous.Close()
+				}
+			}
+			DB = connection
+			log.Println("Database \"" + DSN.Database + "\" is connected")
+			return
 		}
-		time.Sleep(3 * time.Second)
+		err = openErr
+		fmt.Println("database connection error: ", err)
+		if retry < 4 {
+			time.Sleep(3 * time.Second)
+		}
 	}
 	if err != nil {
 		fmt.Println("failed to connect database")
 		os.Exit(1)
 	}
-	log.Println("Database \"" + DSN.Database + "\" is connected")
 }
 
 func setDictator() {
@@ -149,16 +159,11 @@ func setDictator() {
 		}
 		return
 	}
-	if pkg.Compare(old_user.Password, dictator_config.Password) != nil {
-		log.Println("Dictator password is unmatch, cannot update dictator and init database")
+	if old_user.Role != pkg.RoleToString(pkg.RDictator) {
+		log.Println("Dictator username is occupied by a non-Dictator user; refusing to modify it")
 		os.Exit(1)
 	}
-	_, err := UpdataUser(old_user.ID, *new_user)
-	if err != nil {
-		log.Println("Failed to update dictator")
-		os.Exit(1)
-	}
-	log.Println("Dictator is updated")
+	log.Println("Dictator already exists; startup left it unchanged")
 }
 
 func ensureDictatorForSeeder() {
