@@ -117,6 +117,19 @@ test.describe("Elimination Scoring Board", () => {
     await gotoEliminationScoring(page, fixture.competitionId);
     await waitReady(page, fixture);
 
+    // Player scoring uses MatchResultSelector, not the Judge-only comparison
+    // panel. Keep the team readback selector contract covered here.
+    const sides = page.locator(".elimination_board .match_result_button_group .match_result_button");
+    await expect(sides).toHaveCount(2);
+    const mine = sideButton(page, fixture.setNameMine);
+    const opponent = sideButton(page, fixture.setNameOpponent);
+    await expect(mine).toHaveAttribute("aria-pressed", "true");
+    await expect(mine.locator(".name_bar")).toHaveText(fixture.setNameMine);
+    await expect(opponent.locator(".name_bar")).toHaveText(fixture.setNameOpponent);
+    await expect(mine.getByText("我方選手1、我方選手2、我方選手3", { exact: true })).toBeVisible();
+    await expect(mine.locator(".score_block")).toHaveCount(6);
+    await expect(opponent.locator(".score_block")).toHaveCount(6);
+
     for (let i = 0; i < 6; i++) {
       await scoreButton(page, "7").click();
     }
@@ -127,9 +140,6 @@ test.describe("Elimination Scoring Board", () => {
     await expect
       .poll(() => sideScoreLabels(page, fixture.setNameMine))
       .toEqual(["7", "7", "7", "7", "7", "7"]);
-
-    // 團體賽全員姓名應完整顯示。
-    await expect(page.getByText("我方選手1、我方選手2、我方選手3")).toBeVisible();
   });
 
   test("排序：依序輸入 7、10、8 顯示為 10、8、7，重新整理後仍遞減", async ({

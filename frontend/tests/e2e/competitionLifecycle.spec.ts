@@ -16,11 +16,18 @@ import { activateQualification, advanceQualification, scoreJudgeQualificationEnd
 import { advanceStage, chooseJudgeIndividual, scoreJudgeEliminationMatch, setIndividualProgress, syncFirstRound } from "./lifecycle/elimination";
 import { compoundQualificationOracle, recurveQualificationOracle, type QualificationOracle } from "./lifecycle/data";
 import { assertCompletedIndividualBracket, assertIndividualProgressIsolation, resolveIndividualEliminationId, snapshotIndividualEvent } from "./lifecycle/verification";
+import { completeTeamLifecycle } from "./lifecycle/teamLifecycle";
 
-test.use({ databaseFixture: "accounts" });
+test.use({
+  databaseFixture: "accounts",
+  // The 24 applicants plus scoring contexts otherwise produce hundreds of
+  // megabytes of filmstrip frames. Keep DOM/network/actions/source tracing
+  // and the config's separate only-on-failure PNG screenshots.
+  trace: { mode: "retain-on-failure", screenshots: false, snapshots: true, sources: true },
+});
 test.setTimeout(20 * 60_000);
 
-const title = "E2E 兩組別個人賽生命週期";
+const title = "E2E 兩組別個人與團體賽生命週期";
 const recurve = "E2E 反曲弓";
 const compound = "E2E 複合弓";
 
@@ -39,7 +46,7 @@ function escapedText(text: string) {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-test("完成兩組資格賽、八強個人賽建表及公開組別隔離", async ({ browser, page, request }) => {
+test("完成兩組資格賽、個人及團體頒牌與跨角色隔離", async ({ browser, page, request }) => {
   let competitionId: number;
   await page.goto("/");
   const baseURL = new URL(page.url()).origin;
@@ -255,6 +262,20 @@ test("完成兩組資格賽、八強個人賽建表及公開組別隔離", async
           assertIndividualProgressIsolation(recurveBefore, recurveAfter, compoundBefore, compoundAfter);
         }
       }
+    });
+    await test.step("同場兩組團體建隊至頒牌，未晉級者參團及賽制隔離", async () => {
+      await completeTeamLifecycle({
+        browser,
+        baseURL,
+        adminPage: page,
+        judgePage: judgeSession.page,
+        visitorPage,
+        competitionId,
+        groupNames: [
+          { name: recurve, bow: "recurve", firstLane: 1 },
+          { name: compound, bow: "compound", firstLane: 7 },
+        ],
+      });
     });
   } finally {
     await Promise.all([

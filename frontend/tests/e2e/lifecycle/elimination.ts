@@ -13,11 +13,19 @@ export async function chooseJudgeTeam(page: Page, groupName: string) {
   await chooseJudgeEvent(page, groupName, "團體對抗賽");
 }
 async function chooseJudgeEvent(page: Page, groupName: string, event: "個人對抗賽" | "團體對抗賽") {
-  await page.getByLabel("組別").click();
-  await page.getByRole("option", { name: groupName, exact: true }).click();
-  await page.getByLabel("項目").click();
-  await page.getByRole("option", { name: event, exact: true }).click();
+  await chooseJudgeOption(page, "組別", groupName);
+  await chooseJudgeOption(page, "項目", event);
   await expect(page.getByText("目前階段：", { exact: false })).toBeVisible();
+}
+
+async function chooseJudgeOption(page: Page, label: "組別" | "項目", optionName: string) {
+  const combobox = page.getByRole("combobox", { name: label, exact: true });
+  await combobox.click();
+  const listbox = page.getByRole("listbox");
+  await expect(listbox).toBeVisible();
+  await listbox.getByRole("option", { name: optionName, exact: true }).click();
+  await expect(listbox).toBeHidden();
+  await expect(combobox).toContainText(optionName);
 }
 function waveCell(page: Page, wave: number, side: 1 | 2) {
   return page.getByTestId(`match-score-end-${wave}-side-${side}`);
