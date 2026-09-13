@@ -15,3 +15,4 @@ frontend/.env
 
 # Go 編譯產物
 backend/cmd/seeder/seeder
+test-artifacts/

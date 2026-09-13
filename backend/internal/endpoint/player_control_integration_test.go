@@ -31,13 +31,13 @@ type PlayerControlIntegrationTestSuite struct {
 
 func TestPlayerControlIntegrationTestSuite(t *testing.T) {
 	if os.Getenv("ARCHERY_MYSQL_INTEGRATION") != "1" {
-		t.Skip("set ARCHERY_MYSQL_INTEGRATION=1 to run destructive MySQL integration tests")
+		t.Fatal("integration tests require scripts/test.sh go-integration")
 	}
 	suite.Run(t, new(PlayerControlIntegrationTestSuite))
 }
 
 func (suite *PlayerControlIntegrationTestSuite) SetupSuite() {
-	database.SetupDatabaseByMode("test")
+	suite.Require().NoError(database.ResetTestDatabase("legacy"))
 	file, err := os.CreateTemp("", "archery-player-control-session-*.yaml")
 	suite.Require().NoError(err)
 	suite.sessionFile = file.Name()
@@ -52,7 +52,7 @@ func (suite *PlayerControlIntegrationTestSuite) TearDownSuite() {
 }
 
 func (suite *PlayerControlIntegrationTestSuite) SetupTest() {
-	database.TestDBRestore()
+	suite.Require().NoError(database.ResetTestDatabase("legacy"))
 	gin.SetMode(gin.TestMode)
 	suite.router = gin.New()
 	suite.router.Use(pkg.EnableCookieSessionMiddleware(suite.sessionFile))

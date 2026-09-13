@@ -30,23 +30,25 @@ GOCACHE=/tmp/archery-go-build go test ./...
 - `internal/endpoint/*_integration_test.go`：籤表、首輪同步、資格排名、選手／participant 控制、PlayerSet 自動建立與排序；包含 transaction、row lock 與併發情境。
 - `internal/seeder/seeder_test.go`：三種 fixture 情境的實際建立、冪等性、隔離及帳號衝突 rollback。
 
-暫時以既有開關保護破壞性測試：
+由根目錄的隔離 runner 執行破壞性測試：
 
 ```bash
-ARCHERY_MYSQL_INTEGRATION=1 \
-GOCACHE=/tmp/archery-go-build \
-go test -tags=integration -p 1 ./internal/database/test ./internal/endpoint/test ./internal/endpoint/...
-
-SEEDER_INTEGRATION_TEST=1 \
-GOCACHE=/tmp/archery-go-build \
-go test -tags=integration -p 1 ./internal/seeder
+scripts/test.sh go-integration
 ```
 
-上述指令目前仍使用 `backend` 的 test-mode 資料庫初始化，會清表或重建 schema；只可指向可丟棄的 MySQL。後續測試基礎設施將以專屬 Compose project 與外部 reset 取代它。
+每次產生獨立 Compose project，MySQL 資料存於 tmpfs，不公開 host port。設定檔由 runner 建立，不讀開發 DB 憑證。案例以共用 `ResetTestDatabase` helper 重建 schema；Seeder 的三個情境仍保留。
+
+`testdb reset --fixture empty|legacy|accounts` 只接受 runner 配發的 `ARCHERY_TEST_CONFIG` 與相符的 `ARCHERY_TEST_RUN_ID`，且限制內網 `mysql:3306`、`archery_test` 帳號及本次專屬 schema。這是防止誤用開發環境的防護，不是對可任意修改程式與環境變數之主機使用者的安全隔離；實際資料存取邊界為獨立 Docker network 與僅授權單一 schema 的 DB 帳號。
+
+Fixture 定義：`empty` 僅 schema；`legacy` 舊 SQL fixture 加測試主辦人；`accounts` 僅組織、主辦人、裁判與 24 位選手帳號，不建立比賽或 participant。Reset 失敗、設定缺失均回傳錯誤，不得以整套 skip 代替執行。
+
+Go 整合輸出 JSON 事件、coverage 與服務 log 於 `test-artifacts/go-integration/<run ID>`；成功、測試失敗與中斷均清理本次 project，保留報告。需要 Docker Compose、Go 1.23 與已下載的 Go modules（`cd backend && go mod download`）。
+
+舊 `Player_test.go` 的未登入成功與非法分數通過斷言已過期，改為真 session 驗證目前角色與分數契約；`MatchResult_test.go` 補齊實際雙方對戰鏈，再驗 approved Judge 更正已確認波。非放寬 assertion，亦未移除跨角色拒絕覆蓋。
 
 ## 已知基線限制
 
 - `go test ./...` 是唯一安全的預設入口，且不得因為本機存在 MySQL 而連線。
-- `-tags=integration` 只選入資料庫測試；仍須分別設定 `ARCHERY_MYSQL_INTEGRATION=1` 或 `SEEDER_INTEGRATION_TEST=1` 才會執行。
+- `-tags=integration` 只選入資料庫測試；runner 統一設定開關與專屬設定。手動漏設定會明確失敗。
 - 舊的 MySQL 測試共用 package-level `database.DB`，故整合套件需以 `-p 1` 執行，套件內的併發案例則保留原本行為。
-- 此提交只做 Go 分層；前端單元、mock browser、真 E2E 與 CI 的盤點及入口由後續提交處理。
+- 前端案例、保留與搬移理由見 [前端測試分層](testing-frontend.md)。

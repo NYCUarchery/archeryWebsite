@@ -1,0 +1,35 @@
+services:
+  mysql:
+    image: mysql:8
+    tmpfs:
+      - /var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${ARCHERY_TEST_ROOT_PASSWORD:?runner required}
+      MYSQL_DATABASE: ${ARCHERY_TEST_DATABASE:?runner required}
+      MYSQL_USER: archery_test
+      MYSQL_PASSWORD: ${ARCHERY_TEST_DB_PASSWORD:?runner required}
+    healthcheck:
+      test: [CMD, mysqladmin, ping, -h, localhost]
+      interval: 1s
+      timeout: 3s
+      retries: 60
+  backend:
+    image: golang:1.23
+    working_dir: /app
+    volumes:
+      - ./backend:/app:ro
+      - ${ARCHERY_TEST_CONFIG_DIR:?runner required}:/app/config:ro
+      - ${ARCHERY_GO_MOD_CACHE:?runner required}:/go/pkg/mod:ro
+      - ${ARCHERY_GO_BUILD_CACHE:?runner required}:/root/.cache/go-build
+    environment:
+      ARCHERY_TEST_CONFIG: /app/config/db.yaml
+      ARCHERY_TEST_RUN_ID: ${ARCHERY_TEST_RUN_ID:?runner required}
+      ARCHERY_MYSQL_INTEGRATION: "1"
+      SEEDER_INTEGRATION_TEST: "1"
+      GOTOOLCHAIN: local
+      GOSUMDB: "off"
+      GOPROXY: "off"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: [go, run, .]

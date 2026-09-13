@@ -32,7 +32,7 @@ type EliminationBracketIntegrationTestSuite struct {
 }
 
 func (suite *EliminationBracketIntegrationTestSuite) SetupSuite() {
-	database.SetupDatabaseByMode("test")
+	suite.Require().NoError(database.ResetTestDatabase("legacy"))
 	file, err := os.CreateTemp("", "archery-bracket-session-*.yaml")
 	suite.Require().NoError(err)
 	suite.sessionFile = file.Name()
@@ -47,7 +47,7 @@ func (suite *EliminationBracketIntegrationTestSuite) TearDownSuite() {
 }
 
 func (suite *EliminationBracketIntegrationTestSuite) SetupTest() {
-	database.TestDBRestore()
+	suite.Require().NoError(database.ResetTestDatabase("legacy"))
 	gin.SetMode(gin.TestMode)
 	suite.router = gin.New()
 	suite.router.Use(pkg.EnableCookieSessionMiddleware(suite.sessionFile))
@@ -90,7 +90,7 @@ func (suite *EliminationBracketIntegrationTestSuite) SetupTest() {
 
 func TestEliminationBracketIntegrationTestSuite(t *testing.T) {
 	if os.Getenv("ARCHERY_MYSQL_INTEGRATION") != "1" {
-		t.Skip("set ARCHERY_MYSQL_INTEGRATION=1 to run destructive MySQL integration tests")
+		t.Fatal("integration tests require scripts/test.sh go-integration")
 	}
 	suite.Run(t, new(EliminationBracketIntegrationTestSuite))
 }
