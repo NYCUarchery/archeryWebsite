@@ -146,6 +146,8 @@ E2E 案例之間，fixture 先關閉所有 browser contexts，再請外部 runne
 
 案例保留、搬移與依賴見 [後端盤點](docs/testing-inventory.md) 與 [前端分層](docs/testing-frontend.md)。測試報告中的 timeout 是防止執行永久掛起，不是 lifecycle 效能驗收門檻；預設不 retry。
 
+PR 測試入口、coverage 基線範圍、報告位置與 Firefox／WebKit 手動入口見 [CI 測試](docs/testing-ci.md)。
+
 ## Deployment
 
 1. Set db credentials and a session key in `backend/config`. (Make sure it is consistent with `docker-compose.yml`)

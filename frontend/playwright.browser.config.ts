@@ -11,12 +11,17 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: 0,
-  reporter: [["html", { open: "never", outputFolder: "playwright-report/browser" }]],
+  reporter: [
+    ["list"],
+    ["html", { open: "never", outputFolder: "playwright-report/browser" }],
+    ["json", { outputFile: "playwright-report/browser/results.json" }],
+  ],
   outputDir: "test-results/browser",
   use: {
     baseURL,
     serviceWorkers: "block",
     trace: "retain-on-failure",
+    screenshot: "only-on-failure",
   },
   projects: [
     {
