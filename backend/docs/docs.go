@@ -6083,6 +6083,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorReceiveDataFormatResponse"
                         }
                     },
+                    "403": {
+                        "description": "competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "internal db error / Get Player Set By Id / Update Player Set Name",
                         "schema": {
