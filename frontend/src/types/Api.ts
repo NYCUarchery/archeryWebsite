@@ -2967,7 +2967,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      * @request PATCH:/playerset/name/{id}
      */
     namePartialUpdate: (id: number, data: EndpointPutPlayerSetNamePlayerSetData, params: RequestParams = {}) =>
-      this.request<void, ResponseErrorReceiveDataFormatResponse | ResponseErrorInternalErrorResponse>({
+      this.request<void, ResponseErrorReceiveDataFormatResponse | ResponseErrorResponse | ResponseErrorInternalErrorResponse>({
         path: `/playerset/name/${id}`,
         method: "PATCH",
         body: data,
