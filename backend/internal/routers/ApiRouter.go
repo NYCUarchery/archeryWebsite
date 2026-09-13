@@ -1,7 +1,6 @@
 package routers
 
 import (
-	database "backend/internal/database"
 	endpoint "backend/internal/endpoint"
 	"backend/internal/pkg"
 
@@ -11,8 +10,6 @@ import (
 func AddApiRouter(api *gin.RouterGroup) {
 	api.GET("/albums", endpoint.GetAlbums)          // "pass data" action through api(link)
 	api.GET("/txt/:dataName", endpoint.GetHTTPData) // response "name".txt data file with /translate/2JSON method
-	testRelatedRouter(api.Group("test"))
-
 	profileRouter(api)
 	playerRouter(api)
 	playerSetRouter(api)
@@ -226,11 +223,4 @@ func profileRouter(api *gin.RouterGroup) {
 		insr.GET("/", endpoint.AllInstitutionInfo)
 		insr.DELETE("/:id", endpoint.DeleteInstitution)
 	}
-}
-
-func testRelatedRouter(api *gin.RouterGroup) {
-	api.PUT("/restore", database.EnsureTestModeMiddleware(), func(c *gin.Context) {
-		database.TestDBRestore()
-		c.JSON(200, gin.H{"message": "Dummy database is restored"})
-	})
 }

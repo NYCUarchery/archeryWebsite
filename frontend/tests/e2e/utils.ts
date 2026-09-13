@@ -1,7 +1,8 @@
 import { User } from "./data";
-import { expect, type Page } from "@playwright/test";
+import { expect } from "./fixtures";
+import type { Page } from "@playwright/test";
 export async function registerUser(page: Page, user: User) {
-  await page.goto("http://127.0.0.1/");
+  await page.goto("/");
   await page.getByLabel("account of current user").click();
   await page.getByRole("menuitem", { name: "登入" }).click();
   await page.getByRole("button", { name: "沒有帳號嗎？" }).click();
@@ -22,18 +23,29 @@ export async function registerUser(page: Page, user: User) {
   await expect(page.getByRole("button", { name: "註冊" })).not.toBeVisible();
 }
 
-export async function loginUser(page: Page, user: User) {
-  await page.goto("http://127.0.0.1/");
+export type Credentials = Pick<User, "username" | "password">;
+
+export async function loginUser(page: Page, user: Credentials) {
+  await page.goto("/");
   await page.getByLabel("account of current user").click();
   await page.getByRole("menuitem", { name: "登入" }).click();
   await page.getByLabel("帳號").fill(user.username);
   await page.getByLabel("密碼").fill(user.password);
+  const sessionCreated = page.waitForResponse((candidate) => {
+    const path = new URL(candidate.url()).pathname;
+    return candidate.request().method() === "POST" && /^\/api\/session\/?$/.test(path) && candidate.status() === 200;
+  });
+  const currentUserRead = page.waitForResponse((candidate) => {
+    const path = new URL(candidate.url()).pathname;
+    return candidate.request().method() === "GET" && path === "/api/user/me" && candidate.status() === 200;
+  });
   await page.getByRole("button", { name: "登入" }).click();
-  await expect(await page.getByText("公告欄")).toBeVisible();
+  await Promise.all([sessionCreated, currentUserRead]);
+  await expect(page.getByText("公告欄")).toBeVisible();
 }
 
 export async function logoutUser(page: Page) {
-  await page.goto("http://127.0.0.1/");
+  await page.goto("/");
   await page.getByLabel("account of current user").click();
   await page.getByRole("menuitem", { name: "登出" }).click();
   await page.getByLabel("account of current user").click();

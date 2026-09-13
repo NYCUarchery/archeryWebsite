@@ -23,7 +23,7 @@ GOCACHE=/tmp/archery-go-build go test ./...
 
 ## MySQL 整合測試
 
-所有會呼叫 `SetupDatabaseByMode("test")`、`TestDBRestore()`、`DropTables()` 或讀寫 `database.DB` 的測試均以 `//go:build integration` 隔離。此層包括：
+所有會初始化 schema、清表或讀寫 `database.DB` 的測試均以 `//go:build integration` 隔離。此層包括：
 
 - `internal/database/test`：Player、qualification 與 elimination progress 的實際資料庫行為。
 - `internal/endpoint/test`：Player 與 MatchResult handler 的資料庫操作。
