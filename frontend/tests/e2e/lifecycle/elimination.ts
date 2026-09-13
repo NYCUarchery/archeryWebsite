@@ -1,10 +1,14 @@
-import { expect, type Page } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 import { selectGroup } from "./actors";
 
 type Bow = "recurve" | "compound";
 type TeamSize = 1 | 3;
 type Score = "10" | "9";
-type JudgeMatchScope = { adminPage: Page; competitionId: number; groupName: string; teamSize: TeamSize; stage: "1/4" | "準決賽" | "決賽" };
+type JudgeMatchScope = {
+  adminPage: Page; competitionId: number; groupName: string; teamSize: TeamSize; stage: "1/4" | "準決賽" | "決賽";
+  /** Literal provisional final-wave winner arrows, corrected before advancement. */
+  lastWaveWinnerScores?: readonly Score[];
+};
 
 export async function chooseJudgeIndividual(page: Page, groupName: string) {
   await chooseJudgeEvent(page, groupName, "個人對抗賽");
@@ -62,15 +66,20 @@ function winnerArrows(teamSize: TeamSize): readonly Score[] {
 export async function scoreJudgeEliminationMatch(page: Page, matchNumber: number, winningSide: 1 | 2, bow: Bow, scope: JudgeMatchScope) {
   const winner = winnerArrows(scope.teamSize);
   const loser = winner.map(() => "9") as readonly Score[];
+  if (scope.lastWaveWinnerScores && scope.lastWaveWinnerScores.length !== winner.length) {
+    throw new Error("provisional winner arrow count must match event capacity");
+  }
   await page.getByRole("button", { name: `Match ${matchNumber}`, exact: false }).click();
   await expect(page.getByTestId("elimination-match-score-comparison")).toBeVisible();
   for (let wave = 1; wave <= waves(bow, scope.teamSize); wave += 1) {
-    await setEliminationProgress(scope.adminPage, scope.competitionId, scope.groupName, scope.teamSize, scope.stage, wave - 1);
-    await expect.poll(() => waveCell(page, wave, winningSide).locator("[data-current-end]").getAttribute("data-current-end")).toBe("true");
-    await scoreSide(page, wave, winningSide, winner);
-    await scoreSide(page, wave, winningSide === 1 ? 2 : 1, loser);
-    await confirmSide(page, wave, 1);
-    await confirmSide(page, wave, 2);
+    await test.step(`Judge ${scope.groupName} ${scope.teamSize === 1 ? "個人" : "團體"} ${scope.stage} Match ${matchNumber} 第 ${wave} 波`, async () => {
+      await setEliminationProgress(scope.adminPage, scope.competitionId, scope.groupName, scope.teamSize, scope.stage, wave - 1);
+      await expect.poll(() => waveCell(page, wave, winningSide).locator("[data-current-end]").getAttribute("data-current-end")).toBe("true");
+      await scoreSide(page, wave, winningSide, wave === waves(bow, scope.teamSize) && scope.lastWaveWinnerScores ? scope.lastWaveWinnerScores : winner);
+      await scoreSide(page, wave, winningSide === 1 ? 2 : 1, loser);
+      await confirmSide(page, wave, 1);
+      await confirmSide(page, wave, 2);
+    });
   }
   await expect(page.getByTestId(`match-score-side-${winningSide}`).getByText("勝方", { exact: true })).toBeVisible();
 }
