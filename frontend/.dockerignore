@@ -1,4 +1,5 @@
 node_modules
 .next
-playerwright-report
+.env*
+playwright-report
 test-results

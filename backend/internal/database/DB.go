@@ -16,12 +16,11 @@ import (
 
 var DB *gorm.DB
 
-func SetupDatabaseByMode(mode string) {
-	if mode == "test" || mode == "dev" {
-		TestDatabaseInitial()
-	} else {
-		DatabaseInitial()
-	}
+// SetupDatabaseByMode keeps the mode parameter for the server's configuration
+// contract, but startup must never reset persisted competitions. Test data is
+// reset only by the isolated testdb command owned by the test runner.
+func SetupDatabaseByMode(_ string) {
+	DatabaseInitial()
 }
 
 func DatabaseInitial() {

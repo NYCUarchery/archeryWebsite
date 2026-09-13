@@ -5,6 +5,7 @@ import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, wr
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { run as runProcess } from './test-env.mjs';
 
 const scriptsDirectory = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(scriptsDirectory, '..');
@@ -130,4 +131,16 @@ test('SIGTERM stops a hanging child, tears down, and exits 143', async () => {
   assert.ok(events.some(event => event.event === 'terminated'));
   assertCleaned(events);
   rmSync(runnerReportDirectory(events), { recursive: true, force: true });
+});
+
+test('command timeout terminates both leader and grandchild process group', { timeout: 10_000 }, async () => {
+  const temporary = mkdtempSync(path.join(tmpdir(), 'archery-process-test-'));
+  temporaryPaths.push(temporary);
+  const log = path.join(temporary, 'processes.jsonl');
+  await assert.rejects(runProcess(process.execPath, [path.join(scriptsDirectory, 'fixtures/process-tree.mjs'), log], {
+    timeout: 1000, killSignal: 'SIGTERM',
+  }), error => error.exitCode === 124);
+  const events = dockerEvents(log);
+  assert.deepEqual(events.filter(event => event.event === 'ready').map(event => event.role).sort(), ['grandchild', 'parent']);
+  assert.deepEqual(events.filter(event => event.event === 'terminated').map(event => event.role).sort(), ['grandchild', 'parent']);
 });
