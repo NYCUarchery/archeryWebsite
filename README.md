@@ -116,6 +116,8 @@ scripts/test.sh go-integration -run TestSeedScenarioInvariants
 
 此操作會覆寫尚未開始的首輪人工安排。若要更換的對戰已有成績、確認、勝方或受影響的後續賽果，整次更新會被拒絕；請使用人工修正流程處理。隊伍若仍被對戰或獎牌引用，須先移除或更換引用才可刪除。
 
+資格賽／對抗賽資料模型、計分、確認與裁判更正規則見 [計分模型與操作契約](docs/scoring.md)。
+
 ## Tests
 
 需要 Go 1.23、Node 22、Docker Compose，以及 Chromium。先下載依賴：

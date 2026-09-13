@@ -46,6 +46,15 @@ Go 整合輸出 JSON 事件、coverage 與服務 log 於 `test-artifacts/go-inte
 
 舊 `Player_test.go` 的未登入成功與非法分數通過斷言已過期，改為真 session 驗證目前角色與分數契約；`MatchResult_test.go` 補齊實際雙方對戰鏈，再驗 approved Judge 更正已確認波。非放寬 assertion，亦未移除跨角色拒絕覆蓋。
 
+`internal/endpoint/judge_permissions_integration_test.go` 補完整 lifecycle 不承擔的拒絕路徑。使用真 session、Participant 與 MySQL；不把 Admin 帳號當 Judge，也不以非法 payload 的拒絕代替權限驗證。
+
+| 案例行為 | 資料及保留理由 |
+| --- | --- |
+| pending／外場 Judge 不得記個人對抗分數 | 合法當前階段及完整箭數；403 後整份籤表不變 |
+| pending／外場 Judge 不得記資格分數 | 合法波次與箭數；403 後箭分、波確認、局及選手總分不變 |
+| approved Judge 不得取消資格波確認 | 原波已確認，送 `false` 後仍保持確認；既有對抗 unconfirm 拒絕測試不重複新增 |
+| approved Judge 不得建隊、推進或頒牌 | 各請求先驗 Judge 403／資料不變，再驗同賽事 Admin 的合法成功控制；手動頒牌另用未鎖定的 legacy 籤表，避免把完整籤表的 409 鎖定誤作角色差異 |
+
 ## 已知基線限制
 
 - `go test ./...` 是唯一安全的預設入口，且不得因為本機存在 MySQL 而連線。

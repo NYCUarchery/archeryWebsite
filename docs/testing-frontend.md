@@ -8,7 +8,7 @@
 | `lifecycleOracle.spec.ts` | 固定每箭、資格總分、晉級邊界及團體加總 oracle 的一致性；無 API | 保留於 `tests/unit`，不呼叫產品計分函式 |
 | `eliminationBracket.spec.ts` | 籤表呈現、BYE、手動操作與 request；API mock | 保留，搬至 `tests/browser` |
 | `eliminationPlayerSetRanking.spec.ts` | 建隊與隊伍排名互動、排名請求；API mock | 保留，搬至 browser |
-| `eliminationProgressPlacement.spec.ts` | 階段推進、獎牌設定及錯誤回饋；API mock | 保留，搬至 browser |
+| `eliminationProgressPlacement.spec.ts` | 階段推進、獎牌設定、錯誤回饋及非均分箭序的保存／重載；API mock | 保留，搬至 browser；補正式 GET 降序契約的短回歸 |
 | `eliminationSchedule.spec.ts` | 賽程設定與籤表同步互動；API mock | 保留，搬至 browser |
 | `eliminationScoring.spec.ts` | 個人／團體／混雙記分互動、箭數與請求；API mock | 保留，搬至 browser |
 | `judgeMobile.spec.ts` | 裁判窄螢幕操作、草稿、更正、防誤切換；API mock | 保留，搬至 browser |

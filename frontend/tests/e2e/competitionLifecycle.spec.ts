@@ -17,6 +17,10 @@ import { advanceStage, chooseJudgeIndividual, scoreJudgeEliminationMatch, setInd
 import { compoundQualificationOracle, recurveQualificationOracle, type QualificationOracle } from "./lifecycle/data";
 import { assertCompletedIndividualBracket, assertIndividualProgressIsolation, resolveIndividualEliminationId, snapshotIndividualEvent } from "./lifecycle/verification";
 import { completeTeamLifecycle } from "./lifecycle/teamLifecycle";
+import { correctConfirmedEliminationEnd, correctConfirmedQualificationEnd } from "./lifecycle/judgeCorrections";
+import { assertJudgeEventAvailability, assertDivergedEliminationScopes, assertQualificationRankingDialogScopes, assertQualificationScheduleScopes } from "./lifecycle/scopeNavigation";
+import { assertArcher01ReadsConfirmedQualificationFirstEnd, assertPlayerReadsConfirmedCurrentMatch, assertPublicQualificationRanking } from "./lifecycle/crossRoleReadback";
+import { assertLifecyclePersistsAfterRestart } from "./lifecycle/persistence";
 
 test.use({
   databaseFixture: "accounts",
@@ -46,7 +50,7 @@ function escapedText(text: string) {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-test("完成兩組資格賽、個人及團體頒牌與跨角色隔離", async ({ browser, page, request }) => {
+test("完成兩組資格賽、個人及團體頒牌與跨角色隔離", async ({ browser, page, request, restartBackend }) => {
   let competitionId: number;
   await page.goto("/");
   const baseURL = new URL(page.url()).origin;
@@ -112,7 +116,9 @@ test("完成兩組資格賽、個人及團體頒牌與跨角色隔離", async ({
         const playerPage = groupOffset === 0 ? recurvePlayerSession.page : compoundPlayerSession.page;
         await playerPage.goto(`/competition/${competitionId}/scoring`);
         await expect(playerPage.getByText("End 1")).toBeVisible();
-        await scorePlayerQualificationEnd(playerPage, endScores(groupOffset === 0 ? recurveQualificationOracle[0] : compoundQualificationOracle[0], 0));
+        await scorePlayerQualificationEnd(playerPage, groupOffset === 0
+          ? ["9", "10", "10", "10", "10", "10"]
+          : endScores(compoundQualificationOracle[0], 0));
       }
       for (let end = 0; end < 6; end += 1) {
         for (let index = 0; index < 24; index += 1) {
@@ -122,6 +128,17 @@ test("完成兩組資格賽、個人及團體頒牌與跨角色隔離", async ({
             await judgeSession.page.goto(`/competition/${competitionId}/judge`);
             await scoreJudgeQualificationEnd(judgeSession.page, playerName(index + 1), end, endScores(oracle, end));
           });
+        }
+        if (end === 0) {
+          await correctConfirmedQualificationEnd(judgeSession.page, {
+            competitionId,
+            playerName: playerName(1),
+            endIndex: 0,
+            provisional: ["9", "10", "10", "10", "10", "10"],
+            expected: ["10", "10", "10", "10", "10", "10"],
+            preserveDraft: true,
+          });
+          await assertArcher01ReadsConfirmedQualificationFirstEnd(recurvePlayerSession.page, competitionId);
         }
         await advanceQualification(page, competitionId);
       }
@@ -147,6 +164,22 @@ test("完成兩組資格賽、個人及團體頒牌與跨角色隔離", async ({
       // include the hidden unassigned entry and therefore use 1/2 locally.
       expect(recurveIndex.group_index).toBe(0);
       expect(compoundIndex.group_index).toBe(1);
+      await assertQualificationScheduleScopes(page, competitionId,
+        { name: recurve, leaderName: playerName(1), startLane: 1, endLane: 6 },
+        { name: compound, leaderName: playerName(13), startLane: 7, endLane: 12 },
+      );
+      await assertQualificationRankingDialogScopes(page, competitionId,
+        { name: recurve, leaderName: playerName(1), startLane: 1, endLane: 6 },
+        { name: compound, leaderName: playerName(13), startLane: 7, endLane: 12 },
+      );
+      await assertPublicQualificationRanking(visitorPage, {
+        competitionId, groupIndex: recurveIndex.group_index,
+        rows: recurveQualificationOracle.map((entry, index) => ({ rank: index + 1, name: playerName(index + 1), total: entry.total })),
+      });
+      await assertPublicQualificationRanking(visitorPage, {
+        competitionId, groupIndex: compoundIndex.group_index,
+        rows: compoundQualificationOracle.map((entry, index) => ({ rank: index + 1, name: playerName(index + 13), total: entry.total })),
+      });
       await visitorPage.goto(`/competition/${competitionId}/scoreboard/${recurveIndex.group_index}/qualification`);
       await visitorPage.getByRole("button", { name: recurve, exact: true }).click();
       await visitorPage.getByRole("listitem").filter({ hasText: new RegExp(`^${escapedText(compound)}$`) }).click();
@@ -213,6 +246,7 @@ test("完成兩組資格賽、個人及團體頒牌與跨角色隔離", async ({
         new URL(candidate.url()).pathname === `/api/competition/current-phase/${competitionId}` && candidate.status() === 200);
       await page.getByRole("group", { name: "直接選擇選手畫面" }).getByRole("button", { name: "對抗賽", exact: true }).click();
       await phaseUpdated;
+      await assertJudgeEventAvailability(judgeSession.page, competitionId, recurve, "個人對抗賽", "團體對抗賽");
       ninthPlaceSession = await signedInPage(browser, baseURL, archers[8]);
       await ninthPlaceSession.page.goto(`/competition/${competitionId}/scoring`);
       await expect(ninthPlaceSession.page.getByText("您尚未被編入對抗賽的隊伍。", { exact: true })).toBeVisible();
@@ -232,8 +266,8 @@ test("完成兩組資格賽、個人及團體頒牌與跨角色隔離", async ({
       // Literal bracket winner oracle: four quarterfinals, two semifinals,
       // then gold and bronze. It intentionally exercises both score sides.
       const rounds = [[1, 2, 1, 2], [1, 2], [1, 2]] as const;
+      for (const groupName of [recurve, compound]) await syncFirstRound(page, competitionId, groupName);
       for (const [groupName, bow] of [[recurve, "recurve"], [compound, "compound"]] as const) {
-        await syncFirstRound(page, competitionId, groupName);
         for (const [roundIndex, winners] of rounds.entries()) {
           const stage = roundIndex === 0 ? "1/4" : roundIndex === 1 ? "準決賽" : "決賽";
           await setIndividualProgress(page, competitionId, groupName, stage);
@@ -247,7 +281,20 @@ test("完成兩組資格賽、個人及團體頒牌與跨角色隔離", async ({
                 groupName,
                 teamSize: 1,
                 stage,
+                lastWaveWinnerScores: groupName === recurve && roundIndex === 0 && matchIndex === 0
+                  ? ["10", "10", "9"] : undefined,
               });
+              if (groupName === recurve && roundIndex === 0 && matchIndex === 0) {
+                const eliminationId = await resolveIndividualEliminationId(request, competitionId, recurve);
+                await correctConfirmedEliminationEnd(judgeSession.page, {
+                  eliminationId, wave: 3, side: winningSide,
+                  provisional: ["10", "10", "9"], expected: ["10", "10", "10"],
+                  expectedPoints: 2, expectedCumulativePoints: 6, attemptOtherGroup: compound,
+                });
+                await assertPlayerReadsConfirmedCurrentMatch(recurvePlayerSession.page, {
+                  competitionId, eliminationId, winnerTeam: playerName(1), loserTeam: playerName(8), teamSize: 1,
+                });
+              }
             });
           }
           await page.goto(`/competition/${competitionId}/admin/progress/elimination/1`);
@@ -260,6 +307,10 @@ test("完成兩組資格賽、個人及團體頒牌與跨角色隔離", async ({
           const recurveAfter = await snapshotIndividualEvent(request, competitionId, recurve);
           const compoundAfter = await snapshotIndividualEvent(request, competitionId, compound);
           assertIndividualProgressIsolation(recurveBefore, recurveAfter, compoundBefore, compoundAfter);
+          await assertDivergedEliminationScopes(page, judgeSession.page, competitionId, 1,
+            { groupName: recurve, stage: 2, end: 2, stageLabel: "決賽", setName: playerName(1) },
+            { groupName: compound, stage: 0, end: 0, stageLabel: "1/4", setName: playerName(13) },
+          );
         }
       }
     });
@@ -276,6 +327,9 @@ test("完成兩組資格賽、個人及團體頒牌與跨角色隔離", async ({
           { name: compound, bow: "compound", firstLane: 7 },
         ],
       });
+    });
+    await test.step("重啟後以新登入完整讀回資格排名、四項賽果及獎牌", async () => {
+      await assertLifecyclePersistsAfterRestart({ browser, baseURL, competitionId, restartBackend });
     });
   } finally {
     await Promise.all([

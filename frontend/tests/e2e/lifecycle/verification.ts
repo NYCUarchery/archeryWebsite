@@ -155,6 +155,7 @@ export async function assertCompletedIndividualBracket(
   // bronze (rank 3), yielding medals 1/2/3.
   assertStage(detail, 2, finalPairs, [1, 3], identities.playerSetIdByRank);
 
+  expect(detail.medals).toHaveLength(3);
   const rankByPlayerSetId = new Map([...identities.playerSetIdByRank].map(([rank, id]) => [id, rank]));
   const medalsByType = new Map(detail.medals.map((medal) => [medal.type, required(rankByPlayerSetId.get(medal.player_set_id), `medal ${medal.type} set is out of bracket`)]));
   expect(medalsByType).toEqual(medalRanksByType);
