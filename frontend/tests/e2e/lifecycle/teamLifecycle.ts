@@ -1,5 +1,5 @@
 import { expect, test, type Browser, type Page } from "@playwright/test";
-import { archers, selectGroup, signedInPage } from "./actors";
+import { archers, judge, selectGroup, signedInPage } from "./actors";
 import {
   advanceStage,
   chooseJudgeIndividual,
@@ -20,6 +20,7 @@ import {
   type TeamBow,
 } from "./teams";
 import { snapshotIndividualEvent, type IndividualEventSnapshot } from "./verification";
+import type { LifecycleExecutionMode } from "./execution";
 
 export type TeamGroup = { name: string; bow: TeamBow; firstLane: number };
 
@@ -31,6 +32,9 @@ export type TeamLifecycleOptions = {
   visitorPage: Page;
   competitionId: number;
   groupNames: readonly TeamGroup[];
+  mode?: LifecycleExecutionMode;
+  recordUiSide?: () => void;
+  recordApiSide?: () => void;
 };
 
 type TeamDetail = {
@@ -226,11 +230,12 @@ async function snapshotIndividualIntegrity(page: Page, competitionId: number, gr
 }
 
 /**
- * Extends the same competition through both team events. Every mutation is an Admin/Judge/Player
- * UI action; GET calls only identify or verify resources.
+ * Extends the same competition through both team events. Admin progress and
+ * sampled Judge writes stay UI actions; hybrid bulk Judge scores use formal API
+ * scope/readback helpers. GET calls only identify or verify resources.
  */
 export async function completeTeamLifecycle(options: TeamLifecycleOptions) {
-  const { browser, baseURL, adminPage, judgePage, visitorPage, competitionId, groupNames } = options;
+  const { browser, baseURL, adminPage, judgePage, visitorPage, competitionId, groupNames, mode = "full-ui" } = options;
   expect(groupNames).toHaveLength(2);
   const rosters = await groupRosters(adminPage, competitionId, groupNames);
   const individualBefore = new Map<string, IndividualEventSnapshot>();
@@ -307,6 +312,10 @@ export async function completeTeamLifecycle(options: TeamLifecycleOptions) {
             groupName: group.name,
             teamSize: 3,
             stage,
+            mode,
+            apiActor: { role: "Judge", username: judge, competitionId },
+            recordUiSide: options.recordUiSide,
+            recordApiSide: options.recordApiSide,
             lastWaveWinnerScores: group.name === firstGroup.name && stageIndex === 0 && matchIndex === 0
               ? ["10", "10", "10", "10", "10", "9"] : undefined,
           });

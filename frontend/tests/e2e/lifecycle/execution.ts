@@ -70,3 +70,23 @@ export const hybridEliminationSamples: readonly HybridEliminationSample[] = [
   { group: "recurve", teamSize: 3, selector: "later-stage-match-one-wave", stage: "medal", matchIndex: 0, waves: [0] },
   { group: "compound", teamSize: 3, selector: "later-stage-match-one-wave", stage: "medal", matchIndex: 0, waves: [0] },
 ] as const;
+
+export function eliminationWriteActor(input: { bow: HybridGroup; teamSize: 1 | 3; stageIndex: number; matchIndex: number; waveIndex: number }): "ui" | "api" {
+  const stage = input.teamSize === 3
+    ? (input.stageIndex === 0 ? "first" : input.stageIndex === 1 ? "medal" : undefined)
+    : (input.stageIndex === 0 ? "first" : input.stageIndex === 1 ? "semi-final" : input.stageIndex === 2 ? "medal" : undefined);
+  if (!stage || input.matchIndex !== 0) return "api";
+  const sample = hybridEliminationSamples.find((candidate) => candidate.group === input.bow && candidate.teamSize === input.teamSize && candidate.stage === stage);
+  if (!sample) return "api";
+  return sample.waves === "all" || sample.waves.includes(input.waveIndex) ? "ui" : "api";
+}
+
+const eventWaves = (bow: HybridGroup, teamSize: 1 | 3) => teamSize === 3 ? (bow === "recurve" ? 3 : 4) : (bow === "recurve" ? 3 : 5);
+const eventMatchCounts = (teamSize: 1 | 3) => teamSize === 3 ? [2, 2] : [4, 2, 2];
+
+/** 92 match waves / 184 sides; unit tests pin the 21 UI / 71 API wave partition. */
+export const hybridEliminationWritePlan = (["recurve", "compound"] as const).flatMap((bow) => ([1, 3] as const).flatMap((teamSize) =>
+  eventMatchCounts(teamSize).flatMap((matches, stageIndex) => Array.from({ length: matches }, (_, matchIndex) =>
+    Array.from({ length: eventWaves(bow, teamSize) }, (_, waveIndex) => ({ bow, teamSize, stageIndex, matchIndex, waveIndex, actor: eliminationWriteActor({ bow, teamSize, stageIndex, matchIndex, waveIndex }) })),
+  )),
+)).flat(2);

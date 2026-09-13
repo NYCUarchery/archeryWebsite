@@ -1,5 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { selectGroup } from "./actors";
+import { eliminationWriteActor, type LifecycleExecutionMode } from "./execution";
+import { readMatchEnd, resolveCurrentMatchEnd, writeMatchEnd, type MatchEndRef, type ScopedActor } from "./formalApi";
 
 type Bow = "recurve" | "compound";
 type TeamSize = 1 | 3;
@@ -8,6 +10,10 @@ type JudgeMatchScope = {
   adminPage: Page; competitionId: number; groupName: string; teamSize: TeamSize; stage: "1/4" | "準決賽" | "決賽";
   /** Literal provisional final-wave winner arrows, corrected before advancement. */
   lastWaveWinnerScores?: readonly Score[];
+  mode?: LifecycleExecutionMode;
+  apiActor?: Omit<ScopedActor, "groupName">;
+  recordApiSide?: () => void;
+  recordUiSide?: () => void;
 };
 
 export async function chooseJudgeIndividual(page: Page, groupName: string) {
@@ -35,7 +41,7 @@ function waveCell(page: Page, wave: number, side: 1 | 2) {
   return page.getByTestId(`match-score-end-${wave}-side-${side}`);
 }
 function total(scores: readonly Score[]) { return scores.reduce((sum, score) => sum + Number(score), 0); }
-async function scoreSide(page: Page, wave: number, side: 1 | 2, scores: readonly Score[]) {
+async function scoreSide(page: Page, wave: number, side: 1 | 2, scores: readonly Score[], expected?: MatchEndRef) {
   const cell = waveCell(page, wave, side);
   await cell.getByRole("button", { name: "編輯本波分數" }).click();
   const dialog = page.getByRole("dialog", { name: `編輯第 ${wave} 波` });
@@ -44,17 +50,25 @@ async function scoreSide(page: Page, wave: number, side: 1 | 2, scores: readonly
   const saved = page.waitForResponse((candidate) => candidate.request().method() === "PATCH" &&
     /^\/api\/matchresult\/matchend\/scores\/\d+\/?$/.test(new URL(candidate.url()).pathname) && candidate.status() === 200);
   await dialog.getByRole("button", { name: "送出", exact: true }).click();
-  await saved;
+  const response = await saved;
+  if (expected) {
+    expect(new URL(response.url()).pathname).toBe(`/api/matchresult/matchend/scores/${expected.endId}`);
+    expect(response.request().postDataJSON()).toEqual({ match_score_ids: expected.scoreIds, scores: scores.map(Number), total_scores: total(scores) });
+  }
   await expect(dialog).toBeHidden();
   await expect.poll(() => cell.locator(".score_block").allTextContents()).toEqual([...scores]);
   await expect(cell.getByLabel(`箭分總分：${total(scores)}`)).toBeVisible();
 }
-async function confirmSide(page: Page, wave: number, side: 1 | 2) {
+async function confirmSide(page: Page, wave: number, side: 1 | 2, expected?: MatchEndRef) {
   const cell = waveCell(page, wave, side);
   const confirmed = page.waitForResponse((candidate) => candidate.request().method() === "PATCH" &&
     /^\/api\/matchresult\/matchend\/isconfirmed\/\d+\/?$/.test(new URL(candidate.url()).pathname) && candidate.status() === 200);
   await cell.getByRole("button", { name: "切換為已確認", exact: true }).click();
-  await confirmed;
+  const response = await confirmed;
+  if (expected) {
+    expect(new URL(response.url()).pathname).toBe(`/api/matchresult/matchend/isconfirmed/${expected.endId}`);
+    expect(response.request().postDataJSON()).toEqual({ is_confirmed: true });
+  }
   await expect.poll(() => cell.locator("[data-status]").getAttribute("data-status")).toBe("confirmed");
 }
 function waves(bow: Bow, teamSize: TeamSize) { return teamSize === 3 ? (bow === "recurve" ? 3 : 4) : (bow === "recurve" ? 3 : 5); }
@@ -69,19 +83,49 @@ export async function scoreJudgeEliminationMatch(page: Page, matchNumber: number
   if (scope.lastWaveWinnerScores && scope.lastWaveWinnerScores.length !== winner.length) {
     throw new Error("provisional winner arrow count must match event capacity");
   }
-  await page.getByRole("button", { name: `Match ${matchNumber}`, exact: false }).click();
-  await expect(page.getByTestId("elimination-match-score-comparison")).toBeVisible();
+  const mode = scope.mode ?? "full-ui";
+  const stageIndex = scope.teamSize === 3
+    ? (scope.stage === "準決賽" ? 0 : 1)
+    : (scope.stage === "1/4" ? 0 : scope.stage === "準決賽" ? 1 : 2);
+  const usesUi = (wave: number) => mode === "full-ui" || eliminationWriteActor({ bow, teamSize: scope.teamSize, stageIndex, matchIndex: matchNumber - 1, waveIndex: wave - 1 }) === "ui";
+  if (Array.from({ length: waves(bow, scope.teamSize) }, (_, index) => usesUi(index + 1)).some(Boolean)) {
+    await page.getByRole("button", { name: `Match ${matchNumber}`, exact: false }).click();
+    await expect(page.getByTestId("elimination-match-score-comparison")).toBeVisible();
+  }
   for (let wave = 1; wave <= waves(bow, scope.teamSize); wave += 1) {
-    await test.step(`Judge ${scope.groupName} ${scope.teamSize === 1 ? "個人" : "團體"} ${scope.stage} Match ${matchNumber} 第 ${wave} 波`, async () => {
+    await test.step(`${usesUi(wave) ? "Judge UI" : "Judge API"} ${scope.groupName} ${scope.teamSize === 1 ? "個人" : "團體"} ${scope.stage} Match ${matchNumber} 第 ${wave} 波`, async () => {
       await setEliminationProgress(scope.adminPage, scope.competitionId, scope.groupName, scope.teamSize, scope.stage, wave - 1);
-      await expect.poll(() => waveCell(page, wave, winningSide).locator("[data-current-end]").getAttribute("data-current-end")).toBe("true");
-      await scoreSide(page, wave, winningSide, wave === waves(bow, scope.teamSize) && scope.lastWaveWinnerScores ? scope.lastWaveWinnerScores : winner);
-      await scoreSide(page, wave, winningSide === 1 ? 2 : 1, loser);
-      await confirmSide(page, wave, 1);
-      await confirmSide(page, wave, 2);
+      const winnerScores = wave === waves(bow, scope.teamSize) && scope.lastWaveWinnerScores ? scope.lastWaveWinnerScores : winner;
+      if (usesUi(wave)) {
+        await expect.poll(() => waveCell(page, wave, winningSide).locator("[data-current-end]").getAttribute("data-current-end")).toBe("true");
+        const actor = scope.apiActor;
+        if (!actor) throw new Error("elimination UI response verification requires the Judge actor");
+        const winnerRef = await resolveCurrentMatchEnd(page.request, { ...actor, groupName: scope.groupName }, { teamSize: scope.teamSize, matchIndex: matchNumber - 1, side: winningSide });
+        const loserSide = winningSide === 1 ? 2 : 1;
+        const loserRef = await resolveCurrentMatchEnd(page.request, { ...actor, groupName: scope.groupName }, { teamSize: scope.teamSize, matchIndex: matchNumber - 1, side: loserSide });
+        for (const ref of [winnerRef, loserRef]) {
+          if (ref.stageIndex !== stageIndex || ref.currentEnd !== wave - 1) throw new Error(`UI match scope resolved stage/end ${ref.stageIndex}/${ref.currentEnd}, expected ${stageIndex}/${wave - 1}`);
+        }
+        await scoreSide(page, wave, winningSide, winnerScores, winnerRef);
+        await scoreSide(page, wave, loserSide, loser, loserRef);
+        await confirmSide(page, wave, 1, winningSide === 1 ? winnerRef : loserRef);
+        await confirmSide(page, wave, 2, winningSide === 2 ? winnerRef : loserRef);
+        await readMatchEnd(page.request, winnerRef, winnerScores.map(Number));
+        await readMatchEnd(page.request, loserRef, loser.map(Number));
+        scope.recordUiSide?.(); scope.recordUiSide?.();
+      } else {
+        const actor = scope.apiActor;
+        if (!actor) throw new Error("hybrid elimination API scoring requires a Judge actor");
+        for (const [side, scores] of [[winningSide, winnerScores], [winningSide === 1 ? 2 : 1, loser]] as const) {
+          const ref = await resolveCurrentMatchEnd(page.request, { ...actor, groupName: scope.groupName }, { teamSize: scope.teamSize, matchIndex: matchNumber - 1, side });
+          if (ref.stageIndex !== stageIndex || ref.currentEnd !== wave - 1) throw new Error(`API match scope resolved stage/end ${ref.stageIndex}/${ref.currentEnd}, expected ${stageIndex}/${wave - 1}`);
+          await writeMatchEnd(mode, page.request, { ...actor, groupName: scope.groupName }, ref, scores.map(Number));
+          scope.recordApiSide?.();
+        }
+      }
     });
   }
-  await expect(page.getByTestId(`match-score-side-${winningSide}`).getByText("勝方", { exact: true })).toBeVisible();
+  if (usesUi(waves(bow, scope.teamSize))) await expect(page.getByTestId(`match-score-side-${winningSide}`).getByText("勝方", { exact: true })).toBeVisible();
 }
 
 async function eliminationId(page: Page, competitionId: number, groupName: string, teamSize: number) {
