@@ -4,7 +4,15 @@ cd "$(dirname "$0")/.."
 mode="${1:-all}"
 if [[ $# -gt 0 ]]; then shift; fi
 case "$mode" in
-  go-unit) cd backend; GOCACHE="${GOCACHE:-/tmp/archery-go-build}" go test ./... "$@" ;;
+  go-unit)
+    cd backend
+    if [[ -n "${ARCHERY_TEST_REPORT_DIR:-}" ]]; then
+      mkdir -p "$ARCHERY_TEST_REPORT_DIR"
+      GOCACHE="${GOCACHE:-/tmp/archery-go-build}" go test -json -coverprofile="$ARCHERY_TEST_REPORT_DIR/coverage.out" ./... "$@" | tee "$ARCHERY_TEST_REPORT_DIR/go-test.jsonl"
+    else
+      GOCACHE="${GOCACHE:-/tmp/archery-go-build}" go test ./... "$@"
+    fi
+    ;;
   go-integration) node scripts/test-env.mjs go-integration "$@" ;;
   frontend-unit) cd frontend; npm run test:unit -- "$@" ;;
   browser) cd frontend; npm run test:browser -- "$@" ;;

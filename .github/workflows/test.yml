@@ -1,0 +1,164 @@
+name: Test
+
+on:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      browser:
+        description: Optional manual browser suite
+        required: false
+        type: choice
+        default: chromium
+        options: [chromium, firefox, webkit]
+
+jobs:
+  runner-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+          cache-dependency-path: backend/go.sum
+      - run: node --test scripts/test-env.test.mjs scripts/test-env-control.test.mjs
+
+  go-unit:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+          cache-dependency-path: backend/go.sum
+      - run: go mod download
+      - run: ARCHERY_TEST_REPORT_DIR="$GITHUB_WORKSPACE/test-artifacts/go-unit" ../scripts/test.sh go-unit
+      - name: Upload Go unit artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: go-unit-artifacts
+          path: test-artifacts/go-unit/
+          if-no-files-found: ignore
+
+  go-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+          cache-dependency-path: backend/go.sum
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - uses: docker/setup-buildx-action@v3
+      - run: go mod download
+        working-directory: backend
+      - run: scripts/test.sh go-integration
+      - name: Upload integration artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: go-integration-artifacts
+          path: test-artifacts/
+          if-no-files-found: ignore
+
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run build
+      - run: npm run test:unit:coverage
+      - run: npm run test:browser
+      - name: Upload browser artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-artifacts
+          path: |
+            frontend/test-results/browser/
+            frontend/playwright-report/browser/
+            frontend/coverage/
+          if-no-files-found: ignore
+
+  e2e:
+    if: github.event_name == 'pull_request' || inputs.browser == 'chromium'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+          cache-dependency-path: backend/go.sum
+      - run: npm ci
+        working-directory: frontend
+      - run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - run: go mod download
+        working-directory: backend
+      - run: scripts/test.sh e2e
+      - name: Upload E2E artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-artifacts
+          path: |
+            test-artifacts/e2e/
+            frontend/test-results/e2e/
+            frontend/playwright-report/e2e/
+          if-no-files-found: ignore
+
+  e2e-manual-engine:
+    if: github.event_name == 'workflow_dispatch' && inputs.browser != 'chromium'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23.x'
+          cache-dependency-path: backend/go.sum
+      - run: npm ci
+        working-directory: frontend
+      - run: npx playwright install --with-deps ${{ inputs.browser }}
+        working-directory: frontend
+      - run: go mod download
+        working-directory: backend
+      - run: scripts/test.sh e2e --project=${{ inputs.browser }}
+      - name: Upload E2E artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-${{ inputs.browser }}-artifacts
+          path: |
+            test-artifacts/e2e/
+            frontend/test-results/e2e/
+            frontend/playwright-report/e2e/
+          if-no-files-found: ignore

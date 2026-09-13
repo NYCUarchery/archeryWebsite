@@ -10,5 +10,10 @@ export default defineConfig({
   test: {
     include: ["tests/unit/**/*.spec.ts"],
     environment: "node",
+    coverage: {
+      provider: "v8",
+      reporter: ["text", "json-summary", "html"],
+      reportsDirectory: "coverage",
+    },
   },
 });
