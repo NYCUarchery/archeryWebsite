@@ -7,6 +7,9 @@ import {
   scoreJudgeEliminationMatch,
   setTeamProgress,
 } from "./elimination";
+import { correctConfirmedEliminationEnd } from "./judgeCorrections";
+import { assertDivergedEliminationScopes } from "./scopeNavigation";
+import { assertPlayerReadsConfirmedCurrentMatch } from "./crossRoleReadback";
 import {
   autoSaveTeamRanking,
   createFourTeamBracket,
@@ -304,7 +307,28 @@ export async function completeTeamLifecycle(options: TeamLifecycleOptions) {
             groupName: group.name,
             teamSize: 3,
             stage,
+            lastWaveWinnerScores: group.name === firstGroup.name && stageIndex === 0 && matchIndex === 0
+              ? ["10", "10", "10", "10", "10", "9"] : undefined,
           });
+          if (group.name === firstGroup.name && stageIndex === 0 && matchIndex === 0) {
+            const eliminationId = required(teamIds.get(group.name), `${group.name} team ID`);
+            await correctConfirmedEliminationEnd(judgePage, {
+              eliminationId, wave: 3, side,
+              provisional: ["10", "10", "10", "10", "10", "9"],
+              expected: ["10", "10", "10", "10", "10", "10"],
+              expectedPoints: 2, expectedCumulativePoints: 6,
+            });
+            const archer09 = await signedInPage(browser, baseURL, archers[8]);
+            try {
+              const teams = required(teamsByGroup.get(group.name), `${group.name} teams`);
+              await assertPlayerReadsConfirmedCurrentMatch(archer09.page, {
+                competitionId, eliminationId, winnerTeam: teams[0]!.name,
+                loserTeam: teams[3]!.name, teamSize: 3,
+              });
+            } finally {
+              await archer09.context.close();
+            }
+          }
         });
       }
       await adminPage.goto(`/competition/${competitionId}/admin/progress/elimination/3`);
@@ -327,6 +351,10 @@ export async function completeTeamLifecycle(options: TeamLifecycleOptions) {
       expect(firstTeamAfter.end).toBe(firstGroup.bow === "recurve" ? 2 : 3);
       expect(firstTeamAfter.medals).not.toEqual(firstTeamBefore.medals);
       expect(secondTeamAfter).toEqual(secondTeamBefore);
+      await assertDivergedEliminationScopes(adminPage, judgePage, competitionId, 3,
+        { groupName: firstGroup.name, stage: 1, end: firstGroup.bow === "recurve" ? 2 : 3, stageLabel: "決賽", setName: required(teamsByGroup.get(firstGroup.name), "first teams")[0]!.name },
+        { groupName: secondGroup.name, stage: 0, end: 0, stageLabel: "準決賽", setName: required(teamsByGroup.get(secondGroup.name), "second teams")[0]!.name },
+      );
     }
   }
 

@@ -921,6 +921,44 @@ test("進度頁：可切換確認並編輯已確認波次，主 dialog 保持開
     .toBe(true);
 });
 
+test("進度頁：已確認非均分波以降序顯示，儲存後維持同一契約", async ({ page }) => {
+  const fixture = buildEliminationFixture("individual");
+  const firstEnd = fixture.elimination.stages?.[0]?.matchs?.[0]
+    ?.match_results?.[0]?.match_ends?.[0];
+  if (!firstEnd?.match_scores) throw new Error("fixture 缺少第一波箭分");
+  firstEnd.is_confirmed = true;
+  firstEnd.total_scores = 29;
+  // The real detail endpoint preloads MatchScores as score DESC. This mock
+  // therefore supplies the same ordered GET contract, rather than pretending
+  // the comparison renderer sorts an arbitrary payload.
+  firstEnd.match_scores.forEach((score, index) => {
+    score.score = [10, 10, 9][index] ?? -1;
+  });
+  const handles = await registerEliminationRoutes(page, fixture);
+  await page.goto(`${baseUrl}/competition/${fixture.competitionId}/admin/progress/elimination/1`);
+  await page.getByText(fixture.setNameMine, { exact: true }).click();
+  const matchDialog = page.getByRole("dialog", { name: "修改對抗組" });
+  const cell = matchDialog.getByTestId("match-score-end-1-side-1");
+  await expect(cell.locator(".score_block").allTextContents()).resolves.toEqual(["10", "10", "9"]);
+
+  await cell.getByRole("button", { name: "編輯本波分數" }).click();
+  const scoreDialog = page.getByRole("dialog", { name: "編輯本波分數" });
+  const remove = scoreDialog.locator(".controll_button_group button").last();
+  for (let index = 0; index < 3; index += 1) await remove.click();
+  for (const score of ["10", "10", "9"] as const) {
+    await scoreDialog.getByRole("button", { name: score, exact: true }).click();
+  }
+  await scoreDialog.getByRole("button", { name: "送出" }).click();
+  await expect.poll(() => handles.savedScoreRequests.map((request) => request.body)).toEqual([
+    expect.objectContaining({ scores: [10, 10, 9], total_scores: 29 }),
+  ]);
+  await page.reload();
+  await page.getByText(fixture.setNameMine, { exact: true }).click();
+  const reloadedCell = page.getByRole("dialog", { name: "修改對抗組" })
+    .getByTestId("match-score-end-1-side-1");
+  await expect(reloadedCell.locator(".score_block").allTextContents()).resolves.toEqual(["10", "10", "9"]);
+});
+
 test("進度頁：確認切換失敗會保留原狀並顯示錯誤", async ({ page }) => {
   const fixture = buildEliminationFixture("individual");
   const handles = await registerEliminationRoutes(page, fixture);
