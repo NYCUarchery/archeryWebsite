@@ -17,7 +17,7 @@ type PlayerTestSuite struct {
 }
 
 func (suite *PlayerTestSuite) SetupSuite() {
-	SetupDatabaseByMode("test")
+	suite.Require().NoError(ResetTestDatabase("legacy"))
 }
 
 func (suite *PlayerTestSuite) TearDownSuite() {
@@ -25,7 +25,7 @@ func (suite *PlayerTestSuite) TearDownSuite() {
 }
 
 func (suite *PlayerTestSuite) SetupTest() {
-	TestDBRestore()
+	suite.Require().NoError(ResetTestDatabase("legacy"))
 }
 
 func (suite *PlayerTestSuite) TearDownTest() {
@@ -34,14 +34,17 @@ func (suite *PlayerTestSuite) TearDownTest() {
 
 func TestPlayerTestSuite(t *testing.T) {
 	if os.Getenv("ARCHERY_MYSQL_INTEGRATION") != "1" {
-		t.Skip("set ARCHERY_MYSQL_INTEGRATION=1 to run destructive MySQL integration tests")
+		t.Fatal("integration tests require scripts/test.sh go-integration")
 	}
 	suite.Run(t, new(PlayerTestSuite))
 }
 
 func TestInitPlayer(t *testing.T) {
 	if os.Getenv("ARCHERY_MYSQL_INTEGRATION") != "1" {
-		t.Skip("set ARCHERY_MYSQL_INTEGRATION=1 to run destructive MySQL integration tests")
+		t.Fatal("integration tests require scripts/test.sh go-integration")
+	}
+	if err := ResetTestDatabase("empty"); err != nil {
+		t.Fatal(err)
 	}
 	DropTables()
 	Convey("Test InitPlayer", t, func() {

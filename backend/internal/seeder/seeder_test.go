@@ -15,9 +15,11 @@ import (
 // project test initializer drops tables, so it must never run by accident.
 func TestSeedScenarioInvariants(t *testing.T) {
 	if os.Getenv("SEEDER_INTEGRATION_TEST") != "1" {
-		t.Skip("set SEEDER_INTEGRATION_TEST=1 with a disposable backend test database")
+		t.Fatal("integration tests require scripts/test.sh go-integration")
 	}
-	database.SetupDatabaseByMode("test")
+	if err := database.ResetTestDatabase("legacy"); err != nil {
+		t.Fatal(err)
+	}
 	competitions := make(map[Scenario]uint, len(AllScenarios()))
 	for _, scenario := range AllScenarios() {
 		result, err := Seed(database.DB, scenario)
@@ -54,9 +56,11 @@ func TestSeedScenarioInvariants(t *testing.T) {
 // account collision must abort before the first fixture can be created.
 func TestSeedRejectsConflictingJudgeAccount(t *testing.T) {
 	if os.Getenv("SEEDER_INTEGRATION_TEST") != "1" {
-		t.Skip("set SEEDER_INTEGRATION_TEST=1 with a disposable backend test database")
+		t.Fatal("integration tests require scripts/test.sh go-integration")
 	}
-	database.SetupDatabaseByMode("test")
+	if err := database.ResetTestDatabase("legacy"); err != nil {
+		t.Fatal(err)
+	}
 	conflicting := database.User{
 		Role:          "User",
 		UserName:      seedJudgeUserName,
