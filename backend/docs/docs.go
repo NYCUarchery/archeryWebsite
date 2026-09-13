@@ -6588,6 +6588,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
+                    "403": {
+                        "description": "competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
+                        }
+                    },
                     "500": {
                         "description": "internal db error / Update Lane Qualification Id / Update Qualification / Get Only Qualification",
                         "schema": {

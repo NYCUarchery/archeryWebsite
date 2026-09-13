@@ -169,6 +169,7 @@ func PostQualificationThroughGroup(context *gin.Context, id uint) bool {
 //	@Success		200				{object}	database.Qualification								"success, return updated Qualification"
 //	@Failure		400				{object}	response.ErrorIdResponse							"invalid qualification id / invalid lane id / lane is already occupied / invalid start or end lane number / Qualification is belong to UnassignedGroup, when update Qualification"
 //	@Failure		500				{object}	response.ErrorInternalErrorResponse					"internal db error / Update Lane Qualification Id / Update Qualification / Get Only Qualification"
+//	@Failure		403				{object}	response.ErrorResponse						"competition admin required"
 //	@Router			/qualification/{id} [put]
 func PutQualificationByID(context *gin.Context) {
 	type QualificationPutData struct {
@@ -190,13 +191,18 @@ func PutQualificationByID(context *gin.Context) {
 		return
 	}
 	/*check if qualification is belong to UnassignedGroup*/
-	_, Group := IsGetGroupInfo(context, id)
-	if Group.GroupIndex == -1 {
+	group, err := database.GetGroupInfoById(id)
+	if response.ErrorInternalErrorTest(context, id, "Get group when updating qualification", err) {
+		return
+	}
+	if group.GroupIndex == -1 {
 		response.ErrorIdTest(context, id, false, "Qualification is belong to UnassignedGroup, when update Qualification")
 		return
 	}
+	if !requireCompetitionAdmin(context, group.CompetitionId) {
+		return
+	}
 	/*check if lane start and end is valid*/
-	group, _ := database.GetGroupInfoById(id)
 	competitionId := group.CompetitionId
 	fmt.Printf("competitionId: %d\n", competitionId)
 	_, competition := IsGetOnlyCompetition(context, competitionId)
