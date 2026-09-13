@@ -227,18 +227,15 @@ func PutQualificationByID(context *gin.Context) {
 	/*update lanes' qualificationId*/
 	oldLaneStart := oldData.StartLaneNumber
 	oldLaneEnd := oldData.EndLaneNumber
-	if oldLaneStart == 0 && oldLaneEnd == 0 {
-		/*for default as 0*/
-		oldLaneStart++
-		oldLaneEnd++
-	}
-	for index := oldLaneStart; index <= oldLaneEnd; index++ {
-		laneId := UnassignedLaneId + uint(index)
-		fmt.Printf("laneId: %d\n", laneId)
-		fmt.Printf("index: %d\n", index)
-		success := UpdateLaneQualificationId(context, laneId, UnassignedGroupId)
-		if !success {
-			return
+	if oldLaneStart > 0 && oldLaneEnd >= oldLaneStart {
+		for index := oldLaneStart; index <= oldLaneEnd; index++ {
+			laneId := UnassignedLaneId + uint(index)
+			fmt.Printf("laneId: %d\n", laneId)
+			fmt.Printf("index: %d\n", index)
+			success := UpdateLaneQualificationId(context, laneId, UnassignedGroupId)
+			if !success {
+				return
+			}
 		}
 	}
 	fmt.Printf("\n")
