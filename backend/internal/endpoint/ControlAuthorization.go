@@ -34,16 +34,37 @@ func requireCompetitionAdminTx(context *gin.Context, tx *gorm.DB, competitionID 
 	if err != nil {
 		return err
 	}
-	var participants []database.Participant
-	if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
-		Where("competition_id = ? AND user_id = ? AND status = ?", competitionID, userID, "approved").
-		Find(&participants).Error; err != nil {
+
+	// Do not range-lock the authorization predicate.  Control mutations first
+	// lock independent target rows, so a predicate FOR UPDATE here can deadlock
+	// a batch of otherwise independent assignments.  The candidate read is only
+	// an ID lookup; each candidate is then current-read locked by primary key
+	// and revalidated below before it authorizes the transaction.
+	var candidateIDs []uint
+	if err := tx.Model(&database.Participant{}).
+		Where("competition_id = ? AND user_id = ? AND status = ? AND role = ?", competitionID, userID, "approved", pkg.RoleToString(pkg.RAdmin)).
+		Order("id").
+		Pluck("id", &candidateIDs).Error; err != nil {
 		return err
 	}
-	if !hasCompetitionAdmin(participants) {
-		return errControlForbidden
+	for _, candidateID := range candidateIDs {
+		var participant database.Participant
+		err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&participant, candidateID).Error
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			continue
+		}
+		if err != nil {
+			return err
+		}
+		if participant.ID == candidateID &&
+			participant.CompetitionID == competitionID &&
+			participant.UserID == userID &&
+			participant.Status == "approved" &&
+			participant.Role == pkg.RoleToString(pkg.RAdmin) {
+			return nil
+		}
 	}
-	return nil
+	return errControlForbidden
 }
 
 func lockedPlayerControlTarget(tx *gorm.DB, playerID uint) (database.Player, database.Participant, error) {
