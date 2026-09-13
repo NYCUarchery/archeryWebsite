@@ -200,6 +200,47 @@ for (const [variant, teamSize] of [
   });
 }
 
+test("團體建隊：三個選手標籤各連到自己的輸入欄，並送出完整名單", async ({ page }) => {
+  const fixture = buildEliminationFixture("team");
+  fixture.elimination.player_sets = [];
+  fixture.elimination.stages = [];
+  fixture.groupsWithPlayers.groups.unshift({
+    id: 9299,
+    competition_id: fixture.competitionId,
+    group_name: "未分組",
+    players: [],
+  });
+  const groupPlayers = fixture.groupsWithPlayers.groups[1]!.players.slice(0, 3);
+  await registerEliminationRoutes(page, fixture);
+
+  const createdBodies: unknown[] = [];
+  await page.route("**/playerset", async (route) => {
+    expect(route.request().method()).toBe("POST");
+    createdBodies.push(route.request().postDataJSON());
+    await route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({ id: 9900, elimination_id: fixture.eliminationId, set_name: "三人隊" }),
+    });
+  });
+
+  await page.goto(`/competition/${fixture.competitionId}/admin/schedule/elimination/3`);
+  const selectors = page.getByLabel("選手姓名");
+  await expect(selectors).toHaveCount(3);
+  for (const [index, player] of groupPlayers.entries()) {
+    await expect(selectors.nth(index)).toHaveAttribute("id", `player-select-${index}`);
+    await selectors.nth(index).fill(player.name!);
+    await page.getByRole("option", { name: `${player.name} rank: ${player.rank}` }).click();
+  }
+  await page.getByRole("textbox").fill("三人隊");
+  await page.getByRole("button", { name: "創建隊伍", exact: true }).click();
+  await expect.poll(() => createdBodies).toEqual([{
+    elimination_id: fixture.eliminationId,
+    player_ids: groupPlayers.map((player) => player.id),
+    set_name: "三人隊",
+  }]);
+});
+
 test("對抗賽設定：409 顯示不覆寫既有資料", async ({ page }) => {
   const fixture = buildEliminationFixture("individual");
   const playerSets = rankedPlayerSets(fixture.eliminationId);

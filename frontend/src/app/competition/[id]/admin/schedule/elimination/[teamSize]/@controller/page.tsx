@@ -371,7 +371,7 @@ export default function Page({
               key={index}
               sx={{ mb: 2 }}
               options={playerOptions}
-              id="player-select"
+              id={`player-select-${index}`}
               value={selectedPlayers[index]}
               inputValue={inputValues[index]}
               onChange={(_: any, newValue: AutocompletePlayerValue) => {
