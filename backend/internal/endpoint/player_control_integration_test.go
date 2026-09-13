@@ -12,12 +12,15 @@ import (
 	"net/http/httptest"
 	"os"
 	"strconv"
+	"strings"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/suite"
+	"gorm.io/gorm"
 )
 
 // Player control authorization relies on MySQL row locks and target-derived
@@ -181,6 +184,226 @@ func (suite *PlayerControlIntegrationTestSuite) TestPlayerDestinationMustBelongT
 	suite.Require().NoError(err)
 	suite.NotEqual(foreignLane.ID, updated.LaneId)
 	suite.NotZero(competition.ID)
+}
+
+// A group assignment locks each target Player before checking the shared
+// competition Admin.  This deliberately starts all twelve requests together:
+// the authorization lookup must not range-lock every approved Participant and
+// turn otherwise independent target locks into a MySQL deadlock.
+func (suite *PlayerControlIntegrationTestSuite) TestConcurrentGroupAssignmentsShareOneAdmin() {
+	competition, firstPlayer, _, _, group, _, firstParticipant, adminCookies, _ := suite.fixture()
+	players := []database.Player{firstPlayer}
+	for index := 1; index < 12; index++ {
+		participant, err := database.CreateParticipant(database.Participant{
+			UserID:        firstParticipant.UserID + uint(index) + 100,
+			CompetitionID: competition.ID,
+			Role:          pkg.RoleToString(pkg.RPlayer),
+			Status:        "approved",
+		})
+		suite.Require().NoError(err)
+		player, err := database.CreatePlayer(database.Player{
+			GroupId:       firstPlayer.GroupId,
+			LaneId:        firstPlayer.LaneId,
+			ParticipantId: participant.ID,
+			Name:          fmt.Sprintf("parallel target %d", index),
+			Order:         index + 1,
+		})
+		suite.Require().NoError(err)
+		players = append(players, player)
+	}
+
+	start := make(chan struct{})
+	results := make(chan int, len(players))
+	var ready sync.WaitGroup
+	ready.Add(len(players))
+	for _, player := range players {
+		player := player
+		go func() {
+			ready.Done()
+			<-start
+			body, err := json.Marshal(map[string]uint{"group_id": group.ID})
+			if err != nil {
+				results <- 0
+				return
+			}
+			req := httptest.NewRequest(http.MethodPatch, fmt.Sprintf("/player/group/%d", player.ID), bytes.NewReader(body))
+			req.Header.Set("Content-Type", "application/json")
+			for _, cookie := range adminCookies {
+				req.AddCookie(cookie)
+			}
+			recorder := httptest.NewRecorder()
+			suite.router.ServeHTTP(recorder, req)
+			results <- recorder.Code
+		}()
+	}
+	ready.Wait()
+	close(start)
+	for range players {
+		suite.Equal(http.StatusOK, <-results)
+	}
+	for _, player := range players {
+		updated, err := database.GetOnlyPlayer(player.ID)
+		suite.Require().NoError(err)
+		suite.Equal(group.ID, updated.GroupId)
+	}
+}
+
+// The candidate lookup is intentionally non-locking, but it must never become
+// an authorization decision.  Revoke the Admin after that lookup and before
+// its primary-key current read; the locked revalidation must reject the write.
+func (suite *PlayerControlIntegrationTestSuite) TestGroupAssignmentRejectsAdminRevokedBeforeAuthorizationLock() {
+	_, player, unassignedLane, _, group, adminParticipant, _, adminCookies, _ := suite.fixture()
+	lookupStarted := make(chan struct{})
+	releaseLookup := make(chan struct{})
+	var releaseOnce sync.Once
+	release := func() { releaseOnce.Do(func() { close(releaseLookup) }) }
+	callbackName := "player_control_pause_admin_candidate_lookup"
+	var once sync.Once
+	responseDone := make(chan *httptest.ResponseRecorder, 1)
+	responseReceived := false
+	suite.Require().NoError(database.DB.Callback().Query().After("gorm:query").Register(callbackName, func(tx *gorm.DB) {
+		if tx.Statement.Table != "participants" || strings.Contains(tx.Statement.SQL.String(), "FOR UPDATE") || !strings.Contains(tx.Statement.SQL.String(), "SELECT `id`") {
+			return
+		}
+		once.Do(func() {
+			close(lookupStarted)
+			<-releaseLookup
+		})
+	}))
+	defer func() {
+		release()
+		if !responseReceived {
+			select {
+			case <-responseDone:
+			case <-time.After(5 * time.Second):
+				suite.T().Error("timed out releasing the blocked revoked Admin request")
+			}
+		}
+		suite.NoError(database.DB.Callback().Query().Remove(callbackName))
+	}()
+
+	go func() {
+		responseDone <- suite.request(http.MethodPatch, fmt.Sprintf("/player/group/%d", player.ID), map[string]uint{"group_id": group.ID}, adminCookies)
+	}()
+	select {
+	case <-lookupStarted:
+	case <-time.After(5 * time.Second):
+		suite.T().Error("timed out waiting for the Admin candidate lookup")
+		return
+	}
+	suite.Require().NoError(database.DB.Model(&database.Participant{}).Where("id = ?", adminParticipant.ID).Update("status", "pending").Error)
+	release()
+
+	var recorder *httptest.ResponseRecorder
+	select {
+	case recorder = <-responseDone:
+		responseReceived = true
+	case <-time.After(5 * time.Second):
+		suite.T().Error("timed out waiting for the revoked Admin request")
+		return
+	}
+	suite.Equal(http.StatusForbidden, recorder.Code)
+	updated, err := database.GetOnlyPlayer(player.ID)
+	suite.Require().NoError(err)
+	suite.Equal(unassignedLane.ID, updated.LaneId)
+	suite.NotEqual(group.ID, updated.GroupId)
+}
+
+// Once the current-read lock is held, revocation must wait for the authorized
+// mutation to commit.  After it commits, the revoked Admin cannot start a new
+// control write.
+func (suite *PlayerControlIntegrationTestSuite) TestGroupAssignmentSerializesAdminRevocationAfterAuthorizationLock() {
+	_, player, _, _, group, adminParticipant, _, adminCookies, _ := suite.fixture()
+	lockHeld := make(chan struct{})
+	releaseLock := make(chan struct{})
+	var releaseOnce sync.Once
+	release := func() { releaseOnce.Do(func() { close(releaseLock) }) }
+	callbackName := "player_control_pause_locked_admin"
+	var once sync.Once
+	writeDone := make(chan *httptest.ResponseRecorder, 1)
+	writeReceived := false
+	suite.Require().NoError(database.DB.Callback().Query().After("gorm:query").Register(callbackName, func(tx *gorm.DB) {
+		if tx.Statement.Table != "participants" || !strings.Contains(tx.Statement.SQL.String(), "FOR UPDATE") || !statementHasUint(tx.Statement.Vars, adminParticipant.ID) {
+			return
+		}
+		once.Do(func() {
+			close(lockHeld)
+			<-releaseLock
+		})
+	}))
+	defer func() {
+		release()
+		if !writeReceived {
+			select {
+			case <-writeDone:
+			case <-time.After(5 * time.Second):
+				suite.T().Error("timed out releasing the blocked authorized request")
+			}
+		}
+		suite.NoError(database.DB.Callback().Query().Remove(callbackName))
+	}()
+
+	go func() {
+		writeDone <- suite.request(http.MethodPatch, fmt.Sprintf("/player/group/%d", player.ID), map[string]uint{"group_id": group.ID}, adminCookies)
+	}()
+	select {
+	case <-lockHeld:
+	case <-time.After(5 * time.Second):
+		suite.T().Error("timed out waiting for the Admin authorization lock")
+		return
+	}
+
+	revocationDone := make(chan error, 1)
+	go func() {
+		revocationDone <- database.DB.Model(&database.Participant{}).Where("id = ?", adminParticipant.ID).Update("status", "pending").Error
+	}()
+	select {
+	case err := <-revocationDone:
+		suite.Fail("Admin revocation completed before the authorization lock released", err)
+		return
+	case <-time.After(150 * time.Millisecond):
+	}
+
+	release()
+	var recorder *httptest.ResponseRecorder
+	select {
+	case recorder = <-writeDone:
+		writeReceived = true
+	case <-time.After(5 * time.Second):
+		suite.T().Error("timed out waiting for the authorized request")
+		return
+	}
+	suite.Equal(http.StatusOK, recorder.Code)
+	select {
+	case err := <-revocationDone:
+		suite.Require().NoError(err)
+	case <-time.After(5 * time.Second):
+		suite.T().Error("timed out waiting for the blocked Admin revocation")
+		return
+	}
+
+	recorder = suite.request(http.MethodPatch, fmt.Sprintf("/player/group/%d", player.ID), map[string]uint{"group_id": group.ID}, adminCookies)
+	suite.Equal(http.StatusForbidden, recorder.Code)
+}
+
+func statementHasUint(values []interface{}, expected uint) bool {
+	for _, value := range values {
+		switch value := value.(type) {
+		case uint:
+			if value == expected {
+				return true
+			}
+		case uint64:
+			if value == uint64(expected) {
+				return true
+			}
+		case int:
+			if value >= 0 && uint(value) == expected {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (suite *PlayerControlIntegrationTestSuite) TestParticipantDeleteRequiresTargetCompetitionAdminAndKeepsLastAdmin() {
