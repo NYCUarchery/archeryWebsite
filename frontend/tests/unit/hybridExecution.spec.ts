@@ -1,4 +1,4 @@
-import { expect, test } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import {
   assertApprovedScopedActor,
   resolveMatchEnd,
@@ -121,9 +121,25 @@ function teamFixture(config: { wrongGroup?: boolean } = {}) {
   return { request, calls };
 }
 
-test("mode parser is safe by default and only hybrid permits formal API writes", () => {
-  expect(parseLifecycleExecutionMode(undefined)).toBe("full-ui");
+afterEach(() => vi.unstubAllEnvs());
+
+test("mode parser defaults to hybrid, accepts only both explicit modes, and isolates its environment", () => {
+  const inherited = process.env.ARCHERY_E2E_MODE;
+  try {
+    delete process.env.ARCHERY_E2E_MODE;
+    expect(parseLifecycleExecutionMode()).toBe("hybrid");
+  } finally {
+    if (inherited === undefined) delete process.env.ARCHERY_E2E_MODE;
+    else process.env.ARCHERY_E2E_MODE = inherited;
+  }
+  vi.stubEnv("ARCHERY_E2E_MODE", "full-ui");
+  expect(parseLifecycleExecutionMode()).toBe("full-ui");
+  vi.stubEnv("ARCHERY_E2E_MODE", "hybrid");
+  expect(parseLifecycleExecutionMode()).toBe("hybrid");
   expect(parseLifecycleExecutionMode("hybrid")).toBe("hybrid");
+  expect(parseLifecycleExecutionMode("full-ui")).toBe("full-ui");
+  expect(() => parseLifecycleExecutionMode("")).toThrow("ARCHERY_E2E_MODE");
+  expect(() => parseLifecycleExecutionMode(" ")).toThrow("ARCHERY_E2E_MODE");
   expect(() => parseLifecycleExecutionMode("fast")).toThrow("ARCHERY_E2E_MODE");
   expect(() => assertHybridApiWriteAllowed("full-ui")).toThrow("require ARCHERY_E2E_MODE=hybrid");
   expect(hybridQualificationSamples).toHaveLength(4);

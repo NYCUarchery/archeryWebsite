@@ -1,12 +1,12 @@
 /**
- * Lifecycle write strategy. CP1 deliberately defaults to the proven UI-only
- * path. API writers are opt-in and may only be called by the hybrid plan.
+ * Lifecycle write strategy. Hybrid is the default once CP3 validation has
+ * established parity with the explicit full UI control path.
  */
 export type LifecycleExecutionMode = "full-ui" | "hybrid";
 export type HybridGroup = "recurve" | "compound";
 
 export function parseLifecycleExecutionMode(value = process.env.ARCHERY_E2E_MODE): LifecycleExecutionMode {
-  if (value === undefined || value === "") return "full-ui";
+  if (value === undefined) return "hybrid";
   if (value === "full-ui" || value === "hybrid") return value;
   throw new Error(`ARCHERY_E2E_MODE must be "full-ui" or "hybrid", got ${JSON.stringify(value)}`);
 }
