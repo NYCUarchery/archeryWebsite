@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import { HierarchyNode, HierarchyPointLink } from "d3";
 import { TreeNode } from "@/utils/parseStagesToTree";
-import { DatabasePlayerSet } from "@/types/Api";
+import { DatabaseMatchResult, DatabasePlayerSet } from "@/types/Api";
 import { Typography } from "@mui/material";
 import { formatLanePlacement, getMatchResultTarget } from "@/utils/eliminationPlacement";
 interface Props {
@@ -16,6 +16,8 @@ interface Props {
   height?: number;
   labelWidth?: number;
   labelHeight?: number;
+  /** 已排定隊伍的節點被選取時回傳其 match result。 */
+  onResultClick?: (result: DatabaseMatchResult) => void;
 }
 
 export default function EliminationTreeChart({
@@ -27,6 +29,7 @@ export default function EliminationTreeChart({
   height = 600,
   labelWidth = 200,
   labelHeight = 30,
+  onResultClick,
 }: Props) {
   const svgRef = useRef<SVGSVGElement>(null);
   const margin = { top: 20, right: 0, bottom: 50, left: 100 },
@@ -136,6 +139,13 @@ export default function EliminationTreeChart({
       .attr("stroke-width", 3)
       .raise();
 
+    const isClickable = (node: HierarchyNode<TreeNode>) =>
+      node.data.result.player_set_id !== undefined &&
+      node.data.result.match_id !== undefined;
+    const labelForNode = (node: HierarchyNode<TreeNode>) => {
+      const text = getTextByNode(node, playerSets) || "隊伍";
+      return `${text}，點擊查看 Match #${node.data.result.match_id} 比分`;
+    };
     // adds labels to the nodes
 
     goldGroup
@@ -204,6 +214,36 @@ export default function EliminationTreeChart({
           getMatchResultTarget(d.data.result)
         )
       );
+
+    goldGroup
+      .append("g")
+      .attr("transform", `translate(${-labelWidth / 2}, ${-labelHeight / 2})`)
+      .selectAll("rect")
+      .data(goldMappedNodes.descendants())
+      .join("rect")
+      .attr("y", (d: HierarchyNode<TreeNode>) => d.x!)
+      .attr("x", (d: HierarchyNode<TreeNode>) => width - d.y!)
+      .attr("width", labelWidth)
+      .attr("height", labelHeight)
+      .attr("fill", "transparent")
+      .filter((node: HierarchyNode<TreeNode>) => isClickable(node))
+      .attr("role", "button")
+      .attr("tabindex", 0)
+      .attr("aria-label", (node: HierarchyNode<TreeNode>) => labelForNode(node))
+      .style("cursor", "pointer")
+      .on("click", (_event, node: HierarchyNode<TreeNode>) => onResultClick?.(node.data.result))
+      .on("keydown", (event, node: HierarchyNode<TreeNode>) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onResultClick?.(node.data.result);
+        }
+      })
+      .on("focus", function () {
+        d3.select(this).attr("stroke", "#fff").attr("stroke-width", 2);
+      })
+      .on("blur", function () {
+        d3.select(this).attr("stroke", null).attr("stroke-width", null);
+      });
 
     bronzeGroup
       .append("g")
@@ -278,6 +318,39 @@ export default function EliminationTreeChart({
         )
       );
 
+    bronzeGroup
+      .append("g")
+      .attr(
+        "transform",
+        `translate(${-labelWidth / 2 + finalLabelX}, ${-labelHeight / 2})`
+      )
+      .selectAll("rect")
+      .data(bronzeMappedNodes.descendants())
+      .join("rect")
+      .attr("y", (d: HierarchyNode<TreeNode>) => d.x!)
+      .attr("x", (d: HierarchyNode<TreeNode>) => bronzeWidth - d.y!)
+      .attr("width", labelWidth)
+      .attr("height", labelHeight)
+      .attr("fill", "transparent")
+      .filter((node: HierarchyNode<TreeNode>) => isClickable(node))
+      .attr("role", "button")
+      .attr("tabindex", 0)
+      .attr("aria-label", (node: HierarchyNode<TreeNode>) => labelForNode(node))
+      .style("cursor", "pointer")
+      .on("click", (_event, node: HierarchyNode<TreeNode>) => onResultClick?.(node.data.result))
+      .on("keydown", (event, node: HierarchyNode<TreeNode>) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onResultClick?.(node.data.result);
+        }
+      })
+      .on("focus", function () {
+        d3.select(this).attr("stroke", "#fff").attr("stroke-width", 2);
+      })
+      .on("blur", function () {
+        d3.select(this).attr("stroke", null).attr("stroke-width", null);
+      });
+
     const silverNode = d3.hierarchy<TreeNode>(silverRoot);
     const silverGroup = svg
       .append("g")
@@ -297,7 +370,32 @@ export default function EliminationTreeChart({
       .append("text")
       .attr("fill", "white")
       .text(getTextByNode(silverNode, playerSets));
-  }, [goldRoot, silverRoot, bronzeRoot, playerSets, width, height, labelWidth, labelHeight]);
+    if (isClickable(silverNode)) {
+      silverGroup
+        .append("rect")
+        .datum(silverNode)
+        .attr("width", labelWidth)
+        .attr("height", labelHeight)
+        .attr("fill", "transparent")
+        .attr("role", "button")
+        .attr("tabindex", 0)
+        .attr("aria-label", labelForNode(silverNode))
+        .style("cursor", "pointer")
+        .on("click", (_event, node) => onResultClick?.(node.data.result))
+        .on("keydown", (event, node) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            onResultClick?.(node.data.result);
+          }
+        })
+        .on("focus", function () {
+          d3.select(this).attr("stroke", "#fff").attr("stroke-width", 2);
+        })
+        .on("blur", function () {
+          d3.select(this).attr("stroke", null).attr("stroke-width", null);
+        });
+    }
+  }, [goldRoot, silverRoot, bronzeRoot, playerSets, width, height, labelWidth, labelHeight, onResultClick]);
 
   if (!goldRoot || !silverRoot || !bronzeRoot)
     return <Typography>尚無完整對抗樹。</Typography>;
