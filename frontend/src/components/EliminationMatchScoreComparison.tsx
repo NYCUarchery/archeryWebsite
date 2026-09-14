@@ -7,6 +7,8 @@ import {
   Stack,
   Tooltip,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import AddCircleIcon from "@mui/icons-material/AddCircle";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -24,6 +26,7 @@ import SportsKabaddiIcon from "@mui/icons-material/SportsKabaddi";
 import type { ReactNode } from "react";
 import type { DatabaseMatchEnd, DatabaseMatchResult } from "@/types/Api";
 import ScoreBlock from "@/components/ScoreBlock";
+import { isCompoundBowType, totalMatchScore } from "@/utils/eliminationScore";
 
 type DisplayedPoints = { value?: number; predicted: boolean };
 
@@ -97,15 +100,25 @@ export type EliminationMatchScoreComparisonProps = {
   allowUnconfirm?: boolean;
   /** 目前賽事進行中的波次（0-based），以外框標示。 */
   currentEndIndex?: number;
+  /** 公開分數板在手機使用較緊密的雙方對照。 */
+  denseOnMobile?: boolean;
+  /** 複合弓以所有波次箭分總和判勝，不顯示積點。 */
+  bowType?: string;
+  /** 公開分數榜只呈現分數，不揭露每波確認狀態。 */
+  showConfirmation?: boolean;
+  /** 公開分數榜不顯示尚未確認積點的預估提示。 */
+  showPredictionIndicator?: boolean;
   disabled?: boolean;
 };
 
 function SideHeader({
   side,
   sideIndex,
+  isCompound,
 }: {
   side: EliminationMatchScoreComparisonSide;
   sideIndex: 1 | 2;
+  isCompound: boolean;
 }) {
   const { matchResult } = side;
   return (
@@ -119,7 +132,9 @@ function SideHeader({
         </Typography>
       )}
       <Stack direction="row" spacing={1} flexWrap="wrap" color="text.secondary">
-        <Typography variant="caption">對抗點數：{matchResult?.total_points ?? "—"}</Typography>
+        <Typography variant="caption">
+          {isCompound ? "總分" : "積點"}：{isCompound ? totalMatchScore(matchResult) ?? "—" : matchResult?.total_points ?? "—"}
+        </Typography>
         {matchResult?.shoot_off_score !== undefined &&
           matchResult.shoot_off_score >= 0 && (
             <Typography variant="caption">加射：{formatScore(matchResult.shoot_off_score)}</Typography>
@@ -180,7 +195,7 @@ function ScoreMetric({
       <Stack direction="row" spacing={0.25} alignItems="center" aria-label={ariaLabel}>
         {icon}
         <Typography component="span" variant="caption" fontWeight={600}>{text}</Typography>
-        {predicted && <HourglassBottomIcon color="warning" fontSize="inherit" aria-label="預估點數" />}
+        {predicted && <HourglassBottomIcon color="warning" fontSize="inherit" aria-label="預估積點" />}
       </Stack>
     </Tooltip>
   );
@@ -197,6 +212,10 @@ function EndCell({
   allowUnconfirm = true,
   isCurrentEnd = false,
   sideLabel,
+  dense = false,
+  showPoints = true,
+  showConfirmation = true,
+  showPredictionIndicator = true,
 }: {
   end?: DatabaseMatchEnd;
   otherEnd?: DatabaseMatchEnd;
@@ -208,35 +227,42 @@ function EndCell({
   allowUnconfirm?: boolean;
   isCurrentEnd?: boolean;
   sideLabel?: string;
+  dense?: boolean;
+  showPoints?: boolean;
+  showConfirmation?: boolean;
+  showPredictionIndicator?: boolean;
 }) {
   if (!end) return <Typography color="text.secondary">—</Typography>;
 
   const points = getDisplayedPoints(end, otherEnd);
   const confirmed = Boolean(end.is_confirmed);
   const status = confirmed ? "已確認" : "未確認";
+  const scoreAriaLabel = showConfirmation ? `${status}波次比分` : "波次比分";
   return (
     <Stack
-      spacing={0.5}
+      spacing={dense ? 0.25 : 0.5}
       alignItems="center"
-      aria-label={`${status}波次比分`}
-      data-status={confirmed ? "confirmed" : "unconfirmed"}
+      aria-label={scoreAriaLabel}
+      data-status={showConfirmation ? (confirmed ? "confirmed" : "unconfirmed") : undefined}
       data-current-end={isCurrentEnd ? "true" : undefined}
       sx={{
-        backgroundColor: confirmed
-          ? "rgba(46, 125, 50, 0.12)"
-          : "rgba(211, 47, 47, 0.12)",
+        backgroundColor: showConfirmation
+          ? confirmed
+            ? "rgba(46, 125, 50, 0.12)"
+            : "rgba(211, 47, 47, 0.12)"
+          : "transparent",
         border: isCurrentEnd ? 2 : 0,
         borderColor: isCurrentEnd ? "primary.main" : "transparent",
         borderRadius: 1,
-        minHeight: 104,
-        p: 1,
+        minHeight: dense ? 92 : 104,
+        p: dense ? 0.5 : 1,
         height: "100%",
         width: "100%",
         boxSizing: "border-box",
         justifyContent: "center",
       }}
     >
-      {sideLabel && (
+      {sideLabel && !dense && (
         <Typography sx={{ display: { xs: "block", md: "none" }, overflowWrap: "anywhere" }} variant="subtitle2" fontWeight={700} align="center">
           {sideLabel}
         </Typography>
@@ -244,7 +270,7 @@ function EndCell({
       <Stack direction="row" spacing={0.5} justifyContent="center" flexWrap="wrap">
         {(end.match_scores ?? []).map((matchScore, index) =>
           matchScore.score !== undefined && matchScore.score >= 0 ? (
-            <ScoreBlock key={matchScore.id ?? index} score={matchScore.score} size="1.1rem" />
+            <ScoreBlock key={matchScore.id ?? index} score={matchScore.score} size={dense ? "0.9rem" : "1.1rem"} />
           ) : (
             <Typography key={matchScore.id ?? index} component="span" aria-label="未記分">—</Typography>
           ),
@@ -252,24 +278,27 @@ function EndCell({
       </Stack>
       <Stack direction="row" spacing={0.75} justifyContent="center" flexWrap="wrap">
         <ScoreMetric icon={<ScoreboardIcon aria-label="箭分總分" fontSize="inherit" />} label="箭分總分" value={end.total_scores} />
-        <ScoreMetric icon={<AddCircleIcon aria-label="本波點數" fontSize="inherit" />} label="本波點數" value={points.value} predicted={points.predicted} />
-        <ScoreMetric icon={<FunctionsIcon aria-label="累積點數" fontSize="inherit" />} label="累積點數" value={end.cumulative_points ?? cumulativePoints} />
+        {showPoints && <ScoreMetric icon={<AddCircleIcon aria-label="本波積點" fontSize="inherit" />} label="本波積點" value={points.value} predicted={showPredictionIndicator && points.predicted} />}
+        {showPoints && <ScoreMetric icon={<FunctionsIcon aria-label="累積積點" fontSize="inherit" />} label="累積積點" value={end.cumulative_points ?? cumulativePoints} />}
       </Stack>
-      <Stack direction="row" spacing={0.25} alignItems="center" justifyContent="center">
-        <Tooltip title={onToggleConfirmation && (!confirmed || allowUnconfirm) ? `切換為${confirmed ? "未確認" : "已確認"}` : status}>
-          <span>
-            <ButtonBase
-              aria-label={onToggleConfirmation && (!confirmed || allowUnconfirm) ? `切換為${confirmed ? "未確認" : "已確認"}` : status}
-              disabled={disabled || isUpdating || !onToggleConfirmation || (confirmed && !allowUnconfirm)}
-              onClick={() => onToggleConfirmation?.(end, !confirmed)}
-              sx={{ borderRadius: 0.75, px: 0.5, py: 0.25 }}
-            >
-              {confirmed ? <CheckCircleIcon aria-label="已確認" color="success" fontSize="small" /> : <CancelIcon aria-label="未確認" color="error" fontSize="small" />}
-              <Typography variant="caption" sx={{ ml: 0.25 }}>{isUpdating ? "更新中…" : status}</Typography>
-            </ButtonBase>
-          </span>
-        </Tooltip>
-        {onEditEnd && (
+      {(showConfirmation || onEditEnd) && (
+        <Stack direction="row" spacing={0.25} alignItems="center" justifyContent="center">
+          {showConfirmation && (
+            <Tooltip title={onToggleConfirmation && (!confirmed || allowUnconfirm) ? `切換為${confirmed ? "未確認" : "已確認"}` : status}>
+              <span>
+                <ButtonBase
+                  aria-label={onToggleConfirmation && (!confirmed || allowUnconfirm) ? `切換為${confirmed ? "未確認" : "已確認"}` : status}
+                  disabled={disabled || isUpdating || !onToggleConfirmation || (confirmed && !allowUnconfirm)}
+                  onClick={() => onToggleConfirmation?.(end, !confirmed)}
+                  sx={{ borderRadius: 0.75, px: 0.5, py: 0.25 }}
+                >
+                  {confirmed ? <CheckCircleIcon aria-label="已確認" color="success" fontSize="small" /> : <CancelIcon aria-label="未確認" color="error" fontSize="small" />}
+                  <Typography variant="caption" sx={{ ml: 0.25 }}>{isUpdating ? "更新中…" : status}</Typography>
+                </ButtonBase>
+              </span>
+            </Tooltip>
+          )}
+          {onEditEnd && (
           <Tooltip title="編輯本波分數">
             <span>
               <IconButton
@@ -282,8 +311,9 @@ function EndCell({
               </IconButton>
             </span>
           </Tooltip>
-        )}
-      </Stack>
+          )}
+        </Stack>
+      )}
     </Stack>
   );
 }
@@ -313,8 +343,16 @@ export default function EliminationMatchScoreComparison({
   updatingEndIds = [],
   allowUnconfirm = true,
   currentEndIndex,
+  denseOnMobile = false,
+  bowType,
+  showConfirmation = true,
+  showPredictionIndicator = true,
   disabled = false,
 }: EliminationMatchScoreComparisonProps) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const dense = denseOnMobile && isMobile;
+  const isCompound = isCompoundBowType(bowType);
   const side1Ends = side1.matchResult?.match_ends ?? [];
   const side2Ends = side2.matchResult?.match_ends ?? [];
   const endCount = Math.max(side1Ends.length, side2Ends.length);
@@ -326,10 +364,10 @@ export default function EliminationMatchScoreComparison({
       variant="outlined"
       data-testid="elimination-match-score-comparison"
       tabIndex={0}
-      aria-label="淘汰賽比分比較；手機版依波次直向排列，桌機版以雙方對照呈現"
+      aria-label={dense ? "淘汰賽比分比較；手機版以雙方緊密對照呈現" : "淘汰賽比分比較；雙方以中間圖示對照呈現"}
       sx={{
-        overflowX: { xs: "visible", md: "auto" },
-        p: 1,
+        overflowX: { xs: "hidden", md: "auto" },
+        p: dense ? 0.5 : 1,
         "&:focus-visible": {
           outline: "2px solid",
           outlineColor: "primary.main",
@@ -342,22 +380,22 @@ export default function EliminationMatchScoreComparison({
         sx={{
           display: "grid",
           gridTemplateAreas: {
-            xs: '"side1" "side2"',
+            xs: '"side1 versus side2"',
             md: '"side1 versus side2"',
           },
           gap: 0.75,
-          gridTemplateColumns: { xs: "minmax(0, 1fr)", md: "minmax(360px, 1fr) 72px minmax(360px, 1fr)" },
+          gridTemplateColumns: { xs: "minmax(0, 1fr) 40px minmax(0, 1fr)", md: "minmax(360px, 1fr) 72px minmax(360px, 1fr)" },
           minWidth: { md: 792 },
         }}
       >
-        <Box sx={{ gridArea: "side1", minWidth: 0 }}><SideHeader side={side1} sideIndex={1} /></Box>
-        <Stack sx={{ gridArea: "versus", display: { xs: "none", md: "flex" } }} alignItems="center" justifyContent="center" spacing={0.25}>
+        <Box sx={{ gridArea: "side1", minWidth: 0 }}><SideHeader side={side1} sideIndex={1} isCompound={isCompound} /></Box>
+        <Stack sx={{ gridArea: "versus" }} alignItems="center" justifyContent="center" spacing={0.25}>
           <Tooltip title="對抗">
             <SportsKabaddiIcon aria-label="對抗" color="primary" fontSize="small" />
           </Tooltip>
           <Typography variant="caption" color="text.secondary">對抗</Typography>
         </Stack>
-        <Box sx={{ gridArea: "side2", minWidth: 0 }}><SideHeader side={side2} sideIndex={2} /></Box>
+        <Box sx={{ gridArea: "side2", minWidth: 0 }}><SideHeader side={side2} sideIndex={2} isCompound={isCompound} /></Box>
       </Box>
       {endCount === 0 ? (
         <Typography align="center" color="text.secondary" sx={{ py: 2 }}>
@@ -370,28 +408,34 @@ export default function EliminationMatchScoreComparison({
           data-testid={`match-score-wave-${index + 1}`}
           sx={{
             display: "grid",
-            gridTemplateAreas: { xs: '"wave" "side1" "side2"', md: '"side1 wave side2"' },
-            gridTemplateColumns: { xs: "minmax(0, 1fr)", md: "minmax(360px, 1fr) 72px minmax(360px, 1fr)" },
-            gap: 0.75,
+            gridTemplateAreas: {
+              xs: '"side1 wave side2"',
+              md: '"side1 wave side2"',
+            },
+            gridTemplateColumns: {
+              xs: "minmax(0, 1fr) 40px minmax(0, 1fr)",
+              md: "minmax(360px, 1fr) 72px minmax(360px, 1fr)",
+            },
+            gap: dense ? 0.35 : 0.75,
             minWidth: { md: 792 },
             mt: 1,
-            p: 1,
+            p: dense ? 0.5 : 1,
           }}
         >
           <Stack sx={{ gridArea: "wave" }} alignItems="center" justifyContent="center">
             <WaveIcon index={index} />
             <Typography
               variant="subtitle2"
-              sx={{ display: { xs: "block", md: "none" }, mt: 0.25 }}
+              sx={{ display: { xs: dense ? "none" : "block", md: "none" }, mt: 0.25 }}
             >
               第 {index + 1} 波
             </Typography>
           </Stack>
           <Box data-testid={`match-score-end-${index + 1}-side-1`} sx={{ gridArea: "side1", display: "flex", minWidth: 0, alignItems: "stretch" }}>
-            <EndCell end={side1Ends[index]} otherEnd={side2Ends[index]} cumulativePoints={side1Cumulative[index]} onToggleConfirmation={onToggleConfirmation} onEditEnd={onEditEnd} isUpdating={updatingEndIds.includes(side1Ends[index]?.id ?? -1)} disabled={disabled} allowUnconfirm={allowUnconfirm} isCurrentEnd={currentEndIndex === index} sideLabel={side1.label} />
+            <EndCell end={side1Ends[index]} otherEnd={side2Ends[index]} cumulativePoints={side1Cumulative[index]} onToggleConfirmation={onToggleConfirmation} onEditEnd={onEditEnd} isUpdating={updatingEndIds.includes(side1Ends[index]?.id ?? -1)} disabled={disabled} allowUnconfirm={allowUnconfirm} isCurrentEnd={currentEndIndex === index} sideLabel={side1.label} dense={dense} showPoints={!isCompound} showConfirmation={showConfirmation} showPredictionIndicator={showPredictionIndicator} />
           </Box>
           <Box data-testid={`match-score-end-${index + 1}-side-2`} sx={{ gridArea: "side2", display: "flex", minWidth: 0, alignItems: "stretch" }}>
-            <EndCell end={side2Ends[index]} otherEnd={side1Ends[index]} cumulativePoints={side2Cumulative[index]} onToggleConfirmation={onToggleConfirmation} onEditEnd={onEditEnd} isUpdating={updatingEndIds.includes(side2Ends[index]?.id ?? -1)} disabled={disabled} allowUnconfirm={allowUnconfirm} isCurrentEnd={currentEndIndex === index} sideLabel={side2.label} />
+            <EndCell end={side2Ends[index]} otherEnd={side1Ends[index]} cumulativePoints={side2Cumulative[index]} onToggleConfirmation={onToggleConfirmation} onEditEnd={onEditEnd} isUpdating={updatingEndIds.includes(side2Ends[index]?.id ?? -1)} disabled={disabled} allowUnconfirm={allowUnconfirm} isCurrentEnd={currentEndIndex === index} sideLabel={side2.label} dense={dense} showPoints={!isCompound} showConfirmation={showConfirmation} showPredictionIndicator={showPredictionIndicator} />
           </Box>
         </Paper>
       ))}

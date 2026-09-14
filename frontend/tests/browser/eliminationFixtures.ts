@@ -369,7 +369,7 @@ function scoreValue(score: number | undefined): number {
   return score !== undefined && score >= 0 ? score : 0;
 }
 
-// 模擬後端 ComputeMatchPoints：每次改分後重算本場逐波與累積對抗點數。
+// 模擬後端 ComputeMatchPoints：每次改分後重算本場逐波與累積積點。
 function recomputeMatchPoints(elimination: DatabaseElimination): void {
   for (const stage of elimination.stages ?? []) {
     for (const match of stage.matchs ?? []) {

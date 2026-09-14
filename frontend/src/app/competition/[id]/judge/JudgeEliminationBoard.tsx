@@ -306,6 +306,7 @@ export default function JudgeEliminationBoard({ competitionId }: { competitionId
           <EliminationMatchScoreComparison
             side1={{ label: teamName(selectedMatch.match_results?.[0], elimination), matchResult: selectedMatch.match_results?.[0] }}
             side2={{ label: teamName(selectedMatch.match_results?.[1], elimination), matchResult: selectedMatch.match_results?.[1] }}
+            bowType={selectedGroup?.bow_type}
             currentEndIndex={currentEndIndex}
             allowUnconfirm={false}
             disabled={isSaving || isConfirming}
