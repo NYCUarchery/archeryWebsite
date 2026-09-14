@@ -737,12 +737,12 @@ test("進度頁：對抗組面板以雙方對照呈現比分，並保留缺少�
     new RegExp(fixture.setNameMine),
   );
   await expect(side1Summary).toContainText("勝方");
-  await expect(side1Summary).toContainText("對抗點數：3");
+  await expect(side1Summary).toContainText("積點：3");
   await expect(side1Summary).toContainText("加射：10");
   await expect(side2Summary.getByLabel("隊伍 2", { exact: true })).toHaveValue(
     new RegExp(fixture.setNameOpponent),
   );
-  await expect(side2Summary).toContainText("對抗點數：1");
+  await expect(side2Summary).toContainText("積點：1");
   await expect(side2Summary).toContainText("加射：9");
   await expect(firstWave.getByText("第 1 波", { exact: true })).toBeVisible();
   await expect(comparison.getByTestId("match-score-wave-2").getByLabel("第 2 波")).toBeVisible();
@@ -772,9 +772,9 @@ test("進度頁：對抗組面板以雙方對照呈現比分，並保留缺少�
   await expect(firstEndSide1).toContainText("M");
   await expect(firstEndSide1).toContainText("已確認");
   await expect(firstEndSide1.getByLabel("箭分總分：10")).toBeVisible();
-  await expect(firstEndSide1.getByLabel("本波點數：2（預估）")).toBeVisible();
-  await expect(firstEndSide1.getByLabel("預估點數")).toBeVisible();
-  await expect(firstEndSide1.getByLabel("累積點數：2")).toBeVisible();
+  await expect(firstEndSide1.getByLabel("本波積點：2（預估）")).toBeVisible();
+  await expect(firstEndSide1.getByLabel("預估積點")).toBeVisible();
+  await expect(firstEndSide1.getByLabel("累積積點：2")).toBeVisible();
   await expect(firstEndSide1.getByLabel("已確認波次比分")).toHaveAttribute(
     "data-status",
     "confirmed",
@@ -790,8 +790,8 @@ test("進度頁：對抗組面板以雙方對照呈現比分，並保留缺少�
   await expect(secondEndSide1).toContainText("9");
   await expect(secondEndSide1).toContainText("8");
   await expect(secondEndSide1).toContainText("未確認");
-  await expect(secondEndSide1.getByLabel("本波點數：1（預估）")).toBeVisible();
-  await expect(secondEndSide1.getByLabel("累積點數：3")).toBeVisible();
+  await expect(secondEndSide1.getByLabel("本波積點：1（預估）")).toBeVisible();
+  await expect(secondEndSide1.getByLabel("累積積點：3")).toBeVisible();
   await expect(secondEndSide1.getByLabel("未確認波次比分")).toHaveAttribute(
     "data-status",
     "unconfirmed",
@@ -805,12 +805,12 @@ test("進度頁：對抗組面板以雙方對照呈現比分，並保留缺少�
   await expect(firstEndSide2).toContainText("M");
   await expect(firstEndSide2).toContainText("未確認");
   await expect(firstEndSide2.getByLabel("箭分總分：9")).toBeVisible();
-  await expect(firstEndSide2.getByLabel("本波點數：0（預估）")).toBeVisible();
+  await expect(firstEndSide2.getByLabel("本波積點：0（預估）")).toBeVisible();
   const secondEndSide2 = comparison
     .getByTestId("match-score-wave-2")
     .getByTestId("match-score-end-2-side-2");
-  await expect(secondEndSide2.getByLabel("本波點數：1（預估）")).toBeVisible();
-  await expect(secondEndSide2.getByLabel("累積點數：1")).toBeVisible();
+  await expect(secondEndSide2.getByLabel("本波積點：1（預估）")).toBeVisible();
+  await expect(secondEndSide2.getByLabel("累積積點：1")).toBeVisible();
   await expect(comparison.getByTestId("match-score-wave-3").getByTestId("match-score-end-3-side-2")).toHaveText(
     "—",
   );
@@ -888,10 +888,10 @@ test("進度頁：可切換確認並編輯已確認波次，主 dialog 保持開
     "confirmed",
   );
   await expect(firstEndCell.getByLabel("箭分總分：20")).toBeVisible();
-  await expect(firstEndCell.getByLabel("本波點數：2")).toBeVisible();
-  await expect(firstEndCell.getByLabel("累積點數：2")).toBeVisible();
+  await expect(firstEndCell.getByLabel("本波積點：2")).toBeVisible();
+  await expect(firstEndCell.getByLabel("累積積點：2")).toBeVisible();
   await expect(dialog.getByTestId("match-score-side-1")).toContainText(
-    "對抗點數：2",
+    "積點：2",
   );
   await expect(dialog.getByLabel("贏家")).toContainText(
     `隊伍 2：${fixture.setNameOpponent}`,

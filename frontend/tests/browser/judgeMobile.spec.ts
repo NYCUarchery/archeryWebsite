@@ -6,7 +6,7 @@ import {
 import { chooseJudgeIndividual, chooseJudgeTeam } from "../e2e/lifecycle/elimination";
 
 test.describe("Judge mobile scoring page", () => {
-  test("360px：Admin 亦使用直向逐波比分，無水平溢位", async ({ page }) => {
+  test("360px：Admin 以雙方－波次－雙方三欄對照，無水平溢位", async ({ page }) => {
     await page.setViewportSize({ width: 360, height: 800 });
     const fixture = buildEliminationFixture("team", { targets: ["A", "B"] });
     const [firstSet, secondSet] = fixture.elimination.player_sets ?? [];
@@ -21,6 +21,14 @@ test.describe("Judge mobile scoring page", () => {
     const comparison = page.getByTestId("elimination-match-score-comparison");
     expect(await comparison.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+    const [side1, wave, side2] = await Promise.all([
+      page.getByTestId("match-score-end-1-side-1").boundingBox(),
+      page.getByTestId("match-score-wave-1").getByLabel("第 1 波").boundingBox(),
+      page.getByTestId("match-score-end-1-side-2").boundingBox(),
+    ]);
+    if (!side1 || !wave || !side2) throw new Error("手機比分欄位未取得位置");
+    expect(side1.x).toBeLessThan(wave.x);
+    expect(wave.x).toBeLessThan(side2.x);
   });
 
   test("桌機：維持雙方－波次－雙方三欄對照", async ({ page }) => {

@@ -1202,6 +1202,7 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
                 matchResult: matchDialogTeams[1].result,
                 header: renderMatchTeamHeader(matchDialogTeams[1]),
               }}
+              bowType={groups?.[groupIndex]?.bow_type}
               onToggleConfirmation={(end, isConfirmed) => {
                 if (!end.id) return;
                 setScoreActionError(null);
