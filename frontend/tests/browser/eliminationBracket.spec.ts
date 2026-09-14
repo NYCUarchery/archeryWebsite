@@ -3,7 +3,7 @@ import {
   buildEliminationFixture,
   registerEliminationRoutes,
 } from "./eliminationFixtures";
-import type { DatabasePlayer, DatabasePlayerSet, DatabaseStage } from "@/types/Api";
+import type { DatabaseMatch, DatabasePlayer, DatabasePlayerSet, DatabaseStage } from "@/types/Api";
 import type { EliminationVariant } from "./eliminationFixtures";
 
 function rankedPlayerSets(eliminationId: number): DatabasePlayerSet[] {
@@ -49,6 +49,80 @@ function completeEightEntrantStages(eliminationId: number): DatabaseStage[] {
       match_results: [{ id: resultId++ }, { id: resultId++ }],
     })),
   }));
+}
+
+function cloneScoreboardMatch(match: DatabaseMatch, matchId: number, offset: number): DatabaseMatch {
+  return {
+    ...match,
+    id: matchId,
+    match_results: (match.match_results ?? []).map((result, index) => ({
+      ...result,
+      id: (result.id ?? 0) + offset + index,
+      match_id: matchId,
+      match_ends: (result.match_ends ?? []).map((end) => ({
+        ...end,
+        id: (end.id ?? 0) + offset + index,
+        match_scores: (end.match_scores ?? []).map((score) => ({
+          ...score,
+          id: (score.id ?? 0) + offset + index,
+        })),
+      })),
+    })),
+  };
+}
+
+function populateScoreboardMatch(match: DatabaseMatch) {
+  const [left, right] = match.match_results ?? [];
+  if (!left || !right) throw new Error("fixture 缺少雙方 MatchResult");
+  const leftEnd = left.match_ends?.[0];
+  const rightEnd = right.match_ends?.[0];
+  if (!leftEnd || !rightEnd) throw new Error("fixture 缺少雙方 MatchEnd");
+
+  left.is_winner = true;
+  left.total_points = 2;
+  left.shoot_off_score = 10;
+  leftEnd.is_confirmed = true;
+  leftEnd.points = 2;
+  leftEnd.cumulative_points = 2;
+  leftEnd.match_scores?.forEach((score, index) => {
+    score.score = [11, 10, 10, 10, 10, 0][index];
+  });
+  leftEnd.total_scores = leftEnd.match_scores?.reduce(
+    (total, score) => total + (score.score === 11 ? 10 : score.score ?? 0),
+    0
+  );
+
+  right.is_winner = false;
+  right.total_points = 0;
+  rightEnd.is_confirmed = false;
+  rightEnd.points = 0;
+  rightEnd.cumulative_points = 0;
+  rightEnd.match_scores?.forEach((score, index) => {
+    score.score = [9, 8, 7, 6, 5, 4][index];
+  });
+  rightEnd.total_scores = rightEnd.match_scores?.reduce(
+    (total, score) => total + (score.score ?? 0),
+    0
+  );
+}
+
+function completeScoreboardStages(eliminationId: number, source: DatabaseMatch): DatabaseStage[] {
+  populateScoreboardMatch(source);
+  return [
+    {
+      id: 9971,
+      elimination_id: eliminationId,
+      matchs: [source, cloneScoreboardMatch(source, 9972, 100)],
+    },
+    {
+      id: 9973,
+      elimination_id: eliminationId,
+      matchs: [
+        cloneScoreboardMatch(source, 9974, 200),
+        cloneScoreboardMatch(source, 9975, 300),
+      ],
+    },
+  ];
 }
 
 async function prepareIndividualAutoCreate(page: import("@playwright/test").Page) {
@@ -120,6 +194,87 @@ test("對抗賽計分板：尚無階段時顯示建立提示，不渲染崩潰",
   );
 
   await expect(page.getByText("尚未建立完整對抗樹。")).toBeVisible();
+});
+
+test("對抗賽計分板：桌機淘汰樹隊伍可點擊及鍵盤開啟比分詳情", async ({ page }) => {
+  const fixture = buildEliminationFixture("individual");
+  fixture.elimination.player_sets?.forEach((set, index) => {
+    set.rank = index + 1;
+  });
+  const sourceMatch = fixture.elimination.stages?.[0]?.matchs?.[0];
+  if (!sourceMatch) throw new Error("fixture 缺少對抗組");
+  fixture.elimination.stages = completeScoreboardStages(fixture.eliminationId, sourceMatch);
+  await registerEliminationRoutes(page, fixture);
+
+  const baseUrl = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1";
+  await page.goto(`${baseUrl}/competition/${fixture.competitionId}/scoreboard/0/elimination/1`);
+
+  const team = page.getByRole("button", { name: /我方.*Match #9402/ }).first();
+  await expect(team).toBeVisible();
+  await team.click({ position: { x: 190, y: 15 } });
+  const dialog = page.getByRole("dialog", { name: /比分詳細資料/ });
+  await expect(dialog).toBeVisible();
+  await expect(dialog).toContainText("成員：我方選手");
+  await expect(dialog).toContainText("積點：2");
+  await expect(dialog).toContainText("加射：10");
+  await expect(dialog).not.toContainText("已確認");
+  await expect(dialog).not.toContainText("未確認");
+  await expect(dialog.getByLabel("預估積點")).toHaveCount(0);
+  await expect(dialog.getByText("X", { exact: true })).toBeVisible();
+  await expect(dialog.getByTestId("elimination-match-score-comparison")).toBeVisible();
+  await dialog.getByRole("button", { name: "關閉比分詳細資料" }).click();
+  await expect(team).toBeFocused();
+  await team.press("Enter");
+  await expect(dialog).toBeVisible();
+  await dialog.getByRole("button", { name: "關閉比分詳細資料" }).click();
+  await expect(team).toBeFocused();
+  await team.press("Space");
+  await expect(dialog).toBeVisible();
+});
+
+test("對抗賽計分板：390px 顯示淘汰樹且詳情不橫向溢出", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const fixture = buildEliminationFixture("team");
+  fixture.elimination.player_sets?.forEach((set, index) => {
+    set.rank = index + 1;
+    set.set_name = `${set.set_name}超長隊伍名稱測試不應截斷`;
+  });
+  const sourceMatch = fixture.elimination.stages?.[0]?.matchs?.[0];
+  if (!sourceMatch) throw new Error("fixture 缺少對抗組");
+  fixture.elimination.stages = completeScoreboardStages(fixture.eliminationId, sourceMatch);
+  const emptyResult = fixture.elimination.stages[1]?.matchs?.[1]?.match_results?.[1];
+  if (emptyResult) emptyResult.player_set_id = undefined;
+  await registerEliminationRoutes(page, fixture);
+
+  const baseUrl = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1";
+  await page.goto(`${baseUrl}/competition/${fixture.competitionId}/scoreboard/0/elimination/3`);
+
+  const tree = page.getByTestId("elimination-desktop-tree");
+  await expect(tree).toBeVisible();
+  await expect(page.getByTestId("elimination-mobile-stages")).toBeHidden();
+  expect(await tree.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(true);
+  const team = page.getByRole("button", { name: /我方.*Match #9402/ }).first();
+  await team.scrollIntoViewIfNeeded();
+  await team.click();
+  const dialog = page.getByRole("dialog", { name: /比分詳細資料/ });
+  await expect(dialog).toBeVisible();
+  const comparison = dialog.getByTestId("elimination-match-score-comparison");
+  const firstWave = comparison.getByTestId("match-score-wave-1");
+  const side1 = firstWave.getByTestId("match-score-end-1-side-1");
+  const side2 = firstWave.getByTestId("match-score-end-1-side-2");
+  await expect(firstWave).toBeVisible();
+  await expect(side1.locator(".score_block")).toHaveCount(6);
+  await expect(side2.locator(".score_block")).toHaveCount(6);
+  const [side1Box, side2Box] = await Promise.all([side1.boundingBox(), side2.boundingBox()]);
+  if (!side1Box || !side2Box) throw new Error("無法取得手機比分欄位位置");
+  expect(Math.abs(side1Box.y - side2Box.y)).toBeLessThan(2);
+  expect(side1Box.x).toBeLessThan(side2Box.x);
+  for (const region of [comparison, side1, side2]) {
+    expect(await region.evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+  await page.getByRole("button", { name: "關閉比分詳細資料" }).click();
+  await expect(dialog).toHaveCount(0);
 });
 
 for (const [variant, teamSize] of [
