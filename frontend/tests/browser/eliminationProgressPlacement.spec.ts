@@ -730,7 +730,7 @@ test("進度頁：對抗組面板以雙方對照呈現比分，並保留缺少�
   await expect(comparison).toBeFocused();
   const side1Summary = comparison.getByTestId("match-score-side-1");
   const side2Summary = comparison.getByTestId("match-score-side-2");
-  const firstWave = comparison.getByTestId("match-score-wave-1");
+  const firstEndRow = comparison.getByTestId("match-score-end-row-1");
   await expect(side1Summary.getByLabel("隊伍 1", { exact: true })).toHaveValue(
     new RegExp(fixture.setNameMine),
   );
@@ -742,33 +742,33 @@ test("進度頁：對抗組面板以雙方對照呈現比分，並保留缺少�
   );
   await expect(side2Summary).toContainText("積點：1");
   await expect(side2Summary).toContainText("加射：9");
-  await expect(firstWave.getByText("第 1 波", { exact: true })).toBeVisible();
-  await expect(comparison.getByTestId("match-score-wave-2").getByLabel("第 2 波")).toBeVisible();
-  await expect(comparison.getByTestId("match-score-wave-3").getByLabel("第 3 波")).toBeVisible();
+  await expect(firstEndRow.getByText("第 1 波", { exact: true })).toBeVisible();
+  await expect(comparison.getByTestId("match-score-end-row-2").getByLabel("第 2 波")).toBeVisible();
+  await expect(comparison.getByTestId("match-score-end-row-3").getByLabel("第 3 波")).toBeVisible();
 
-  const firstEndSide1 = firstWave.getByTestId("match-score-end-1-side-1");
-  const firstEndSide2 = firstWave.getByTestId("match-score-end-1-side-2");
-  const secondEndSide1ForLayout = comparison
-    .getByTestId("match-score-wave-2")
+  const firstEndSide1 = firstEndRow.getByTestId("match-score-end-1-side-1");
+  const firstEndSide2 = firstEndRow.getByTestId("match-score-end-1-side-2");
+  const secondEndSide1 = comparison
+    .getByTestId("match-score-end-row-2")
     .getByTestId("match-score-end-2-side-1");
-  const [firstEndCellBox, firstEndContentBox, waveBox, firstEndSide2Box, secondEndCellBox] =
+  const [firstEndSide1Box, firstEndSide1ContentBox, firstEndMarkerBox, firstEndSide2Box, secondEndSide1Box] =
     await Promise.all([
       firstEndSide1.boundingBox(),
       firstEndSide1.getByLabel("已確認波次比分").boundingBox(),
-      firstWave.getByLabel("第 1 波").boundingBox(),
+      firstEndRow.getByLabel("第 1 波").boundingBox(),
       firstEndSide2.boundingBox(),
-      secondEndSide1ForLayout.boundingBox(),
+      secondEndSide1.boundingBox(),
     ]);
-  if (!firstEndCellBox || !firstEndContentBox || !waveBox || !firstEndSide2Box || !secondEndCellBox) {
+  if (!firstEndSide1Box || !firstEndSide1ContentBox || !firstEndMarkerBox || !firstEndSide2Box || !secondEndSide1Box) {
     throw new Error("波次比分卡片未取得位置");
   }
   expect(
-    Math.abs(firstEndCellBox.width - firstEndContentBox.width),
+    Math.abs(firstEndSide1Box.width - firstEndSide1ContentBox.width),
   ).toBeLessThanOrEqual(1);
-  expect(firstEndCellBox.x).toBeLessThan(waveBox.x);
-  expect(waveBox.x).toBeLessThan(firstEndSide2Box.x);
-  expect(secondEndCellBox.y).toBeGreaterThanOrEqual(
-    firstEndCellBox.y + firstEndCellBox.height,
+  expect(firstEndSide1Box.x).toBeLessThan(firstEndMarkerBox.x);
+  expect(firstEndMarkerBox.x).toBeLessThan(firstEndSide2Box.x);
+  expect(secondEndSide1Box.y).toBeGreaterThanOrEqual(
+    firstEndSide1Box.y + firstEndSide1Box.height,
   );
   await expect(firstEndSide1).toContainText("X");
   await expect(firstEndSide1).toContainText("M");
@@ -785,9 +785,6 @@ test("進度頁：對抗組面板以雙方對照呈現比分，並保留缺少�
     "background-color",
     "rgba(46, 125, 50, 0.12)",
   );
-  const secondEndSide1 = comparison
-    .getByTestId("match-score-wave-2")
-    .getByTestId("match-score-end-2-side-1");
   await expect(secondEndSide1).toContainText("10");
   await expect(secondEndSide1).toContainText("9");
   await expect(secondEndSide1).toContainText("8");
@@ -808,11 +805,11 @@ test("進度頁：對抗組面板以雙方對照呈現比分，並保留缺少�
   await expect(firstEndSide2.getByLabel("箭分總分：9")).toBeVisible();
   await expect(firstEndSide2.getByLabel("本波積點：0（預估）")).toBeVisible();
   const secondEndSide2 = comparison
-    .getByTestId("match-score-wave-2")
+    .getByTestId("match-score-end-row-2")
     .getByTestId("match-score-end-2-side-2");
   await expect(secondEndSide2.getByLabel("本波積點：1（預估）")).toBeVisible();
   await expect(secondEndSide2.getByLabel("累積積點：1")).toBeVisible();
-  await expect(comparison.getByTestId("match-score-wave-3").getByTestId("match-score-end-3-side-2")).toHaveText(
+  await expect(comparison.getByTestId("match-score-end-row-3").getByTestId("match-score-end-3-side-2")).toHaveText(
     "—",
   );
 });

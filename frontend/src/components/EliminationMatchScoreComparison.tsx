@@ -144,7 +144,7 @@ function SideHeader({
   );
 }
 
-function WaveIcon({ index }: { index: number }) {
+function EndIcon({ index }: { index: number }) {
   const Icon = [Filter1Icon, Filter2Icon, Filter3Icon, Filter4Icon, Filter5Icon][index];
   const label = `第 ${index + 1} 波`;
   if (Icon) {
@@ -405,12 +405,12 @@ export default function EliminationMatchScoreComparison({
         <Paper
           key={index}
           variant="outlined"
-          data-testid={`match-score-wave-${index + 1}`}
+          data-testid={`match-score-end-row-${index + 1}`}
           sx={{
             display: "grid",
             gridTemplateAreas: {
-              xs: '"side1 wave side2"',
-              md: '"side1 wave side2"',
+              xs: '"side1 end side2"',
+              md: '"side1 end side2"',
             },
             gridTemplateColumns: {
               xs: "minmax(0, 1fr) 40px minmax(0, 1fr)",
@@ -422,8 +422,8 @@ export default function EliminationMatchScoreComparison({
             p: dense ? 0.5 : 1,
           }}
         >
-          <Stack sx={{ gridArea: "wave" }} alignItems="center" justifyContent="center">
-            <WaveIcon index={index} />
+          <Stack sx={{ gridArea: "end" }} alignItems="center" justifyContent="center">
+            <EndIcon index={index} />
             <Typography
               variant="subtitle2"
               sx={{ display: { xs: dense ? "none" : "block", md: "none" }, mt: 0.25 }}
