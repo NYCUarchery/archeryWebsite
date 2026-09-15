@@ -731,8 +731,6 @@ test("進度頁：對抗組面板以雙方對照呈現比分，並保留缺少�
   const side1Summary = comparison.getByTestId("match-score-side-1");
   const side2Summary = comparison.getByTestId("match-score-side-2");
   const firstWave = comparison.getByTestId("match-score-wave-1");
-  const side1 = firstWave.getByTestId("match-score-end-1-side-1");
-  const side2 = firstWave.getByTestId("match-score-end-1-side-2");
   await expect(side1Summary.getByLabel("隊伍 1", { exact: true })).toHaveValue(
     new RegExp(fixture.setNameMine),
   );
@@ -749,22 +747,26 @@ test("進度頁：對抗組面板以雙方對照呈現比分，並保留缺少�
   await expect(comparison.getByTestId("match-score-wave-3").getByLabel("第 3 波")).toBeVisible();
 
   const firstEndSide1 = firstWave.getByTestId("match-score-end-1-side-1");
+  const firstEndSide2 = firstWave.getByTestId("match-score-end-1-side-2");
   const secondEndSide1ForLayout = comparison
     .getByTestId("match-score-wave-2")
     .getByTestId("match-score-end-2-side-1");
-  const [firstEndCellBox, firstEndContentBox, secondEndCellBox] =
+  const [firstEndCellBox, firstEndContentBox, waveBox, firstEndSide2Box, secondEndCellBox] =
     await Promise.all([
       firstEndSide1.boundingBox(),
       firstEndSide1.getByLabel("已確認波次比分").boundingBox(),
+      firstWave.getByLabel("第 1 波").boundingBox(),
+      firstEndSide2.boundingBox(),
       secondEndSide1ForLayout.boundingBox(),
     ]);
-  if (!firstEndCellBox || !firstEndContentBox || !secondEndCellBox) {
+  if (!firstEndCellBox || !firstEndContentBox || !waveBox || !firstEndSide2Box || !secondEndCellBox) {
     throw new Error("波次比分卡片未取得位置");
   }
   expect(
     Math.abs(firstEndCellBox.width - firstEndContentBox.width),
   ).toBeLessThanOrEqual(1);
-  expect(firstEndContentBox.height).toBeLessThanOrEqual(140);
+  expect(firstEndCellBox.x).toBeLessThan(waveBox.x);
+  expect(waveBox.x).toBeLessThan(firstEndSide2Box.x);
   expect(secondEndCellBox.y).toBeGreaterThanOrEqual(
     firstEndCellBox.y + firstEndCellBox.height,
   );
@@ -800,7 +802,6 @@ test("進度頁：對抗組面板以雙方對照呈現比分，並保留缺少�
     "background-color",
     "rgba(211, 47, 47, 0.12)",
   );
-  const firstEndSide2 = comparison.getByTestId("match-score-end-1-side-2");
   await expect(firstEndSide2).toContainText("9");
   await expect(firstEndSide2).toContainText("M");
   await expect(firstEndSide2).toContainText("未確認");
