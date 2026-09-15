@@ -182,8 +182,8 @@ test.describe("Judge mobile scoring page", () => {
       page.getByTestId("match-score-wave-1").getByTestId("match-score-end-1-side-2").boundingBox(),
     ]);
     if (!wave || !side1 || !side2) throw new Error("手機比分波次未取得位置");
-    expect(wave.y).toBeLessThan(side1.y);
-    expect(side1.y).toBeLessThan(side2.y);
+    expect(side1.x).toBeLessThan(wave.x);
+    expect(wave.x).toBeLessThan(side2.x);
     await expect(page.locator('[data-current-end="true"]:visible')).toHaveCount(2);
 
     const confirmedCell = page.locator('[data-status="confirmed"]:visible').first();
