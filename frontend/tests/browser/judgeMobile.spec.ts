@@ -21,14 +21,14 @@ test.describe("Judge mobile scoring page", () => {
     const comparison = page.getByTestId("elimination-match-score-comparison");
     expect(await comparison.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-    const [side1, wave, side2] = await Promise.all([
+    const [side1, endMarker, side2] = await Promise.all([
       page.getByTestId("match-score-end-1-side-1").boundingBox(),
-      page.getByTestId("match-score-wave-1").getByLabel("第 1 波").boundingBox(),
+      page.getByTestId("match-score-end-row-1").getByLabel("第 1 波").boundingBox(),
       page.getByTestId("match-score-end-1-side-2").boundingBox(),
     ]);
-    if (!side1 || !wave || !side2) throw new Error("手機比分欄位未取得位置");
-    expect(side1.x).toBeLessThan(wave.x);
-    expect(wave.x).toBeLessThan(side2.x);
+    if (!side1 || !endMarker || !side2) throw new Error("手機比分欄位未取得位置");
+    expect(side1.x).toBeLessThan(endMarker.x);
+    expect(endMarker.x).toBeLessThan(side2.x);
   });
 
   test("桌機：維持雙方－波次－雙方三欄對照", async ({ page }) => {
@@ -42,14 +42,14 @@ test.describe("Judge mobile scoring page", () => {
     await page.getByRole("button", { name: /Match 1/ }).click();
     await expect(page.getByTestId("match-score-end-1-side-1")).toBeVisible();
     await expect(page.getByTestId("match-score-end-1-side-2")).toBeVisible();
-    const [side1, wave, side2] = await Promise.all([
+    const [side1, endMarker, side2] = await Promise.all([
       page.getByTestId("match-score-end-1-side-1").boundingBox(),
-      page.getByTestId("match-score-wave-1").getByLabel("第 1 波").boundingBox(),
+      page.getByTestId("match-score-end-row-1").getByLabel("第 1 波").boundingBox(),
       page.getByTestId("match-score-end-1-side-2").boundingBox(),
     ]);
-    if (!side1 || !wave || !side2) throw new Error("桌機比分欄位未取得位置");
-    expect(side1.x).toBeLessThan(wave.x);
-    expect(wave.x).toBeLessThan(side2.x);
+    if (!side1 || !endMarker || !side2) throw new Error("桌機比分欄位未取得位置");
+    expect(side1.x).toBeLessThan(endMarker.x);
+    expect(endMarker.x).toBeLessThan(side2.x);
   });
 
   test("390px：裁判組別與項目 Select A→B→A、個人→團體→個人均會關閉選單", async ({ page }) => {
@@ -170,20 +170,20 @@ test.describe("Judge mobile scoring page", () => {
     await expect(match).toContainText("3B");
     await match.click();
     await expect(page.getByTestId("elimination-match-score-comparison")).toBeVisible();
-    await expect(page.getByTestId("match-score-wave-1")).toContainText("第 1 波");
-    await expect(page.getByTestId("match-score-wave-1")).toContainText("我方");
-    await expect(page.getByTestId("match-score-wave-1")).toContainText("對手");
+    await expect(page.getByTestId("match-score-end-row-1")).toContainText("第 1 波");
+    await expect(page.getByTestId("match-score-end-row-1")).toContainText("我方");
+    await expect(page.getByTestId("match-score-end-row-1")).toContainText("對手");
     const comparison = page.getByTestId("elimination-match-score-comparison");
     expect(await comparison.evaluate((node) => node.scrollWidth <= node.clientWidth)).toBe(true);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
-    const [wave, side1, side2] = await Promise.all([
-      page.getByTestId("match-score-wave-1").getByText("第 1 波", { exact: true }).boundingBox(),
-      page.getByTestId("match-score-wave-1").getByTestId("match-score-end-1-side-1").boundingBox(),
-      page.getByTestId("match-score-wave-1").getByTestId("match-score-end-1-side-2").boundingBox(),
+    const [endMarker, side1, side2] = await Promise.all([
+      page.getByTestId("match-score-end-row-1").getByText("第 1 波", { exact: true }).boundingBox(),
+      page.getByTestId("match-score-end-row-1").getByTestId("match-score-end-1-side-1").boundingBox(),
+      page.getByTestId("match-score-end-row-1").getByTestId("match-score-end-1-side-2").boundingBox(),
     ]);
-    if (!wave || !side1 || !side2) throw new Error("手機比分波次未取得位置");
-    expect(side1.x).toBeLessThan(wave.x);
-    expect(wave.x).toBeLessThan(side2.x);
+    if (!endMarker || !side1 || !side2) throw new Error("手機比分波次未取得位置");
+    expect(side1.x).toBeLessThan(endMarker.x);
+    expect(endMarker.x).toBeLessThan(side2.x);
     await expect(page.locator('[data-current-end="true"]:visible')).toHaveCount(2);
 
     const confirmedCell = page.locator('[data-status="confirmed"]:visible').first();
