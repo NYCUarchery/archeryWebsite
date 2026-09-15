@@ -259,10 +259,10 @@ test("對抗賽計分板：390px 顯示淘汰樹且詳情不橫向溢出", async
   const dialog = page.getByRole("dialog", { name: /比分詳細資料/ });
   await expect(dialog).toBeVisible();
   const comparison = dialog.getByTestId("elimination-match-score-comparison");
-  const firstWave = comparison.getByTestId("match-score-wave-1");
-  const side1 = firstWave.getByTestId("match-score-end-1-side-1");
-  const side2 = firstWave.getByTestId("match-score-end-1-side-2");
-  await expect(firstWave).toBeVisible();
+  const firstEndRow = comparison.getByTestId("match-score-end-row-1");
+  const side1 = firstEndRow.getByTestId("match-score-end-1-side-1");
+  const side2 = firstEndRow.getByTestId("match-score-end-1-side-2");
+  await expect(firstEndRow).toBeVisible();
   await expect(side1.locator(".score_block")).toHaveCount(6);
   await expect(side2.locator(".score_block")).toHaveCount(6);
   const [side1Box, side2Box] = await Promise.all([side1.boundingBox(), side2.boundingBox()]);
