@@ -1158,7 +1158,7 @@ function Page({ params }: { params: { id: string; teamSize: string } }) {
         <DialogTitle sx={{ py: 1 }}>
           修改對抗組 #{selectedMatchId}
         </DialogTitle>
-        <DialogContent sx={{ overflow: "visible", pb: 1 }}>
+        <DialogContent sx={{ overflow: "auto", pb: 1 }}>
           <Stack spacing={1} sx={{ mt: 0.5 }}>
             <OutcomeStatusIndicator
               status={selectedMatchOutcomeStatus}
