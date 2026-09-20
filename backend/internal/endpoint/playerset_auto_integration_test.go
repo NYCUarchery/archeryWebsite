@@ -25,8 +25,7 @@ import (
 // contract depends on SELECT ... FOR UPDATE and a real transaction.
 type AutoPlayerSetIntegrationTestSuite struct {
 	suite.Suite
-	router      *gin.Engine
-	sessionFile string
+	router *gin.Engine
 }
 
 func TestAutoPlayerSetIntegrationTestSuite(t *testing.T) {
@@ -38,24 +37,13 @@ func TestAutoPlayerSetIntegrationTestSuite(t *testing.T) {
 
 func (suite *AutoPlayerSetIntegrationTestSuite) SetupSuite() {
 	suite.Require().NoError(database.ResetTestDatabase("legacy"))
-	file, err := os.CreateTemp("", "archery-auto-playerset-session-*.yaml")
-	suite.Require().NoError(err)
-	suite.sessionFile = file.Name()
-	suite.Require().NoError(file.Close())
-	suite.Require().NoError(os.WriteFile(suite.sessionFile, []byte("SessionKey: auto-playerset-integration-test-key\n"), 0600))
-}
-
-func (suite *AutoPlayerSetIntegrationTestSuite) TearDownSuite() {
-	if suite.sessionFile != "" {
-		_ = os.Remove(suite.sessionFile)
-	}
 }
 
 func (suite *AutoPlayerSetIntegrationTestSuite) SetupTest() {
 	suite.Require().NoError(database.ResetTestDatabase("legacy"))
 	gin.SetMode(gin.TestMode)
 	suite.router = gin.New()
-	suite.router.Use(pkg.EnableCookieSessionMiddleware(suite.sessionFile))
+	suite.router.Use(pkg.EnableCookieSessionMiddleware(pkg.SessionConfig{Key: "auto-playerset-integration-test-key"}))
 	suite.router.POST("/test/session/:userid", func(context *gin.Context) {
 		userID, err := strconv.ParseUint(context.Param("userid"), 10, 64)
 		if err != nil || userID == 0 {

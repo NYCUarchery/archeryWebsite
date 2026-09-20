@@ -20,11 +20,27 @@ services:
     working_dir: /app
     volumes:
       - ./backend:/app:ro
-      - ${ARCHERY_TEST_CONFIG_DIR:?runner required}:/app/config:ro
       - ${ARCHERY_GO_MOD_CACHE:?runner required}:/go/pkg/mod:ro
       - ${ARCHERY_GO_BUILD_CACHE:?runner required}:/root/.cache/go-build
     environment:
-      ARCHERY_TEST_CONFIG: /app/config/db.yaml
+      ARCHERY_ENVIRONMENT: ${ARCHERY_TEST_ENVIRONMENT:?runner required}
+      MYSQL_HOST: ${ARCHERY_TEST_DB_HOST:?runner required}
+      MYSQL_PORT: ${ARCHERY_TEST_DB_PORT:?runner required}
+      MYSQL_DATABASE: ${ARCHERY_TEST_DATABASE:?runner required}
+      MYSQL_USER: ${ARCHERY_TEST_DB_USER:?runner required}
+      MYSQL_PASSWORD: ${ARCHERY_TEST_DB_PASSWORD:?runner required}
+      ARCHERY_SESSION_KEY: ${ARCHERY_TEST_SESSION_KEY:?runner required}
+      ARCHERY_DICTATOR_USERNAME: ${ARCHERY_TEST_DICTATOR_USERNAME:?runner required}
+      ARCHERY_DICTATOR_PASSWORD: ${ARCHERY_TEST_DICTATOR_PASSWORD:?runner required}
+      ARCHERY_DICTATOR_EMAIL: ${ARCHERY_TEST_DICTATOR_EMAIL:?runner required}
+      ARCHERY_DICTATOR_OVERVIEW: ${ARCHERY_TEST_OVERVIEW:-}
+      # cmd/testdb reads only this separate guard namespace before reset.
+      ARCHERY_TEST_DATABASE: ${ARCHERY_TEST_DATABASE:?runner required}
+      ARCHERY_TEST_DB_PASSWORD: ${ARCHERY_TEST_DB_PASSWORD:?runner required}
+      ARCHERY_TEST_DB_HOST: ${ARCHERY_TEST_DB_HOST:?runner required}
+      ARCHERY_TEST_DB_PORT: ${ARCHERY_TEST_DB_PORT:?runner required}
+      ARCHERY_TEST_DB_USER: ${ARCHERY_TEST_DB_USER:?runner required}
+      ARCHERY_TEST_ENVIRONMENT: ${ARCHERY_TEST_ENVIRONMENT:?runner required}
       ARCHERY_TEST_RUN_ID: ${ARCHERY_TEST_RUN_ID:?runner required}
       ARCHERY_MYSQL_INTEGRATION: "1"
       SEEDER_INTEGRATION_TEST: "1"

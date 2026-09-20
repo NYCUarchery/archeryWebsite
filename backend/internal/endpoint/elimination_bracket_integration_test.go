@@ -27,30 +27,18 @@ import (
 // locking and transactions, neither of which sqlite-style unit tests cover.
 type EliminationBracketIntegrationTestSuite struct {
 	suite.Suite
-	router      *gin.Engine
-	sessionFile string
+	router *gin.Engine
 }
 
 func (suite *EliminationBracketIntegrationTestSuite) SetupSuite() {
 	suite.Require().NoError(database.ResetTestDatabase("legacy"))
-	file, err := os.CreateTemp("", "archery-bracket-session-*.yaml")
-	suite.Require().NoError(err)
-	suite.sessionFile = file.Name()
-	suite.Require().NoError(file.Close())
-	suite.Require().NoError(os.WriteFile(suite.sessionFile, []byte("SessionKey: bracket-integration-test-key\n"), 0600))
-}
-
-func (suite *EliminationBracketIntegrationTestSuite) TearDownSuite() {
-	if suite.sessionFile != "" {
-		_ = os.Remove(suite.sessionFile)
-	}
 }
 
 func (suite *EliminationBracketIntegrationTestSuite) SetupTest() {
 	suite.Require().NoError(database.ResetTestDatabase("legacy"))
 	gin.SetMode(gin.TestMode)
 	suite.router = gin.New()
-	suite.router.Use(pkg.EnableCookieSessionMiddleware(suite.sessionFile))
+	suite.router.Use(pkg.EnableCookieSessionMiddleware(pkg.SessionConfig{Key: "bracket-integration-test-key"}))
 	suite.router.POST("/test/session/:userid", func(context *gin.Context) {
 		userID, err := strconv.ParseUint(context.Param("userid"), 10, 64)
 		if err != nil || userID == 0 {

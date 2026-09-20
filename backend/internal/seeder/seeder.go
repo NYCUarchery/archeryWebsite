@@ -206,7 +206,7 @@ func firstDictator(tx *gorm.DB) (database.User, error) {
 	var dictator database.User
 	if err := tx.Where("role = ?", pkg.RoleToString(pkg.RDictator)).Order("id ASC").First(&dictator).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return dictator, errors.New("no Dictator user exists; configure dictator.yaml and initialize the backend first")
+			return dictator, errors.New("no Dictator user exists; configure ARCHERY_DICTATOR_* and initialize the backend first")
 		}
 		return dictator, fmt.Errorf("find first Dictator user: %w", err)
 	}

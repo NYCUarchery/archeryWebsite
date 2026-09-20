@@ -3,18 +3,16 @@ package pkg
 import (
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
-	"gopkg.in/yaml.v2"
 )
 
 var sessionName = "mysession"
 
-type SessionConf struct {
-	SessionKey string `yaml:"SessionKey"`
+type SessionConfig struct {
+	Key string
 }
 
 type SessionContents struct {
@@ -36,24 +34,8 @@ var defaultSessionOptions = sessions.Options{
 	HttpOnly: true, // true : Don't allow JS to access the cookie
 }
 
-func GetConf[T any](filePath string) *T {
-	var c T
-	yamlFile, err := os.ReadFile(filePath)
-	if err != nil {
-		log.Printf("yamlFile.Get err   #%v ", err)
-	}
-
-	err = yaml.Unmarshal(yamlFile, &c)
-	if err != nil {
-		log.Fatalf("Unmarshal: %v", err)
-	}
-	return &c
-}
-
-func EnableCookieSessionMiddleware(session_file string) gin.HandlerFunc {
-	var c SessionConf
-	c = *GetConf[SessionConf](session_file)
-	store := cookie.NewStore([]byte(c.SessionKey))
+func EnableCookieSessionMiddleware(config SessionConfig) gin.HandlerFunc {
+	store := cookie.NewStore([]byte(config.Key))
 	return sessions.Sessions(sessionName, store)
 }
 

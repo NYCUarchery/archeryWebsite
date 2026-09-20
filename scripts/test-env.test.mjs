@@ -28,7 +28,9 @@ function startRunner(mode) {
   chmodSync(docker, 0o700);
   const child = spawn(process.execPath, [runner, 'go-integration'], {
     cwd: root,
-    env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, FAKE_DOCKER_MODE: mode, FAKE_DOCKER_LOG: log },
+    env: { ...process.env, PATH: `${bin}:${process.env.PATH}`, FAKE_DOCKER_MODE: mode, FAKE_DOCKER_LOG: log,
+      COMPOSE_PROJECT_NAME: 'production-project', COMPOSE_FILE: 'production-compose.yml',
+      MYSQL_HOST: 'production-mysql', MYSQL_DATABASE: 'production_database' },
     stdio: ['ignore', 'pipe', 'pipe'],
   });
   let output = '';
@@ -43,10 +45,22 @@ function dockerEvents(log) {
 }
 
 function assertCleaned(events) {
-  const configDir = events.find(event => event.command === 'up')?.configDir;
-  assert.ok(configDir, 'runner never started the isolated mysql service');
+  assert.ok(events.some(event => event.command === 'up'), 'runner never started the isolated mysql service');
   const downIndex = events.findIndex(event => event.command === 'down');
   assert.ok(downIndex >= 0, 'runner did not tear down its compose project');
+}
+
+function assertIsolatedEnvironment(events) {
+  for (const event of events) {
+    if (!event.command || event.command === 'inspect' || event.command === 'rm') continue;
+    assert.equal(event.environment.composeProject, undefined, 'caller COMPOSE_PROJECT_NAME leaked to Docker');
+    assert.equal(event.environment.mysqlHost, undefined, 'caller MYSQL_HOST leaked to Docker');
+    assert.equal(event.environment.mysqlDatabase, undefined, 'caller MYSQL_DATABASE leaked to Docker');
+    assert.match(event.environment.testDatabase, /^archery_test_r\d+_[a-f0-9]{8}$/);
+    assert.match(event.environment.testRunID, /^r\d+_[a-f0-9]{8}$/);
+    assert.equal(event.environment.testSessionKeyPresent, true);
+    assert.deepEqual(event.args.slice(0, 6), ['compose', '--env-file', '/dev/null', '-p', `archery-test-${event.environment.testRunID.replaceAll('_', '-')}`, '-f']);
+  }
 }
 
 function runnerReportDirectory(events) {
@@ -69,18 +83,16 @@ async function waitForEvent(log, event) {
   throw new Error(`timed out waiting for ${event}`);
 }
 
-test('successful run tears down services and removes generated config workdir', { timeout: 15_000 }, async () => {
+test('successful run tears down services with a private env-only manifest', { timeout: 15_000 }, async () => {
   const run = startRunner('success');
   const result = await waitForExit(run.child);
   assert.equal(result.code, 0, run.output());
   const events = dockerEvents(run.log);
   assertCleaned(events);
+  assertIsolatedEnvironment(events);
   const runCommand = events.find(event => event.command === 'run');
-  const configDir = runCommand.args.find(argument => argument.includes('ARCHERY_TEST_CONFIG_DIR'));
-  assert.equal(configDir, undefined, 'fake logs must not receive runner secrets/environment');
   const reportDirectory = runnerReportDirectory(events);
   assert.ok(existsSync(path.join(reportDirectory, 'go-test.jsonl')));
-  assert.equal(existsSync(runCommand.configDir), false, 'runner must remove generated config workdir');
   rmSync(reportDirectory, { recursive: true, force: true });
 });
 
@@ -90,6 +102,7 @@ test('go test failure keeps its exit code and still tears down', async () => {
   assert.equal(result.code, 7);
   const events = dockerEvents(run.log);
   assertCleaned(events);
+  assertIsolatedEnvironment(events);
   const reportDirectory = runnerReportDirectory(events);
   assert.ok(existsSync(path.join(reportDirectory, 'services.log')));
   rmSync(reportDirectory, { recursive: true, force: true });
@@ -100,6 +113,7 @@ test('services log write failure still tears down', async () => {
   const result = await waitForExit(run.child);
   assert.notEqual(result.code, 0);
   assertCleaned(dockerEvents(run.log));
+  assertIsolatedEnvironment(dockerEvents(run.log));
   rmSync(runnerReportDirectory(dockerEvents(run.log)), { recursive: true, force: true });
 });
 
@@ -107,17 +121,19 @@ test('service log command failure is nonzero and still tears down', async () => 
   const run = startRunner('log-command-fail');
   const result = await waitForExit(run.child);
   assert.notEqual(result.code, 0);
-  assertCleaned(dockerEvents(run.log));
+  const events = dockerEvents(run.log);
+  assertCleaned(events);
+  assertIsolatedEnvironment(events);
   rmSync(runnerReportDirectory(dockerEvents(run.log)), { recursive: true, force: true });
 });
 
-test('cleanup failure is retried, exits nonzero, and removes generated credentials', async () => {
+test('cleanup failure is retried without caller compose or mysql targets', async () => {
   const run = startRunner('down-fail');
   const result = await waitForExit(run.child);
   assert.notEqual(result.code, 0);
   const events = dockerEvents(run.log);
   assert.equal(events.filter(event => event.command === 'down').length, 2);
-  assert.equal(existsSync(events[0].configDir), false);
+  assertIsolatedEnvironment(events);
   rmSync(runnerReportDirectory(events), { recursive: true, force: true });
 });
 
@@ -130,6 +146,7 @@ test('SIGTERM stops a hanging child, tears down, and exits 143', async () => {
   const events = dockerEvents(run.log);
   assert.ok(events.some(event => event.event === 'terminated'));
   assertCleaned(events);
+  assertIsolatedEnvironment(events);
   rmSync(runnerReportDirectory(events), { recursive: true, force: true });
 });
 

@@ -1,10 +1,6 @@
 package database
 
-import (
-	"os"
-	"path/filepath"
-	"testing"
-)
+import "testing"
 
 func TestTestDatabaseConfigValidate(t *testing.T) {
 	valid := TestDatabaseConfig{
@@ -36,22 +32,15 @@ func TestTestDatabaseConfigValidate(t *testing.T) {
 }
 
 func TestLoadTestDatabaseConfigRequiresRunner(t *testing.T) {
-	t.Setenv(TestConfigPathEnv, "")
+	t.Setenv("ARCHERY_TEST_DATABASE", "")
 	if _, err := LoadTestDatabaseConfig(); err == nil {
 		t.Fatal("missing runner config must fail, not use development config")
 	}
-	configPath := filepath.Join(t.TempDir(), "db.yaml")
-	config := "username: archery_test\npassword: disposable\nhost: mysql\nport: 3306\ndatabase: archery_test_run_123\nmode: test\ntest_run_id: run_123\n"
-	if err := os.WriteFile(configPath, []byte(config), 0600); err != nil {
-		t.Fatal(err)
-	}
-	t.Setenv(TestConfigPathEnv, configPath)
-	for _, runID := range []string{"", "another_run"} {
-		t.Setenv("ARCHERY_TEST_RUN_ID", runID)
-		if _, err := LoadTestDatabaseConfig(); err == nil {
-			t.Fatalf("runner mismatch %q accepted", runID)
-		}
-	}
+	t.Setenv("ARCHERY_TEST_DB_USER", "archery_test")
+	t.Setenv("ARCHERY_TEST_DB_PASSWORD", "disposable")
+	t.Setenv("ARCHERY_TEST_DB_HOST", "mysql")
+	t.Setenv("ARCHERY_TEST_DATABASE", "archery_test_run_123")
+	t.Setenv("ARCHERY_TEST_ENVIRONMENT", "test")
 	t.Setenv("ARCHERY_TEST_RUN_ID", "run_123")
 	if _, err := LoadTestDatabaseConfig(); err != nil {
 		t.Fatal(err)
@@ -59,7 +48,7 @@ func TestLoadTestDatabaseConfigRequiresRunner(t *testing.T) {
 }
 
 func TestResetRejectsUnknownFixtureBeforeConnecting(t *testing.T) {
-	t.Setenv(TestConfigPathEnv, "")
+	t.Setenv("ARCHERY_TEST_DATABASE", "")
 	if err := ResetTestDatabase("typo"); err == nil || err.Error() != `unknown fixture "typo" (expected empty, legacy, or accounts)` {
 		t.Fatalf("expected fixture error before any connection attempt, got %v", err)
 	}

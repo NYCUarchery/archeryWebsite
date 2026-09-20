@@ -1,6 +1,5 @@
 #!/usr/bin/env node
-// Test double for scripts/test-env.test.mjs. It records only command names and
-// paths; it deliberately never records the runner environment or credentials.
+// Test double for scripts/test-env.test.mjs. It records no credentials.
 import { appendFileSync, mkdirSync } from 'node:fs';
 
 const args = process.argv.slice(2);
@@ -16,14 +15,22 @@ const command = args[0] === 'container' ? args[1]
 
 function record(event) {
   if (logFile) appendFileSync(logFile, JSON.stringify({
-    event, command, args, configDir: process.env.ARCHERY_TEST_CONFIG_DIR,
+    event, command, args,
+    environment: {
+      composeProject: process.env.COMPOSE_PROJECT_NAME,
+      mysqlHost: process.env.MYSQL_HOST,
+      mysqlDatabase: process.env.MYSQL_DATABASE,
+      testDatabase: process.env.ARCHERY_TEST_DATABASE,
+      testRunID: process.env.ARCHERY_TEST_RUN_ID,
+      testSessionKeyPresent: Boolean(process.env.ARCHERY_TEST_SESSION_KEY),
+    },
   }) + '\n');
 }
 
 record('invoke');
 if (command === 'inspect') {
   const project = args.at(-1).replace(/-reset$/, '');
-  process.stdout.write(JSON.stringify([{ Config: { Labels: { 'com.docker.compose.project': project } } }]));
+  console.log(JSON.stringify([{ Config: { Labels: { 'com.docker.compose.project': project } } }]));
 }
 if (command === 'run') {
   if (mode === 'go-fail') process.exit(7);

@@ -3,6 +3,7 @@
 package database
 
 import (
+	"backend/internal/config"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -12,6 +13,14 @@ import (
 
 	"github.com/stretchr/testify/require"
 )
+
+func integrationApp(t *testing.T) config.App {
+	t.Helper()
+	app, err := config.Load("")
+	require.NoError(t, err)
+	require.NoError(t, app.ValidateServer())
+	return app
+}
 
 func TestDatabaseInitialPreservesExistingDictator(t *testing.T) {
 	if os.Getenv("ARCHERY_MYSQL_INTEGRATION") != "1" {
@@ -24,7 +33,7 @@ func TestDatabaseInitialPreservesExistingDictator(t *testing.T) {
 	t.Cleanup(func() { require.NoError(t, os.Chdir(workingDirectory)) })
 
 	require.NoError(t, ResetTestDatabase("empty"))
-	DatabaseInitial()
+	require.NoError(t, DatabaseInitial(integrationApp(t)))
 
 	var dictator User
 	for _, user := range FindAllUsers() {
@@ -45,7 +54,7 @@ func TestDatabaseInitialPreservesExistingDictator(t *testing.T) {
 
 	for run := 1; run <= 2; run++ {
 		t.Run("restart", func(t *testing.T) {
-			DatabaseInitial()
+			require.NoError(t, DatabaseInitial(integrationApp(t)))
 			persisted, findErr := FindByUserID(dictator.ID)
 			require.NoError(t, findErr)
 			require.Equal(t, dictator.Role, persisted.Role)
@@ -69,7 +78,7 @@ func TestDatabaseInitialRejectsNonDictatorUsernameCollision(t *testing.T) {
 	t.Cleanup(func() { require.NoError(t, os.Chdir(workingDirectory)) })
 
 	require.NoError(t, ResetTestDatabase("empty"))
-	DatabaseInitial()
+	require.NoError(t, DatabaseInitial(integrationApp(t)))
 	var configured User
 	for _, user := range FindAllUsers() {
 		if user.Role == pkg.RoleToString(pkg.RDictator) {
@@ -107,6 +116,9 @@ func TestDatabaseInitialCollisionHelper(t *testing.T) {
 	if os.Getenv("ARCHERY_DICTATOR_COLLISION_HELPER") != "1" {
 		return
 	}
-	DatabaseInitial()
+	if err := DatabaseInitial(integrationApp(t)); err != nil {
+		os.Stderr.WriteString(err.Error())
+		os.Exit(1)
+	}
 	os.Exit(0)
 }
