@@ -232,6 +232,35 @@ test("對抗賽計分板：桌機淘汰樹隊伍可點擊及鍵盤開啟比分�
   await expect(dialog).toBeVisible();
 });
 
+test("對抗賽計分板：僅首輪單邊空席顯示輪空", async ({ page }) => {
+  const fixture = buildEliminationFixture("individual");
+  const sourceMatch = fixture.elimination.stages?.[0]?.matchs?.[0];
+  if (!sourceMatch) throw new Error("fixture 缺少對抗組");
+  const stages = completeScoreboardStages(fixture.eliminationId, sourceMatch);
+  const firstRoundSingleEmpty = stages[0]?.matchs?.[0]?.match_results?.[1];
+  const firstRoundBothEmpty = stages[0]?.matchs?.[1]?.match_results;
+  const laterRoundPending = stages[1]?.matchs?.[1]?.match_results?.[1];
+  if (!firstRoundSingleEmpty || !firstRoundBothEmpty || !laterRoundPending) {
+    throw new Error("fixture 缺少輪空測試格位");
+  }
+  delete firstRoundSingleEmpty.player_set_id;
+  for (const result of firstRoundBothEmpty) delete result.player_set_id;
+  delete laterRoundPending.player_set_id;
+  fixture.elimination.stages = stages;
+  await registerEliminationRoutes(page, fixture);
+
+  await page.goto(
+    `/competition/${fixture.competitionId}/scoreboard/0/elimination/1`,
+  );
+
+  const byeLabels = page.locator(
+    'text.elimination-node-label[data-full-label="輪空"]',
+  );
+  await expect(byeLabels).toHaveCount(1);
+  await expect(byeLabels.locator("tspan")).toHaveText("輪空");
+  await expect(page.getByRole("button", { name: /輪空/ })).toHaveCount(0);
+});
+
 test("對抗賽計分板：390px 顯示淘汰樹且詳情不橫向溢出", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const fixture = buildEliminationFixture("team");
