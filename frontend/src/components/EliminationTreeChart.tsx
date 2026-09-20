@@ -409,6 +409,9 @@ function getTextByNode(
   node: HierarchyNode<TreeNode>,
   playerSets: DatabasePlayerSet[]
 ) {
+  if (node.data.kind === "bye") {
+    return "輪空";
+  }
   if (!node.data.result.player_set_id) {
     return "";
   }
