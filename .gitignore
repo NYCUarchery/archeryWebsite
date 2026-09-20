@@ -15,6 +15,7 @@ frontend/.env
 .env
 .env.*
 !.env.example
+backups/
 
 # Go 編譯產物
 backend/cmd/seeder/seeder
