@@ -28,17 +28,23 @@ interface AssociativeArray {
 interface sidebarItemProps {
   item: AssociativeArray;
   uid?: number;
+  onNavigate: () => void;
 }
 
-const SidebarItem: FC<sidebarItemProps> = ({ item, uid }) => {
+const SidebarItem: FC<sidebarItemProps> = ({ item, uid, onNavigate }) => {
   const [open, setOpen] = useState(false);
   const router = useRouter();
+
+  const navigate = (route: string) => {
+    router.push(route);
+    onNavigate();
+  };
 
   const subitemMap = (v: any, i: number) => {
     if (v.label === "我的比賽" && !uid) return null;
     return (
       <List key={i} component="div" disablePadding>
-        <ListItemButton sx={{ pl: 4 }} onClick={() => router.push(v.route)}>
+        <ListItemButton sx={{ pl: 4 }} onClick={() => navigate(v.route)}>
           <ListItemText primary={v.label} />
         </ListItemButton>
       </List>
@@ -50,7 +56,7 @@ const SidebarItem: FC<sidebarItemProps> = ({ item, uid }) => {
       <ListItem disablePadding>
         <ListItemButton
           onClick={() => {
-            item.subitem ? setOpen(!open) : router.push(item.route);
+            item.subitem ? setOpen(!open) : navigate(item.route);
           }}
         >
           <ListItemText primary={item.label} />
@@ -115,7 +121,12 @@ const Sidebar: FC<SidebarProps> = ({ sideBarOpen, setSideBarOpen, uid }) => {
         >
           <List>
             {menuItems.map((v, i) => (
-              <SidebarItem key={i} item={v} uid={uid} />
+              <SidebarItem
+                key={i}
+                item={v}
+                uid={uid}
+                onNavigate={handleClose}
+              />
             ))}
           </List>
         </Grow>
