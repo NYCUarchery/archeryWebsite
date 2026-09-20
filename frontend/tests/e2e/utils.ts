@@ -1,7 +1,14 @@
 import { User } from "./data";
 import { expect } from "./fixtures";
 import type { Page } from "@playwright/test";
-export async function registerUser(page: Page, user: User) {
+
+type SubmissionMethod = "button" | "enter";
+
+export async function registerUser(
+  page: Page,
+  user: User,
+  submissionMethod: SubmissionMethod = "button"
+) {
   await page.goto("/");
   await page.getByLabel("account of current user").click();
   await page.getByRole("menuitem", { name: "登入" }).click();
@@ -19,13 +26,21 @@ export async function registerUser(page: Page, user: User) {
   await page.getByLabel("電子郵件").fill(user.email);
   await page.getByLabel("組織/學校").click();
   await page.getByRole("option", { name: "NYCU" }).click();
-  await page.getByRole("button", { name: "註冊" }).click();
+  if (submissionMethod === "enter") {
+    await page.getByLabel("電子郵件").press("Enter");
+  } else {
+    await page.getByRole("button", { name: "註冊" }).click();
+  }
   await expect(page.getByRole("button", { name: "註冊" })).not.toBeVisible();
 }
 
 export type Credentials = Pick<User, "username" | "password">;
 
-export async function loginUser(page: Page, user: Credentials) {
+export async function loginUser(
+  page: Page,
+  user: Credentials,
+  submissionMethod: SubmissionMethod = "button"
+) {
   await page.goto("/");
   await page.getByLabel("account of current user").click();
   await page.getByRole("menuitem", { name: "登入" }).click();
@@ -39,7 +54,11 @@ export async function loginUser(page: Page, user: Credentials) {
     const path = new URL(candidate.url()).pathname;
     return candidate.request().method() === "GET" && path === "/api/user/me" && candidate.status() === 200;
   });
-  await page.getByRole("button", { name: "登入" }).click();
+  if (submissionMethod === "enter") {
+    await page.getByLabel("密碼").press("Enter");
+  } else {
+    await page.getByRole("button", { name: "登入" }).click();
+  }
   await Promise.all([sessionCreated, currentUserRead]);
   await expect(page.getByText("公告欄")).toBeVisible();
 }
