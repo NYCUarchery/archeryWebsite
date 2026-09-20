@@ -39,6 +39,7 @@ ARCHERY_E2E_MODE=full-ui bash scripts/test.sh e2e competitionLifecycle.spec.ts -
 - 升 Playwright 時，先查官方 release 與 Node engine，將 [`frontend/package.json`](../frontend/package.json) 的 `@playwright/test` 更新為精確版本，再於 `frontend` 執行 `npm install --package-lock-only`；提交 manifest 與 lockfile，並以各 CI browser engine 重跑測試。不可只改 browser binary 或手動補單一系統套件。
 - 型別、lint 與 production build 分別在 `frontend` 執行 `npm run typecheck`、`npm run lint`、`npm run build`。
 - runner／報告比較器安全測試於根目錄執行 `node --test scripts/test-env.test.mjs scripts/test-env-control.test.mjs scripts/compare-lifecycle-results.test.mjs`。
+- 部署設定邊界以 `node --test scripts/deployment-config.test.mjs` 驗證，僅 render Compose、不啟動服務；V1 格式、Caddy 設定與 production images 另由 Build Container workflow 驗證。
 
 `scripts/test.sh` 是穩定總入口；可見 [`scripts/test.sh`](../scripts/test.sh)。前端 npm scripts、瀏覽器 project 與 reporter 設定分別見 [`frontend/package.json`](../frontend/package.json)、[`frontend/playwright.browser.config.ts`](../frontend/playwright.browser.config.ts)、[`frontend/playwright.config.ts`](../frontend/playwright.config.ts)。
 
@@ -81,7 +82,7 @@ npm run test:e2e:webkit
 
 ## 真 E2E 與 lifecycle
 
-E2E runner 於 [`scripts/test-env.mjs`](../scripts/test-env.mjs) 建立每次專屬 Compose project、tmpfs MySQL、隨機密碼與 session key；資料庫不公開 host port。不生成 YAML，不讀 root `.env`，並排除呼叫者的 `COMPOSE_*`／`MYSQL_*`。私有 JSON manifest 保存測試控制權杖與隨機設定。它先重置 `empty` fixture，再啟動 backend、production frontend、proxy，將隨機 loopback port 的 base URL 與 manifest 傳給 Playwright。真 E2E 固定一 worker、零 retry，首個失敗即停止；timeout 用於防止永久掛起，非效能門檻。
+E2E runner 於 [`scripts/test-env.mjs`](../scripts/test-env.mjs) 建立每次專屬 Compose project、tmpfs MySQL、隨機密碼與 session key；資料庫不公開 host port。不生成 YAML，不讀 root `.env`，並排除呼叫者的 `COMPOSE_*`／`MYSQL_*`。私有 JSON manifest 保存測試控制權杖與隨機設定。它先重置 `empty` fixture，再啟動 backend、production frontend、共用 Caddyfile 的 HTTP proxy，將隨機 loopback port 的 base URL 與 manifest 傳給 Playwright。真 E2E 固定一 worker、零 retry，首個失敗即停止；timeout 用於防止永久掛起，非效能門檻。
 
 正常完成、測試失敗、逾時、SIGINT 或 SIGTERM 時，runner 都會嘗試收集 service log、移除 reset container、停止其擁有的 Compose project，並刪除暫存設定。若 cleanup 第一次失敗會重試；cleanup 仍失敗即使測試通過也視為失敗。SIGKILL 或 host crash 時此 finally cleanup 不可保證執行。只可清理由本次 manifest 識別的 project；若 control lock 遺留或過期，勿原地接管，丟棄整個專屬 project。
 

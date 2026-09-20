@@ -58,11 +58,17 @@ services:
     environment:
       NEXT_TELEMETRY_DISABLED: "1"
   proxy:
-    image: nginx:1.27-alpine
+    image: caddy:2.11.4-alpine
     ports:
       - "127.0.0.1::80"
     volumes:
-      - ./scripts/test-proxy.conf:/etc/nginx/nginx.conf:ro
+      - ./reverse-proxy/Caddyfile:/etc/caddy/Caddyfile:ro
+    environment:
+      ARCHERY_SITE_ADDRESS: :80
+      ARCHERY_ACME_EMAIL: ""
+    tmpfs:
+      - /data
+      - /config
     depends_on:
       - frontend
       - backend
