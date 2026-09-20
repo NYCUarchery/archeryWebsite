@@ -388,12 +388,71 @@ test("團體建隊：三個選手標籤各連到自己的輸入欄，並送出�
     await page.getByRole("option", { name: `${player.name} rank: ${player.rank}` }).click();
   }
   await page.getByRole("textbox").fill("三人隊");
+  const created = page.waitForResponse(
+    (response) =>
+      response.request().method() === "POST" &&
+      /^\/api\/playerset\/?$/.test(new URL(response.url()).pathname) &&
+      response.status() === 200,
+  );
   await page.getByRole("button", { name: "創建隊伍", exact: true }).click();
+  await created;
   await expect.poll(() => createdBodies).toEqual([{
     elimination_id: fixture.eliminationId,
     player_ids: groupPlayers.map((player) => player.id),
     set_name: "三人隊",
   }]);
+  for (let index = 0; index < 3; index += 1) {
+    await expect(selectors.nth(index)).toHaveValue("");
+  }
+  await expect(page.getByRole("textbox")).toHaveValue("");
+});
+
+test("團體建隊：建立失敗保留選手與隊名", async ({ page }) => {
+  const fixture = buildEliminationFixture("team");
+  fixture.elimination.player_sets = [];
+  fixture.elimination.stages = [];
+  fixture.groupsWithPlayers.groups.unshift({
+    id: 9299,
+    competition_id: fixture.competitionId,
+    group_name: "未分組",
+    players: [],
+  });
+  const groupPlayers = fixture.groupsWithPlayers.groups[1]!.players.slice(0, 3);
+  await registerEliminationRoutes(page, fixture);
+  await page.route("**/playerset", (route) =>
+    route.fulfill({
+      status: 500,
+      contentType: "application/json",
+      body: JSON.stringify({ error: "mock 建立失敗" }),
+    }),
+  );
+
+  await page.goto(
+    `/competition/${fixture.competitionId}/admin/schedule/elimination/3`,
+  );
+  const selectors = page.getByLabel("選手姓名");
+  for (const [index, player] of groupPlayers.entries()) {
+    await selectors.nth(index).fill(player.name!);
+    await page
+      .getByRole("option", { name: `${player.name} rank: ${player.rank}` })
+      .click();
+  }
+  await page.getByRole("textbox").fill("三人隊");
+  const failed = page.waitForResponse(
+    (response) =>
+      response.request().method() === "POST" &&
+      new URL(response.url()).pathname === "/api/playerset" &&
+      response.status() === 500,
+  );
+  await page.getByRole("button", { name: "創建隊伍", exact: true }).click();
+  await failed;
+
+  for (const [index, player] of groupPlayers.entries()) {
+    await expect(selectors.nth(index)).toHaveValue(
+      `${player.name} rank: ${player.rank}`,
+    );
+  }
+  await expect(page.getByRole("textbox")).toHaveValue("三人隊");
 });
 
 test("對抗賽設定：409 顯示不覆寫既有資料", async ({ page }) => {
