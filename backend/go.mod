@@ -5,6 +5,7 @@ go 1.23
 require (
 	github.com/gin-contrib/sessions v1.0.1
 	github.com/gin-gonic/gin v1.10.0
+	github.com/joho/godotenv v1.5.1
 	github.com/smartystreets/goconvey v1.8.1
 	github.com/stretchr/testify v1.9.0
 	github.com/swaggo/files v1.0.1
