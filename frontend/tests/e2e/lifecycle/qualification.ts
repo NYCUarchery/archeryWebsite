@@ -42,7 +42,7 @@ export async function scoreJudgeQualificationEnd(page: Page, playerName: string,
   // different archer; the table itself only renders score totals.
   await editor.getByRole("button", { name: /編輯第1局第[1-6]波分數/ }).nth(endIndex).click();
   await expect(page.getByRole("dialog", { name: "編輯分數" }).getByText("已確認（改分後維持確認）")).toBeVisible();
-  await page.getByRole("dialog", { name: "編輯分數" }).getByRole("button", { name: "保留草稿並返回" }).click();
+  await page.getByRole("dialog", { name: "編輯分數" }).getByRole("button", { name: "取消" }).click();
   await expect(page.getByRole("dialog", { name: "編輯分數" })).toBeHidden();
 }
 

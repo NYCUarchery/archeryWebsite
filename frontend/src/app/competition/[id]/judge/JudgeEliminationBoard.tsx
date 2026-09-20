@@ -37,7 +37,7 @@ import useGetCompetitionProgress from "@/utils/QueryHooks/useGetCompetitionProgr
 const POSSIBLE_SCORES = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
 const EVENT_NAMES: Record<number, string> = { 1: "個人對抗賽", 2: "混雙對抗賽", 3: "團體對抗賽" };
 
-type Draft = {
+type ScoreEditor = {
   end: DatabaseMatchEnd;
   playerSetName: string;
   matchNumber: number;
@@ -45,7 +45,6 @@ type Draft = {
   endIndex: number;
   laneNumber?: number;
   target?: DatabaseMatchResult["target"];
-  dirty: boolean;
 };
 
 function activeTeamSizes(competition?: { elimination_is_active?: boolean; mixed_elimination_is_active?: boolean; team_elimination_is_active?: boolean }) {
@@ -96,8 +95,7 @@ export default function JudgeEliminationBoard({ competitionId }: { competitionId
   const [teamSize, setTeamSize] = useState<number | "">("");
   const [selectedMatchId, setSelectedMatchId] = useState<number | null>(null);
   const [visibleStageIndex, setVisibleStageIndex] = useState<number | null>(null);
-  const [draft, setDraft] = useState<Draft | null>(null);
-  const [isEditorOpen, setEditorOpen] = useState(false);
+  const [editor, setEditor] = useState<ScoreEditor | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -130,7 +128,6 @@ export default function JudgeEliminationBoard({ competitionId }: { competitionId
       refetchInterval: selectedEliminationId !== undefined ? 2000 : false,
     },
   );
-  const isDirty = draft?.dirty ?? false;
   const currentStageIndex = elimination?.current_stage ?? -1;
   const currentEndIndex = elimination?.current_end ?? -1;
 
@@ -147,11 +144,8 @@ export default function JudgeEliminationBoard({ competitionId }: { competitionId
   useEffect(() => {
     if (!elimination) return;
     if (visibleStageIndex === null) setVisibleStageIndex(currentStageIndex);
-    else if (visibleStageIndex !== currentStageIndex) {
-      if (isDirty) setNotice("目前階段已變更；請先儲存或保留本波草稿後再切換。");
-      else setVisibleStageIndex(currentStageIndex);
-    }
-  }, [currentStageIndex, elimination, isDirty, visibleStageIndex]);
+    else if (visibleStageIndex !== currentStageIndex) setVisibleStageIndex(currentStageIndex);
+  }, [currentStageIndex, elimination, visibleStageIndex]);
 
   const stage = visibleStageIndex === null ? undefined : elimination?.stages?.[visibleStageIndex];
   const matches = useMemo(
@@ -161,24 +155,16 @@ export default function JudgeEliminationBoard({ competitionId }: { competitionId
   const selectedMatch = matches.find((match) => match.id === selectedMatchId);
 
   useEffect(() => {
-    if (!isDirty && selectedMatchId !== null && !selectedMatch) setSelectedMatchId(null);
-  }, [isDirty, selectedMatch, selectedMatchId]);
+    if (selectedMatchId !== null && !selectedMatch) setSelectedMatchId(null);
+  }, [selectedMatch, selectedMatchId]);
 
-  const preventScopeChange = () => {
-    if (!isDirty) return false;
-    setNotice("此波尚有未儲存草稿；請先送出，或保留草稿後再處理目前範圍。");
-    return true;
-  };
   const chooseGroup = (next: number) => {
-    if (preventScopeChange()) return;
     setGroupId(next); setTeamSize(""); setSelectedMatchId(null); setVisibleStageIndex(null);
   };
   const chooseTeamSize = (next: number) => {
-    if (preventScopeChange()) return;
     setTeamSize(next); setSelectedMatchId(null); setVisibleStageIndex(null);
   };
   const chooseMatch = (next: number) => {
-    if (preventScopeChange()) return;
     setSelectedMatchId(next);
   };
 
@@ -187,7 +173,7 @@ export default function JudgeEliminationBoard({ competitionId }: { competitionId
     await queryClient.invalidateQueries(["judgeGroupsEliminations", competitionId]);
   };
   const { mutate: saveEnd, isLoading: isSaving } = useMutation(
-    async (toSave: Draft) => {
+    async (toSave: ScoreEditor) => {
       if (!toSave.end.id || !toSave.end.match_scores?.length) throw new Error("本波沒有可送出的完整箭分資料。");
       const matchScoreIds = toSave.end.match_scores.map((score) => {
         if (!score.id) throw new Error("缺少箭分 ID。");
@@ -202,9 +188,9 @@ export default function JudgeEliminationBoard({ competitionId }: { competitionId
     },
     {
       onSuccess: async () => {
-        setDraft(null); setEditorOpen(false); setError(null); setNotice("本波已儲存。"); await refresh();
+        setEditor(null); setError(null); setNotice("本波已儲存。"); await refresh();
       },
-      onError: (reason: any) => setError(reason?.response?.data?.error ?? reason?.message ?? "儲存失敗；草稿仍保留。"),
+      onError: (reason: any) => setError(reason?.response?.data?.error ?? reason?.message ?? "儲存失敗；請修正後重試。"),
     },
   );
   const { mutate: confirmEnd, isLoading: isConfirming } = useMutation(
@@ -216,16 +202,8 @@ export default function JudgeEliminationBoard({ competitionId }: { competitionId
   );
 
   const openEnd = (end: DatabaseMatchEnd) => {
-    if (draft?.dirty && draft.end.id !== end.id) {
-      setNotice("此波尚有未儲存草稿；請先送出後再編輯其他波次。");
-      return;
-    }
-    if (draft?.end.id === end.id) {
-      setEditorOpen(true);
-      return;
-    }
     const result = selectedMatch?.match_results?.find((item) => item.id === end.match_result_id);
-    setDraft({
+    setEditor({
       end: cloneEnd(end),
       playerSetName: teamName(result, elimination),
       matchNumber: matches.findIndex((match) => match.id === selectedMatch?.id) + 1,
@@ -233,17 +211,16 @@ export default function JudgeEliminationBoard({ competitionId }: { competitionId
       endIndex: result?.match_ends?.findIndex((item) => item.id === end.id) ?? -1,
       laneNumber: result?.lane_number,
       target: result?.target,
-      dirty: false,
     });
-    setError(null); setEditorOpen(true);
+    setError(null);
   };
-  const addScore = (score: number) => setDraft((old) => {
+  const addScore = (score: number) => setEditor((old) => {
     const scores = old?.end.match_scores;
     const index = scores?.findIndex((item) => (item.score ?? -1) === -1) ?? -1;
     if (!old || !scores || index < 0) return old;
-    return { ...old, dirty: true, end: { ...old.end, match_scores: scores.map((item, i) => i === index ? { ...item, score } : item) } };
+    return { ...old, end: { ...old.end, match_scores: scores.map((item, i) => i === index ? { ...item, score } : item) } };
   });
-  const deleteScore = () => setDraft((old) => {
+  const deleteScore = () => setEditor((old) => {
     const scores = old?.end.match_scores;
     if (!old || !scores) return old;
     const target = scores.reduce(
@@ -251,8 +228,13 @@ export default function JudgeEliminationBoard({ competitionId }: { competitionId
       -1,
     );
     if (target < 0) return old;
-    return { ...old, dirty: true, end: { ...old.end, match_scores: scores.map((item, i) => i === target ? { ...item, score: -1 } : item) } };
+    return { ...old, end: { ...old.end, match_scores: scores.map((item, i) => i === target ? { ...item, score: -1 } : item) } };
   });
+  const closeEditor = () => {
+    if (isSaving) return;
+    setEditor(null);
+    setError(null);
+  };
 
   if (isGroupsLoading) return <Typography sx={{ p: 2 }}>正在載入可裁判的組別…</Typography>;
   if (isGroupsError) return <Alert severity="error">無法載入組別與對抗賽資料。</Alert>;
@@ -313,79 +295,39 @@ export default function JudgeEliminationBoard({ competitionId }: { competitionId
             onEditEnd={openEnd}
             onToggleConfirmation={(end, isConfirmed) => {
               if (!isConfirmed || !end.id) return;
-              if (isDirty) { setNotice("請先儲存目前草稿後再確認波次。"); return; }
               confirmEnd(end.id);
             }}
           />
         </Box>
       )}
-      {isDirty && !isEditorOpen && (
-        <Alert
-          severity="warning"
-          sx={{ mt: 2 }}
-          action={
-            <Button
-              color="inherit"
-              size="small"
-              onClick={() => {
-                if (window.confirm("要放棄這份未儲存草稿嗎？")) {
-                  setDraft(null);
-                  setVisibleStageIndex(currentStageIndex);
-                  setSelectedMatchId(null);
-                  setNotice("已放棄草稿，已切換至目前階段。");
-                }
-              }}
-            >
-              放棄草稿
-            </Button>
-          }
-        >
-          此波草稿尚未儲存；範圍切換已暫停。
-        </Alert>
-      )}
-      <Dialog fullScreen open={isEditorOpen} onClose={() => !isSaving && setEditorOpen(false)} aria-labelledby="judge-score-editor-title">
-        <DialogTitle id="judge-score-editor-title">編輯第 {draft ? draft.endIndex + 1 : ""} 波</DialogTitle>
+      <Dialog fullScreen open={editor !== null} onClose={closeEditor} aria-labelledby="judge-score-editor-title">
+        <DialogTitle id="judge-score-editor-title">編輯第 {editor ? editor.endIndex + 1 : ""} 波</DialogTitle>
         <DialogContent>
           <Stack spacing={1} sx={{ pt: 1 }}>
-            <Typography variant="body2">{selectedGroup?.group_name}・{teamSize === "" ? "" : EVENT_NAMES[teamSize]}・第 {(draft?.stageIndex ?? currentStageIndex) + 1} 階段・Match {draft?.matchNumber}・第 {draft ? draft.endIndex + 1 : ""} 波</Typography>
+            <Typography variant="body2">{selectedGroup?.group_name}・{teamSize === "" ? "" : EVENT_NAMES[teamSize]}・第 {(editor?.stageIndex ?? currentStageIndex) + 1} 階段・Match {editor?.matchNumber}・第 {editor ? editor.endIndex + 1 : ""} 波</Typography>
             <Stack direction="row" spacing={1} alignItems="center">
-              <LaneNumber laneNumber={draft?.laneNumber} target={draft?.target} width="40px" height="30px" />
-              <Typography variant="body2">{draft?.playerSetName}・{draft?.end.is_confirmed ? "已確認（改分後維持確認）" : "未確認"}</Typography>
+              <LaneNumber laneNumber={editor?.laneNumber} target={editor?.target} width="40px" height="30px" />
+              <Typography variant="body2">{editor?.playerSetName}・{editor?.end.is_confirmed ? "已確認（改分後維持確認）" : "未確認"}</Typography>
             </Stack>
             <Stack direction="row" justifyContent="center" spacing={1} flexWrap="wrap">
-              {(draft?.end.match_scores ?? []).map((score, index) => score.score !== undefined && score.score >= 0 ? <ScoreBlock key={score.id ?? index} score={score.score} /> : <Typography key={score.id ?? index}>—</Typography>)}
+              {(editor?.end.match_scores ?? []).map((score, index) => score.score !== undefined && score.score >= 0 ? <ScoreBlock key={score.id ?? index} score={score.score} /> : <Typography key={score.id ?? index}>—</Typography>)}
             </Stack>
             {error && <Alert severity="error">{error}</Alert>}
             <ScoreController
-              scores={(draft?.end.match_scores ?? []).map((score) => score.score ?? -1)}
-              isConfirmed={draft?.end.is_confirmed ?? false}
+              scores={(editor?.end.match_scores ?? []).map((score) => score.score ?? -1)}
+              isConfirmed={editor?.end.is_confirmed ?? false}
               allowConfirmedEditing
-              maximumArrowCount={draft?.end.match_scores?.length ?? 0}
+              maximumArrowCount={editor?.end.match_scores?.length ?? 0}
               possibleScores={POSSIBLE_SCORES}
               onAddScore={addScore}
               onDeleteScore={deleteScore}
-              onSave={() => draft && saveEnd(draft)}
+              onSave={() => editor && saveEnd(editor)}
               isSaving={isSaving}
             />
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditorOpen(false)} disabled={isSaving}>保留草稿並返回</Button>
-          <Button
-            color="warning"
-            disabled={isSaving || !draft?.dirty}
-            onClick={() => {
-              if (window.confirm("要放棄這份未儲存草稿嗎？")) {
-                setDraft(null);
-                setEditorOpen(false);
-                setVisibleStageIndex(currentStageIndex);
-                setSelectedMatchId(null);
-                setNotice("已放棄草稿，已切換至目前階段。");
-              }
-            }}
-          >
-            放棄草稿
-          </Button>
+          <Button onClick={closeEditor} disabled={isSaving}>取消</Button>
         </DialogActions>
       </Dialog>
       <Snackbar open={Boolean(notice)} autoHideDuration={4500} onClose={() => setNotice(null)}><Alert severity="info" onClose={() => setNotice(null)}>{notice}</Alert></Snackbar>

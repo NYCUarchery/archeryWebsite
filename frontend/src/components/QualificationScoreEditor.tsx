@@ -77,7 +77,7 @@ function QualificationScoreSlot({ score }: { score: number | undefined }) {
 
 /**
  * 原管理端資格賽記分器。Judge 與 Admin 均經此元件記分；手機只縮原表格與 Dialog，
- * 不另維護第二套波次／草稿 UI。
+ * 不另維護第二套波次編輯 UI。
  */
 export default function QualificationScoreEditor({
   competitionId,
@@ -91,7 +91,6 @@ export default function QualificationScoreEditor({
     value: number;
   } | null>(null);
   const [inputValue, setInputValue] = useState("");
-  const [scoreDialogOpen, setScoreDialogOpen] = useState(false);
   const [selectedEnd, setSelectedEnd] = useState<DatabaseRoundEnd | null>(null);
   const [dirty, setDirty] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -118,11 +117,10 @@ export default function QualificationScoreEditor({
         ]);
         setSelectedEnd(null);
         setDirty(false);
-        setScoreDialogOpen(false);
         setError(null);
       },
       onError: (reason: any) => {
-        setError(reason?.response?.data?.error ?? "儲存失敗；草稿仍保留。");
+        setError(reason?.response?.data?.error ?? "儲存失敗；請修正後重試。");
       },
     },
   );
@@ -138,7 +136,6 @@ export default function QualificationScoreEditor({
         ]);
         setSelectedEnd(null);
         setDirty(false);
-        setScoreDialogOpen(false);
         setError(null);
       },
       onError: (reason: any) => {
@@ -156,25 +153,20 @@ export default function QualificationScoreEditor({
   const playerStats = player
     ? calculatePlayerStats(player as unknown as Player)
     : undefined;
-  const draftIsComplete = Boolean(
+  const scoreIsComplete = Boolean(
     selectedEnd?.round_scores?.length &&
       selectedEnd.round_scores.every((score) => (score.score ?? -1) >= 0),
   );
   const isSaving = isSavingScores || isConfirming;
 
-  const discardDraft = () => {
-    if (!dirty || window.confirm("要放棄這份未儲存草稿嗎？")) {
-      setSelectedEnd(null);
-      setDirty(false);
-      setScoreDialogOpen(false);
-      setError(null);
-      return true;
-    }
-    return false;
+  const closeScoreDialog = () => {
+    if (isSaving) return;
+    setSelectedEnd(null);
+    setDirty(false);
+    setError(null);
   };
 
   const selectPlayer = (next: { label: string; value: number } | null) => {
-    if (dirty && !discardDraft()) return;
     setSelectedPlayer(next);
     setSelectedEnd(null);
     setDirty(false);
@@ -182,16 +174,9 @@ export default function QualificationScoreEditor({
   };
 
   const openScoreDialog = (end: DatabaseRoundEnd) => {
-    if (dirty && selectedEnd?.id !== end.id) {
-      setError("請先送出或放棄目前草稿後再編輯其他波次。");
-      return;
-    }
-    if (!dirty || selectedEnd?.id !== end.id) {
-      setSelectedEnd(cloneEnd(end));
-      setDirty(false);
-    }
+    setSelectedEnd(cloneEnd(end));
+    setDirty(false);
     setError(null);
-    setScoreDialogOpen(true);
   };
 
   const addScore = (score: number) => {
@@ -320,7 +305,7 @@ export default function QualificationScoreEditor({
       </Card>
 
       <Box sx={{ mx: { xs: 1, sm: 2 }, minWidth: 0 }}>
-        {error && !scoreDialogOpen && <Alert severity="error" sx={{ mb: 1 }}>{error}</Alert>}
+        {error && !selectedEnd && <Alert severity="error" sx={{ mb: 1 }}>{error}</Alert>}
         <TableContainer component={Paper} sx={{ width: "100%", overflow: "hidden" }}>
           <Table data-testid="qualification-score-editor-table" size="small" sx={{ width: "100%", tableLayout: "fixed" }}>
             <TableHead>
@@ -364,8 +349,8 @@ export default function QualificationScoreEditor({
       </Box>
 
       <Dialog
-        open={scoreDialogOpen}
-        onClose={() => !isSaving && setScoreDialogOpen(false)}
+        open={selectedEnd !== null}
+        onClose={closeScoreDialog}
         fullWidth
         maxWidth="xs"
         PaperProps={{ sx: { m: 1, width: "calc(100% - 16px)" } }}
@@ -377,7 +362,7 @@ export default function QualificationScoreEditor({
               {selectedEnd?.is_confirmed ? "已確認（改分後維持確認）" : "未確認"}
             </Typography>
             {error && <Alert severity="error">{error}</Alert>}
-            {selectedEnd && !selectedEnd.is_confirmed && (dirty || !draftIsComplete) && (
+            {selectedEnd && !selectedEnd.is_confirmed && (dirty || !scoreIsComplete) && (
               <Alert severity="info">請先送出完整箭分，再確認本波。</Alert>
             )}
             <Box
@@ -404,7 +389,7 @@ export default function QualificationScoreEditor({
               onDeleteScore={deleteScore}
               onSave={() => selectedEnd && saveScores(selectedEnd)}
               onConfirm={
-                selectedEnd && !selectedEnd.is_confirmed && !dirty && draftIsComplete
+                selectedEnd && !selectedEnd.is_confirmed && !dirty && scoreIsComplete
                   ? () => selectedEnd.id && confirmEnd(selectedEnd.id)
                   : undefined
               }
@@ -413,8 +398,7 @@ export default function QualificationScoreEditor({
           </Stack>
         </DialogContent>
         <DialogActions sx={{ flexWrap: "wrap", px: { xs: 1, sm: 2 }, pb: 1 }}>
-          <Button disabled={isSaving} onClick={() => setScoreDialogOpen(false)}>保留草稿並返回</Button>
-          <Button color="warning" disabled={isSaving || !dirty} onClick={discardDraft}>放棄草稿</Button>
+          <Button disabled={isSaving} onClick={closeScoreDialog}>取消</Button>
         </DialogActions>
       </Dialog>
     </Box>

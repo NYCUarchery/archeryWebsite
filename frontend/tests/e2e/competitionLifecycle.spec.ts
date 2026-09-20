@@ -191,7 +191,7 @@ test("完成兩組資格賽、個人及團體頒牌與跨角色隔離", async ({
             endIndex: 0,
             provisional: ["9", "10", "10", "10", "10", "10"],
             expected: ["10", "10", "10", "10", "10", "10"],
-            preserveDraft: true,
+            discardOnCancel: true,
           });
           await assertArcher01ReadsConfirmedQualificationFirstEnd(recurvePlayerSession.page, competitionId);
         }
@@ -348,7 +348,7 @@ test("完成兩組資格賽、個人及團體頒牌與跨角色隔離", async ({
                 await correctConfirmedEliminationEnd(judgeSession.page, {
                   eliminationId, wave: 3, side: winningSide,
                   provisional: ["10", "10", "9"], expected: ["10", "10", "10"],
-                  expectedPoints: 2, expectedCumulativePoints: 6, attemptOtherGroup: compound,
+                  expectedPoints: 2, expectedCumulativePoints: 6, switchGroupAfterCancel: compound,
                 });
                 await assertPlayerReadsConfirmedCurrentMatch(recurvePlayerSession.page, {
                   competitionId, eliminationId, winnerTeam: playerName(1), loserTeam: playerName(8), teamSize: 1,
