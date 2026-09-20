@@ -118,7 +118,7 @@ test.describe("Judge mobile scoring page", () => {
     await expect(page.getByRole("listbox")).toHaveCount(0);
   });
 
-  test("390px：乾淨裁判殼、啟用項目、確認波重編與草稿", async ({ page }) => {
+  test("390px：乾淨裁判殼、啟用項目、確認波重編與取消捨棄", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     const fixture = buildEliminationFixture("individual", { targets: ["A", "B"] });
     fixture.participants[0].role = "Judge";
@@ -192,18 +192,21 @@ test.describe("Judge mobile scoring page", () => {
     await expect(page.getByText("已確認（改分後維持確認）")).toBeVisible();
     await page.getByRole("button", { name: "9", exact: true }).click();
     await page.getByRole("button", { name: "送出", exact: true }).click();
-    await expect(page.getByRole("button", { name: "保留草稿並返回" })).toBeVisible();
-    expect(handles.savedScoreRequests).toHaveLength(1);
+    const editor = page.getByRole("dialog", { name: "編輯第 1 波" });
+    await expect(editor).toBeVisible();
+    await expect.poll(() => handles.savedScoreRequests).toHaveLength(1);
+    await expect(editor.getByRole("alert")).toBeVisible();
     const body = handles.savedScoreRequests[0].body as { match_score_ids: number[]; scores: number[] };
     expect(body.match_score_ids).toHaveLength(fixture.capacity);
     expect(body.scores).toHaveLength(fixture.capacity);
     expect(handles.confirmRequests).toHaveLength(0);
 
-    await page.getByRole("button", { name: "保留草稿並返回" }).click();
-    await expect(page.getByText("此波草稿尚未儲存；範圍切換已暫停。")).toBeVisible();
-    page.once("dialog", (dialog) => dialog.accept());
-    await page.getByRole("button", { name: "放棄草稿" }).click();
-    await expect(page.getByText("此波草稿尚未儲存；範圍切換已暫停。")).toHaveCount(0);
+    const cancelButton = editor.getByRole("button", { name: "取消", exact: true });
+    await cancelButton.focus();
+    await cancelButton.press("Enter");
+    await expect(editor).toBeHidden();
+    await confirmedCell.getByRole("button", { name: "編輯本波分數" }).click();
+    await expect(editor.locator(".score_block")).toHaveCount(0);
   });
 });
 

@@ -67,7 +67,7 @@ E2E runner 先以 `empty` 建環境；自動 fixture 於每一真 E2E case 建�
 
 Vitest 不啟動 Next 或瀏覽器。保留純函式／資料 oracle（排名、獎牌、分數與晉級邊界）、hybrid API guard，及 lifecycle 結果快照比較等可快速定位的檢查；見 [`frontend/tests/unit`](../frontend/tests/unit)。這些 oracle 不應呼叫產品計分函式產生預期值。
 
-mock browser 由 browser config 啟動 Next，且可平行執行；驗證籤表、賽程、記分、資格賽、裁判窄螢幕、草稿與 RWD 等短互動。其 fixture 會拒絕未明確 mock 的 `/api/` 請求，故網路遺漏會立即顯示。案例與 mock fixture 見 [`frontend/tests/browser`](../frontend/tests/browser)。
+mock browser 由 browser config 啟動 Next，且可平行執行；驗證籤表、賽程、記分、資格賽、裁判窄螢幕、管理端排名草稿與 RWD 等短互動。其 fixture 會拒絕未明確 mock 的 `/api/` 請求，故網路遺漏會立即顯示。案例與 mock fixture 見 [`frontend/tests/browser`](../frontend/tests/browser)。
 
 預設 browser 只跑 Chromium；需要跨 engine 時在 `frontend` 執行：
 
@@ -78,7 +78,7 @@ npm run test:e2e:firefox
 npm run test:e2e:webkit
 ```
 
-後兩項仍會呼叫隔離 runner。短測試不因 lifecycle 覆蓋同頁面而刪除：mock UI 留住 RWD、草稿與 request 細節；DB 整合留住權限、BYE、加射、併發與持久化邊界。
+後兩項仍會呼叫隔離 runner。短測試不因 lifecycle 覆蓋同頁面而刪除：mock UI 留住 RWD、管理端排名草稿、取消記分與 request 細節；DB 整合留住權限、BYE、加射、併發與持久化邊界。
 
 ## 真 E2E 與 lifecycle
 
@@ -92,18 +92,18 @@ fixture 的外部控制是 host-side runner 操作，不是 HTTP API：`reset` �
 
 [`competitionLifecycle.spec.ts`](../frontend/tests/e2e/competitionLifecycle.spec.ts) 涵蓋反曲、複合兩組，各 12 人；個人各取前 8 名，各組另建 4 支三人隊。第 9–12 名不得進個人籤表，仍可參團。完成定義是兩組個人／團體共四項頒牌，沒有新增整場 `finished` 欄位。
 
-流程涵蓋申請／核准、資格賽、個人與團體賽、晉級、頒牌、三次裁判更正、草稿、跨角色讀回與重啟持久化；另驗 A→B→A 及個人→團體→個人切換，各項進度互不污染。資格賽固定箭序在 [`lifecycle/data.ts`](../frontend/tests/e2e/lifecycle/data.ts)，其餘預期與操作見 [lifecycle helpers](../frontend/tests/e2e/lifecycle)。資料中的 `X` 是測試壓縮記號，實際填 `10`，不可與產品內十環值 `11` 混用。
+流程涵蓋申請／核准、資格賽、個人與團體賽、晉級、頒牌、三次裁判更正、取消編輯即捨棄、跨角色讀回與重啟持久化；另驗 A→B→A 及個人→團體→個人切換，各項進度互不污染。資格賽固定箭序在 [`lifecycle/data.ts`](../frontend/tests/e2e/lifecycle/data.ts)，其餘預期與操作見 [lifecycle helpers](../frontend/tests/e2e/lifecycle)。資料中的 `X` 是測試壓縮記號，實際填 `10`，不可與產品內十環值 `11` 混用。
 
 `ARCHERY_E2E_MODE` 只接受 `hybrid` 或 `full-ui`；未設定預設 `hybrid`，空白或未知值失敗。兩模式共用同一 lifecycle 與結果 assertion：
 
 | 模式 | 業務寫入 |
 | --- | --- |
 | `full-ui` | 全部經 UI，作為完整端到端展示。 |
-| `hybrid` | 只將固定、重複的申請／核准與填分改走正式 API；建賽、設定、建隊、排名、建表、進度、晉級、頒牌、更正、草稿、切組與跨角色讀回仍走 UI。 |
+| `hybrid` | 只將固定、重複的申請／核准與填分改走正式 API；建賽、設定、建隊、排名、建表、進度、晉級、頒牌、更正、取消編輯、切組與跨角色讀回仍走 UI。 |
 
 hybrid 不可用 Seeder、直接 DB 寫入、後門或 UI 失敗後 fallback。API 操作使用真實角色 session，先解析並驗證資源範圍與目前狀態，且不得覆寫已由 UI 確認的資料。模式解析與 API guard 見 [`frontend/tests/e2e/lifecycle/execution.ts`](../frontend/tests/e2e/lifecycle/execution.ts)，正式 API helper 見 [`frontend/tests/e2e/lifecycle/formalApi.ts`](../frontend/tests/e2e/lifecycle/formalApi.ts)。
 
-其餘申請者各自以獨立 API context 登入、核對本人並申請；Admin 核准，真正 approved Judge 的 `page.request` 補分。儲存後才確認，逐次讀回箭值、總分與確認狀態；UI 抽樣亦驗實際 request 目標與 payload。裁判更正保留暫定分數及原時機，不提前 API 補答案。最終仍驗 24 位 Player、Judge 無 Player、建立者為 Admin。
+其餘申請者各自以獨立 API context 登入、核對本人並申請；Admin 核准，真正 approved Judge 的 `page.request` 補分。儲存後才確認，逐次讀回箭值、總分與確認狀態；UI 抽樣亦驗實際 request 目標與 payload。裁判更正取消後重開必讀伺服器值，仍維持原時機，不提前 API 補答案。最終仍驗 24 位 Player、Judge 無 Player、建立者為 Admin。
 
 固定抽樣如下；full-ui 對同一批操作全部經 UI。實際數值由 coverage ledger 驗證，勿以文件取代測試：
 

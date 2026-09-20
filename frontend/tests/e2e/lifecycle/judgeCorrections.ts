@@ -8,8 +8,8 @@ type QualificationCorrection = {
   endIndex: number;
   provisional: readonly Arrow[];
   expected: readonly Arrow[];
-  /** Exercise a changed draft, retain it across return/reopen, then save it. */
-  preserveDraft?: boolean;
+  /** Cancel, switch to this group and back, then verify the persisted server value. */
+  switchGroupAfterCancel?: string;
 };
 
 type EliminationCorrection = {
@@ -20,8 +20,8 @@ type EliminationCorrection = {
   expected: readonly Arrow[];
   expectedPoints: number;
   expectedCumulativePoints: number;
-  /** A group switch must retain this event, match and unsaved draft. */
-  attemptOtherGroup?: string;
+  /** A cancelled edit must be discarded; reopening reads the persisted server value. */
+  discardOnCancel?: boolean;
 };
 
 type RoundEnd = {
@@ -134,22 +134,17 @@ export async function correctConfirmedQualificationEnd(page: Page, options: Qual
   expect(correctedEndId).toBe(beforeEnd.id);
   await expect(dialog).toBeHidden();
 
-  if (options.preserveDraft) {
-    // Change a real arrow, retain it across return/reopen, then restore and
-    // save it. The qualification score is therefore still the planned value.
+  if (options.discardOnCancel) {
+    // Change a real arrow, cancel, then verify reopening clones the persisted
+    // score rather than retaining a local edit.
     await qualificationEndButton(page, options.endIndex).click();
     await editorDeleteButton(dialog).click();
     await dialog.getByRole("button", { name: "9", exact: true }).click();
-    await dialog.getByRole("button", { name: "保留草稿並返回", exact: true }).click();
+    await dialog.getByRole("button", { name: "取消", exact: true }).click();
     await expect(dialog).toBeHidden();
     await qualificationEndButton(page, options.endIndex).click();
-    await expect(dialog.locator(".score_block").allTextContents()).resolves.toEqual([...options.expected.slice(0, -1), "9"]);
-    await editorDeleteButton(dialog).click();
-    await dialog.getByRole("button", { name: options.expected.at(-1)!, exact: true }).click();
-    const restored = waitForPatch(page, /^\/api\/player\/all-endscores\/(\d+)\/?$/);
-    await dialog.getByRole("button", { name: "送出", exact: true }).click();
-    expect(resourceId(await restored, /^\/api\/player\/all-endscores\/(\d+)\/?$/)).toBe(beforeEnd.id);
-    await expect(dialog).toBeHidden();
+    await expect(dialog.locator(".score_block").allTextContents()).resolves.toEqual([...options.expected]);
+    await dialog.getByRole("button", { name: "取消", exact: true }).click();
   }
 
   await assertQualificationReadback(page, options, expectedPlayerTotal);
@@ -198,11 +193,12 @@ export async function correctConfirmedEliminationEnd(page: Page, options: Elimin
   const cell = matchEndCell(page, options.wave, options.side);
   const originalMatchHeader = page.getByText(/^Match \d+ 比分$/).first();
   await expect(originalMatchHeader).toBeVisible();
-  const originalMatchText = await originalMatchHeader.textContent();
   const groupCombobox = page.getByRole("combobox", { name: "組別", exact: true });
   const eventCombobox = page.getByRole("combobox", { name: "項目", exact: true });
-  const originalGroup = await groupCombobox.textContent();
-  const originalEvent = await eventCombobox.textContent();
+  const originalGroup = (await groupCombobox.textContent())?.trim();
+  const originalEvent = (await eventCombobox.textContent())?.trim();
+  expect(originalGroup, "original judge group").toBeTruthy();
+  expect(originalEvent, "original judge event").toBeTruthy();
   const persistedEnd = await selectedMatchEnd(page, options, originalMatchHeader);
   expect(persistedEnd.is_confirmed).toBe(true);
   expectArrows(persistedEnd.match_scores, options.provisional);
@@ -218,30 +214,34 @@ export async function correctConfirmedEliminationEnd(page: Page, options: Elimin
   expect(endId).toBe(persistedEnd.id);
   await expect(dialog).toBeHidden();
 
-  if (options.attemptOtherGroup) {
+  if (options.switchGroupAfterCancel) {
     await cell.getByRole("button", { name: "編輯本波分數", exact: true }).click();
     await editorDeleteButton(dialog).click();
     await dialog.getByRole("button", { name: "9", exact: true }).click();
-    await dialog.getByRole("button", { name: "保留草稿並返回", exact: true }).click();
+    await dialog.getByRole("button", { name: "取消", exact: true }).click();
     await expect(dialog).toBeHidden();
 
     await groupCombobox.click();
-    const groupListbox = page.getByRole("listbox");
-    await groupListbox.getByRole("option", { name: options.attemptOtherGroup, exact: true }).click();
-    await expect(groupListbox).toBeHidden();
-    await expect(page.getByText("此波尚有未儲存草稿；請先送出，或保留草稿後再處理目前範圍。")).toBeVisible();
-    await expect(groupCombobox).toHaveText(originalGroup ?? "");
-    await expect(eventCombobox).toHaveText(originalEvent ?? "");
-    await expect(originalMatchHeader).toHaveText(originalMatchText ?? "");
-
+    await page
+      .getByRole("listbox")
+      .getByRole("option", { name: options.switchGroupAfterCancel, exact: true })
+      .click();
+    await expect(groupCombobox).toContainText(options.switchGroupAfterCancel);
+    await groupCombobox.click();
+    await page
+      .getByRole("listbox")
+      .getByRole("option", { name: originalGroup!, exact: true })
+      .click();
+    await eventCombobox.click();
+    await page
+      .getByRole("listbox")
+      .getByRole("option", { name: originalEvent!, exact: true })
+      .click();
+    await page.getByRole("button", { name: "Match 1", exact: false }).click();
+    await expect(originalMatchHeader).toBeVisible();
     await cell.getByRole("button", { name: "編輯本波分數", exact: true }).click();
-    await expect(dialog.locator(".score_block").allTextContents()).resolves.toEqual([...options.expected.slice(0, -1), "9"]);
-    await editorDeleteButton(dialog).click();
-    await dialog.getByRole("button", { name: options.expected.at(-1)!, exact: true }).click();
-    const restored = waitForPatch(page, /^\/api\/matchresult\/matchend\/scores\/(\d+)\/?$/);
-    await dialog.getByRole("button", { name: "送出", exact: true }).click();
-    expect(resourceId(await restored, /^\/api\/matchresult\/matchend\/scores\/(\d+)\/?$/)).toBe(persistedEnd.id);
-    await expect(dialog).toBeHidden();
+    await expect(dialog.locator(".score_block").allTextContents()).resolves.toEqual([...options.expected]);
+    await dialog.getByRole("button", { name: "取消", exact: true }).click();
   }
 
   await assertEliminationReadback(page, options, endId);
