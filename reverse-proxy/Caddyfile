@@ -1,0 +1,13 @@
+{
+	email "{$ARCHERY_ACME_EMAIL:}"
+}
+
+{$ARCHERY_SITE_ADDRESS} {
+	@backend path /api /api/* /swagger /swagger/*
+	handle @backend {
+		reverse_proxy backend:80
+	}
+	handle {
+		reverse_proxy frontend:3000
+	}
+}

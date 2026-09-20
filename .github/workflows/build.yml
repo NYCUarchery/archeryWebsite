@@ -11,6 +11,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Build
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - name: Verify deployment configuration boundaries
+        run: node --test scripts/deployment-config.test.mjs
+      - name: Validate modern Compose
+        run: docker compose --env-file .env.example -p archery-build-check -f docker-compose.yml config --quiet
+      - name: Validate Compose V1 1.29.2 (read-only, no daemon socket)
+        run: docker run --rm --network none -v "$PWD:/workspace:ro" -w /workspace docker/compose:1.29.2 --env-file .env.example -p archery-build-check -f docker-compose.yml config --quiet
+      - name: Validate Caddy HTTP and HTTPS configuration
+        run: |
+          docker run --rm --network none -e ARCHERY_SITE_ADDRESS=:80 -v "$PWD/reverse-proxy/Caddyfile:/etc/caddy/Caddyfile:ro" caddy:2.11.4-alpine caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+          docker run --rm --network none -e ARCHERY_SITE_ADDRESS=archery.example.org -e ARCHERY_ACME_EMAIL=admin@example.org -v "$PWD/reverse-proxy/Caddyfile:/etc/caddy/Caddyfile:ro" caddy:2.11.4-alpine caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+      - name: Build with example settings only
         run: |
           docker compose --env-file .env.example -p archery-build-check -f docker-compose.yml build
