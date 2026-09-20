@@ -11,8 +11,11 @@ import (
 
 var sessionName = "mysession"
 
+const sessionConfigContextKey = "archery.session.config"
+
 type SessionConfig struct {
-	Key string
+	Key    string
+	Secure bool
 }
 
 type SessionContents struct {
@@ -23,20 +26,26 @@ type SessionContents struct {
 	GameRole      Role
 }
 
-var defaultSessionOptions = sessions.Options{
-	Path:   "/", // "/" : root path for all pages
-	Domain: "",  // default is current domain
-	// MaxAge=0 means no 'Max-Age' attribute specified.
-	// MaxAge<0 means delete cookie now, equivalently 'Max-Age: 0'.
-	// MaxAge>0 means Max-Age attribute present and given in seconds.
-	MaxAge: 3600 * 24, // set to 1 day
-	// Secure:   true, // ture : using https
-	HttpOnly: true, // true : Don't allow JS to access the cookie
+func sessionOptions(secure bool) sessions.Options {
+	return sessions.Options{
+		Path:   "/", // "/" : root path for all pages
+		Domain: "",  // default is current domain
+		// MaxAge=0 means no 'Max-Age' attribute specified.
+		// MaxAge<0 means delete cookie now, equivalently 'Max-Age: 0'.
+		// MaxAge>0 means Max-Age attribute present and given in seconds.
+		MaxAge: 3600 * 24, // set to 1 day
+		// Secure:   true, // ture : using https
+		HttpOnly: true, // true : Don't allow JS to access the cookie
+		Secure:   secure,
+		SameSite: http.SameSiteLaxMode,
+	}
 }
 
 func EnableCookieSessionMiddleware(config SessionConfig) gin.HandlerFunc {
 	store := cookie.NewStore([]byte(config.Key))
-	return sessions.Sessions(sessionName, store)
+	store.Options(sessionOptions(config.Secure))
+	middleware := sessions.Sessions(sessionName, store)
+	return func(c *gin.Context) { c.Set(sessionConfigContextKey, config); middleware(c) }
 }
 
 func AuthSessionMiddleware() gin.HandlerFunc {
@@ -65,7 +74,6 @@ func IsAuthenticated(c *gin.Context) bool {
 
 func SaveAuthSession(c *gin.Context, sessionContents SessionContents) {
 	session := sessions.Default(c)
-	session.Options(defaultSessionOptions)
 	session.Set("userid", sessionContents.UserId)
 	session.Set("username", sessionContents.Username)
 	session.Set("systemrole", int(sessionContents.SystemRole))
@@ -84,7 +92,14 @@ func UpdateAuthSession(c *gin.Context, item string, value interface{}) {
 
 func ClearAuthSession(c *gin.Context) {
 	session := sessions.Default(c)
-	session.Options(sessions.Options{Path: "/", MaxAge: -1})
+	config, _ := c.Get(sessionConfigContextKey)
+	secure := false
+	if settings, ok := config.(SessionConfig); ok {
+		secure = settings.Secure
+	}
+	options := sessionOptions(secure)
+	options.MaxAge = -1
+	session.Options(options)
 	session.Clear()
 	session.Save()
 }
