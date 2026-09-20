@@ -61,10 +61,14 @@ services:
       mysql:
         condition: service_healthy
   reverse-proxy:
-    build: ./reverse-proxy
-    restart: unless-stopped
+    build:
+      context: ./reverse-proxy
+    environment:
+      ARCHERY_SITE_ADDRESS: ":80"
+      ARCHERY_ACME_EMAIL: ""
     ports:
-      - 80:80
+      - "80:80"
+    restart: unless-stopped
     depends_on:
       - frontend
       - backend
