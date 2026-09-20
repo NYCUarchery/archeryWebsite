@@ -6,8 +6,8 @@ import (
 	"backend/internal/pkg"
 )
 
-func SetUpRouter(router *gin.Engine, ip string, port string, sessionKey string) {
-	router.Use(pkg.EnableCookieSessionMiddleware(pkg.SessionConfig{Key: sessionKey}))
+func SetUpRouter(router *gin.Engine, ip string, port string, sessionKey string, secure bool) {
+	router.Use(pkg.EnableCookieSessionMiddleware(pkg.SessionConfig{Key: sessionKey, Secure: secure}))
 
 	api := router.Group("/api")
 	AddApiRouter(api)
