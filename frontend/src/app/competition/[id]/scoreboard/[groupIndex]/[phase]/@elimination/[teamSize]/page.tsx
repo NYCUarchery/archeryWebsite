@@ -138,7 +138,7 @@ export default function Page({ params }: { params: { id: string; groupIndex: str
       {/* 暫時於手機亦保留淘汰樹，供比較卡片版與樹狀版的可讀性。 */}
       <Box data-testid="elimination-desktop-tree" sx={{ display: "block", overflowX: "auto" }}>
         <Box sx={{ mx: "auto", width: "max-content" }}>
-          <EliminationTreeChart goldRoot={goldRoot} silverRoot={silverRoot} bronzeRoot={bronzeRoot} playerSets={playerSets} height={firstStageMatchCount * 100} width={chartWidth} onResultClick={selectResult} />
+          <EliminationTreeChart goldRoot={goldRoot} silverRoot={silverRoot} bronzeRoot={bronzeRoot} playerSets={playerSets} height={firstStageMatchCount * 140} width={chartWidth} onResultClick={selectResult} />
         </Box>
       </Box>
       <Box sx={{ display: "none", maxWidth: "100%", overflowX: "hidden", px: 0.5 }}>
