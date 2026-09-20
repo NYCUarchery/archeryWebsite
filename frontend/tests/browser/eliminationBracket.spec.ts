@@ -283,6 +283,51 @@ test("對抗賽計分板：390px 顯示淘汰樹且詳情不橫向溢出", async
   await expect(page.getByTestId("elimination-mobile-stages")).toBeHidden();
   expect(await tree.evaluate((element) => element.scrollWidth > element.clientWidth)).toBe(true);
   const team = page.getByRole("button", { name: /我方.*Match #9402/ }).first();
+  const longTeamLabel = tree
+    .locator('text.elimination-node-label[data-full-label*="我方超長隊伍名稱"]')
+    .first();
+  await expect(longTeamLabel).toHaveAttribute("data-line-count", "2");
+  await expect(longTeamLabel.locator("tspan")).toHaveCount(2);
+  await expect(team.locator("title")).toContainText(
+    "我方超長隊伍名稱測試不應截斷",
+  );
+  const labelBounds = await longTeamLabel.evaluate((element) => {
+    const bounds = (element as SVGGraphicsElement).getBBox();
+    return {
+      width: bounds.width,
+      height: bounds.height,
+      reservesLane: element.getAttribute("data-reserves-lane") === "true",
+    };
+  });
+  expect(labelBounds.height).toBeGreaterThan(16);
+  expect(labelBounds.width).toBeLessThanOrEqual(
+    labelBounds.reservesLane ? 160 : 190,
+  );
+  const nodeBounds = await tree.getByRole("button").evaluateAll((elements) =>
+    elements.map((element) => {
+      const bounds = (element as SVGGraphicsElement).getBoundingClientRect();
+      return {
+        left: bounds.left,
+        right: bounds.right,
+        top: bounds.top,
+        bottom: bounds.bottom,
+      };
+    }),
+  );
+  for (let first = 0; first < nodeBounds.length; first += 1) {
+    for (let second = first + 1; second < nodeBounds.length; second += 1) {
+      const horizontalOverlap =
+        Math.min(nodeBounds[first].right, nodeBounds[second].right) -
+        Math.max(nodeBounds[first].left, nodeBounds[second].left);
+      const verticalOverlap =
+        Math.min(nodeBounds[first].bottom, nodeBounds[second].bottom) -
+        Math.max(nodeBounds[first].top, nodeBounds[second].top);
+      expect(
+        horizontalOverlap <= 0 || verticalOverlap <= 0,
+        `淘汰樹節點 ${first} 與 ${second} 不應重疊`,
+      ).toBe(true);
+    }
+  }
   await team.scrollIntoViewIfNeeded();
   await team.click();
   const dialog = page.getByRole("dialog", { name: /比分詳細資料/ });
