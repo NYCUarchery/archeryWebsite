@@ -1,10 +1,12 @@
 package main
 
 import (
+	"backend/internal/config"
 	"backend/internal/database"
-	"backend/internal/endpoint"
 	"backend/internal/routers"
+	"flag"
 	"fmt"
+	"log"
 
 	"github.com/gin-gonic/gin"
 )
@@ -41,23 +43,32 @@ import (
 // Set the test data into container(server) with FTP clis.
 // schemes http
 func main() {
-	server := gin.Default() // initialize a Gin router
-	mode := endpoint.GetConf("config/db.yaml").Mode
+	envFile := flag.String("env-file", "", "optional dotenv file")
+	flag.Parse()
+	app, err := config.Load(*envFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := app.ValidateServer(); err != nil {
+		log.Fatal(err)
+	}
+	SetupGinMode(app.Environment)
+	server := gin.Default() // initialize a Gin router after selecting its mode
 	ip := getIpByMode()
 	port := "80"
-
-	SetupGinMode(mode)
-	database.SetupDatabaseByMode(mode)
-	routers.SetUpRouter(server, ip, port)
+	if err := database.DatabaseInitial(app); err != nil {
+		log.Fatal(err)
+	}
+	routers.SetUpRouter(server, ip, port, app.SessionKey)
 
 	server.Run(fmt.Sprintf("%s:%s", ip, port))
 }
 
 func getIpByMode() string {
 	switch gin.Mode() {
-	case "release":
+	case gin.ReleaseMode:
 		return "0.0.0.0" // attach the router to an http.Server and start the server
-	case "debug":
+	case gin.DebugMode:
 		return "0.0.0.0" // for localhost test
 	case "test":
 		return "0.0.0.0"
@@ -68,9 +79,9 @@ func getIpByMode() string {
 
 func SetupGinMode(mode string) {
 	switch mode {
-	case "release":
+	case "production":
 		gin.SetMode(gin.ReleaseMode)
-	case "debug":
+	case "development":
 		gin.SetMode(gin.DebugMode)
 	case "test":
 		gin.SetMode(gin.TestMode)

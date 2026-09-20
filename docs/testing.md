@@ -34,7 +34,7 @@ ARCHERY_E2E_MODE=full-ui bash scripts/test.sh e2e competitionLifecycle.spec.ts -
 ## 依賴與基本檢查
 
 - Go 指令的 module root 是 [`backend/go.mod`](../backend/go.mod)，故從 `backend` 執行原生 Go 指令；預設測試可用 `GOCACHE=/tmp/archery-go-build go test ./...`。
-- 隔離整合／E2E 需 Docker Compose、Go 1.23、Node 22 與已下載 Go modules（`cd backend && go mod download`）。
+- 隔離整合／E2E 需現行 Docker Compose（非 V1）、Go 1.23、Node 22 與已下載 Go modules（`cd backend && go mod download`）。
 - 前端需 `cd frontend && npm ci`；Playwright browser 依所選 engine 安裝，例如 `npx playwright install --with-deps chromium`。瀏覽器 CI 固定 Ubuntu 24.04，且保留 `--with-deps`，使 Playwright 下載版本與系統相依套件同時對應。
 - 升 Playwright 時，先查官方 release 與 Node engine，將 [`frontend/package.json`](../frontend/package.json) 的 `@playwright/test` 更新為精確版本，再於 `frontend` 執行 `npm install --package-lock-only`；提交 manifest 與 lockfile，並以各 CI browser engine 重跑測試。不可只改 browser binary 或手動補單一系統套件。
 - 型別、lint 與 production build 分別在 `frontend` 執行 `npm run typecheck`、`npm run lint`、`npm run build`。
@@ -58,7 +58,7 @@ ARCHERY_E2E_MODE=full-ui bash scripts/test.sh e2e competitionLifecycle.spec.ts -
 - `legacy`：既有 SQL fixture 加測試主辦人。
 - `accounts`：lifecycle 用的組織與角色帳號；不建立比賽、participant、分數或賽果。
 
-CLI 為 `testdb reset --fixture empty|legacy|accounts`，由 runner 配發 `ARCHERY_TEST_CONFIG` 與 `ARCHERY_TEST_RUN_ID`，不提供任意開發 DB 的 reset 入口。三種 development Seeder 情境另見 [README](../README.md#development-seeder)，與上述 fixture 不同。
+CLI 為 `testdb reset --fixture empty|legacy|accounts`，只接受 runner 配發的 `ARCHERY_TEST_DATABASE`、`ARCHERY_TEST_DB_PASSWORD`、`ARCHERY_TEST_RUN_ID` 及固定的 `ARCHERY_TEST_DB_HOST=mysql`、`ARCHERY_TEST_DB_PORT=3306`、`ARCHERY_TEST_DB_USER=archery_test`、`ARCHERY_TEST_ENVIRONMENT=test`；不回讀一般 `MYSQL_*` 或 YAML。三種 development Seeder 情境另見 [README](../README.md#development-seeder)，與上述 fixture 不同。
 
 E2E runner 先以 `empty` 建環境；自動 fixture 於每一真 E2E case 建立 page/context 前關閉既有 contexts，再 reset 該 case 的 fixture。lifecycle 指定 `accounts`；其流程中不得 reset。
 
@@ -81,7 +81,7 @@ npm run test:e2e:webkit
 
 ## 真 E2E 與 lifecycle
 
-E2E runner 於 [`scripts/test-env.mjs`](../scripts/test-env.mjs) 建立每次專屬 Compose project、tmpfs MySQL、隨機密碼與設定；資料庫不公開 host port。它先重置 `empty` fixture，再啟動 backend、production frontend、proxy，將隨機 loopback port 的 base URL 與 manifest 傳給 Playwright。真 E2E 固定一 worker、零 retry，首個失敗即停止；timeout 用於防止永久掛起，非效能門檻。
+E2E runner 於 [`scripts/test-env.mjs`](../scripts/test-env.mjs) 建立每次專屬 Compose project、tmpfs MySQL、隨機密碼與 session key；資料庫不公開 host port。不生成 YAML，不讀 root `.env`，並排除呼叫者的 `COMPOSE_*`／`MYSQL_*`。私有 JSON manifest 保存測試控制權杖與隨機設定。它先重置 `empty` fixture，再啟動 backend、production frontend、proxy，將隨機 loopback port 的 base URL 與 manifest 傳給 Playwright。真 E2E 固定一 worker、零 retry，首個失敗即停止；timeout 用於防止永久掛起，非效能門檻。
 
 正常完成、測試失敗、逾時、SIGINT 或 SIGTERM 時，runner 都會嘗試收集 service log、移除 reset container、停止其擁有的 Compose project，並刪除暫存設定。若 cleanup 第一次失敗會重試；cleanup 仍失敗即使測試通過也視為失敗。SIGKILL 或 host crash 時此 finally cleanup 不可保證執行。只可清理由本次 manifest 識別的 project；若 control lock 遺留或過期，勿原地接管，丟棄整個專屬 project。
 

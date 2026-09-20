@@ -7,60 +7,50 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"strconv"
 	"strings"
 
 	pkg "backend/internal/pkg"
 
-	"gopkg.in/yaml.v2"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
-
-// TestConfigPathEnv is deliberately separate from the normal application
-// configuration.  Test tooling must opt in to a runner-generated config and
-// must never fall back to config/db.yaml from a developer checkout.
-const TestConfigPathEnv = "ARCHERY_TEST_CONFIG"
 
 var testDatabaseName = regexp.MustCompile(`^archery_test_[a-z0-9_]+$`)
 
 // TestDatabaseConfig is the small, guarded contract shared by the test runner
 // and testdb. TestRunID is issued by the runner and must match Database.
 type TestDatabaseConfig struct {
-	Username  string `yaml:"username"`
-	Password  string `yaml:"password"`
-	Host      string `yaml:"host"`
-	Port      int    `yaml:"port"`
-	Database  string `yaml:"database"`
-	Mode      string `yaml:"mode"`
-	TestRunID string `yaml:"test_run_id"`
+	Username  string
+	Password  string
+	Host      string
+	Port      int
+	Database  string
+	Mode      string
+	TestRunID string
 }
 
 func LoadTestDatabaseConfig() (TestDatabaseConfig, error) {
-	path := os.Getenv(TestConfigPathEnv)
-	if path == "" {
-		return TestDatabaseConfig{}, fmt.Errorf("%s is required", TestConfigPathEnv)
+	port := 3306
+	if value := os.Getenv("ARCHERY_TEST_DB_PORT"); value != "" {
+		parsed, err := strconv.Atoi(value)
+		if err != nil {
+			return TestDatabaseConfig{}, errors.New("ARCHERY_TEST_DB_PORT must be a valid port")
+		}
+		port = parsed
 	}
-	contents, err := os.ReadFile(filepath.Clean(path))
-	if err != nil {
-		return TestDatabaseConfig{}, fmt.Errorf("read test config: %w", err)
-	}
-	var config TestDatabaseConfig
-	if err := yamlUnmarshal(contents, &config); err != nil {
-		return TestDatabaseConfig{}, fmt.Errorf("parse test config: %w", err)
-	}
+	config := TestDatabaseConfig{Username: envOrDefault("ARCHERY_TEST_DB_USER", "archery_test"), Password: os.Getenv("ARCHERY_TEST_DB_PASSWORD"), Host: envOrDefault("ARCHERY_TEST_DB_HOST", "mysql"), Port: port, Database: os.Getenv("ARCHERY_TEST_DATABASE"), Mode: envOrDefault("ARCHERY_TEST_ENVIRONMENT", "test"), TestRunID: os.Getenv("ARCHERY_TEST_RUN_ID")}
 	if err := config.Validate(); err != nil {
 		return TestDatabaseConfig{}, err
-	}
-	if os.Getenv("ARCHERY_TEST_RUN_ID") != config.TestRunID {
-		return TestDatabaseConfig{}, errors.New("test_run_id must match the runner environment")
 	}
 	return config, nil
 }
 
-// yamlUnmarshal is kept here to make config validation testable without
-// exposing application config fallback behaviour.
-var yamlUnmarshal = func(data []byte, out any) error {
-	return yaml.Unmarshal(data, out)
+func envOrDefault(key, fallback string) string {
+	if value := os.Getenv(key); value != "" {
+		return value
+	}
+	return fallback
 }
 
 func (config TestDatabaseConfig) Validate() error {

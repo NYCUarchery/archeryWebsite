@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strconv"
 	"testing"
 
@@ -17,20 +16,8 @@ import (
 
 func newScoreTestRouter(t *testing.T) *gin.Engine {
 	t.Helper()
-	sessionFile, err := os.CreateTemp("", "archery-score-session-*.yaml")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := sessionFile.WriteString("SessionKey: score-integration-test-key\n"); err != nil {
-		t.Fatal(err)
-	}
-	if err := sessionFile.Close(); err != nil {
-		t.Fatal(err)
-	}
-	t.Cleanup(func() { _ = os.Remove(sessionFile.Name()) })
-
 	router := gin.New()
-	router.Use(pkg.EnableCookieSessionMiddleware(sessionFile.Name()))
+	router.Use(pkg.EnableCookieSessionMiddleware(pkg.SessionConfig{Key: "score-integration-test-key"}))
 	router.POST("/_test/session/:userID", func(context *gin.Context) {
 		userID, err := strconv.ParseUint(context.Param("userID"), 10, 64)
 		if err != nil || userID == 0 {

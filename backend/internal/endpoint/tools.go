@@ -1,35 +1,10 @@
 package endpoint
 
 import (
-	"log"
-	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"gopkg.in/yaml.v2"
 )
-
-type Conf struct {
-	Username string
-	Password string
-	Host     string
-	Port     int
-	Database string
-	Mode     string
-}
-
-func GetConf(filePath string) (c Conf) {
-	yamlFile, err := os.ReadFile(filePath)
-	if err != nil {
-		log.Printf("yamlFile.Get err   #%v ", err)
-	}
-
-	err = yaml.Unmarshal(yamlFile, &c)
-	if err != nil {
-		log.Fatalf("Unmarshal: %v", err)
-	}
-	return
-}
 
 func Convert2int(c *gin.Context, name string) int {
 	dataStr := c.Param(name)

@@ -20,7 +20,9 @@ export function loadOwnedManifest() {
   if (!/^r\d+_[a-f0-9]{8}$/.test(manifest.runID) ||
       manifest.project !== `archery-test-${manifest.runID.replaceAll('_', '-')}` ||
       manifest.database !== `archery_test_${manifest.runID}` ||
-      manifest.configDir !== path.join(work, 'config') ||
+      !/^[a-f0-9]{64}$/.test(manifest.dbPassword ?? '') ||
+      !/^[a-f0-9]{64}$/.test(manifest.rootPassword ?? '') ||
+      !/^[a-f0-9]{64}$/.test(manifest.sessionKey ?? '') ||
       !manifest.token || manifest.token !== process.env.ARCHERY_TEST_TOKEN ||
       !Number.isInteger(manifest.ownerPID) || manifest.ownerPID <= 1) throw new Error('not an active runner-owned environment');
   process.kill(manifest.ownerPID, 0);

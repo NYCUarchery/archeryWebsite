@@ -30,7 +30,6 @@ import (
 type PlayerSetRankingIntegrationTestSuite struct {
 	suite.Suite
 	router        *gin.Engine
-	sessionFile   string
 	userIDCounter uint
 }
 
@@ -43,17 +42,6 @@ func TestPlayerSetRankingIntegrationTestSuite(t *testing.T) {
 
 func (suite *PlayerSetRankingIntegrationTestSuite) SetupSuite() {
 	suite.Require().NoError(database.ResetTestDatabase("legacy"))
-	file, err := os.CreateTemp("", "archery-playerset-ranking-session-*.yaml")
-	suite.Require().NoError(err)
-	suite.sessionFile = file.Name()
-	suite.Require().NoError(file.Close())
-	suite.Require().NoError(os.WriteFile(suite.sessionFile, []byte("SessionKey: playerset-ranking-integration-test-key\n"), 0600))
-}
-
-func (suite *PlayerSetRankingIntegrationTestSuite) TearDownSuite() {
-	if suite.sessionFile != "" {
-		_ = os.Remove(suite.sessionFile)
-	}
 }
 
 func (suite *PlayerSetRankingIntegrationTestSuite) SetupTest() {
@@ -61,7 +49,7 @@ func (suite *PlayerSetRankingIntegrationTestSuite) SetupTest() {
 	suite.userIDCounter = 96000
 	gin.SetMode(gin.TestMode)
 	suite.router = gin.New()
-	suite.router.Use(pkg.EnableCookieSessionMiddleware(suite.sessionFile))
+	suite.router.Use(pkg.EnableCookieSessionMiddleware(pkg.SessionConfig{Key: "playerset-ranking-integration-test-key"}))
 	suite.router.POST("/test/session/:userid", func(context *gin.Context) {
 		userID, err := strconv.ParseUint(context.Param("userid"), 10, 64)
 		if err != nil || userID == 0 {

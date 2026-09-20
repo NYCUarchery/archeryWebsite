@@ -25,8 +25,7 @@ import (
 // handler behavior.
 type GroupRankingIntegrationTestSuite struct {
 	suite.Suite
-	router      *gin.Engine
-	sessionFile string
+	router *gin.Engine
 }
 
 func TestGroupRankingIntegrationTestSuite(t *testing.T) {
@@ -38,24 +37,13 @@ func TestGroupRankingIntegrationTestSuite(t *testing.T) {
 
 func (suite *GroupRankingIntegrationTestSuite) SetupSuite() {
 	suite.Require().NoError(database.ResetTestDatabase("legacy"))
-	file, err := os.CreateTemp("", "archery-ranking-session-*.yaml")
-	suite.Require().NoError(err)
-	suite.sessionFile = file.Name()
-	suite.Require().NoError(file.Close())
-	suite.Require().NoError(os.WriteFile(suite.sessionFile, []byte("SessionKey: ranking-integration-test-key\n"), 0600))
-}
-
-func (suite *GroupRankingIntegrationTestSuite) TearDownSuite() {
-	if suite.sessionFile != "" {
-		_ = os.Remove(suite.sessionFile)
-	}
 }
 
 func (suite *GroupRankingIntegrationTestSuite) SetupTest() {
 	suite.Require().NoError(database.ResetTestDatabase("legacy"))
 	gin.SetMode(gin.TestMode)
 	suite.router = gin.New()
-	suite.router.Use(pkg.EnableCookieSessionMiddleware(suite.sessionFile))
+	suite.router.Use(pkg.EnableCookieSessionMiddleware(pkg.SessionConfig{Key: "ranking-integration-test-key"}))
 	suite.router.POST("/test/session/:userid", func(context *gin.Context) {
 		userID, err := strconv.ParseUint(context.Param("userid"), 10, 64)
 		if err != nil || userID == 0 {
