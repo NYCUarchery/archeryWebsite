@@ -129,6 +129,22 @@ func TestValidateServerRequiredFieldsAndEnvironment(t *testing.T) {
 	}
 }
 
+func TestValidateServerProductionSessionKeyLength(t *testing.T) {
+	app := validApp("production")
+	app.SessionKey = "short"
+	if err := app.ValidateServer(); err == nil {
+		t.Fatal("production accepted weak session key")
+	}
+	app.SessionKey = "12345678901234567890123456789012"
+	if err := app.ValidateServer(); err != nil {
+		t.Fatalf("production rejected 32-byte session key: %v", err)
+	}
+	app.Environment, app.SessionKey = "development", "short"
+	if err := app.ValidateServer(); err != nil {
+		t.Fatalf("development should preserve existing short development keys: %v", err)
+	}
+}
+
 func TestValidateSeederForbidsProductionButDoesNotRequireSession(t *testing.T) {
 	app := validApp("development")
 	app.SessionKey = ""

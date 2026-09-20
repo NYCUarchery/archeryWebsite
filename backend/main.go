@@ -59,7 +59,7 @@ func main() {
 	if err := database.DatabaseInitial(app); err != nil {
 		log.Fatal(err)
 	}
-	routers.SetUpRouter(server, ip, port, app.SessionKey)
+	routers.SetUpRouter(server, ip, port, app.SessionKey, app.Environment == "production")
 
 	server.Run(fmt.Sprintf("%s:%s", ip, port))
 }

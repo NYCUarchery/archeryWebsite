@@ -55,6 +55,9 @@ func (a App) ValidateServer() error {
 	if a.SessionKey == "" {
 		return errors.New("ARCHERY_SESSION_KEY is required")
 	}
+	if a.Environment == "production" && len(a.SessionKey) < 32 {
+		return errors.New("ARCHERY_SESSION_KEY must be at least 32 bytes in production")
+	}
 	return nil
 }
 func (a App) ValidateSeeder() error {
