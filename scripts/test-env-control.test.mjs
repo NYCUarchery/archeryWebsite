@@ -12,7 +12,7 @@ function environment(t, overrides = {}) {
   const manifestPath = path.join(work, 'manifest.json');
   const manifest = { runID: 'r1234_12345678', project: 'archery-test-r1234-12345678',
     database: 'archery_test_r1234_12345678', ownerPID: process.pid,
-    token: 'private-run-capability', configDir: path.join(work, 'config'),
+    token: 'private-run-capability', dbPassword: 'a'.repeat(64), rootPassword: 'b'.repeat(64), sessionKey: 'c'.repeat(64),
     baseURL: 'http://127.0.0.1:43210', ...overrides };
   writeFileSync(manifestPath, JSON.stringify(manifest), { mode: 0o600 });
   const previous = { manifest: process.env.ARCHERY_TEST_MANIFEST, token: process.env.ARCHERY_TEST_TOKEN };
@@ -37,7 +37,7 @@ test('control requires a live, privately owned runner capability', t => {
 for (const [name, values] of Object.entries({
   'shared schema': { database: 'development' },
   'different project': { project: 'archery-dev' },
-  'outside config': { configDir: '/etc' },
+  'missing session capability': { sessionKey: undefined },
   'external origin': { baseURL: 'https://example.com' },
 })) {
   test(`control rejects ${name} before Docker`, async t => {
@@ -107,7 +107,7 @@ test('dead control lease rejects reuse without Docker or unsafe in-place recover
   assert.equal(existsSync(path.join(work, 'control.lock')), true);
 });
 
-test('SIGTERM control stops its child, removes the reset container and releases its lease', { timeout: 15_000 }, async t => {
+test('SIGTERM control stops its child, checks reset-container ownership and releases its lease', { timeout: 15_000 }, async t => {
   const work = environment(t);
   const scripts = path.dirname(fileURLToPath(import.meta.url));
   const bin = path.join(work, 'bin');
@@ -131,6 +131,6 @@ test('SIGTERM control stops its child, removes the reset container and releases 
   child.kill('SIGTERM');
   assert.equal(await exited, 143, output);
   assert.ok(events().some(event => event.event === 'terminated'));
-  assert.ok(events().some(event => event.command === 'rm'));
+  assert.ok(events().some(event => event.command === 'inspect'), JSON.stringify(events()));
   assert.equal(existsSync(path.join(work, 'control.lock')), false);
 });

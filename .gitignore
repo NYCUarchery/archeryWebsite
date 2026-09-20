@@ -12,6 +12,9 @@ test.ts
 pkg/mod/
 node_modules/
 frontend/.env
+.env
+.env.*
+!.env.example
 
 # Go 編譯產物
 backend/cmd/seeder/seeder

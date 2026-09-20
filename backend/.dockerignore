@@ -1,0 +1,7 @@
+config/*.yaml
+.env*
+**/.env*
+main
+cmd/seeder/seeder
+*.test
+coverage*

@@ -28,8 +28,7 @@ import (
 // integration path.
 type PlayerControlIntegrationTestSuite struct {
 	suite.Suite
-	router      *gin.Engine
-	sessionFile string
+	router *gin.Engine
 }
 
 func TestPlayerControlIntegrationTestSuite(t *testing.T) {
@@ -41,24 +40,13 @@ func TestPlayerControlIntegrationTestSuite(t *testing.T) {
 
 func (suite *PlayerControlIntegrationTestSuite) SetupSuite() {
 	suite.Require().NoError(database.ResetTestDatabase("legacy"))
-	file, err := os.CreateTemp("", "archery-player-control-session-*.yaml")
-	suite.Require().NoError(err)
-	suite.sessionFile = file.Name()
-	suite.Require().NoError(file.Close())
-	suite.Require().NoError(os.WriteFile(suite.sessionFile, []byte("SessionKey: player-control-integration-test-key\n"), 0600))
-}
-
-func (suite *PlayerControlIntegrationTestSuite) TearDownSuite() {
-	if suite.sessionFile != "" {
-		_ = os.Remove(suite.sessionFile)
-	}
 }
 
 func (suite *PlayerControlIntegrationTestSuite) SetupTest() {
 	suite.Require().NoError(database.ResetTestDatabase("legacy"))
 	gin.SetMode(gin.TestMode)
 	suite.router = gin.New()
-	suite.router.Use(pkg.EnableCookieSessionMiddleware(suite.sessionFile))
+	suite.router.Use(pkg.EnableCookieSessionMiddleware(pkg.SessionConfig{Key: "player-control-integration-test-key"}))
 	suite.router.POST("/test/session/:userid", func(context *gin.Context) {
 		userID, err := strconv.ParseUint(context.Param("userid"), 10, 64)
 		if err != nil || userID == 0 {

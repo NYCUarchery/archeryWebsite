@@ -1,29 +1,45 @@
-version: "3.8" # Server has older version of docker-compose, so this line looks different.
+# Production: Docker Compose 1.29.2 and modern `docker compose`.
+# Keep COMPOSE_PROJECT_NAME equal to the existing project when upgrading.
+version: "3.8"
 
 services:
   frontend:
     build:
       context: ./frontend
+      args:
+        NEXT_PUBLIC_API_BASE_PATH: "${NEXT_PUBLIC_API_BASE_PATH:-/api/}"
     restart: unless-stopped
   mysql:
     image: mysql:8
     volumes:
       - db_data:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: db
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}"
+      MYSQL_DATABASE: "${MYSQL_DATABASE:?Set MYSQL_DATABASE in .env}"
+      MYSQL_USER: "${MYSQL_USER:?Set MYSQL_USER in .env}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "--protocol=tcp", "-h", "127.0.0.1"]
       interval: 1s
       timeout: 3s
-      retries: 30
+      retries: 60
       start_period: 5s
   backend:
     build:
       context: ./backend
+    environment:
+      ARCHERY_ENVIRONMENT: "${ARCHERY_ENVIRONMENT:?Set ARCHERY_ENVIRONMENT in .env}"
+      MYSQL_HOST: "${MYSQL_HOST:?Set MYSQL_HOST to mysql in .env}"
+      MYSQL_PORT: "${MYSQL_PORT:-3306}"
+      MYSQL_DATABASE: "${MYSQL_DATABASE:?Set MYSQL_DATABASE in .env}"
+      MYSQL_USER: "${MYSQL_USER:?Set MYSQL_USER in .env}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}"
+      ARCHERY_SESSION_KEY: "${ARCHERY_SESSION_KEY:?Set ARCHERY_SESSION_KEY in .env}"
+      ARCHERY_DICTATOR_USERNAME: "${ARCHERY_DICTATOR_USERNAME:?Set ARCHERY_DICTATOR_USERNAME in .env}"
+      ARCHERY_DICTATOR_PASSWORD: "${ARCHERY_DICTATOR_PASSWORD:?Set ARCHERY_DICTATOR_PASSWORD in .env}"
+      ARCHERY_DICTATOR_EMAIL: "${ARCHERY_DICTATOR_EMAIL:?Set ARCHERY_DICTATOR_EMAIL in .env}"
+      ARCHERY_DICTATOR_OVERVIEW: "${ARCHERY_DICTATOR_OVERVIEW:-}"
     restart: unless-stopped
     depends_on:
       mysql:

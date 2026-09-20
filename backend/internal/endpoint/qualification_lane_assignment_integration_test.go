@@ -24,8 +24,7 @@ import (
 // contract, so verify its release and occupancy behavior against real MySQL.
 type QualificationLaneAssignmentIntegrationTestSuite struct {
 	suite.Suite
-	router      *gin.Engine
-	sessionFile string
+	router *gin.Engine
 }
 
 func TestQualificationLaneAssignmentIntegrationTestSuite(t *testing.T) {
@@ -36,24 +35,13 @@ func TestQualificationLaneAssignmentIntegrationTestSuite(t *testing.T) {
 }
 
 func (suite *QualificationLaneAssignmentIntegrationTestSuite) SetupSuite() {
-	file, err := os.CreateTemp("", "archery-qualification-lane-session-*.yaml")
-	suite.Require().NoError(err)
-	suite.sessionFile = file.Name()
-	suite.Require().NoError(file.Close())
-	suite.Require().NoError(os.WriteFile(suite.sessionFile, []byte("SessionKey: qualification-lane-integration-test-key\n"), 0600))
-}
-
-func (suite *QualificationLaneAssignmentIntegrationTestSuite) TearDownSuite() {
-	if suite.sessionFile != "" {
-		_ = os.Remove(suite.sessionFile)
-	}
 }
 
 func (suite *QualificationLaneAssignmentIntegrationTestSuite) SetupTest() {
 	suite.Require().NoError(database.ResetTestDatabase("legacy"))
 	gin.SetMode(gin.TestMode)
 	suite.router = gin.New()
-	suite.router.Use(pkg.EnableCookieSessionMiddleware(suite.sessionFile))
+	suite.router.Use(pkg.EnableCookieSessionMiddleware(pkg.SessionConfig{Key: "qualification-lane-integration-test-key"}))
 	suite.router.POST("/test/session/:userid", func(context *gin.Context) {
 		userID, err := strconv.ParseUint(context.Param("userid"), 10, 64)
 		if err != nil || userID == 0 {

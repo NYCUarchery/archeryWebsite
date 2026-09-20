@@ -1,43 +1,48 @@
 package database
 
 import (
+	"backend/internal/config"
+	"errors"
 	"fmt"
 	"log"
-	"os"
-	"path/filepath"
-	"runtime"
 	"time"
 
 	pkg "backend/internal/pkg"
 
+	mysqlDriver "github.com/go-sql-driver/mysql"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
 var DB *gorm.DB
 
-// SetupDatabaseByMode keeps the mode parameter for the server's configuration
-// contract, but startup must never reset persisted competitions. Test data is
-// reset only by the isolated testdb command owned by the test runner.
-func SetupDatabaseByMode(_ string) {
-	DatabaseInitial()
-}
-
-func DatabaseInitial() {
-	connectDB()
+// DatabaseInitial never resets persisted competitions. Test data is reset only
+// by the isolated testdb command owned by the test runner.
+func DatabaseInitial(app config.App) error {
+	if err := app.ValidateServer(); err != nil {
+		return err
+	}
+	if err := connectDB(app.Database); err != nil {
+		return err
+	}
 	setTables()
 	CreateNoInstitution()
-	setDictator()
+	return setDictator(app.Dictator)
 }
 
 // DatabaseInitialForSeeder prepares the schema needed by the development
 // seeder and leaves an existing Dictator unchanged. This keeps an explicit
 // seeding command from overwriting application data.
-func DatabaseInitialForSeeder() {
-	connectDB()
+func DatabaseInitialForSeeder(app config.App) error {
+	if err := app.ValidateSeeder(); err != nil {
+		return err
+	}
+	if err := connectDB(app.Database); err != nil {
+		return err
+	}
 	setTables()
 	CreateNoInstitution()
-	ensureDictatorForSeeder()
+	return ensureDictatorForSeeder(app.Dictator)
 }
 
 func setTables() {
@@ -79,11 +84,14 @@ func DropTables() {
 	log.Println("All tables are dropped")
 }
 
-func connectDB() {
-	DSN := pkg.GetConf[Conf]("config/db.yaml")
-
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify",
-		DSN.Username, DSN.Password, DSN.Host, DSN.Port, DSN.Database)
+func connectDB(database config.Database) error {
+	dsnConfig := mysqlDriver.NewConfig()
+	dsnConfig.User, dsnConfig.Passwd, dsnConfig.Net, dsnConfig.Addr, dsnConfig.DBName = database.User, database.Password, "tcp", fmt.Sprintf("%s:%d", database.Host, database.Port), database.Name
+	dsnConfig.Params = map[string]string{"charset": "utf8mb4"}
+	dsnConfig.ParseTime = true
+	dsnConfig.Loc = time.Local
+	dsnConfig.TLSConfig = "skip-verify"
+	dsn := dsnConfig.FormatDSN()
 	var err error
 
 	for retry := 0; retry < 5; retry++ {
@@ -95,119 +103,80 @@ func connectDB() {
 				}
 			}
 			DB = connection
-			log.Println("Database \"" + DSN.Database + "\" is connected")
-			return
+			log.Println("Database \"" + database.Name + "\" is connected")
+			return nil
 		}
 		err = openErr
-		fmt.Println("database connection error: ", err)
+		log.Println("database connection error")
 		if retry < 4 {
 			time.Sleep(3 * time.Second)
 		}
 	}
 	if err != nil {
-		fmt.Println("failed to connect database")
-		os.Exit(1)
+		return errors.New("failed to connect database")
 	}
+	return nil
 }
 
-func setDictator() {
-	type dictatorConf struct {
-		UserName string `json:"username"`
-		Password string `json:"password"`
-		Email    string `json:"email"`
-		Overview string `json:"overview"`
-	}
-	_, filename, _, ok := runtime.Caller(0)
-	if !ok {
-		log.Println("Unable to get caller information for setDictator")
-		os.Exit(1)
-	}
-	dir := filepath.Dir(filename)
-	config_path := filepath.Join(dir, "../../config/dictator.yaml")
+func setDictator(dictatorConfig config.Dictator) error {
 	old_user := User{}
 	new_user := &User{}
-	dictator_config := pkg.GetConf[dictatorConf](config_path)
-	if dictator_config.UserName == "" {
-		log.Println("Dictator config is not set")
-		os.Exit(1)
-	}
-	if dictator_config.Password == "" {
-		log.Println("Dictator password is not set")
-		os.Exit(1)
-	}
-	if dictator_config.Email == "" {
-		log.Println("Dictator email is not set")
-		os.Exit(1)
+	if dictatorConfig.Username == "" || dictatorConfig.Password == "" || dictatorConfig.Email == "" {
+		return errors.New("Dictator configuration is incomplete")
 	}
 	new_user = &User{
 		Role:     pkg.RoleToString(pkg.RDictator),
-		UserName: dictator_config.UserName,
+		UserName: dictatorConfig.Username,
 		RealName: "Dictator",
-		Password: pkg.EncryptPassword(dictator_config.Password),
-		Email:    dictator_config.Email,
-		Overview: dictator_config.Overview,
+		Password: pkg.EncryptPassword(dictatorConfig.Password),
+		Email:    dictatorConfig.Email, Overview: dictatorConfig.Overview,
 	}
 
-	old_user = FindByUsername(dictator_config.UserName)
+	old_user = FindByUsername(dictatorConfig.Username)
 	if old_user.ID == 0 {
 		_, err := CreateUser(*new_user)
 		log.Println("Dictator is created")
 		if err != nil {
-			log.Println("Failed to create dictator")
-			os.Exit(1)
+			return errors.New("failed to create dictator")
 		}
-		return
+		return nil
 	}
 	if old_user.Role != pkg.RoleToString(pkg.RDictator) {
 		log.Println("Dictator username is occupied by a non-Dictator user; refusing to modify it")
-		os.Exit(1)
+		return errors.New("Dictator username is occupied by a non-Dictator user; refusing to modify it")
 	}
 	log.Println("Dictator already exists; startup left it unchanged")
+	return nil
 }
 
-func ensureDictatorForSeeder() {
-	type dictatorConf struct {
-		UserName string `json:"username"`
-		Password string `json:"password"`
-		Email    string `json:"email"`
-		Overview string `json:"overview"`
-	}
-	_, filename, _, ok := runtime.Caller(0)
-	if !ok {
-		log.Println("Unable to get caller information for seeder Dictator setup")
-		os.Exit(1)
-	}
-	configPath := filepath.Join(filepath.Dir(filename), "../../config/dictator.yaml")
-	dictatorConfig := pkg.GetConf[dictatorConf](configPath)
-	if dictatorConfig.UserName == "" || dictatorConfig.Password == "" || dictatorConfig.Email == "" {
-		log.Println("Dictator config is not set")
-		os.Exit(1)
+func ensureDictatorForSeeder(dictatorConfig config.Dictator) error {
+	if dictatorConfig.Username == "" || dictatorConfig.Password == "" || dictatorConfig.Email == "" {
+		return errors.New("Dictator configuration is incomplete")
 	}
 
-	oldUser := FindByUsername(dictatorConfig.UserName)
+	oldUser := FindByUsername(dictatorConfig.Username)
 	if oldUser.ID != 0 {
 		if oldUser.Role != pkg.RoleToString(pkg.RDictator) {
 			log.Println("Dictator username is occupied by a non-Dictator user; refusing to modify it")
-			os.Exit(1)
+			return errors.New("Dictator username is occupied by a non-Dictator user; refusing to modify it")
 		}
 		if pkg.Compare(oldUser.Password, dictatorConfig.Password) != nil {
-			log.Println("Dictator password is unmatch, cannot seed without changing existing Dictator")
-			os.Exit(1)
+			return errors.New("Dictator password does not match existing Dictator")
 		}
 		log.Println("Dictator already exists; seeder left it unchanged")
-		return
+		return nil
 	}
 	newUser := User{
 		Role:     pkg.RoleToString(pkg.RDictator),
-		UserName: dictatorConfig.UserName,
+		UserName: dictatorConfig.Username,
 		RealName: "Dictator",
 		Password: pkg.EncryptPassword(dictatorConfig.Password),
 		Email:    dictatorConfig.Email,
 		Overview: dictatorConfig.Overview,
 	}
 	if _, err := CreateUser(newUser); err != nil {
-		log.Println("Failed to create Dictator for seeder")
-		os.Exit(1)
+		return errors.New("failed to create Dictator for seeder")
 	}
 	log.Println("Dictator is created for seeder")
+	return nil
 }

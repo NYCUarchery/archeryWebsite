@@ -1,8 +1,8 @@
 package main
 
 import (
+	"backend/internal/config"
 	"backend/internal/database"
-	"backend/internal/endpoint"
 	"backend/internal/seeder"
 	"flag"
 	"fmt"
@@ -15,6 +15,7 @@ func main() {
 	var scenarioFlag string
 	flag.StringVar(&scenarioFlag, "scenario", "all", scenarioUsage)
 	flag.StringVar(&scenarioFlag, "s", "all", scenarioUsage+" (shorthand)")
+	envFile := flag.String("env-file", "", "optional dotenv file")
 	flag.Parse()
 	requested, err := requestedScenarios(scenarioFlag)
 	if err != nil {
@@ -23,13 +24,18 @@ func main() {
 		os.Exit(2)
 	}
 
-	mode := endpoint.GetConf("config/db.yaml").Mode
-	if mode != "dev" && mode != "test" {
-		log.Fatalf("refusing to seed mode %q; the fixed development accounts are only allowed in dev or test", mode)
+	app, err := config.Load(*envFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := app.ValidateSeeder(); err != nil {
+		log.Fatal(err)
 	}
 	// This command is separate from server startup, so normal operation cannot
 	// seed. Its initializer never updates an existing Dictator user.
-	database.DatabaseInitialForSeeder()
+	if err := database.DatabaseInitialForSeeder(app); err != nil {
+		log.Fatal(err)
+	}
 
 	for _, scenario := range requested {
 		result, err := seeder.Seed(database.DB, scenario)

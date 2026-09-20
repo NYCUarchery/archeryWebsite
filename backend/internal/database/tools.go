@@ -9,15 +9,6 @@ import (
 	"strings"
 )
 
-type Conf struct {
-	Username string `yaml:"username"`
-	Password string `yaml:"password"`
-	Host     string `yaml:"host"`
-	Port     int    `yaml:"port"`
-	Database string `yaml:"database"`
-	Mode     string `yaml:"mode"`
-}
-
 func GetSQLDataFromFile(filepath string) []string {
 	sqlBytes, err := os.ReadFile(filepath)
 	if err != nil {

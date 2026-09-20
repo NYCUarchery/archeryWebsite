@@ -1,3 +1,4 @@
+# Development requires modern Compose (watch support).
 name: nycu-archery-system
 
 services:
@@ -5,7 +6,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
-    restart: unless-stopped
+    environment:
+      NEXT_PUBLIC_API_BASE_PATH: "${NEXT_PUBLIC_API_BASE_PATH:-/api/}"
     develop:
       watch:
         - action: sync
@@ -13,6 +15,7 @@ services:
           target: /app
           ignore:
             - .git
+            - .env*
             - node_modules/
             - .next/
             - package.json
@@ -21,24 +24,38 @@ services:
           path: ./frontend/package.json
         - action: rebuild
           path: ./frontend/package-lock.json
+    restart: unless-stopped
   mysql:
     image: mysql:8
     volumes:
       - mysql-data:/var/lib/mysql
     environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: testdb
-      MYSQL_USER: user
-      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:?Set MYSQL_ROOT_PASSWORD in .env}"
+      MYSQL_DATABASE: "${MYSQL_DATABASE:?Set MYSQL_DATABASE in .env}"
+      MYSQL_USER: "${MYSQL_USER:?Set MYSQL_USER in .env}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}"
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"] # using "CMD" to run "mysqladmin" tool to "ping" the MySQL server, docker expected to receive "0" which means "mysqld is alive"
-      interval: 1s      # 每隔 1 秒檢查一次
-      timeout: 3s       # 每次健康檢查的超時時間為 3 秒
-      retries: 30       # 失敗 30 次後認為容器不健康
-      start_period: 5s  # 在容器啟動後等待 5 秒再開始健康檢查
+      test: ["CMD", "mysqladmin", "ping", "--protocol=tcp", "-h", "127.0.0.1"]
+      interval: 1s
+      timeout: 3s
+      retries: 60
+      start_period: 5s
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+    environment:
+      ARCHERY_ENVIRONMENT: "${ARCHERY_ENVIRONMENT:?Set ARCHERY_ENVIRONMENT in .env}"
+      MYSQL_HOST: "${MYSQL_HOST:?Set MYSQL_HOST to mysql in .env}"
+      MYSQL_PORT: "${MYSQL_PORT:-3306}"
+      MYSQL_DATABASE: "${MYSQL_DATABASE:?Set MYSQL_DATABASE in .env}"
+      MYSQL_USER: "${MYSQL_USER:?Set MYSQL_USER in .env}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD:?Set MYSQL_PASSWORD in .env}"
+      ARCHERY_SESSION_KEY: "${ARCHERY_SESSION_KEY:?Set ARCHERY_SESSION_KEY in .env}"
+      ARCHERY_DICTATOR_USERNAME: "${ARCHERY_DICTATOR_USERNAME:?Set ARCHERY_DICTATOR_USERNAME in .env}"
+      ARCHERY_DICTATOR_PASSWORD: "${ARCHERY_DICTATOR_PASSWORD:?Set ARCHERY_DICTATOR_PASSWORD in .env}"
+      ARCHERY_DICTATOR_EMAIL: "${ARCHERY_DICTATOR_EMAIL:?Set ARCHERY_DICTATOR_EMAIL in .env}"
+      ARCHERY_DICTATOR_OVERVIEW: "${ARCHERY_DICTATOR_OVERVIEW:-}"
     restart: unless-stopped
     depends_on:
       mysql:
