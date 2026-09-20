@@ -78,6 +78,7 @@ export default function Page({
   const [inputValues, setInputValues] = useState<string[]>(
     Array(teamSize).fill("")
   );
+  const [formResetVersion, setFormResetVersion] = useState(0);
   const { mutate: createPlayerSet } = useMutation(
     (data: EndpointPostPlayerSetPlayerSetData) => {
       return apiClient.playerSet.playersetCreate(data);
@@ -92,6 +93,10 @@ export default function Page({
           "playerSetRanking",
           elimination!.elimination_id,
         ]);
+        setSelectedPlayers(Array(teamSize).fill(null));
+        setInputValues(Array(teamSize).fill(""));
+        setSetName("");
+        setFormResetVersion((version) => version + 1);
       },
     }
   );
@@ -368,7 +373,7 @@ export default function Page({
         .map((_, index) => {
           return (
             <Autocomplete
-              key={index}
+              key={`${formResetVersion}-${index}`}
               sx={{ mb: 2 }}
               options={playerOptions}
               id={`player-select-${index}`}
