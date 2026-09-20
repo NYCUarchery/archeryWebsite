@@ -428,7 +428,7 @@ test.describe("Qualification score summaries", () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
   });
 
-  test("返回會保留本地草稿，不寫入也不重新抓取", async ({ page }) => {
+  test("取消會捨棄本地編輯，重開讀取伺服器值", async ({ page }) => {
     const routes = await registerQualificationRoutes(page);
     await selectPlayerForScoreEditing(page);
 
@@ -436,21 +436,20 @@ test.describe("Qualification score summaries", () => {
     await table.getByRole("button", { name: "編輯第1局第1波分數" }).click();
     const editDialog = page.getByRole("dialog", { name: "編輯分數" });
     await editDialog.getByRole("button", { name: "9", exact: true }).click();
-    await editDialog.getByRole("button", { name: "保留草稿並返回", exact: true }).click();
+    await editDialog.getByRole("button", { name: "取消", exact: true }).click();
 
     expect(routes.playerScoreRequests).toEqual([]);
     expect(routes.playerScoreGetCount()).toBe(1);
-    await expect(page.getByText("請先送出或放棄目前草稿後再編輯其他波次。")).toHaveCount(0);
     await expect(page.getByText("1-1", { exact: true })).toBeVisible();
     await expect(table.getByText("28", { exact: true }).first()).toBeVisible();
     await expect(table.getByText("81", { exact: true })).toBeVisible();
     await expect(table.getByText("129", { exact: true })).toBeVisible();
 
     await table.getByRole("button", { name: "編輯第1局第1波分數" }).click();
-    await expect(editDialog.locator(".score_block").nth(2)).toHaveText("9");
+    await expect(editDialog.locator(".score_block").nth(2)).toHaveText("8");
   });
 
-  test("儲存失敗保留草稿，未確認波成功確認後重開呈已確認", async ({ page }) => {
+  test("儲存失敗保持 Dialog 開啟可重試，未確認波成功確認後重開呈已確認", async ({ page }) => {
     const routes = await registerQualificationRoutes(page);
     await selectPlayerForScoreEditing(page);
 
@@ -463,17 +462,19 @@ test.describe("Qualification score summaries", () => {
     await expect(editDialog.getByText("mock 儲存失敗")).toBeVisible();
     await expect(editDialog.locator(".score_block").nth(2)).toHaveText("9");
 
-    await editDialog.getByRole("button", { name: "保留草稿並返回", exact: true }).click();
+    await editDialog.getByRole("button", { name: "送出", exact: true }).click();
+    await expect(editDialog).not.toBeVisible();
+    await expect.poll(() => routes.playerScoreGetCount()).toBe(2);
+
     await table.getByRole("button", { name: "編輯第1局第1波分數" }).click();
     await expect(editDialog.locator(".score_block").nth(2)).toHaveText("9");
-    page.once("dialog", (dialog) => dialog.accept());
-    await editDialog.getByRole("button", { name: "放棄草稿", exact: true }).click();
+    await editDialog.getByRole("button", { name: "取消", exact: true }).click();
 
     await table.getByRole("button", { name: "編輯第2局第2波分數" }).click();
     await expect(editDialog.getByRole("button", { name: "確認", exact: true })).toBeVisible();
     await editDialog.getByRole("button", { name: "確認", exact: true }).click();
     await expect(editDialog).not.toBeVisible();
-    await expect.poll(() => routes.playerScoreGetCount()).toBe(2);
+    await expect.poll(() => routes.playerScoreGetCount()).toBe(3);
 
     await table.getByRole("button", { name: "編輯第2局第2波分數" }).click();
     await expect(editDialog.getByText("已確認（改分後維持確認）")).toBeVisible();
@@ -494,7 +495,7 @@ test.describe("Qualification score summaries", () => {
     await editDialog.getByRole("button", { name: "送出", exact: true }).click();
     await expect.poll(() => routes.playerScoreRequests).toHaveLength(1);
 
-    await expect(editDialog.getByRole("button", { name: "保留草稿並返回", exact: true })).toBeDisabled();
+    await expect(editDialog.getByRole("button", { name: "取消", exact: true })).toBeDisabled();
     await expect(editDialog.getByRole("button", { name: "送出", exact: true })).toBeDisabled();
     await expect(editDialog.getByRole("button", { name: "8", exact: true })).toBeDisabled();
     await expect(editDialog.getByTestId("BackspaceIcon").locator("..")).toBeDisabled();
