@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState, type FormEvent } from "react";
 
 import Card from "@mui/material/Card";
 import TextField from "@mui/material/TextField";
@@ -24,6 +24,8 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submitLockRef = useRef(false);
   const { mutate: loginMutation, isLoading: isLoadingLogin } = useMutation(
     apiClient.session.sessionCreate,
     {
@@ -39,6 +41,10 @@ const LoginPage = () => {
       onError: (error) => {
         alert("有人帳號密碼打錯了\n這個是系統回報的錯誤訊息：" + error);
       },
+      onSettled: () => {
+        submitLockRef.current = false;
+        setIsSubmitting(false);
+      },
     }
   );
 
@@ -50,19 +56,25 @@ const LoginPage = () => {
     e.preventDefault();
   };
 
-  const handleLogin = () => {
+  const handleLogin = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (submitLockRef.current) return;
+
+    submitLockRef.current = true;
+    setIsSubmitting(true);
     loginMutation({ user_name: userName, password: password });
   };
   return (
     <Card sx={{ p: 2, mt: 2, width: "300px" }}>
       <CardContent>
-        <Grid
-          container
-          direction="column"
-          alignItems="center"
-          justifyContent="center"
-          spacing={2}
-        >
+        <Box component="form" onSubmit={handleLogin}>
+          <Grid
+            container
+            direction="column"
+            alignItems="center"
+            justifyContent="center"
+            spacing={2}
+          >
           <Grid>
             <Typography variant="h6" component="div">
               登入
@@ -95,6 +107,7 @@ const LoginPage = () => {
                   <InputAdornment position="end">
                     <IconButton
                       aria-label="toggle password visibility"
+                      type="button"
                       onClick={handleClickShowPassword}
                       onMouseDown={handleMouseDownPassword}
                       edge="end"
@@ -114,12 +127,11 @@ const LoginPage = () => {
               }}
             >
               <Button
-                disabled={isLoadingLogin}
+                disabled={isLoadingLogin || isSubmitting}
                 size="large"
                 type="submit"
                 variant="contained"
                 color="secondary"
-                onClick={handleLogin}
               >
                 登入
               </Button>
@@ -130,6 +142,7 @@ const LoginPage = () => {
             <Typography
               variant="caption"
               component={Button}
+              type="button"
               onClick={() => {
                 router.push("/register");
               }}
@@ -140,7 +153,8 @@ const LoginPage = () => {
               沒有帳號嗎？
             </Typography>
           </Grid>
-        </Grid>
+          </Grid>
+        </Box>
       </CardContent>
     </Card>
   );

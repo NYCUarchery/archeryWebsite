@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useRef, useState, type FormEvent } from "react";
 
 import { Card, CardContent } from "@mui/material";
 import Box from "@mui/material/Box";
@@ -39,6 +39,8 @@ const SignupPage = () => {
   const [email, setEmail] = useState("");
   const [institutionID, setInstitutionID] = useState(0);
   const [overview, setOverview] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const submitLockRef = useRef(false);
   const { data: institutions } = useQuery(
     "institutions",
     apiClient.institution.institutionList,
@@ -55,6 +57,10 @@ const SignupPage = () => {
     {
       onSuccess: () => {
         router.push("/login");
+      },
+      onSettled: () => {
+        submitLockRef.current = false;
+        setIsSubmitting(false);
       },
     }
   );
@@ -79,11 +85,16 @@ const SignupPage = () => {
     e.preventDefault();
   };
 
-  const handleSignup = () => {
+  const handleSignup = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (submitLockRef.current) return;
     if (password !== passwordConfirm) {
       alert("密碼不一致");
       return;
     }
+
+    submitLockRef.current = true;
+    setIsSubmitting(true);
     signup({
       user_name: username,
       real_name: realName,
@@ -97,14 +108,15 @@ const SignupPage = () => {
   return (
     <Card sx={{ p: 2, mt: 2, width: "600px" }}>
       <CardContent sx={{ display: "flex", justifyContent: "center" }}>
-        <Grid
-          container
-          direction="column"
-          alignItems="center"
-          justifyContent="center"
-          spacing={2}
-          sx={{ width: "300px" }}
-        >
+        <Box component="form" onSubmit={handleSignup}>
+          <Grid
+            container
+            direction="column"
+            alignItems="center"
+            justifyContent="center"
+            spacing={2}
+            sx={{ width: "300px" }}
+          >
           <Grid size={12}>
             <Typography variant="h4" align="center">
               註冊
@@ -138,6 +150,7 @@ const SignupPage = () => {
                   <InputAdornment position="end">
                     <IconButton
                       aria-label="toggle password visibility"
+                      type="button"
                       onClick={handleClickShowPassword}
                       onMouseDown={handleMouseDownPassword}
                       edge="end"
@@ -166,6 +179,7 @@ const SignupPage = () => {
                   <InputAdornment position="end">
                     <IconButton
                       aria-label="toggle password visibility"
+                      type="button"
                       onClick={handleClickShowPasswordConfirm}
                       onMouseDown={handleMouseDownPasswordConfirm}
                       edge="end"
@@ -238,12 +252,11 @@ const SignupPage = () => {
           <Grid>
             <Box sx={{ mb: "10px" }}>
               <Button
-                disabled={isLoadingSignup}
+                disabled={isLoadingSignup || isSubmitting}
                 size="large"
                 type="submit"
                 variant="contained"
                 color="secondary"
-                onClick={handleSignup}
               >
                 註冊
               </Button>
@@ -254,6 +267,7 @@ const SignupPage = () => {
             <Typography
               variant="caption"
               component={Button}
+              type="button"
               onClick={() => {
                 router.push("/login");
               }}
@@ -263,7 +277,8 @@ const SignupPage = () => {
               已有帳號
             </Typography>
           </Grid>
-        </Grid>
+          </Grid>
+        </Box>
       </CardContent>
     </Card>
   );
