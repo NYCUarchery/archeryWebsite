@@ -8,77 +8,54 @@
 
 ## Configurations
 
-### 後端
+開發與 production 共用根目錄 `.env`；backend 不再讀 YAML，frontend 不再需要獨立 `.env`（Docker build／watch 排除之）。
 
-- 後端有需要的設定檔都在`backend/config`裡面，目前有`db.yaml`、`dictator.yaml`、`session.yaml`。
-- 相對應的地方會有對應的example檔案，可以複製一份改名成正確的檔名來使用。
-- 每個config檔都是必要的。
-- 應該看起來像是以下結構：
-
-```shell
-archeryWebsite
-├── backend
-│   ├── assets
-│   │   ├── seeder
-│   │   └── testData
-│   ├── config
-│   │   ├── db.yaml
-│   │   ├── dictator.yaml
-└───└───└── session.yaml
+```bash
+cp .env.example .env
+chmod 600 .env
 ```
-- db.yaml: 資料庫的設定檔。
-- dictator.yaml: 初次建立最高權限帳號的設定檔；重啟不覆寫既有帳號的密碼或個人資料。同名普通帳號不會被升權，啟動會明確失敗。
-- session.yaml: 用來設定session token key的設定檔。
 
-### 前端
+已有 `.env` 時勿覆蓋。範例只供本地開發，正式站必須更換機密、domain 與 `ARCHERY_ENVIRONMENT=production`；完整欄位與舊設定遷移見 [部署指引](docs/deployment.md)。
 
-- 前端的設定檔是`./frontend/.env`，可以參考`./frontend/.env.example`來建立。如果是本地的話直接用預設值就好。
+Compose 僅將各服務所需變數注入；前端只接收公開的 `NEXT_PUBLIC_API_BASE_PATH`（預設 `/api/`），production build 時固定。初始 Dictator 帳密不覆寫既有帳號，同名普通帳號也不會被升權。
 
 ## 啟動本地環境
 
 當前面的設定檔都弄好之後，可以用下面的指令來啟動本地環境：
 
 ```bash
-docker compose up -f docker-compose-dev.yml up --build
+docker compose -f docker-compose-dev.yml up -d --build
 ```
 
-如果是要測試或是按按看的話，可以用下面的指令來啟動測試環境：
+以 `http://localhost` 存取（經 Caddy 同站代理）；需同步前端原始碼時，另執行 `docker compose -f docker-compose-dev.yml watch`。不要與使用相同 project 或 80 埠的 production 同時啟動。
+
+自動化測試另走隔離入口，不使用上述 DB：
 
 ```bash
-docker compose -f docker-compose-test.yml up --build
+bash scripts/test.sh e2e
 ```
 
 ## Backend Dev Environment
 
-後端開發環境可以用 container 開一個 DB 來連，不用把整個 app compose 起來。
-
-用下面的指令可以創建一個 mysql db container:
+直接在 host 跑 Go 時須明示 env file；不自動搜尋。先備妥獨立開發 MySQL，於本地覆寫檔開啟 loopback port，再以 process env 覆寫 host／port：
 
 ```bash
-docker run --name mysql-container -e MYSQL_ROOT_PASSWORD=password -e MYSQL_DATABASE=db -e MYSQL_USER=user -e MYSQL_PASSWORD=password -p 3306:3306 -d mysql:latest
+cd backend
+MYSQL_HOST=127.0.0.1 MYSQL_PORT=3306 go run . --env-file ../.env
 ```
 
-- And your /backend/config/db.yaml should be like this:
-
-```yaml
-username: root
-password: password
-host: localhost
-port: 3306
-database: db
-mode: dev # dev or test
-```
+該 DB 的帳密必須與 `.env` 相符；正式 Compose 不公開 MySQL port。若已啟動 Caddy 占用 80 埠，勿同時啟動 host backend（同樣監聽 80）。一般開發建議使用上方完整 dev Compose。
 
 ## Development Seeder
 
-後端另有三個可重複執行的開發資料情境；它們**不會**隨一般 server 啟動而執行。先建立 `backend/config/db.yaml` 與 `dictator.yaml`，再於 `backend` 目錄執行：
+後端另有三個可重複執行的開發資料情境；它們**不會**隨一般 server 啟動而執行。先啟動上述 dev Compose，再從根目錄執行：
 
 ```bash
-go run ./cmd/seeder -scenario registered
-go run ./cmd/seeder -scenario qualification_finished
-go run ./cmd/seeder -scenario elimination_finished
+docker compose -f docker-compose-dev.yml exec backend go run ./cmd/seeder -scenario registered
+docker compose -f docker-compose-dev.yml exec backend go run ./cmd/seeder -scenario qualification_finished
+docker compose -f docker-compose-dev.yml exec backend go run ./cmd/seeder -scenario elimination_finished
 # 或一次建立全部
-go run ./cmd/seeder -scenario all
+docker compose -f docker-compose-dev.yml exec backend go run ./cmd/seeder -scenario all
 ```
 
 - 每個情境各建一場賽事；重跑以 `Competition.Script` 的 seeder marker 偵測，已存在的情境完全不改寫。
@@ -92,7 +69,7 @@ go run ./cmd/seeder -scenario all
 - `registered`：主辦人為 approved Admin，32 位選手皆為 approved Player，各項目已有 Player／Round／End／箭位列，但箭值仍為 `-1`、RoundEnd 未 confirmed。
 - `qualification_finished`：另有各項目完成的排名賽、項目內獨立名次 1-8、資格賽啟用狀態。
 - `elimination_finished`：各項目另有完整個人對抗賽（8 強 4 場、4 強 2 場、冠軍賽與銅牌戰各 1 場）、結果、箭位及獎牌；末階段第一場為冠軍賽，與前端 `parseStagesToTree` 的讀取順序一致。
-- seeder 建立的登入帳號為 `seeder.archer.01` 至 `seeder.archer.32`，其中複合弓項目使用 `seeder.archer.25` 至 `seeder.archer.32`；密碼皆為 `archery-seed-password`；僅可在 `db.yaml` 的 `dev` 或 `test` mode 使用，其他 mode 一律拒絕執行。
+- seeder 建立的登入帳號為 `seeder.archer.01` 至 `seeder.archer.32`，其中複合弓項目使用 `seeder.archer.25` 至 `seeder.archer.32`；密碼皆為 `archery-seed-password`；僅可在 `ARCHERY_ENVIRONMENT=development` 或 `test` 使用，其他值一律拒絕執行。
 - 三場賽事各有一位 approved `Judge`，共用以下裁判帳號；此帳號不會建立 Player：
 
 | 帳號 | 密碼 | 可登入情境 |
@@ -144,9 +121,9 @@ scripts/test.sh all
 
 ## Deployment
 
-1. Set db credentials and a session key in `backend/config`. (Make sure it is consistent with `docker-compose.yml`)
-2. Run `docker-compose up --build`.
-3. Test it on `TCP/80` port.
+Production 使用根目錄 `.env` 與 `docker-compose.yml`，支援 Compose V1 **1.29.2** 及現行 `docker compose`。Caddy 自動簽發與續期 HTTPS 憑證。
+
+首次部署、舊 Nginx／YAML 遷移、DB volume 保留、備份／回復及驗收步驟，見 [Production 部署與 HTTPS](docs/deployment.md)。**舊站先確認原 project 與 DB volume，再切換；不要直接套用開發範例。**
 
 ## API Reference
 
@@ -157,7 +134,7 @@ http://localhost/swagger/index.html#/
 
 **Client:** React, TS, Redux, Preact/Signal, Material-UI, Sass
 
-**Reverse proxy** nginx
+**Reverse proxy** Caddy
 
 **Server:** Go, Gin, Gorm
 
@@ -172,7 +149,7 @@ http://localhost/swagger/index.html#/
 目前只有 frontend_scoring 實作了此項目。
 
 ## Tips
-- Dictator 帳號可以創建比賽，按鈕位於「我的比賽」頁面底下。初次帳密由 `dictator.yaml` 設定；帳號建立後，以資料庫保存的密碼為準。
+- Dictator 帳號可以創建比賽，按鈕位於「我的比賽」頁面底下。初次帳密由 `ARCHERY_DICTATOR_USERNAME`／`ARCHERY_DICTATOR_PASSWORD` 設定；帳號建立後，以資料庫保存的密碼為準。
 
 #### 一些問題
 
