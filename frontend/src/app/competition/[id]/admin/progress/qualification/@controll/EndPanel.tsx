@@ -10,9 +10,9 @@ import {
   TableHead,
   TableRow,
   Paper,
-  ButtonGroup,
   Button,
   Snackbar,
+  Stack,
 } from "@mui/material";
 import { useMutation, useQueryClient } from "react-query";
 import { apiClient } from "@/utils/ApiClient";
@@ -116,11 +116,19 @@ export default function EndPanel({
 
   return (
     <>
-      <ButtonGroup variant="contained">
-        <Button onClick={() => updataRank()}>自動更新排名</Button>
-        <Button onClick={() => setRankingDialogOpen(true)}>手動調整排名</Button>
-      </ButtonGroup>
-      <ButtonGroup>
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={1}
+        sx={{ mb: 1 }}
+      >
+        <Button variant="contained" onClick={() => updataRank()}>
+          自動更新排名
+        </Button>
+        <Button variant="contained" onClick={() => setRankingDialogOpen(true)}>
+          手動調整排名
+        </Button>
+      </Stack>
+      <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
         <Button
           disabled={currentEndIndex < 0}
           onClick={() => {
@@ -135,9 +143,12 @@ export default function EndPanel({
         >
           下一波
         </Button>
-      </ButtonGroup>
-      <TableContainer component={Paper} sx={{ overflow: "clip" }}>
-        <Table aria-label="simple table" size="small">
+      </Stack>
+      <TableContainer
+        component={Paper}
+        sx={{ width: "100%", overflowX: "auto" }}
+      >
+        <Table aria-label="資格賽進度" size="small" sx={{ minWidth: 280 }}>
           <TableHead>
             <TableRow>
               <TableCell colSpan={7} align="center">

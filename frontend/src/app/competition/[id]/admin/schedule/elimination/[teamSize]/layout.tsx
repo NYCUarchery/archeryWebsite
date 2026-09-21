@@ -10,12 +10,16 @@ export default function Layout({
   sets_panel: React.ReactNode;
 }) {
   return (
-    <Grid container spacing={4} sx={{ width: "100%", padding: "20px 50px" }}>
-      <Grid size={3}>
-        <Card sx={{ padding: "20px 50px" }}>{controller}</Card>
+    <Grid
+      container
+      spacing={{ xs: 2, md: 4 }}
+      sx={{ width: "100%", p: { xs: 2, sm: 3, md: "20px 50px" } }}
+    >
+      <Grid size={{ xs: 12, md: 3 }} sx={{ minWidth: 0 }}>
+        <Card sx={{ p: { xs: 2, sm: 3 } }}>{controller}</Card>
       </Grid>
-      <Grid size={9}>
-        <Card sx={{ padding: "20px" }}>{sets_panel}</Card>
+      <Grid size={{ xs: 12, md: 9 }} sx={{ minWidth: 0 }}>
+        <Card sx={{ p: 2, minWidth: 0, overflowX: "auto" }}>{sets_panel}</Card>
       </Grid>
     </Grid>
   );
