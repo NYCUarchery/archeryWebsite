@@ -17,7 +17,11 @@ export default function Page({ params }: { params: { id: string } }) {
       {lanes?.map((lane, index) => {
         if (index === 0) return null;
         return (
-          <Grid size={3} key={index}>
+          <Grid
+            size={{ xs: 12, sm: 6, md: 4, lg: 3 }}
+            key={index}
+            sx={{ minWidth: 0 }}
+          >
             <LaneBlock
               laneId={lane.id}
               laneNumber={lane.lane_number}

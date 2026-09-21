@@ -12,10 +12,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <>
       <Tabs
-        centered
+        variant="scrollable"
+        scrollButtons="auto"
+        allowScrollButtonsMobile
         value={tabValue}
         aria-label="Administration board"
         role="navigation"
+        sx={{ "& .MuiTabs-flexContainer": { justifyContent: { md: "center" } } }}
       >
         <LinkTab
           href="/main"

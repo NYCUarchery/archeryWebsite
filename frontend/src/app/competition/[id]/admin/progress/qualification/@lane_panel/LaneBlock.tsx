@@ -88,8 +88,16 @@ export default function LaneBlock({
   }, [confirmations]);
 
   return (
-    <TableContainer component={Paper} sx={{ overflow: "hidden" }}>
-      <Table aria-label="simple table" size="small" sx={{ tableLayout: "fixed" }}>
+    <TableContainer
+      component={Paper}
+      data-testid={`lane-block-${laneNumber}`}
+      sx={{ width: "100%", overflowX: "auto" }}
+    >
+      <Table
+        aria-label={`第${laneNumber}道確認狀態`}
+        size="small"
+        sx={{ minWidth: 180, tableLayout: "fixed" }}
+      >
         <TableHead>
           <TableRow>
             <TableCell colSpan={4} align="center">
@@ -98,7 +106,9 @@ export default function LaneBlock({
           </TableRow>
         </TableHead>
         <TableBody>
-          <TableRow>{signals}</TableRow>
+          <TableRow data-testid={`lane-confirmations-${laneNumber}`}>
+            {signals}
+          </TableRow>
         </TableBody>
       </Table>
     </TableContainer>
