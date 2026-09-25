@@ -44,6 +44,7 @@ services:
   backend:
     build:
       context: ./backend
+    entrypoint: ["/bin/sh", "-c", "./migrate up && exec ./main"]
     environment:
       ARCHERY_ENVIRONMENT: "${ARCHERY_ENVIRONMENT:?Set ARCHERY_ENVIRONMENT in .env}"
       MYSQL_HOST: "${MYSQL_HOST:?Set MYSQL_HOST to mysql in .env}"

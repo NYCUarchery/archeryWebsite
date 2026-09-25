@@ -25,12 +25,10 @@ Compose 僅將各服務所需變數注入；前端只接收公開的 `NEXT_PUBLI
 
 ```bash
 docker compose -f docker-compose-dev.yml build
-docker compose -f docker-compose-dev.yml up -d --wait mysql
-docker compose -f docker-compose-dev.yml run --rm --no-deps --entrypoint ./migrate backend up
 docker compose -f docker-compose-dev.yml up -d
 ```
 
-server 與 seeder 不再自動變更 schema；兩者只接受 clean 最新 migration 版本。上例適用全新 DB。已有 production 結構須先驗證並登記 V1；已跑過 AutoMigrate 的 dev DB 不在接管範圍，請另建 project／新 DB，保留原資料卷。命令、版本內容與回復方式見 [資料庫 migration](docs/migrations.md)。
+dev Compose 的 backend 啟動時先執行 `migrate up`，成功後才啟動 server；重啟亦會檢查版本。seeder 仍要求 clean 最新版本。空庫可直接啟動；未登記版本的既有資料庫須依 migration 指引處理。已跑過 AutoMigrate 的 dev DB 不在接管範圍，請用新的 project 名稱（例如 `-p archery-dev-fresh`）啟動新 DB，並在後續 dev Compose 命令沿用同一 `-p`；原資料卷會保留。`down -v` 只作用於指定的 Compose 檔與 project，不會清掉其他資料卷。命令、版本內容與回復方式見 [資料庫 migration](docs/migrations.md)。
 
 以 `http://localhost` 存取（經 Caddy 同站代理）；需同步前端原始碼時，另執行 `docker compose -f docker-compose-dev.yml watch`。不要與使用相同 project 或 80 埠的 production 同時啟動。
 

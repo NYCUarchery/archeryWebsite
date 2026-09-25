@@ -1,6 +1,6 @@
-# 手動資料庫 migration
+# 資料庫 migration
 
-所有環境使用同一組版本化 SQL。server 與 development seeder 只讀取版本，要求 clean 最新版本；不執行 AutoMigrate、修外鍵或刪欄位。一般 `docker compose up` 不執行 migration。
+所有環境使用同一組版本化 SQL。dev Compose 的 backend 啟動前執行 `migrate up`；production Compose、直接啟動的 server 與 development seeder 只讀取版本，要求 clean 最新版本。server 不執行 AutoMigrate、修外鍵或刪欄位。
 
 ## 版本與資料
 
@@ -48,7 +48,7 @@ docker compose -f docker-compose.yml run --rm --no-deps --entrypoint ./migrate b
 docker compose -f docker-compose.yml up -d
 ```
 
-空庫依序執行 V1、V2。開發環境改用 `docker-compose-dev.yml`；已跑過 AutoMigrate 的 dev DB 不提供 V2 baseline 或任意 force 接管，請以不同 project／新 DB 初始化，勿刪除仍需保留的 volume。
+空庫依序執行 V1、V2。開發環境改用 `docker-compose-dev.yml`，backend 啟動時會自動執行 `migrate up`。非空、未登記版本的 dev DB 仍會被 migration 拒絕，須先依 schema 狀態處理；已跑過 AutoMigrate 的 dev DB 不提供 V2 baseline 或任意 force 接管，請以不同 project／新 DB 初始化，勿刪除仍需保留的 volume。
 
 ## 既有 production 接管
 
