@@ -1,6 +1,6 @@
 # 資料庫 migration
 
-所有環境使用同一組版本化 SQL。dev Compose 的 backend 啟動前執行 `migrate up`；production Compose、直接啟動的 server 與 development seeder 只讀取版本，要求 clean 最新版本。server 不執行 AutoMigrate、修外鍵或刪欄位。
+所有環境使用同一組版本化 SQL。dev Compose 的 backend 啟動前執行 `migrate up`。production server 的 migration 版本檢查失敗時只記錄警告，仍繼續初始化與啟動；development／test server 與 seeder 仍要求 clean 最新版本。server 不執行 AutoMigrate、修外鍵或刪欄位。production 若 DB 連線或必要初始化本身失敗仍會退出；舊版、dirty 或未知 schema 上的 API 可能失敗或寫入不符預期，應儘速完成手動 migration。
 
 ## 版本與資料
 
@@ -11,7 +11,7 @@
 
 舊 `bracket_seed_count` 保留 NULL，Go 讀為 0，沿用 legacy 對抗表行為；不猜種子數，不將舊表自動改成新版 bracket。舊 target 保留 NULL，不由靶道推算 A/B。`total_points` 改由既有箭分數即時計算；若原彙總與箭分數不同，新版顯示可能不同，原值僅留於升級前備份。
 
-`player_set_match_tables` 保留 `(player_set_id, player_id)` 複合主鍵；Go model 與此一致。migration 不建立 Dictator 或 No Institution；版本檢查通過後，server/seeder 沿用既有必要資料初始化。
+`player_set_match_tables` 保留 `(player_set_id, player_id)` 複合主鍵；Go model 與此一致。migration 不建立 Dictator 或 No Institution；版本檢查完成後，server/seeder 沿用既有必要資料初始化。
 
 ## 命令
 
@@ -23,7 +23,7 @@ go run ./cmd/migrate --env-file ../.env baseline
 go run ./cmd/migrate --env-file ../.env up
 # 大表可明示延長每版 SQL 的執行上限。
 go run ./cmd/migrate --env-file ../.env up --statement-timeout 15m
-# 僅建立到 V1；此版本無法啟動目前 server。
+# 僅建立到 V1；production server 可啟動，但使用 V2 欄位的 API 可能失敗。
 go run ./cmd/migrate --env-file ../.env up --to 1
 ```
 
@@ -32,7 +32,7 @@ CLI 只要求 `MYSQL_HOST`、`MYSQL_PORT`（預設 3306）、`MYSQL_DATABASE`、
 - `version` 唯讀顯示未管理、空版本紀錄、版本及 dirty 狀態，不建立版本表。
 - `baseline` 核對 V1 schema 後，只登記版本，不執行 V1 建表 SQL。核對包含表、欄位、索引、約束、引擎與 collation；忽略資料列與自增計數。結構不符或版本狀態不符即停止。
 - `up` 預設升至最新；`--to` 指定已知目標版本，不允許降版。未管理且非空的 DB 須先 baseline。已達目標版本時不重跑 DDL。每版 SQL 預設最多執行 5 分鐘；`--statement-timeout` 可指定正值，例如 `15m`，由 MySQL driver 實際限制執行時間。
-- baseline 與 up 使用同一互斥鎖。SQL 失敗保留 dirty，後續 migration 與 server/seeder 啟動均拒絕繼續。
+- baseline 與 up 使用同一互斥鎖。SQL 失敗保留 dirty，後續 migration、development／test server 與 seeder 拒絕繼續；production server 記警告後嘗試啟動。
 
 ## 全新 DB
 

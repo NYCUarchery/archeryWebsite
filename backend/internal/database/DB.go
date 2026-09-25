@@ -28,7 +28,10 @@ func DatabaseInitial(app config.App) error {
 		return err
 	}
 	if err := requireCurrentSchema(); err != nil {
-		return err
+		if app.Environment != "production" {
+			return err
+		}
+		log.Printf("WARNING: %v; production startup continues, but endpoints may fail until migration is complete", err)
 	}
 	CreateNoInstitution()
 	return setDictator(app.Dictator)
