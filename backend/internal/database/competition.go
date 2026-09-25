@@ -132,34 +132,39 @@ func GetAllCompetition() ([]Competition, error) {
 	return comps, err
 }
 
-func GetCurrentCompetitions(head int, tail int) ([]Competition, error) {
+func GetCurrentCompetitions(head int, tail int) ([]Competition, int, error) {
 	var competitions []Competition
+	var total int64
+	if err := DB.Model(&Competition{}).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
 	result := DB.
 		Table("competitions").
 		Order("start_time desc").
 		Offset(head).
 		Limit(tail - head + 1).
 		Find(&competitions)
-	return competitions, result.Error
+	return competitions, int(total), result.Error
 }
 
-func GetCompetitionsOfUser(userID uint, head int, tail int) ([]Competition, error) {
-	var competitionIds []uint
+func GetCompetitionsOfUser(userID uint, head int, tail int) ([]Competition, int, error) {
 	var competitions []Competition
-
-	subQueryA := DB.
+	var total int64
+	subQuery := DB.
 		Table("participants").
-		Where("user_id = ?", userID).
-		Pluck("DISTINCT competition_id", &competitionIds)
-	result := DB.
-		Table("competitions").
-		Where("id IN (?)", subQueryA).
+		Select("DISTINCT competition_id").
+		Where("user_id = ?", userID)
+	if err := DB.Model(&Competition{}).Where("id IN (?)", subQuery).Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+	result := DB.Model(&Competition{}).
+		Where("id IN (?)", subQuery).
 		Order("start_time desc").
 		Offset(head).
 		Limit(tail - head + 1).
 		Find(&competitions)
 
-	return competitions, result.Error
+	return competitions, int(total), result.Error
 }
 
 func PostCompetition(data Competition) (Competition, error) {

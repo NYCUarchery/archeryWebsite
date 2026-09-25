@@ -6,6 +6,7 @@ import (
 	response "backend/internal/response"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -225,6 +226,7 @@ func GetCompetitionWGroupsPlayersByID(context *gin.Context) {
 //	@Param			head	path		int																		true	"head"
 //	@Param			tail	path		int																		true	"tail"
 //	@Success		200		{object}	[]database.Competition{groups=response.Nill,participants=response.Nill}	"success, return most recent competitions"
+//	@Header			200		{string}	X-Total-Count	"Total number of competitions"
 //	@Failure		400		{object}	response.ErrorReceiveDataFormatResponse									"head and tail must >= 0 / head must <= tail / invalid head parameter / invalid tail parameter"
 //	@Failure		500		{object}	response.ErrorInternalErrorResponse										"internal db error / Get Current Competitions"
 //	@Router			/competition/current/{head}/{tail} [get]
@@ -239,10 +241,11 @@ func GetCurrentCompetitions(context *gin.Context) {
 		response.ErrorReceiveDataFormat(context, "head must <= tail")
 		return
 	}
-	competitions, err := database.GetCurrentCompetitions(head, tail)
+	competitions, total, err := database.GetCurrentCompetitions(head, tail)
 	if response.ErrorInternalErrorTest(context, 0, "Get Current Competitions", err) {
 		return
 	}
+	context.Header("X-Total-Count", strconv.Itoa(total))
 	context.IndentedJSON(http.StatusOK, competitions)
 }
 
@@ -258,6 +261,7 @@ func GetCurrentCompetitions(context *gin.Context) {
 //	@Param			head	path		int																		true	"head"
 //	@Param			tail	path		int																		true	"tail"
 //	@Success		200		{object}	[]database.Competition{groups=response.Nill,participants=response.Nill}	"success, return most recent competitions dealing with User"
+//	@Header			200		{string}	X-Total-Count	"Total number of competitions for the user"
 //	@Failure		400		{object}	response.ErrorReceiveDataFormatResponse									"head and tail must >= 0 / head must <= tail / invalid head parameter / invalid tail parameter / invalid userid parameter"
 //	@Failure		500		{object}	response.ErrorInternalErrorResponse										"internal db error / Get User / Get Competitions Of User"
 //	@Router			/competition/user/{userid}/{head}/{tail} [get]
@@ -268,10 +272,11 @@ func GetCompetitionsOfUser(context *gin.Context) {
 	if response.ErrorIdTest(context, userId, database.GetUserIsExist(userId), "User") {
 		return
 	}
-	competitions, err := database.GetCompetitionsOfUser(userId, head, tail)
+	competitions, total, err := database.GetCompetitionsOfUser(userId, head, tail)
 	if response.ErrorInternalErrorTest(context, userId, "Get Competitions Of User", err) {
 		return
 	}
+	context.Header("X-Total-Count", strconv.Itoa(total))
 	context.IndentedJSON(http.StatusOK, competitions)
 }
 
