@@ -1,136 +1,102 @@
 "use client";
-import { useState } from "react";
-
-import Grid from "@mui/material/Grid2";
-import Card from "@mui/material/Card";
-import CardContent from "@mui/material/CardContent";
-import Typography from "@mui/material/Typography";
+import { useEffect, useState } from "react";
+import Alert from "@mui/material/Alert";
+import Box from "@mui/material/Box";
+import CircularProgress from "@mui/material/CircularProgress";
 import Pagination from "@mui/material/Pagination";
-
+import Typography from "@mui/material/Typography";
+import { useMutation } from "react-query";
 import { CompetitionList } from "@/components/CompetitionList";
+import NoticeSnackbars from "@/components/NoticeSnackbars";
+import { apiClient } from "@/utils/ApiClient";
+import { useGetCurrentUserDetail } from "@/utils/QueryHooks/useGetCurrentUserDetail";
 import { useGetUserId } from "@/utils/QueryHooks/useGetUserID";
 import useGetUserCompetitions from "@/utils/QueryHooks/useGetUserCompetitions";
 import { useRouter } from "next/navigation";
 import ToCreateButton from "./ToCreateButton";
-import { useGetCurrentUserDetail } from "@/utils/QueryHooks/useGetCurrentUserDetail";
-import NoticeSnackbars from "@/components/NoticeSnackbars";
-import { apiClient } from "@/utils/ApiClient";
-import { useMutation } from "react-query";
+
+const pageSize = 5;
 
 export default function MyCompetitionPage() {
   const [page, setPage] = useState(1);
-  const [startIndex, setStartIndex] = useState((page - 1) * 5);
-  const [endIndex, setEndIndex] = useState(page * 5 - 1);
   const [snackbarSuccess, setSnackbarSuccess] = useState(false);
   const [snackbarError, setSnackbarError] = useState(false);
-  const { data: uid, isError: isUidError } = useGetUserId();
-  const { data: user } = useGetCurrentUserDetail();
-  const { data: competitions, isLoading: isLoadingCompetitions } =
-    useGetUserCompetitions(uid as number, startIndex, endIndex);
-
-  const { mutate: apply } = useMutation(
-    apiClient.participant.participantCreate,
-
-    {
-      onSuccess: () => {
-        setSnackbarSuccess(true);
-      },
-      onError: () => {
-        setSnackbarError(true);
-      },
-    }
-  );
-
-  const handlePlayeApplication = (competitionId: number) => {
-    apply({
-      competition_id: competitionId,
-      user_id: uid,
-      role: "Player",
-    });
-  };
-
-  const handleAdminApplication = (competitionId: number) => {
-    apply({
-      competition_id: competitionId,
-      user_id: uid,
-      role: "Admin",
-    });
-  };
-
-  const handleJudgeApplication = (competitionId: number) => {
-    apply({
-      competition_id: competitionId,
-      user_id: uid,
-      role: "Judge",
-    });
-  };
-
-  const handleSnackbarsClose = () => {
-    setSnackbarSuccess(false);
-    setSnackbarError(false);
-  };
-
   const router = useRouter();
+  const { data: uid, isError: isUidError, isLoading: isLoadingUserId } = useGetUserId();
+  const { data: user } = useGetCurrentUserDetail();
+  const { data, isLoading, isError } = useGetUserCompetitions(
+    uid!,
+    (page - 1) * pageSize,
+    page * pageSize - 1
+  );
+  const { mutate: apply } = useMutation(apiClient.participant.participantCreate, {
+    onSuccess: () => setSnackbarSuccess(true),
+    onError: () => setSnackbarError(true),
+  });
+  const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / pageSize));
 
-  if (isUidError) {
-    router.push("/recent_competitions");
-  }
+  useEffect(() => {
+    if (isUidError) router.replace("/login?next=/my_competitions");
+  }, [isUidError, router]);
 
-  const handlePageChange = (
-    _event: React.ChangeEvent<unknown>,
-    value: number
-  ) => {
-    setPage(value);
-    setStartIndex((value - 1) * 5);
-    setEndIndex(value * 5 - 1);
+  const applyFor = (competitionId: number, role: "Player" | "Judge" | "Admin") => {
+    apply({ competition_id: competitionId, user_id: uid!, role });
   };
+
+  if (isUidError) return null;
 
   return (
-    <Card sx={{ p: 2, mb: 2 }}>
-      <CardContent>
-        <Grid container justifyContent="center">
-          <Grid>
-            <Typography variant="h5" component="div">
-              我的比賽
-            </Typography>
-          </Grid>
-        </Grid>
-        {user?.role == "Dictator" ? <ToCreateButton /> : null}
-        <Pagination
-          count={10}
-          color="primary"
-          onChange={handlePageChange}
-          page={page}
-          sx={{ display: "flex", justifyContent: "center" }}
-        />
-        {competitions?.length === 0 && <h2>沒有更多比賽了喲 ;(</h2>}
-        {isLoadingCompetitions || !competitions ? (
-          <p>loading...</p>
-        ) : (
+    <Box component="section" className="home-section" aria-labelledby="page-title">
+      <Box className="home-section-head">
+        <Box>
+          <Typography component="h1" id="page-title">我的比賽</Typography>
+          <Typography className="home-section-subtitle">查看您參與的比賽。</Typography>
+        </Box>
+        {user?.role === "Dictator" && <ToCreateButton />}
+      </Box>
+      {(isLoadingUserId || isLoading) && (
+        <Box className="home-status" role="status">
+          <CircularProgress size={28} aria-label="載入我的比賽" />
+        </Box>
+      )}
+      {isError && <Alert severity="error">目前無法載入我的比賽。</Alert>}
+      {!isLoadingUserId && !isLoading && !isError && data?.competitions.length === 0 && (
+        <Box className="home-empty-state">
+          <Typography component="h2">您尚未參與任何比賽</Typography>
+          <Typography component="p">您可以先到比賽列表瀏覽可參加的比賽。</Typography>
+        </Box>
+      )}
+      {!isLoading && !isError && data && data.competitions.length > 0 && (
+        <Box className="home-competition-list">
           <CompetitionList
-            competitions={competitions}
+            competitions={data.competitions}
             uid={uid}
-            onPlayerApply={handlePlayeApplication}
-            onJudgeApply={handleJudgeApplication}
-            onAdminApply={handleAdminApplication}
+            onPlayerApply={(competitionId) => applyFor(competitionId, "Player")}
+            onJudgeApply={(competitionId) => applyFor(competitionId, "Judge")}
+            onAdminApply={(competitionId) => applyFor(competitionId, "Admin")}
           />
-        )}
-        <NoticeSnackbars
-          isSuccess={snackbarSuccess}
-          successMessage="申請成功!"
-          isError={snackbarError}
-          errorMessage="申請失敗!可能是網路狀況不佳或是您已經在比賽內。"
-          onClose={handleSnackbarsClose}
-        />
-
+        </Box>
+      )}
+      {totalPages > 1 && (
         <Pagination
-          count={10}
+          className="home-pagination"
+          count={totalPages}
           color="primary"
-          onChange={handlePageChange}
+          onChange={(_event, value) => setPage(value)}
           page={page}
-          sx={{ display: "flex", justifyContent: "center" }}
+          aria-label="我的比賽分頁"
         />
-      </CardContent>
-    </Card>
+      )}
+      <NoticeSnackbars
+        isSuccess={snackbarSuccess}
+        successMessage="申請成功!"
+        isError={snackbarError}
+        errorMessage="申請失敗!可能是網路狀況不佳或是您已經在比賽內。"
+        onClose={() => {
+          setSnackbarSuccess(false);
+          setSnackbarError(false);
+        }}
+      />
+    </Box>
   );
 }

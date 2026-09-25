@@ -9,9 +9,7 @@ export async function registerUser(
   user: User,
   submissionMethod: SubmissionMethod = "button"
 ) {
-  await page.goto("/");
-  await page.getByLabel("account of current user").click();
-  await page.getByRole("menuitem", { name: "登入" }).click();
+  await page.goto("/login");
   await page.getByRole("button", { name: "沒有帳號嗎？" }).click();
   await expect(await page.getByRole("button", { name: "註冊" })).toBeVisible();
   await page.getByLabel("帳號").click();
@@ -41,9 +39,7 @@ export async function loginUser(
   user: Credentials,
   submissionMethod: SubmissionMethod = "button"
 ) {
-  await page.goto("/");
-  await page.getByLabel("account of current user").click();
-  await page.getByRole("menuitem", { name: "登入" }).click();
+  await page.goto("/login");
   await page.getByLabel("帳號").fill(user.username);
   await page.getByLabel("密碼").fill(user.password);
   const sessionCreated = page.waitForResponse((candidate) => {
@@ -60,13 +56,10 @@ export async function loginUser(
     await page.getByRole("button", { name: "登入" }).click();
   }
   await Promise.all([sessionCreated, currentUserRead]);
-  await expect(page.getByText("公告欄")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "近期比賽" })).toBeVisible();
 }
 
 export async function logoutUser(page: Page) {
-  await page.goto("/");
-  await page.getByLabel("account of current user").click();
-  await page.getByRole("menuitem", { name: "登出" }).click();
-  await page.getByLabel("account of current user").click();
-  await expect(page.getByText("訪客", { exact: true })).toBeVisible();
+  await page.goto("/logout");
+  await expect(page).toHaveURL(/\/$/);
 }

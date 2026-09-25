@@ -27,28 +27,30 @@ test.describe("Home", () => {
   test("login", async ({ page }) => {
     await loginUser(page, new User("測試管理員", "e2e.admin", "archery-e2e-password", "e2e.admin@example.invalid"), "enter");
   });
-  test("sidebar closes after navigating through a leaf item", async ({ page }) => {
-    await page.getByLabel("menu").click();
-    await page.getByRole("button", { name: "首頁" }).click();
-    await expect(page.getByRole("button", { name: "首頁" })).not.toBeVisible();
+  test("guest navigation keeps all three pages available", async ({ page }) => {
+    const navigation = page.getByRole("navigation", { name: "主要導覽" });
+    await expect(navigation.getByRole("link", { name: "首頁" })).toBeVisible();
+    await expect(navigation.getByRole("link", { name: "比賽列表" })).toBeVisible();
+    await expect(navigation.getByRole("link", { name: "我的比賽" })).toBeVisible();
 
-    await page.getByLabel("menu").click();
-    await page.getByRole("button", { name: "比賽" }).click();
-    await expect(page.getByRole("button", { name: "近期比賽" })).toBeVisible();
-
-    await page.getByRole("button", { name: "近期比賽" }).click();
+    await navigation.getByRole("link", { name: "比賽列表" }).click();
     await expect(page).toHaveURL(/\/recent_competitions$/);
-    await expect(page.getByRole("button", { name: "首頁" })).not.toBeVisible();
+    await navigation.getByRole("link", { name: "我的比賽" }).click();
+    await expect(page).toHaveURL(/\/login\?next=(%2F|\/)my_competitions$/);
+    await page.getByLabel("帳號").fill("e2e.admin");
+    await page.getByLabel("密碼").fill("archery-e2e-password");
+    await page.getByRole("button", { name: "登入" }).click();
+    await expect(page).toHaveURL(/\/my_competitions$/);
   });
-  test("sidebar keeps open when expanding a parent item", async ({ page }) => {
-    await page.getByLabel("menu").click();
-    await page.getByRole("button", { name: "比賽" }).click();
-
-    await expect(page.getByRole("button", { name: "近期比賽" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "首頁" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "我的比賽" })).toHaveCount(0);
+  test("mobile navigation exposes all three pages", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const navigation = page.getByRole("navigation", { name: "主要導覽" });
+    await expect(navigation.getByRole("link", { name: "首頁" })).toBeVisible();
+    await expect(navigation.getByRole("link", { name: "比賽列表" })).toBeVisible();
+    await expect(navigation.getByRole("link", { name: "我的比賽" })).toBeVisible();
+    await expect(page.getByRole("link", { name: /登入/ })).toBeVisible();
   });
-  test("authenticated My Competitions navigation closes the sidebar", async ({ page }) => {
+  test("authenticated My Competitions navigation", async ({ page }) => {
     await loginUser(
       page,
       new User(
@@ -58,16 +60,13 @@ test.describe("Home", () => {
         "e2e.admin@example.invalid",
       ),
     );
-    await page.getByLabel("menu").click();
-    await page.getByRole("button", { name: "比賽" }).click();
-    await page.getByRole("button", { name: "我的比賽" }).click();
-
+    const navigation = page.getByRole("navigation", { name: "主要導覽" });
+    await navigation.getByRole("link", { name: "我的比賽" }).click();
     await expect(page).toHaveURL(/\/my_competitions$/);
-    await expect(page.getByRole("button", { name: "首頁" })).not.toBeVisible();
+    await expect(navigation.getByRole("link", { name: "首頁" })).toBeVisible();
   });
   test("login locks duplicate Enter submissions while the request is pending", async ({ page }) => {
-    await page.getByLabel("account of current user").click();
-    await page.getByRole("menuitem", { name: "登入" }).click();
+    await page.goto("/login");
     await page.getByLabel("帳號").fill("e2e.admin");
     await page.getByLabel("密碼").fill("archery-e2e-password");
 
@@ -93,11 +92,10 @@ test.describe("Home", () => {
     await page.getByLabel("密碼").press("Enter");
     await expect.poll(() => sessionRequestCount).toBe(1);
     allowSessionRequest!();
-    await expect(page.getByText("公告欄")).toBeVisible();
+    await expect(page.getByRole("heading", { name: "近期比賽" })).toBeVisible();
   });
   test("overview Enter adds a new line without submitting registration", async ({ page }) => {
-    await page.getByLabel("account of current user").click();
-    await page.getByRole("menuitem", { name: "登入" }).click();
+    await page.goto("/login");
     await page.getByRole("button", { name: "沒有帳號嗎？" }).click();
 
     let registrationRequestCount = 0;
@@ -117,8 +115,7 @@ test.describe("Home", () => {
     await expect(page.getByRole("button", { name: "註冊" })).toBeVisible();
   });
   test("password mismatch Enter shows the existing alert without registering", async ({ page }) => {
-    await page.getByLabel("account of current user").click();
-    await page.getByRole("menuitem", { name: "登入" }).click();
+    await page.goto("/login");
     await page.getByRole("button", { name: "沒有帳號嗎？" }).click();
     await page.getByLabel("密碼", { exact: true }).fill("first-password");
     await page.getByLabel("確認密碼").fill("different-password");
@@ -150,9 +147,7 @@ test.describe("Home", () => {
     const competition = await legacyCompetition(page, legacyTitles.qualificationFinished);
     await registerUser(page, user);
     await loginUser(page, user);
-    await page.getByLabel("menu").click();
-    await page.getByRole("button", { name: "比賽" }).click();
-    await page.getByRole("button", { name: "近期比賽" }).click();
+    await page.getByRole("navigation", { name: "主要導覽" }).getByRole("link", { name: "比賽列表" }).click();
     await applyToLegacyCompetition(page, competition.id, "選手");
     await expect(page.getByText("申請成功!")).toBeVisible();
     await logoutUser(page);
@@ -162,9 +157,7 @@ test.describe("Home", () => {
     const competition = await legacyCompetition(page, legacyTitles.qualificationFinished);
     await registerUser(page, judge);
     await loginUser(page, judge);
-    await page.getByLabel("menu").click();
-    await page.getByRole("button", { name: "比賽" }).click();
-    await page.getByRole("button", { name: "近期比賽" }).click();
+    await page.getByRole("navigation", { name: "主要導覽" }).getByRole("link", { name: "比賽列表" }).click();
     await applyToLegacyCompetition(page, competition.id, "裁判");
     await expect(page.getByText("申請成功!")).toBeVisible();
     await logoutUser(page);

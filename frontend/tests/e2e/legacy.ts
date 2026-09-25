@@ -42,8 +42,7 @@ export async function applyToLegacyCompetition(page: Page, competitionId: number
   if (index < 0) throw new Error("指定 legacy 賽事未出現在近期清單");
   // Legacy titles repeat. Match the visible list to its formal GET response,
   // never to a fixture ID or a guessed second card.
-  await page.locator(".MuiCard-root").filter({ has: page.getByRole("button", { name: "查看記分板", exact: true }) })
-    .filter({ hasNot: page.locator(".MuiCard-root") }).nth(index)
+  await page.locator("article").filter({ has: page.getByRole("button", { name: "查看記分板", exact: true }) }).nth(index)
     .getByRole("button", { name: "申請加入", exact: true }).click();
   await page.getByRole("dialog").getByRole("button", { name: `申請為${role}` }).click();
 }
