@@ -3,6 +3,7 @@
 package migration_test
 
 import (
+	"backend/internal/config"
 	"backend/internal/database"
 	"backend/internal/migration"
 	"context"
@@ -39,6 +40,48 @@ func TestMigrationIntegration(t *testing.T) {
 		require.NoError(t, err)
 		require.Equal(t, uint(1), state.Version)
 		require.False(t, state.Dirty)
+	})
+
+	t.Run("production starts with V1 without migrating", func(t *testing.T) {
+		db := migrationTestDB(t)
+		resetMigrationSchema(t, db)
+		require.NoError(t, migration.Up(context.Background(), db, 1))
+		testConfig, err := database.LoadTestDatabaseConfig()
+		require.NoError(t, err)
+		app := config.App{
+			Environment: "production",
+			Database:    config.Database{Host: testConfig.Host, Port: testConfig.Port, Name: testConfig.Database, User: testConfig.Username, Password: testConfig.Password},
+			SessionKey:  strings.Repeat("s", 32),
+			Dictator:    config.Dictator{Username: "migration-admin", Password: "migration-password", Email: "migration@example.test"},
+		}
+		require.NoError(t, database.DatabaseInitial(app))
+		state, err := migration.ReadVersion(context.Background(), db)
+		require.NoError(t, err)
+		require.Equal(t, uint(1), state.Version)
+		require.False(t, state.Dirty)
+		require.NoError(t, migration.ValidateV1(context.Background(), db), "production startup must not change V1 schema")
+		var count int
+		require.NoError(t, db.QueryRow(`SELECT COUNT(*) FROM users WHERE user_name = 'migration-admin'`).Scan(&count))
+		require.Equal(t, 1, count)
+		app.Environment = "development"
+		require.ErrorContains(t, database.DatabaseInitial(app), "database schema is not current")
+		app.Environment = "production"
+		_, err = db.Exec(`UPDATE schema_migrations SET dirty = TRUE`)
+		require.NoError(t, err)
+		require.NoError(t, database.DatabaseInitial(app), "production does not exit solely for dirty migration metadata")
+		state, err = migration.ReadVersion(context.Background(), db)
+		require.NoError(t, err)
+		require.True(t, state.Dirty, "startup must not change migration metadata")
+
+		_, err = db.Exec(`DROP TABLE schema_migrations`)
+		require.NoError(t, err)
+		require.NoError(t, database.DatabaseInitial(app), "validated unmanaged V1 should still serve")
+		require.False(t, hasTable(t, db, "schema_migrations"), "startup must not baseline")
+		require.NoError(t, migration.ValidateV1(context.Background(), db))
+		_, err = db.Exec(`ALTER TABLE institutions ADD COLUMN unexpected bigint`)
+		require.NoError(t, err)
+		require.NoError(t, database.DatabaseInitial(app), "production does not exit solely for unknown schema")
+		require.ErrorContains(t, migration.ValidateV1(context.Background(), db), "schema mismatch")
 	})
 
 	t.Run("fresh V2 equals baselined V1 upgraded to V2", func(t *testing.T) {
