@@ -18,25 +18,8 @@ type PlayerSet struct {
 }
 
 type PlayerSetMatchTable struct {
-	ID          uint `json:"id"          gorm:"primary_key"`
-	PlayerId    uint `json:"player_id"`
-	PlayerSetId uint `json:"player_set_id"`
-}
-
-func InitPlayerSet() {
-	if !DB.Migrator().HasTable(&PlayerSet{}) {
-		if err := DB.Table("player_sets").AutoMigrate(&PlayerSet{}); err != nil {
-			log.Println("Failed to auto migrate PlayerSet:", err)
-			return
-		}
-	}
-
-	if !DB.Migrator().HasTable(&PlayerSetMatchTable{}) {
-		if err := DB.Table("player_set_match_tables").AutoMigrate(&PlayerSetMatchTable{}); err != nil {
-			log.Println("Failed to auto migrate PlayerSetMatchTable:", err)
-			return
-		}
-	}
+	PlayerSetId uint `json:"player_set_id" gorm:"primaryKey"`
+	PlayerId    uint `json:"player_id" gorm:"primaryKey"`
 }
 
 func DropPlayerSet() {

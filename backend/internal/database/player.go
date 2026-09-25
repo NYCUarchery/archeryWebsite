@@ -37,13 +37,6 @@ type RoundScore struct {
 	Score      int  `json:"score"`
 }
 
-func InitPlayer() {
-	DB.AutoMigrate(&Player{})
-	DB.AutoMigrate(&Round{})
-	DB.AutoMigrate(&RoundEnd{})
-	DB.AutoMigrate(&RoundScore{})
-}
-
 func DropPlayer() {
 	if DB.Migrator().HasTable(&RoundScore{}) {
 		if err := DB.Migrator().DropTable(&RoundScore{}); err != nil {

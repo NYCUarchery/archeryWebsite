@@ -14,10 +14,6 @@ type Qualification struct {
 	Lanes           []*Lane `json:"lanes" `
 }
 
-func InitQualification() {
-	DB.AutoMigrate(&Qualification{})
-}
-
 func DropQualification() {
 	if DB.Migrator().HasTable(&Qualification{}) {
 		if err := DB.Migrator().DropTable(&Qualification{}); err != nil {
