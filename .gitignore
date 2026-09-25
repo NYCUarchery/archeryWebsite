@@ -20,3 +20,12 @@ backups/
 # Go 編譯產物
 backend/cmd/seeder/seeder
 test-artifacts/
+
+# Graphify local state; keep shared graph artifacts tracked.
+graphify-out/manifest.json
+graphify-out/cost.json
+graphify-out/memory/
+graphify-out/reflections/
+graphify-out/.graphify_*
+graphify-out/????-??-??/
+graphify-out/cache/
