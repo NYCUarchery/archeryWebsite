@@ -8,6 +8,7 @@ RUN go mod download
 
 COPY . .
 RUN go build -o main .
+RUN go build -o migrate ./cmd/migrate
 
 EXPOSE 80
 ENTRYPOINT ["./main"]

@@ -16,6 +16,7 @@ frontend/.env
 .env.*
 !.env.example
 backups/
+prod_dump.sql
 
 # Go 編譯產物
 backend/cmd/seeder/seeder
