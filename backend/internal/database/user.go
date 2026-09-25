@@ -16,11 +16,6 @@ type User struct {
 	Overview      string `json:"overview"`
 }
 
-/*initiate 'User' structure in the database*/
-func InitUser() {
-	DB.AutoMigrate(&User{})
-}
-
 func DropUser() {
 	if DB.Migrator().HasTable(&User{}) {
 		if err := DB.Migrator().DropTable(&User{}); err != nil {

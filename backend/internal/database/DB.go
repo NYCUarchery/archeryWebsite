@@ -2,6 +2,8 @@ package database
 
 import (
 	"backend/internal/config"
+	"backend/internal/migration"
+	"context"
 	"errors"
 	"fmt"
 	"log"
@@ -25,14 +27,15 @@ func DatabaseInitial(app config.App) error {
 	if err := connectDB(app.Database); err != nil {
 		return err
 	}
-	setTables()
+	if err := requireCurrentSchema(); err != nil {
+		return err
+	}
 	CreateNoInstitution()
 	return setDictator(app.Dictator)
 }
 
-// DatabaseInitialForSeeder prepares the schema needed by the development
-// seeder and leaves an existing Dictator unchanged. This keeps an explicit
-// seeding command from overwriting application data.
+// DatabaseInitialForSeeder requires the migrated schema and leaves an existing
+// Dictator unchanged. Schema changes belong to the explicit migration command.
 func DatabaseInitialForSeeder(app config.App) error {
 	if err := app.ValidateSeeder(); err != nil {
 		return err
@@ -40,29 +43,25 @@ func DatabaseInitialForSeeder(app config.App) error {
 	if err := connectDB(app.Database); err != nil {
 		return err
 	}
-	setTables()
+	if err := requireCurrentSchema(); err != nil {
+		return err
+	}
 	CreateNoInstitution()
 	return ensureDictatorForSeeder(app.Dictator)
 }
 
-func setTables() {
-	InitUser()
-	InitInstitution()
-	InitParticipant()
-
-	InitPlayer()
-	InitPlayerSet()
-
-	InitCompetition()
-	InitGroupInfo()
-	InitQualification()
-	InitLane()
-
-	InitElimination()
-	InitMatchResult()
-	InitMedal()
-
-	log.Println("All tables are created")
+func requireCurrentSchema() error {
+	if DB == nil {
+		return errors.New("database is not connected")
+	}
+	sqlDB, err := DB.DB()
+	if err != nil {
+		return fmt.Errorf("get database handle: %w", err)
+	}
+	if err := migration.RequireCurrent(context.Background(), sqlDB); err != nil {
+		return fmt.Errorf("database schema is not current; run ./migrate up: %w", err)
+	}
+	return nil
 }
 
 func DropTables() {

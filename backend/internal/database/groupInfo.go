@@ -18,10 +18,6 @@ type Group struct {
 	Players       []*Player `json:"players" swagger:"interface{}"`
 }
 
-func InitGroupInfo() {
-	DB.Table("groups").AutoMigrate(&Group{})
-}
-
 func DropGroupInfo() {
 	if DB.Migrator().HasTable(&Group{}) {
 		if err := DB.Migrator().DropTable(&Group{}); err != nil {

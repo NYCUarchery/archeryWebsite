@@ -48,6 +48,9 @@ Compose 從 `.env` 插值，再按 service 白名單注入環境變數；shell �
 docker compose -f docker-compose.yml config --quiet
 docker compose -f docker-compose.yml build
 docker compose -f docker-compose.yml run --rm --no-deps reverse-proxy caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+docker compose -f docker-compose.yml up -d mysql
+# 確認 mysql healthy 後，手動建立 V1、V2。
+docker compose -f docker-compose.yml run --rm --no-deps --entrypoint ./migrate backend up
 docker compose -f docker-compose.yml up -d
 docker compose -f docker-compose.yml ps
 docker compose -f docker-compose.yml logs --tail=100 backend reverse-proxy
@@ -77,7 +80,7 @@ docker inspect --format '{{index .Config.Labels "com.docker.compose.project"}} {
 2. 使用目前有效的 DB 管理帳密完成 SQL dump，並在另一個可丟棄 DB 驗證可還原。若舊 MySQL container environment 已與實際密碼不同，必須用實際密碼，不能只照搬範例。
 3. 將舊 YAML 逐值搬入根 `.env`，保留實際 database、DB 密碼、管理員 username 與 session key。production key 不符最低長度時產生新 key，安排使用者重新登入。MySQL `MYSQL_*` 初始化變數**不會修改既有 volume 中的帳號或密碼**；此次先保留現值，輪替另做。
 4. 於獨立 worktree 建新版本、驗 config；使用原 project 名切換前，確認新 Compose 將掛載同一 DB volume。新 source 可在另一目錄，但舊 checkout 與 build artifacts 必須留供 rollback。
-5. 維護時段停止舊 backend 接受寫入，作最後備份；以相同 project 的新設定 `up -d`。此時 proxy 服務名仍為 `reverse-proxy`，由 Compose 重建成 Caddy；Caddy 自行簽新憑證，無須匯入 Certbot。
+5. 維護時段停止舊 backend 接受寫入，作最後備份；依 [migration 指引](migrations.md#既有-production-接管) 驗證並登記 V1、執行 V2，確認 clean 最新版本後，才以相同 project 的新設定 `up -d`。此時 proxy 服務名仍為 `reverse-proxy`，由 Compose 重建成 Caddy；Caddy 自行簽新憑證，無須匯入 Certbot。
 6. 做 HTTPS／登入／賽事讀取驗收，並重新 inspect MySQL mount，確認相同 volume；完成前不要輪替 DB 密碼或清理舊 images。
 
 只測試新 branch 時，須用獨立 project、可丟棄 DB 與其他 host port；不要在 production checkout 直接執行開發 Compose 或測試用 `up`。
@@ -100,12 +103,16 @@ Caddy `/data` 保存憑證與 ACME 帳號，`/config` 保存狀態；以 volume 
 
 ### 更新
 
-完成備份且 worktree 無未保存修改後，更新到選定 release／commit，再執行：
+worktree 無未保存修改後，更新到選定 release／commit 並建置。停止所有 backend 寫入、完成最後備份，再手動遷移；已有版本紀錄者不重跑 baseline：
 
 ```bash
 git pull --ff-only
 docker compose -f docker-compose.yml config --quiet
 docker compose -f docker-compose.yml build
+docker compose -f docker-compose.yml stop backend
+# 在此完成停止寫入後的最後備份；未管理的 prod 先依 migration 指引 baseline。
+docker compose -f docker-compose.yml run --rm --no-deps --entrypoint ./migrate backend up
+docker compose -f docker-compose.yml run --rm --no-deps --entrypoint ./migrate backend version
 docker compose -f docker-compose.yml up -d
 docker compose -f docker-compose.yml ps
 docker compose -f docker-compose.yml logs --tail=100 backend reverse-proxy
@@ -125,7 +132,7 @@ docker compose -f docker-compose.yml exec -T mysql sh -c 'export MYSQL_PWD="$MYS
 docker compose -f docker-compose.yml up -d backend reverse-proxy
 ```
 
-dump 可重建其所含表，但不保證刪除新版本額外建立的表；跨 schema 版本回復須額外檢查。此 env／Caddy 變更本身不引入資料表遷移。
+dump 可重建其所含表，但不保證刪除新版本額外建立的表。跨 schema 回復優先還原至空的替代 DB，再切換相符舊版；原地還原前須處理額外表與版本紀錄。接管前 dump 不含 `schema_migrations`，不可保留升級後 V2 紀錄。V2 已刪除 `match_results.total_points`，僅切換 image 不足。詳見 [migration 失敗與回復](migrations.md#失敗與回復)。
 
 不要以 `down -v`、`volume prune` 或刪除 Docker data directory 作更新／回復手段。即使短暫回到 V1，仍須保持 project 與資料卷相同。
 

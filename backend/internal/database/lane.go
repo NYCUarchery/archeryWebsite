@@ -14,10 +14,6 @@ type Lane struct {
 	Players         []*Player `json:"players"`
 }
 
-func InitLane() {
-	DB.AutoMigrate(&Lane{})
-}
-
 func DropLane() {
 	if DB.Migrator().HasTable(&Lane{}) {
 		if err := DB.Migrator().DropTable(&Lane{}); err != nil {

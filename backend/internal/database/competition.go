@@ -30,10 +30,6 @@ type Competition struct { // DB : game_info
 	Participants             []*Participant `json:"participants" swagger:"interface{}"`
 }
 
-func InitCompetition() {
-	DB.AutoMigrate(&Competition{})
-}
-
 func DropCompetition() {
 	if DB.Migrator().HasTable(&Competition{}) {
 		if err := DB.Migrator().DropTable(&Competition{}); err != nil {

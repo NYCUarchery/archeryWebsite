@@ -1,6 +1,8 @@
 package database
 
 import (
+	"backend/internal/migration"
+	"context"
 	"errors"
 	"fmt"
 	"os"
@@ -86,7 +88,7 @@ func ResetTestDatabase(fixture string) error {
 	if err != nil {
 		return err
 	}
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify",
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%d)/%s?charset=utf8mb4&parseTime=True&loc=Local&tls=skip-verify&multiStatements=true",
 		config.Username, config.Password, config.Host, config.Port, config.Database)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
@@ -117,27 +119,26 @@ func ResetTestDatabase(fixture string) error {
 }
 
 func resetSchema(db *gorm.DB) error {
-	// Child tables first keeps this safe if a future migration enables stricter
-	// foreign keys. The list is explicit so reset failures cannot be hidden by
-	// the legacy startup helpers that log and continue.
-	models := []any{
-		&Medal{}, &MatchScore{}, &MatchEnd{}, &MatchResult{}, &Match{}, &Stage{},
-		&PlayerSetMatchTable{}, &PlayerSet{}, &Elimination{},
-		&RoundScore{}, &RoundEnd{}, &Round{}, &Player{}, &Lane{}, &Qualification{},
-		&Group{}, &Participant{}, &Competition{}, &User{}, &Institution{},
+	sqlDB, err := db.DB()
+	if err != nil {
+		return fmt.Errorf("get test database handle: %w", err)
 	}
-	if err := db.Migrator().DropTable(models...); err != nil {
-		return fmt.Errorf("drop test schema: %w", err)
+	// LoadTestDatabaseConfig has already limited this connection to the
+	// runner-owned database. Keep the table list explicit: a test reset must
+	// never discover and drop arbitrary tables.
+	tables := []string{
+		"medals", "match_scores", "match_ends", "match_results", "matches", "stages",
+		"player_set_match_tables", "player_sets", "eliminations",
+		"round_scores", "round_ends", "rounds", "players", "lanes", "qualifications",
+		"groups", "participants", "competitions", "users", "institutions", "schema_migrations",
 	}
-	if err := db.AutoMigrate(
-		&User{}, &Institution{}, &Participant{}, &Player{}, &Round{}, &RoundEnd{}, &RoundScore{},
-		&PlayerSet{}, &PlayerSetMatchTable{}, &Competition{}, &Group{}, &Qualification{}, &Lane{},
-		&Elimination{}, &Stage{}, &Match{}, &MatchResult{}, &MatchEnd{}, &MatchScore{}, &Medal{},
-	); err != nil {
-		return fmt.Errorf("migrate test schema: %w", err)
+	for _, table := range tables {
+		if _, err := sqlDB.ExecContext(context.Background(), "DROP TABLE IF EXISTS `"+table+"`"); err != nil {
+			return fmt.Errorf("drop test table %s: %w", table, err)
+		}
 	}
-	if err := ensureMatchResultPlayerSetConstraint(); err != nil {
-		return fmt.Errorf("migrate MatchResult player set constraint: %w", err)
+	if err := migration.Up(context.Background(), sqlDB, 0); err != nil {
+		return fmt.Errorf("apply test migrations: %w", err)
 	}
 	return nil
 }

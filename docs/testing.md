@@ -55,7 +55,7 @@ ARCHERY_E2E_MODE=full-ui bash scripts/test.sh e2e competitionLifecycle.spec.ts -
 
 可用 fixtures 為：
 
-- `empty`：只有 schema。
+- `empty`：清除 runner schema 與 migration 版本紀錄，再執行正式 V1、V2 SQL；只有最新 schema。
 - `legacy`：既有 SQL fixture 加測試主辦人。
 - `accounts`：lifecycle 用的組織與角色帳號；不建立比賽、participant、分數或賽果。
 
@@ -88,7 +88,7 @@ E2E runner 於 [`scripts/test-env.mjs`](../scripts/test-env.mjs) 建立每次專
 
 fixture 的外部控制是 host-side runner 操作，不是 HTTP API：`reset` 依序關閉 browser contexts、停止 backend、reset、重新啟動並等候就緒；`restart` 只關閉 contexts、停止並啟動 backend，絕不 flush 或 reset 資料。控制實作見 [`frontend/tests/e2e/fixtures.ts`](../frontend/tests/e2e/fixtures.ts) 與 [`scripts/test-env-control.mjs`](../scripts/test-env-control.mjs)。
 
-`/api/test/restore` 已移除；所有 server mode 啟動只做 schema 與必要基礎初始化，不清賽事，也不自動執行 development Seeder。
+`/api/test/restore` 已移除；所有 server mode 啟動只做 schema 版本檢查與必要基礎資料初始化，不清賽事，也不自動執行 development Seeder。
 
 [`competitionLifecycle.spec.ts`](../frontend/tests/e2e/competitionLifecycle.spec.ts) 涵蓋反曲、複合兩組，各 12 人；個人各取前 8 名，各組另建 4 支三人隊。第 9–12 名不得進個人籤表，仍可參團。完成定義是兩組個人／團體共四項頒牌，沒有新增整場 `finished` 欄位。
 
@@ -155,3 +155,7 @@ PR workflow 於 [`.github/workflows/test.yml`](../.github/workflows/test.yml) �
 - browser 啟動失敗：確認對應 Playwright browser 已安裝；headed/debug 另確認 display。
 - integration reset 拒絕設定：不要補開發 DB 環境變數，檢查是否透過 runner 啟動。
 - cleanup 失敗：保留 runner 輸出的 artifact 與 project 名稱供診斷；僅在確認其由本次 runner 建立後，處理該專屬 project。
+
+## Migration 驗證
+
+Go 整合層在同一個 runner 隔離 DB 驗證空庫建置、V1 baseline、V1→V2 資料保全、schema 不符拒絕、dirty／版本啟動防護、執行鎖、外鍵與 CHECK。CI 使用合成資料，不需要 `prod_dump.sql`。測試 reset 不使用 AutoMigrate，與正式環境共用嵌入的 SQL。實際 production dump 的還原演練只可在另建的可丟棄 MySQL 8.4.2 執行，不得接觸現有開發或 production volume。
