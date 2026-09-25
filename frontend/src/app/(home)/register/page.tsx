@@ -106,16 +106,16 @@ const SignupPage = () => {
   };
 
   return (
-    <Card sx={{ p: 2, mt: 2, width: "600px" }}>
+    <Card className="home-auth-card home-register-card" sx={{ p: 2 }}>
       <CardContent sx={{ display: "flex", justifyContent: "center" }}>
-        <Box component="form" onSubmit={handleSignup}>
+        <Box component="form" onSubmit={handleSignup} sx={{ maxWidth: 300, mx: "auto" }}>
           <Grid
             container
             direction="column"
             alignItems="center"
             justifyContent="center"
             spacing={2}
-            sx={{ width: "300px" }}
+            sx={{ width: "100%" }}
           >
           <Grid size={12}>
             <Typography variant="h4" align="center">

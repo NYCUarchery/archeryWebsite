@@ -36,7 +36,11 @@ const LoginPage = () => {
         queryClient.invalidateQueries({
           queryKey: ["currentUserDetail"],
         });
-        router.push("/");
+        router.push(
+          new URLSearchParams(window.location.search).get("next") === "/my_competitions"
+            ? "/my_competitions"
+            : "/"
+        );
       },
       onError: (error) => {
         alert("有人帳號密碼打錯了\n這個是系統回報的錯誤訊息：" + error);
@@ -65,7 +69,7 @@ const LoginPage = () => {
     loginMutation({ user_name: userName, password: password });
   };
   return (
-    <Card sx={{ p: 2, mt: 2, width: "300px" }}>
+    <Card className="home-auth-card home-login-card" sx={{ p: 2 }}>
       <CardContent>
         <Box component="form" onSubmit={handleLogin}>
           <Grid
@@ -75,84 +79,80 @@ const LoginPage = () => {
             justifyContent="center"
             spacing={2}
           >
-          <Grid>
-            <Typography variant="h6" component="div">
-              登入
-            </Typography>
-          </Grid>
-
-          <Grid>
-            <TextField
-              label="帳號"
-              variant="outlined"
-              value={userName}
-              onChange={(event) => {
-                setUserName(event.target.value);
-              }}
-              sx={{ width: "250px" }}
-            />
-          </Grid>
-          <Grid>
-            <TextField
-              label="密碼"
-              variant="outlined"
-              type={showPassword ? "text" : "password"}
-              value={password}
-              onChange={(event) => {
-                setPassword(event.target.value);
-              }}
-              sx={{ width: "250px" }}
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      type="button"
-                      onClick={handleClickShowPassword}
-                      onMouseDown={handleMouseDownPassword}
-                      edge="end"
-                    >
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-              }}
-            />
-          </Grid>
-
-          <Grid>
-            <Box
-              sx={{
-                mt: 2,
-              }}
-            >
-              <Button
-                disabled={isLoadingLogin || isSubmitting}
-                size="large"
-                type="submit"
-                variant="contained"
-                color="secondary"
-              >
+            <Grid>
+              <Typography variant="h6" component="div">
                 登入
-              </Button>
-            </Box>
-          </Grid>
+              </Typography>
+            </Grid>
 
-          <Grid>
-            <Typography
-              variant="caption"
-              component={Button}
-              type="button"
-              onClick={() => {
-                router.push("/register");
-              }}
-              color="secondary"
-              noWrap={true}
-              sx={{ textDecoration: "none" }}
-            >
-              沒有帳號嗎？
-            </Typography>
-          </Grid>
+            <Grid>
+              <TextField
+                label="帳號"
+                variant="outlined"
+                value={userName}
+                onChange={(event) => {
+                  setUserName(event.target.value);
+                }}
+                sx={{ width: "250px" }}
+              />
+            </Grid>
+            <Grid>
+              <TextField
+                label="密碼"
+                variant="outlined"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(event) => {
+                  setPassword(event.target.value);
+                }}
+                sx={{ width: "250px" }}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        type="button"
+                        onClick={handleClickShowPassword}
+                        onMouseDown={handleMouseDownPassword}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Grid>
+
+            <Grid>
+              <Box sx={{ mt: 2 }}>
+                <Button
+                  disabled={isLoadingLogin || isSubmitting}
+                  size="large"
+                  type="submit"
+                  variant="contained"
+                  color="secondary"
+                >
+                  登入
+                </Button>
+              </Box>
+            </Grid>
+
+            <Grid>
+              <Typography
+                variant="caption"
+                component={Button}
+                type="button"
+                onClick={() => {
+                  router.push("/register");
+                }}
+                color="secondary"
+                noWrap={true}
+                sx={{ textDecoration: "none" }}
+              >
+                沒有帳號嗎？
+              </Typography>
+            </Grid>
           </Grid>
         </Box>
       </CardContent>
