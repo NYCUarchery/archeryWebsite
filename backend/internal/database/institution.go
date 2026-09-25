@@ -7,10 +7,6 @@ type Institution struct {
 	Name string `gorm:"not null" json:"name"`
 }
 
-func InitInstitution() {
-	DB.AutoMigrate(&Institution{})
-}
-
 func DropInstitution() {
 	if DB.Migrator().HasTable(&Institution{}) {
 		if err := DB.Migrator().DropTable(&Institution{}); err != nil {

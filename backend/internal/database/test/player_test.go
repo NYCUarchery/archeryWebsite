@@ -39,33 +39,18 @@ func TestPlayerTestSuite(t *testing.T) {
 	suite.Run(t, new(PlayerTestSuite))
 }
 
-func TestInitPlayer(t *testing.T) {
+func TestResetTestDatabaseCreatesPlayerSchema(t *testing.T) {
 	if os.Getenv("ARCHERY_MYSQL_INTEGRATION") != "1" {
 		t.Fatal("integration tests require scripts/test.sh go-integration")
 	}
 	if err := ResetTestDatabase("empty"); err != nil {
 		t.Fatal(err)
 	}
-	DropTables()
-	Convey("Test InitPlayer", t, func() {
-		/*precondition*/
-		InitUser()
-		InitInstitution()
-		InitParticipant()
-		/*end of precondition*/
-		Convey("before InitPlayer, the table should not exist", func() {
-			So(DB.Migrator().HasTable(&Player{}), ShouldBeFalse)
-			So(DB.Migrator().HasTable(&Round{}), ShouldBeFalse)
-			So(DB.Migrator().HasTable(&RoundEnd{}), ShouldBeFalse)
-			So(DB.Migrator().HasTable(&RoundScore{}), ShouldBeFalse)
-		})
-		InitPlayer()
-		Convey("after InitPlayer, the table should exist", func() {
-			So(DB.Migrator().HasTable(&Player{}), ShouldBeTrue)
-			So(DB.Migrator().HasTable(&Round{}), ShouldBeTrue)
-			So(DB.Migrator().HasTable(&RoundEnd{}), ShouldBeTrue)
-			So(DB.Migrator().HasTable(&RoundScore{}), ShouldBeTrue)
-		})
+	Convey("ResetTestDatabase applies the formal migrations", t, func() {
+		So(DB.Migrator().HasTable(&Player{}), ShouldBeTrue)
+		So(DB.Migrator().HasTable(&Round{}), ShouldBeTrue)
+		So(DB.Migrator().HasTable(&RoundEnd{}), ShouldBeTrue)
+		So(DB.Migrator().HasTable(&RoundScore{}), ShouldBeTrue)
 	})
 }
 

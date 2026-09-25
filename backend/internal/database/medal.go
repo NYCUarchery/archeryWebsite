@@ -9,10 +9,6 @@ type Medal struct {
 	PlayerSetId   uint `gorm:"not null" json:"player_set_id"`
 }
 
-func InitMedal() {
-	DB.AutoMigrate(&Medal{})
-}
-
 func DropMedal() {
 	if DB.Migrator().HasTable(&Medal{}) {
 		if err := DB.Migrator().DropTable(&Medal{}); err != nil {

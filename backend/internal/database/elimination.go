@@ -162,12 +162,6 @@ func computeEliminationMatchPoints(elimination *Elimination) {
 	}
 }
 
-func InitElimination() {
-	DB.AutoMigrate(&Elimination{})
-	DB.AutoMigrate(&Stage{})
-	DB.AutoMigrate(&Match{})
-}
-
 func DropElimination() {
 	if DB.Migrator().HasTable(&Match{}) {
 		if err := DB.Migrator().DropTable(&Match{}); err != nil {

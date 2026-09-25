@@ -13,10 +13,6 @@ type Participant struct {
 	Status        string `gorm:"not null" json:"status"`
 }
 
-func InitParticipant() {
-	DB.AutoMigrate(&Participant{})
-}
-
 func DropParticipant() {
 	if DB.Migrator().HasTable(&Participant{}) {
 		if err := DB.Migrator().DropTable(&Participant{}); err != nil {
