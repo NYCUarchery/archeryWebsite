@@ -1,9 +1,12 @@
+"use client";
 import { DatabaseCompetition } from "@/types/Api";
-import Typography from "@mui/material/Typography";
 import { Button } from "@mui/material";
-import Card from "@mui/material/Card";
 import Dialog from "@mui/material/Dialog";
 import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import Typography from "@mui/material/Typography";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -13,13 +16,11 @@ interface Props {
   onPlayerApply?: (competitionId: number) => void;
   onJudgeApply?: (competitionId: number) => void;
   onAdminApply?: (competitionId: number) => void;
+  variant?: "card" | "row";
 }
-interface CompetitionItemProps {
+
+interface CompetitionItemProps extends Omit<Props, "competitions"> {
   competition: DatabaseCompetition;
-  uid?: number;
-  onPlayerApply?: (competitionId: number) => void;
-  onJudgeApply?: (competitionId: number) => void;
-  onAdminApply?: (competitionId: number) => void;
 }
 
 export const CompetitionList = ({
@@ -28,22 +29,22 @@ export const CompetitionList = ({
   onPlayerApply,
   onJudgeApply,
   onAdminApply,
-}: Props) => {
-  return (
-    <>
-      {competitions?.map((competition: DatabaseCompetition) => (
-        <CompetitionItem
-          competition={competition}
-          uid={uid}
-          onAdminApply={onAdminApply}
-          onJudgeApply={onJudgeApply}
-          onPlayerApply={onPlayerApply}
-          key={competition.id}
-        />
-      ))}
-    </>
-  );
-};
+  variant = "row",
+}: Props) => (
+  <>
+    {competitions.map((competition) => (
+      <CompetitionItem
+        key={competition.id}
+        competition={competition}
+        uid={uid}
+        onAdminApply={onAdminApply}
+        onJudgeApply={onJudgeApply}
+        onPlayerApply={onPlayerApply}
+        variant={variant}
+      />
+    ))}
+  </>
+);
 
 export const CompetitionItem = ({
   competition,
@@ -51,62 +52,50 @@ export const CompetitionItem = ({
   onPlayerApply,
   onJudgeApply,
   onAdminApply,
+  variant = "row",
 }: CompetitionItemProps) => {
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const competitionId = competition.id!;
 
-  const handleJoin = () => {
-    setOpen(true);
-  };
-
-  const handlePlayeApplication = () => {
-    onPlayerApply?.(competition.id!);
-
-    setOpen(false);
-  };
-
-  const handleAdminApplication = () => {
-    onAdminApply?.(competition.id!);
-    setOpen(false);
-  };
-
-  const handleJudgeApplication = () => {
-    onJudgeApply?.(competition.id!);
+  const apply = (callback?: (id: number) => void) => {
+    callback?.(competitionId);
     setOpen(false);
   };
 
   return (
-    <Card sx={{ mb: 2 }}>
-      <Typography variant="h6" component="div" sx={{ p: 2 }}>
-        {competition.title}
-      </Typography>
-      <Typography variant="body1" component="div" sx={{ p: 2 }}>
-        {competition.sub_title}
-      </Typography>
-
-      <Button
-        onClick={() => router.push(`/competition/${competition.id}`)}
-        sx={{ ml: 2, mb: 2 }}
-        variant="contained"
-      >
-        查看記分板
-      </Button>
-      <Button
-        onClick={handleJoin}
-        color="secondary"
-        variant="contained"
-        sx={{ ml: 2, mb: 2 }}
-        disabled={uid === undefined}
-      >
-        {uid === undefined ? "登入以加入比賽" : "申請加入"}
-      </Button>
-      <Dialog open={open} onClose={() => setOpen(false)}>
+    <article className={`home-competition-${variant}`}>
+      <div className="home-competition-copy">
+        <Typography component="h2">{competition.title}</Typography>
+        {competition.sub_title && <Typography component="p">{competition.sub_title}</Typography>}
+      </div>
+      <div className="home-competition-actions">
+        <Button
+          className="home-button-primary"
+          variant="contained"
+          onClick={() => router.push(`/competition/${competitionId}`)}
+        >
+          查看記分板 <span aria-hidden="true">→</span>
+        </Button>
+        <Button
+          className="home-button-secondary"
+          variant="outlined"
+          onClick={() => (uid === undefined ? router.push("/login") : setOpen(true))}
+        >
+          {uid === undefined ? "登入以加入比賽" : "申請加入"}
+        </Button>
+      </div>
+      <Dialog open={open} onClose={() => setOpen(false)} aria-labelledby={`competition-${competitionId}-apply`}>
+        <DialogTitle id={`competition-${competitionId}-apply`}>選擇申請角色</DialogTitle>
+        <DialogContent>
+          <DialogContentText>請選擇您想申請加入比賽的角色。</DialogContentText>
+        </DialogContent>
         <DialogActions>
-          <Button onClick={handleAdminApplication}>申請為管理員</Button>
-          <Button onClick={handleJudgeApplication}>申請為裁判</Button>
-          <Button onClick={handlePlayeApplication}>申請為選手</Button>
+          <Button onClick={() => apply(onAdminApply)}>申請為管理員</Button>
+          <Button onClick={() => apply(onJudgeApply)}>申請為裁判</Button>
+          <Button onClick={() => apply(onPlayerApply)} autoFocus>申請為選手</Button>
         </DialogActions>
       </Dialog>
-    </Card>
+    </article>
   );
 };
