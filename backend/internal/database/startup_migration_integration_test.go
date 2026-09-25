@@ -6,12 +6,13 @@ import (
 	"database/sql"
 	"os"
 	"sort"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/require"
 )
 
-func TestInitializersRejectNonCurrentMigrationStateWithoutSchemaRepair(t *testing.T) {
+func TestNonProductionInitializersRejectNonCurrentMigrationStateWithoutSchemaRepair(t *testing.T) {
 	if os.Getenv("ARCHERY_MYSQL_INTEGRATION") != "1" {
 		t.Fatal("integration tests require scripts/test.sh go-integration")
 	}
@@ -92,6 +93,12 @@ func TestInitializersRejectNonCurrentMigrationStateWithoutSchemaRepair(t *testin
 			testCase.check(t, currentSQLDB(t))
 			require.Equal(t, before, showCreates(t, currentSQLDB(t)), "seeder startup must not repair schema")
 			assertNoStartupRows(t)
+
+			productionApp := integrationApp(t)
+			productionApp.Environment = "production"
+			productionApp.SessionKey = strings.Repeat("s", 32)
+			require.NoError(t, DatabaseInitial(productionApp), "production should not exit solely for migration state")
+			testCase.check(t, currentSQLDB(t))
 		})
 	}
 }
