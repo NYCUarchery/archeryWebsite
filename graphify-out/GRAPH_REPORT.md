@@ -1,7 +1,7 @@
 # Graph Report - archeryWebsite  (2026-09-28)
 
 ## Corpus Check
-- 344 files · ~331,526 words
+- 344 files · ~331,586 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 31 file(s) not represented in the graph (top: .scss 14, (none) 10, .example 2)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `3d64beb9`
+- Built from commit: `a119ac1a`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
