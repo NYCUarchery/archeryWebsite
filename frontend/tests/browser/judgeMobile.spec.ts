@@ -154,6 +154,9 @@ test.describe("Judge mobile scoring page", () => {
     await expect(page.locator(".top_bar")).toHaveCount(0);
     await expect(page.getByRole("tab")).toHaveCount(0);
     await expect(page.getByRole("button", { name: "判", exact: true })).toBeVisible();
+    const switcher = await page.getByRole("button", { name: "判", exact: true }).boundingBox();
+    const heading = await page.getByRole("heading", { name: "裁判記分" }).boundingBox();
+    expect(switcher && heading && switcher.y + switcher.height <= heading.y).toBe(true);
     await page.getByLabel("組別").click();
     await expect(page.getByRole("option", { name: "啟用組" })).toBeVisible();
     await expect(page.getByRole("option", { name: "停用團體組" })).toHaveCount(0);
