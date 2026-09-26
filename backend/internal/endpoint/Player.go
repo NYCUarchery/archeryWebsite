@@ -163,37 +163,9 @@ func PostPlayer(context *gin.Context) {
 		if err := tx.First(&user, participant.UserID).Error; err != nil {
 			return err
 		}
-		data = database.Player{
-			ParticipantId: participant.ID,
-			GroupId:       competition.UnassignedGroupId,
-			LaneId:        competition.UnassignedLaneId,
-			Name:          user.RealName,
-			TotalScore:    0,
-			ShootOffScore: -1,
-			Rank:          0,
-			Order:         0,
-		}
-		if err := tx.Create(&data).Error; err != nil {
-			return err
-		}
-		for range competition.RoundsNum {
-			round := database.Round{PlayerId: data.ID, TotalScore: 0}
-			if err := tx.Create(&round).Error; err != nil {
-				return err
-			}
-			for range 6 {
-				roundEnd := database.RoundEnd{RoundId: round.ID, IsConfirmed: false}
-				if err := tx.Create(&roundEnd).Error; err != nil {
-					return err
-				}
-				for range 6 {
-					if err := tx.Create(&database.RoundScore{RoundEndId: roundEnd.ID, Score: -1}).Error; err != nil {
-						return err
-					}
-				}
-			}
-		}
-		return nil
+		var err error
+		data, err = createPlayerGraphTx(tx, participant, competition, user)
+		return err
 	})
 	if writeControlAuthorizationError(context, err) {
 		return
@@ -203,6 +175,42 @@ func PostPlayer(context *gin.Context) {
 	}
 	response.AcceptPrint(data.ID, fmt.Sprint(data), "Create Player")
 	context.IndentedJSON(http.StatusOK, data)
+}
+
+// createPlayerGraphTx is shared by individual approval and Dictator bulk
+// registration. Callers authorize the action and own the surrounding transaction.
+func createPlayerGraphTx(tx *gorm.DB, participant database.Participant, competition database.Competition, user database.User) (database.Player, error) {
+	data := database.Player{
+		ParticipantId: participant.ID,
+		GroupId:       competition.UnassignedGroupId,
+		LaneId:        competition.UnassignedLaneId,
+		Name:          user.RealName,
+		TotalScore:    0,
+		ShootOffScore: -1,
+		Rank:          0,
+		Order:         0,
+	}
+	if err := tx.Create(&data).Error; err != nil {
+		return data, err
+	}
+	for range competition.RoundsNum {
+		round := database.Round{PlayerId: data.ID, TotalScore: 0}
+		if err := tx.Create(&round).Error; err != nil {
+			return data, err
+		}
+		for range 6 {
+			roundEnd := database.RoundEnd{RoundId: round.ID, IsConfirmed: false}
+			if err := tx.Create(&roundEnd).Error; err != nil {
+				return data, err
+			}
+			for range 6 {
+				if err := tx.Create(&database.RoundScore{RoundEndId: roundEnd.ID, Score: -1}).Error; err != nil {
+					return data, err
+				}
+			}
+		}
+	}
+	return data, nil
 }
 
 // Post one RoundEnd By Round ID godoc
