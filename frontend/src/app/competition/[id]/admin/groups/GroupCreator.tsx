@@ -14,6 +14,7 @@ import { useState } from "react";
 import { useMutation } from "react-query";
 import axios from "axios";
 import { useQueryClient } from "react-query";
+import QualificationAssignmentImport from "./QualificationAssignmentImport";
 
 const bowTypes = [
   {
@@ -64,9 +65,10 @@ export default function GroupCreator({ competitionId }: Props) {
 
   return (
     <>
-      <Button onClick={handleClickOpen} color="success" variant="contained">
+      <Button onClick={handleClickOpen} color="success" variant="contained" sx={{ mr: 1 }}>
         創建組別
       </Button>
+      <QualificationAssignmentImport competitionId={competitionId} />
       <Snackbar
         open={snackbarOpen}
         onClose={() => setsnackbarOpen(false)}
