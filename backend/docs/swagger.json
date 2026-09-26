@@ -1157,6 +1157,142 @@
                 }
             }
         },
+        "/competition/{id}/qualification-assignments": {
+            "post": {
+                "description": "Requires an approved Admin of the target competition. Revalidates every row while locking competition players, groups, and lanes. Any invalid row rolls back the whole import.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "Atomically import qualification player, group, and lane assignments from CSV.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "CSV assignment data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.QualificationAssignmentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.QualificationAssignmentImportResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.QualificationAssignmentErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "413": {
+                        "description": "Request Entity Too Large",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.QualificationAssignmentErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.QualificationAssignmentErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.QualificationAssignmentErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/competition/{id}/qualification-assignments/preview": {
+            "post": {
+                "description": "Requires an approved Admin of the target competition. CSV headers player_name, group_name, and position may be in any order. Position uses lane number plus A-D, such as 1A. No data is written.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Competition"
+                ],
+                "summary": "Preview qualification player, group, and lane assignments from CSV.",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Competition ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "CSV assignment data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.QualificationAssignmentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.QualificationAssignmentPreviewResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.QualificationAssignmentErrorResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "413": {
+                        "description": "Request Entity Too Large",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.QualificationAssignmentErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.QualificationAssignmentErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/elimination": {
             "post": {
                 "description": "Post one new Elimination data, and three medals",
@@ -8580,6 +8716,96 @@
                 },
                 "start_lane": {
                     "type": "integer"
+                }
+            }
+        },
+        "endpoint.QualificationAssignmentErrorResponse": {
+            "type": "object",
+            "properties": {
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/endpoint.QualificationAssignmentIssue"
+                    }
+                }
+            }
+        },
+        "endpoint.QualificationAssignmentImportResponse": {
+            "type": "object",
+            "properties": {
+                "assigned_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "endpoint.QualificationAssignmentIssue": {
+            "type": "object",
+            "properties": {
+                "field": {
+                    "type": "string"
+                },
+                "line": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoint.QualificationAssignmentPreviewResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/endpoint.QualificationAssignmentIssue"
+                    }
+                },
+                "rows": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/endpoint.QualificationAssignmentPreviewRow"
+                    }
+                }
+            }
+        },
+        "endpoint.QualificationAssignmentPreviewRow": {
+            "type": "object",
+            "properties": {
+                "group_id": {
+                    "type": "integer"
+                },
+                "group_name": {
+                    "type": "string"
+                },
+                "lane_number": {
+                    "type": "integer"
+                },
+                "line": {
+                    "type": "integer"
+                },
+                "player_id": {
+                    "type": "integer"
+                },
+                "player_name": {
+                    "type": "string"
+                },
+                "position": {
+                    "type": "string"
+                },
+                "target": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoint.QualificationAssignmentRequest": {
+            "type": "object",
+            "properties": {
+                "csv": {
+                    "type": "string"
                 }
             }
         },
