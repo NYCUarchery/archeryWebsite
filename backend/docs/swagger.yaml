@@ -996,6 +996,64 @@ definitions:
       start_lane:
         type: integer
     type: object
+  endpoint.QualificationAssignmentErrorResponse:
+    properties:
+      errors:
+        items:
+          $ref: '#/definitions/endpoint.QualificationAssignmentIssue'
+        type: array
+    type: object
+  endpoint.QualificationAssignmentImportResponse:
+    properties:
+      assigned_count:
+        type: integer
+    type: object
+  endpoint.QualificationAssignmentIssue:
+    properties:
+      field:
+        type: string
+      line:
+        type: integer
+      message:
+        type: string
+    type: object
+  endpoint.QualificationAssignmentPreviewResponse:
+    properties:
+      count:
+        type: integer
+      errors:
+        items:
+          $ref: '#/definitions/endpoint.QualificationAssignmentIssue'
+        type: array
+      rows:
+        items:
+          $ref: '#/definitions/endpoint.QualificationAssignmentPreviewRow'
+        type: array
+    type: object
+  endpoint.QualificationAssignmentPreviewRow:
+    properties:
+      group_id:
+        type: integer
+      group_name:
+        type: string
+      lane_number:
+        type: integer
+      line:
+        type: integer
+      player_id:
+        type: integer
+      player_name:
+        type: string
+      position:
+        type: string
+      target:
+        type: string
+    type: object
+  endpoint.QualificationAssignmentRequest:
+    properties:
+      csv:
+        type: string
+    type: object
   endpoint.StagePlacementRequest:
     properties:
       end_lane_number:
@@ -1306,6 +1364,101 @@ paths:
           schema:
             $ref: '#/definitions/response.ErrorInternalErrorResponse'
       summary: update one Competition
+      tags:
+      - Competition
+  /competition/{id}/qualification-assignments:
+    post:
+      consumes:
+      - application/json
+      description: Requires an approved Admin of the target competition. Revalidates
+        every row while locking competition players, groups, and lanes. Any invalid
+        row rolls back the whole import.
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: CSV assignment data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.QualificationAssignmentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/endpoint.QualificationAssignmentImportResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/endpoint.QualificationAssignmentErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+        "413":
+          description: Request Entity Too Large
+          schema:
+            $ref: '#/definitions/endpoint.QualificationAssignmentErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/endpoint.QualificationAssignmentErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/endpoint.QualificationAssignmentErrorResponse'
+      summary: Atomically import qualification player, group, and lane assignments
+        from CSV.
+      tags:
+      - Competition
+  /competition/{id}/qualification-assignments/preview:
+    post:
+      consumes:
+      - application/json
+      description: Requires an approved Admin of the target competition. CSV headers
+        player_name, group_name, and position may be in any order. Position uses lane
+        number plus A-D, such as 1A. No data is written.
+      parameters:
+      - description: Competition ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: CSV assignment data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.QualificationAssignmentRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/endpoint.QualificationAssignmentPreviewResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/endpoint.QualificationAssignmentErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+        "413":
+          description: Request Entity Too Large
+          schema:
+            $ref: '#/definitions/endpoint.QualificationAssignmentErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/endpoint.QualificationAssignmentErrorResponse'
+      summary: Preview qualification player, group, and lane assignments from CSV.
       tags:
       - Competition
   /competition/current-phase/{id}:
