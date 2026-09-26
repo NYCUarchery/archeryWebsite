@@ -92,7 +92,7 @@ test.describe("Home", () => {
     await page.getByLabel("密碼").press("Enter");
     await expect.poll(() => sessionRequestCount).toBe(1);
     allowSessionRequest!();
-    await expect(page.getByRole("heading", { name: "近期比賽" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "近期比賽", exact: true })).toBeVisible();
   });
   test("overview Enter adds a new line without submitting registration", async ({ page }) => {
     await page.goto("/login");

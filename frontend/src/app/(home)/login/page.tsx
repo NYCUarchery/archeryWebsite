@@ -30,12 +30,8 @@ const LoginPage = () => {
     apiClient.session.sessionCreate,
     {
       onSuccess: () => {
-        queryClient.invalidateQueries({
-          queryKey: ["currentUserId"],
-        });
-        queryClient.invalidateQueries({
-          queryKey: ["currentUserDetail"],
-        });
+        queryClient.removeQueries(["currentUserId"]);
+        queryClient.removeQueries(["currentUserDetail"]);
         router.push(
           (["/my_competitions", "/bulk_register"].includes(new URLSearchParams(window.location.search).get("next") ?? "")
             ? new URLSearchParams(window.location.search).get("next")!

@@ -133,7 +133,7 @@ async function laneBatch(page: Page, selected: QualificationEndRef, scores: read
     throw new Error("qualification lane current ends do not contain one selected end and one mate end");
   }
   const patches = ends.map((end) => ({ endId: end.id, scores: end.id === selected.endId ? scores.map(Number) : end.round_scores.map((score) => score.score ?? -1) }));
-  return patches;
+  return patches.filter((patch) => patch.endId === selected.endId);
 }
 
 async function observeLaneBatch(page: Page, expected: readonly QualificationBatchPatch[], trigger: () => Promise<void>) {
@@ -171,7 +171,7 @@ export async function scorePlayerQualificationEnd(page: Page, scores: readonly (
   else await page.getByRole("button", { name: scores.at(-1)!, exact: true }).click();
   if (batch) await observeLaneBatch(page, batch, () => page.getByRole("button", { name: "送出" }).click());
   else await page.getByRole("button", { name: "送出" }).click();
-  await expect(page.getByText("已更新所有資料d(`･∀･)b")).toBeVisible();
+  await expect(page.getByText("分數已送出")).toBeVisible();
   const confirmed = page.waitForResponse((candidate) => {
     const path = new URL(candidate.url()).pathname;
     return candidate.request().method() === "PATCH" && /^\/api\/player\/isconfirmed\/\d+\/?$/.test(path) && candidate.status() === 200;

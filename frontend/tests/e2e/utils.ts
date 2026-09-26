@@ -56,7 +56,7 @@ export async function loginUser(
     await page.getByRole("button", { name: "登入" }).click();
   }
   await Promise.all([sessionCreated, currentUserRead]);
-  await expect(page.getByRole("heading", { name: "近期比賽" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "近期比賽", exact: true })).toBeVisible();
 }
 
 export async function logoutUser(page: Page) {
