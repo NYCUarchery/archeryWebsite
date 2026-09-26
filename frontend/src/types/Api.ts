@@ -211,7 +211,7 @@ export interface DatabaseStage {
 }
 
 export interface DatabaseUser {
-  email?: string;
+  email?: string | null;
   id?: number;
   institution_id?: number;
   overview?: string;
@@ -227,6 +227,48 @@ export interface EndpointAccountInfo {
   password?: string;
   real_name?: string;
   user_name?: string;
+}
+
+export interface EndpointBulkUserRequest {
+  competition_id: number;
+  prefix: string;
+  csv: string;
+}
+
+export interface EndpointBulkUserPreviewRow {
+  line: number;
+  user_name: string;
+  real_name: string;
+}
+
+export interface EndpointBulkUserError {
+  line: number;
+  field?: string;
+  message: string;
+}
+
+export interface EndpointBulkUserPreviewResponse {
+  rows: EndpointBulkUserPreviewRow[];
+  errors: EndpointBulkUserError[];
+  count: number;
+}
+
+export interface EndpointBulkUserErrorResponse {
+  errors: EndpointBulkUserError[];
+}
+
+export interface EndpointBulkUserCreatedRow {
+  line: number;
+  user_id: number;
+  user_name: string;
+  participant_id: number;
+  player_id: number;
+}
+
+export interface EndpointBulkUserResponse {
+  created_count: number;
+  competition_id: number;
+  rows: EndpointBulkUserCreatedRow[];
 }
 
 export interface EndpointAutoCreatePlayerSetsRequest {
@@ -3223,6 +3265,36 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         ...params,
       }),
 
+
+    /**
+     * @description Validate a Dictator CSV batch without creating accounts.
+     *
+     * @request POST:/user/bulk/preview
+     */
+    bulkPreview: (BulkUserRequest: EndpointBulkUserRequest, params: RequestParams = {}) =>
+      this.request<EndpointBulkUserPreviewResponse, EndpointBulkUserErrorResponse | ResponseErrorResponse>({
+        path: `/user/bulk/preview`,
+        method: "POST",
+        body: BulkUserRequest,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * @description Atomically create Dictator CSV accounts and approved players.
+     *
+     * @request POST:/user/bulk
+     */
+    bulkCreate: (BulkUserRequest: EndpointBulkUserRequest, params: RequestParams = {}) =>
+      this.request<EndpointBulkUserResponse, EndpointBulkUserErrorResponse | ResponseErrorResponse>({
+        path: `/user/bulk`,
+        method: "POST",
+        body: BulkUserRequest,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
     /**
      * @description Get my uid in the session.
      *
