@@ -8,6 +8,7 @@ interface Props {
   canDelete: boolean;
   isSaving: boolean;
   canConfirm?: boolean; // false 表示尚未選定記分對象，確認鈕停用並改為提示文字
+  canSave?: boolean;
   onDeleteScore: () => void;
   onSave: () => void;
   onConfirm?: () => void;
@@ -18,6 +19,7 @@ export default function ControllButtonGroup({
   canDelete,
   isSaving,
   canConfirm = true,
+  canSave = true,
   onDeleteScore,
   onSave,
   onConfirm,
@@ -53,7 +55,7 @@ export default function ControllButtonGroup({
       ) : (
         <></>
       )}
-      <Button variant="contained" disabled={isSaving} onClick={onSave}>
+      <Button variant="contained" disabled={isSaving || !canSave} onClick={onSave}>
         送出
       </Button>
       <Button

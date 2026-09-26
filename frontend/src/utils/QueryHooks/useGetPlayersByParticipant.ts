@@ -8,7 +8,7 @@ export default function useGetPlayersByParticipant(
   competitionId: number
 ) {
   return useQuery(
-    ["competitionGroupsPlayersDetail", competitionId],
+    ["competitionGroupsPlayersDetail", competitionId, participantId],
     () => apiClient.competition.groupsPlayersDetail(competitionId),
     {
       select: (data) => {
@@ -21,7 +21,6 @@ export default function useGetPlayersByParticipant(
         });
         return players.filter((player) => player !== undefined) as Player[];
       },
-      staleTime: Infinity,
     }
   );
 }
