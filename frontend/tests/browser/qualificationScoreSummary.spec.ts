@@ -373,6 +373,9 @@ test.describe("Qualification score summaries", () => {
     await registerQualificationRoutes(page);
     const baseUrl = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1";
     await page.goto(`${baseUrl}/competition/${competitionId}/judge`);
+    const switcher = await page.getByRole("button", { name: "判", exact: true }).boundingBox();
+    const playerField = await page.getByLabel("選手姓名").boundingBox();
+    expect(switcher && playerField && switcher.y + switcher.height <= playerField.y).toBe(true);
     await page.getByLabel("選手姓名").fill("甲");
     await page.getByRole("option", { name: "甲選手" }).click();
 

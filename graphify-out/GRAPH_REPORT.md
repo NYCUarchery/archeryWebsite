@@ -1,7 +1,7 @@
-# Graph Report - archeryWebsite  (2026-09-25)
+# Graph Report - archeryWebsite  (2026-09-26)
 
 ## Corpus Check
-- 323 files · ~274,981 words
+- 323 files · ~275,047 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 31 file(s) not represented in the graph (top: .scss 14, (none) 10, .example 2)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `e68b7486`
+- Built from commit: `52c04f9f`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -517,10 +517,10 @@ Nodes (3): MySQL data persistent volume claim, MySQL Kubernetes deployment, MySQ
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `@playwright/test` connect `competitionLifecycle.spec.ts` to `qualificationRankingDialog.spec.ts`, `test-env.mjs`, `scopeNavigation.ts`, `judgeCorrections.ts`, `qualificationScoreSummary.spec.ts`, `eliminationScoring.spec.ts`, `browser/fixtures.ts`, `elimination.ts`, `verification.ts`, `recordingBoard.spec.ts`, `eliminationPlayerSetRanking.spec.ts`, `teamLifecycle.ts`, `formalApi.ts`, `eliminationFixtures.ts`, `package.json`, `resultSnapshot.ts`?**
-  _High betweenness centrality (0.065) - this node is a cross-community bridge._
+  _High betweenness centrality (0.067) - this node is a cross-community bridge._
 - **Why does `@mui/material` connect `@mui/material` to `prunePath`, `Competition.ts`, `Api.ts`, `RankingDialog.tsx`, `ApiClient.ts`, `@elimination/[teamSize]/page.tsx`, `[phase]/@qualification/page.tsx`, `@elimination/page.tsx`, `elimination/[teamSize]/page.tsx`, `JudgeEliminationBoard.tsx`, `app/layout.tsx`, `react`, `CompetitionPostFields.tsx`, `scoring/@qualification/page.tsx`, `Sidebar.tsx`, `package.json`?**
   _High betweenness centrality (0.031) - this node is a cross-community bridge._
-- **Why does `vitest` connect `vitest` to `@elimination/[teamSize]/page.tsx`, `elimination/[teamSize]/page.tsx`, `competitionLifecycle.spec.ts`, `formalApi.ts`, `resultSnapshot.ts`, `package.json`?**
+- **Why does `react` connect `react` to `prunePath`, `Competition.ts`, `RankingDialog.tsx`, `ApiClient.ts`, `@elimination/[teamSize]/page.tsx`, `@mui/material`, `[phase]/@qualification/page.tsx`, `@elimination/page.tsx`, `elimination/[teamSize]/page.tsx`, `JudgeEliminationBoard.tsx`, `app/layout.tsx`, `CompetitionPostFields.tsx`, `scoring/@qualification/page.tsx`, `Sidebar.tsx`, `package.json`?**
   _High betweenness centrality (0.017) - this node is a cross-community bridge._
 - **Are the 102 inferred relationships involving `Convert2uint()` (e.g. with `DeleteCompetition()` and `GetCompetitionsOfUser()`) actually correct?**
   _`Convert2uint()` has 102 INFERRED edges - model-reasoned connections that need verification._
