@@ -192,6 +192,8 @@ func profileRouter(api *gin.RouterGroup) {
 	userssr := api.Group("/user")
 	{
 		userssr.POST("/", endpoint.Register)
+		userssr.POST("/bulk/preview", pkg.AuthSessionMiddleware(), pkg.RBACMiddleware(pkg.RoleSystem, pkg.RDictator), endpoint.PreviewBulkRegister)
+		userssr.POST("/bulk", pkg.AuthSessionMiddleware(), pkg.RBACMiddleware(pkg.RoleSystem, pkg.RDictator), endpoint.BulkRegister)
 		userssr.PUT("/:id", pkg.AuthSessionMiddleware(), endpoint.ModifyInfo)
 		userssr.PATCH("/password/:id", pkg.AuthSessionMiddleware(), endpoint.ModifyPassword)
 		userssr.GET("/me", pkg.AuthSessionMiddleware(), endpoint.GetUserID)
