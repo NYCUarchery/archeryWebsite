@@ -47,7 +47,7 @@ export default function JudgeLayout({
       <Box
         component="nav"
         aria-label="裁判頁面切換"
-        sx={{ display: "flex", justifyContent: "flex-end", p: 1 }}
+        sx={{ display: "flex", justifyContent: "flex-end", p: 1, "& .board_switch": { position: "static" } }}
       >
         <PanelMenu panelName="judge" participant={currentParticipant} />
       </Box>
