@@ -55,7 +55,7 @@ ARCHERY_E2E_MODE=full-ui bash scripts/test.sh e2e competitionLifecycle.spec.ts -
 
 可用 fixtures 為：
 
-- `empty`：清除 runner schema 與 migration 版本紀錄，再執行正式 V1、V2 SQL；只有最新 schema。
+- `empty`：清除 runner schema 與 migration 版本紀錄，再執行正式 V1、V2、V3 SQL；只有最新 schema。
 - `legacy`：既有 SQL fixture 加測試主辦人。
 - `accounts`：lifecycle 用的組織與角色帳號；不建立比賽、participant、分數或賽果。
 

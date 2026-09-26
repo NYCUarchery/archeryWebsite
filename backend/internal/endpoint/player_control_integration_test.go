@@ -419,9 +419,9 @@ func (suite *PlayerControlIntegrationTestSuite) TestParticipantApplicationUsesSe
 	now := time.Now()
 	competition, err := database.PostCompetition(database.Competition{Title: "participant application integration", StartTime: now, EndTime: now.Add(time.Hour)})
 	suite.Require().NoError(err)
-	applicant, err := database.CreateUser(database.User{Role: pkg.RoleToString(pkg.RUser), UserName: "applicant", RealName: "Applicant", Password: "password", Email: "applicant@example.test"})
+	applicant, err := database.CreateUser(database.User{Role: pkg.RoleToString(pkg.RUser), UserName: "applicant", RealName: "Applicant", Password: "password", Email: database.EmailPointer("applicant@example.test")})
 	suite.Require().NoError(err)
-	other, err := database.CreateUser(database.User{Role: pkg.RoleToString(pkg.RUser), UserName: "other-applicant", RealName: "Other", Password: "password", Email: "other-applicant@example.test"})
+	other, err := database.CreateUser(database.User{Role: pkg.RoleToString(pkg.RUser), UserName: "other-applicant", RealName: "Other", Password: "password", Email: database.EmailPointer("other-applicant@example.test")})
 	suite.Require().NoError(err)
 	cookies := suite.login(applicant.ID)
 	body := map[string]any{"user_id": applicant.ID, "competition_id": competition.ID, "role": pkg.RoleToString(pkg.RJudge)}

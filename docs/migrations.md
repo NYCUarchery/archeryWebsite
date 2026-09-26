@@ -8,6 +8,7 @@
 | --- | --- |
 | V1 | 依 production MySQL 8.4.2 dump 建立 20 張表，保留型別、nullable/default、主鍵、索引、外鍵及 collation；不含 production 資料或當時的自增計數。 |
 | V2 | 新增 nullable `eliminations.bracket_seed_count`、nullable `match_results.target` 與 A/B/NULL CHECK；`match_results.player_set_id` 外鍵改為 `ON DELETE SET NULL`；移除 `match_results.total_points`。 |
+| V3 | `users.email` 改為 nullable；保留 `uni_users_email` 唯一索引，因此多筆 `NULL` 可共存，非空 email 仍唯一。 |
 
 舊 `bracket_seed_count` 保留 NULL，Go 讀為 0，沿用 legacy 對抗表行為；不猜種子數，不將舊表自動改成新版 bracket。舊 target 保留 NULL，不由靶道推算 A/B。`total_points` 改由既有箭分數即時計算；若原彙總與箭分數不同，新版顯示可能不同，原值僅留於升級前備份。
 
@@ -48,7 +49,7 @@ docker compose -f docker-compose.yml run --rm --no-deps --entrypoint ./migrate b
 docker compose -f docker-compose.yml up -d
 ```
 
-空庫依序執行 V1、V2。開發環境改用 `docker-compose-dev.yml`，backend 啟動時會自動執行 `migrate up`。非空、未登記版本的 dev DB 仍會被 migration 拒絕，須先依 schema 狀態處理；已跑過 AutoMigrate 的 dev DB 不提供 V2 baseline 或任意 force 接管，請以不同 project／新 DB 初始化，勿刪除仍需保留的 volume。
+空庫依序執行 V1、V2、V3。開發環境改用 `docker-compose-dev.yml`，backend 啟動時會自動執行 `migrate up`。非空、未登記版本的 dev DB 仍會被 migration 拒絕，須先依 schema 狀態處理；已跑過 AutoMigrate 的 dev DB 不提供 V2 baseline 或任意 force 接管，請以不同 project／新 DB 初始化，勿刪除仍需保留的 volume。
 
 ## 既有 production 接管
 
@@ -64,7 +65,7 @@ docker compose -f docker-compose.yml run --rm --no-deps --entrypoint ./migrate b
 docker compose -f docker-compose.yml up -d
 ```
 
-既有 prod 不重跑 V1，不匯入 repository 內任何測試資料。baseline 不符時應比對實際 schema 與預期 V1，不得以改版本號繞過。確認 clean V2，再驗收登入、賽事、排名、對抗賽成績及重新啟動後的持久化。
+既有 prod 不重跑 V1，不匯入 repository 內任何測試資料。baseline 不符時應比對實際 schema 與預期 V1，不得以改版本號繞過。確認 clean V3，再驗收登入、賽事、排名、對抗賽成績及重新啟動後的持久化。
 
 ## 失敗與回復
 
@@ -72,6 +73,6 @@ docker compose -f docker-compose.yml up -d
 
 baseline 若中斷於版本表建立後、寫入 V1 前，可重跑 `baseline`：僅在版本表結構正確、紀錄為空且完整業務結構仍吻合 V1 時補登記，不重跑業務 DDL。若為新空庫且只有空版本表，可重跑 `up`。SQL 逾時後仍須按 dirty 狀態處理；逾時或關閉連線不等於已回滾 DDL。
 
-需回舊版時，使用已驗證的升級前備份，還原至空的替代 DB，再以相符的舊 image／設定啟動。不能只換舊 image；V2 已刪除舊欄位。若原地回復，必須明確核對額外表與 `schema_migrations`：V1 接管前的 dump 不含版本表，直接覆蓋業務表會殘留 V2 版本紀錄。不要用 `down -v` 或 volume prune 代替回復。
+需回舊版時，使用已驗證的升級前備份，還原至空的替代 DB，再以相符的舊 image／設定啟動。不能只換舊 image；後續版本可能已新增、移除或改變欄位。若原地回復，必須明確核對額外表與 `schema_migrations`：V1 接管前的 dump 不含版本表，直接覆蓋業務表會殘留 V2 版本紀錄。不要用 `down -v` 或 volume prune 代替回復。
 
-`prod_dump.sql` 與備份含私人資料，不入版控、不放入 Docker build context。後續 schema 變更新增更高版本 SQL，並同步 `migration.LatestVersion` 與對應測試；已發佈的 migration 不修改。CI 以合成資料驗證 V1→V2，production dump 僅用於本機隔離還原演練。
+`prod_dump.sql` 與備份含私人資料，不入版控、不放入 Docker build context。後續 schema 變更新增更高版本 SQL，並同步 `migration.LatestVersion` 與對應測試；已發佈的 migration 不修改。CI 以合成資料驗證 V1→V3，production dump 僅用於本機隔離還原演練。

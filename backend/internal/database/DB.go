@@ -131,7 +131,7 @@ func setDictator(dictatorConfig config.Dictator) error {
 		UserName: dictatorConfig.Username,
 		RealName: "Dictator",
 		Password: pkg.EncryptPassword(dictatorConfig.Password),
-		Email:    dictatorConfig.Email, Overview: dictatorConfig.Overview,
+		Email:    EmailPointer(dictatorConfig.Email), Overview: dictatorConfig.Overview,
 	}
 
 	old_user = FindByUsername(dictatorConfig.Username)
@@ -173,7 +173,7 @@ func ensureDictatorForSeeder(dictatorConfig config.Dictator) error {
 		UserName: dictatorConfig.Username,
 		RealName: "Dictator",
 		Password: pkg.EncryptPassword(dictatorConfig.Password),
-		Email:    dictatorConfig.Email,
+		Email:    EmailPointer(dictatorConfig.Email),
 		Overview: dictatorConfig.Overview,
 	}
 	if _, err := CreateUser(newUser); err != nil {
