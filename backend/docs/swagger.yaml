@@ -475,6 +475,77 @@ definitions:
       stage_count:
         type: integer
     type: object
+  endpoint.BulkRegisterCreatedRow:
+    properties:
+      line:
+        type: integer
+      participant_id:
+        type: integer
+      player_id:
+        type: integer
+      user_id:
+        type: integer
+      user_name:
+        type: string
+    type: object
+  endpoint.BulkRegisterErrorResponse:
+    properties:
+      errors:
+        items:
+          $ref: '#/definitions/endpoint.BulkRegisterIssue'
+        type: array
+    type: object
+  endpoint.BulkRegisterIssue:
+    properties:
+      field:
+        type: string
+      line:
+        type: integer
+      message:
+        type: string
+    type: object
+  endpoint.BulkRegisterPreviewResponse:
+    properties:
+      count:
+        type: integer
+      errors:
+        items:
+          $ref: '#/definitions/endpoint.BulkRegisterIssue'
+        type: array
+      rows:
+        items:
+          $ref: '#/definitions/endpoint.BulkRegisterPreviewRow'
+        type: array
+    type: object
+  endpoint.BulkRegisterPreviewRow:
+    properties:
+      line:
+        type: integer
+      real_name:
+        type: string
+      user_name:
+        type: string
+    type: object
+  endpoint.BulkRegisterRequest:
+    properties:
+      competition_id:
+        type: integer
+      csv:
+        type: string
+      prefix:
+        type: string
+    type: object
+  endpoint.BulkRegisterResponse:
+    properties:
+      competition_id:
+        type: integer
+      created_count:
+        type: integer
+      rows:
+        items:
+          $ref: '#/definitions/endpoint.BulkRegisterCreatedRow'
+        type: array
+    type: object
   endpoint.CompetitionWGroupsQuaEliData:
     properties:
       competition_id:
@@ -1365,6 +1436,10 @@ paths:
       responses:
         "200":
           description: success, return most recent competitions
+          headers:
+            X-Total-Count:
+              description: Total number of competitions
+              type: string
           schema:
             items:
               allOf:
@@ -1783,6 +1858,10 @@ paths:
       responses:
         "200":
           description: success, return most recent competitions dealing with User
+          headers:
+            X-Total-Count:
+              description: Total number of competitions for the user
+              type: string
           schema:
             items:
               allOf:
@@ -5587,6 +5666,100 @@ paths:
           schema:
             $ref: '#/definitions/response.Response'
       summary: Modify user's information.
+      tags:
+      - User
+  /user/bulk:
+    post:
+      consumes:
+      - application/json
+      description: Dictator only. Creates users, approved Player participants, and
+        the complete blank score graph in one transaction.
+      parameters:
+      - description: CSV, prefix, and competition
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.BulkRegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/endpoint.BulkRegisterResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/endpoint.BulkRegisterErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/endpoint.BulkRegisterErrorResponse'
+        "413":
+          description: Request Entity Too Large
+          schema:
+            $ref: '#/definitions/endpoint.BulkRegisterErrorResponse'
+        "422":
+          description: Unprocessable Entity
+          schema:
+            $ref: '#/definitions/endpoint.BulkRegisterErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/endpoint.BulkRegisterErrorResponse'
+      summary: Create accounts and approved Players from CSV.
+      tags:
+      - User
+  /user/bulk/preview:
+    post:
+      consumes:
+      - application/json
+      description: Dictator only. Validates up to 100 CSV rows without writing. Passwords
+        are never returned.
+      parameters:
+      - description: CSV, prefix, and competition
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/endpoint.BulkRegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/endpoint.BulkRegisterPreviewResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/endpoint.BulkRegisterErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Response'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Response'
+        "413":
+          description: Request Entity Too Large
+          schema:
+            $ref: '#/definitions/endpoint.BulkRegisterErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/endpoint.BulkRegisterErrorResponse'
+      summary: Preview CSV account registration and Player enrolment.
       tags:
       - User
   /user/me:

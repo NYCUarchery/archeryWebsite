@@ -329,6 +329,12 @@
                                     }
                                 ]
                             }
+                        },
+                        "headers": {
+                            "X-Total-Count": {
+                                "type": "string",
+                                "description": "Total number of competitions"
+                            }
                         }
                     },
                     "400": {
@@ -960,6 +966,12 @@
                                         }
                                     }
                                 ]
+                            }
+                        },
+                        "headers": {
+                            "X-Total-Count": {
+                                "type": "string",
+                                "description": "Total number of competitions for the user"
                             }
                         }
                     },
@@ -6727,6 +6739,146 @@
                 }
             }
         },
+        "/user/bulk": {
+            "post": {
+                "description": "Dictator only. Creates users, approved Player participants, and the complete blank score graph in one transaction.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Create accounts and approved Players from CSV.",
+                "parameters": [
+                    {
+                        "description": "CSV, prefix, and competition",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.BulkRegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.BulkRegisterResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.BulkRegisterErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.BulkRegisterErrorResponse"
+                        }
+                    },
+                    "413": {
+                        "description": "Request Entity Too Large",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.BulkRegisterErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Unprocessable Entity",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.BulkRegisterErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.BulkRegisterErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/bulk/preview": {
+            "post": {
+                "description": "Dictator only. Validates up to 100 CSV rows without writing. Passwords are never returned.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Preview CSV account registration and Player enrolment.",
+                "parameters": [
+                    {
+                        "description": "CSV, prefix, and competition",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.BulkRegisterRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.BulkRegisterPreviewResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.BulkRegisterErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/response.Response"
+                        }
+                    },
+                    "413": {
+                        "description": "Request Entity Too Large",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.BulkRegisterErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/endpoint.BulkRegisterErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/user/me": {
             "get": {
                 "description": "Get my uid in the session.",
@@ -7622,6 +7774,116 @@
                 },
                 "stage_count": {
                     "type": "integer"
+                }
+            }
+        },
+        "endpoint.BulkRegisterCreatedRow": {
+            "type": "object",
+            "properties": {
+                "line": {
+                    "type": "integer"
+                },
+                "participant_id": {
+                    "type": "integer"
+                },
+                "player_id": {
+                    "type": "integer"
+                },
+                "user_id": {
+                    "type": "integer"
+                },
+                "user_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoint.BulkRegisterErrorResponse": {
+            "type": "object",
+            "properties": {
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/endpoint.BulkRegisterIssue"
+                    }
+                }
+            }
+        },
+        "endpoint.BulkRegisterIssue": {
+            "type": "object",
+            "properties": {
+                "field": {
+                    "type": "string"
+                },
+                "line": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoint.BulkRegisterPreviewResponse": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "errors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/endpoint.BulkRegisterIssue"
+                    }
+                },
+                "rows": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/endpoint.BulkRegisterPreviewRow"
+                    }
+                }
+            }
+        },
+        "endpoint.BulkRegisterPreviewRow": {
+            "type": "object",
+            "properties": {
+                "line": {
+                    "type": "integer"
+                },
+                "real_name": {
+                    "type": "string"
+                },
+                "user_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoint.BulkRegisterRequest": {
+            "type": "object",
+            "properties": {
+                "competition_id": {
+                    "type": "integer"
+                },
+                "csv": {
+                    "type": "string"
+                },
+                "prefix": {
+                    "type": "string"
+                }
+            }
+        },
+        "endpoint.BulkRegisterResponse": {
+            "type": "object",
+            "properties": {
+                "competition_id": {
+                    "type": "integer"
+                },
+                "created_count": {
+                    "type": "integer"
+                },
+                "rows": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/endpoint.BulkRegisterCreatedRow"
+                    }
                 }
             }
         },
