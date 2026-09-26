@@ -1,7 +1,7 @@
 # Graph Report - archeryWebsite  (2026-09-26)
 
 ## Corpus Check
-- 335 files · ~285,346 words
+- 335 files · ~285,409 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 31 file(s) not represented in the graph (top: .scss 14, (none) 10, .example 2)
 
@@ -11,7 +11,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `3fadb803`
+- Built from commit: `08770d0a`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -553,7 +553,7 @@ _Questions this graph is uniquely positioned to answer:_
 - **Why does `@mui/material` connect `@mui/material` to `JudgeEliminationBoard.tsx`, `scoring/@qualification/page.tsx`, `Api.ts`, `LaneBoard.tsx`, `@elimination/[teamSize]/page.tsx`, `QualificationScoreEditor.tsx`, `Competition.ts`, `@elimination/page.tsx`, `react-query`, `CompetitionPostFields.tsx`, `PhaseMenu.tsx`, `store.ts`, `package.json`?**
   _High betweenness centrality (0.027) - this node is a cross-community bridge._
 - **Why does `vitest` connect `@elimination/[teamSize]/page.tsx` to `test-env.mjs`, `react-query`, `hybridExecution.spec.ts`, `competitionLifecycle.spec.ts`, `resultSnapshot.ts`, `package.json`?**
-  _High betweenness centrality (0.019) - this node is a cross-community bridge._
+  _High betweenness centrality (0.022) - this node is a cross-community bridge._
 - **Are the 104 inferred relationships involving `Convert2uint()` (e.g. with `DeleteCompetition()` and `GetCompetitionsOfUser()`) actually correct?**
   _`Convert2uint()` has 104 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `backend`, `BracketInitRequest`, `StagePlacementRequest` to the rest of the system?**

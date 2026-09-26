@@ -73,9 +73,13 @@ test.describe("Elimination Scoring Board", () => {
     await gotoEliminationScoring(page, fixture.competitionId);
     await waitReady(page, fixture);
 
+    const confirmButton = controlGroup(page).getByRole("button", { name: "確認", exact: true });
+    await expect(confirmButton).toBeDisabled();
     await scoreButton(page, "9").click();
     await scoreButton(page, "9").click();
+    await expect(confirmButton).toBeDisabled();
     await scoreButton(page, "9").click();
+    await expect(confirmButton).toBeEnabled();
 
     // 已達容量上限（3 箭），所有可能分數鈕皆應停用。
     for (const label of ALL_SCORE_LABELS) {
@@ -91,6 +95,8 @@ test.describe("Elimination Scoring Board", () => {
       .poll(() => sideScoreLabels(page, fixture.setNameMine))
       .toEqual(["9", "9", "9"]);
     await expect(sideTotal(page, fixture.setNameMine)).toHaveText("27");
+    await controlGroup(page).getByRole("button").last().click();
+    await expect(confirmButton).toBeDisabled();
   });
 
   test("混雙賽：第 4 箭後不能再輸入", async ({ page }) => {
@@ -253,10 +259,10 @@ test.describe("Elimination Scoring Board", () => {
     await selectorGroup(page)
       .getByRole("button", { name: fixture.setNameOpponent })
       .click();
-    // 對手側未被自動確認：控制鈕群仍顯示可按之「確認」而非「已確認」。
+    // 對手側未填滿：控制鈕群仍顯示「確認」，但不可按。
     await expect(
       controlGroup(page).getByRole("button", { name: "確認", exact: true })
-    ).toBeVisible();
+    ).toBeDisabled();
     await expect(scoreButton(page, "9")).toBeEnabled();
   });
 
@@ -284,18 +290,19 @@ test.describe("Elimination Scoring Board", () => {
     await gotoEliminationScoring(page, fixture.competitionId);
     await waitReady(page, fixture);
 
-    // 確認前必須先讓本波分數成功存過一次（否則會被前端「尚未儲存不可確認」之守衛擋下，
-    // 根本不會呼叫確認 API），故先手動存分成功，再讓確認 API 本身失敗。
+    // 填滿並等自動存分成功，再讓確認 API 本身失敗。
     await scoreButton(page, "9").click();
     await scoreButton(page, "9").click();
-    await controlGroup(page).getByRole("button", { name: "送出", exact: true }).click();
+    await scoreButton(page, "9").click();
     await expect.poll(() => handles.savedScoreRequests.length).toBe(1);
 
     handles.setConfirmShouldFail(true);
     await controlGroup(page).getByRole("button", { name: "確認", exact: true }).click();
     await expect(page.getByText("確認失敗，請稍後再試")).toBeVisible();
 
-    // 確認失敗，isConfirmed 仍為 false，應仍可新增分數（證明未被鎖定）。
+    // 確認失敗，isConfirmed 仍為 false，刪除後可再輸入。
+    await controlGroup(page).getByRole("button").last().click();
+    await expect(controlGroup(page).getByRole("button", { name: "確認", exact: true })).toBeDisabled();
     await scoreButton(page, "7").click();
     await expect
       .poll(() => sideScoreLabels(page, fixture.setNameMine))
