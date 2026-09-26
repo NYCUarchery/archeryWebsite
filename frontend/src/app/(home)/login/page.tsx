@@ -37,9 +37,9 @@ const LoginPage = () => {
           queryKey: ["currentUserDetail"],
         });
         router.push(
-          new URLSearchParams(window.location.search).get("next") === "/my_competitions"
-            ? "/my_competitions"
-            : "/"
+          (["/my_competitions", "/bulk_register"].includes(new URLSearchParams(window.location.search).get("next") ?? "")
+            ? new URLSearchParams(window.location.search).get("next")!
+            : "/")
         );
       },
       onError: (error) => {
