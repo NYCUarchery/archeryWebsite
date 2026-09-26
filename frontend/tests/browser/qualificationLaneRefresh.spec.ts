@@ -97,12 +97,15 @@ test("選手分道後，計分頁刷新本人靶道與同靶名單", async ({ pa
   await expect(page.getByText("五A選手")).toBeVisible();
   await expect(page.getByText("同批選手")).toHaveCount(0);
 
+  const confirmButton = page.getByRole("button", { name: "確認", exact: true });
+  await expect(page.getByRole("button", { name: "請選取選手" })).toBeDisabled();
   const saveButton = page.getByRole("button", { name: "送出", exact: true });
   await expect(saveButton).toBeDisabled();
   await page.locator(".player_button_group button").filter({ hasText: "五A選手" }).click();
   await expect(saveButton).toBeDisabled();
   await page.locator(".player_button_group button").filter({ hasText: "李庭寬" }).click();
   await expect(saveButton).toBeEnabled();
+  await expect(confirmButton).toBeDisabled();
   await page.getByRole("button", { name: "10", exact: true }).click();
   await saveButton.click();
   await expect(page.getByText("分數已送出")).toBeVisible();
@@ -112,5 +115,8 @@ test("選手分道後，計分頁刷新本人靶道與同靶名單", async ({ pa
     await page.getByRole("button", { name: "10", exact: true }).click();
   }
   await expect.poll(() => patchedEndIds.length).toBe(2);
+  await expect(confirmButton).toBeEnabled();
+  await page.locator(".controll_button_group button").last().click();
+  await expect(confirmButton).toBeDisabled();
   expect(patchedEndIds).toEqual([playerId * 100, playerId * 100]);
 });

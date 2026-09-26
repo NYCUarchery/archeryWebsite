@@ -35,6 +35,7 @@ export default function ScoreController({
 }: Props) {
   const filledCount = scores.filter((s) => s !== -1).length;
   const isFull = filledCount >= maximumArrowCount;
+  const isScoreComplete = maximumArrowCount > 0 && isFull;
   const canEdit = !isConfirmed || allowConfirmedEditing;
   const canDelete = canEdit && !isSaving && filledCount > 0;
 
@@ -63,6 +64,7 @@ export default function ScoreController({
         canDelete={canDelete}
         isSaving={isSaving}
         canConfirm={canConfirm}
+        isScoreComplete={isScoreComplete}
         canSave={canSave}
         onDeleteScore={onDeleteScore}
         onSave={onSave}
