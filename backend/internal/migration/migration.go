@@ -16,7 +16,7 @@ import (
 	"github.com/golang-migrate/migrate/v4/source/iofs"
 )
 
-const LatestVersion uint = 2
+const LatestVersion uint = 3
 const DefaultStatementTimeout = 5 * time.Minute
 
 const versionTable = "schema_migrations"

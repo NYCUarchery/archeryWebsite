@@ -1,0 +1,1 @@
+ALTER TABLE users MODIFY COLUMN email varchar(191) NULL;

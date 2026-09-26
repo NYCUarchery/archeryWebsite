@@ -28,7 +28,7 @@ func TestCompetitionPaginationIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	user, err := database.CreateUser(database.User{Role: pkg.RoleToString(pkg.RUser), UserName: "pagination-user", RealName: "Pagination User", Password: "password", Email: "pagination-user@example.test", InstitutionID: database.NoInstitutionID})
+	user, err := database.CreateUser(database.User{Role: pkg.RoleToString(pkg.RUser), UserName: "pagination-user", RealName: "Pagination User", Password: "password", Email: database.EmailPointer("pagination-user@example.test"), InstitutionID: database.NoInstitutionID})
 	if err != nil {
 		t.Fatal(err)
 	}

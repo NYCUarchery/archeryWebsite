@@ -55,7 +55,7 @@ func Register(c *gin.Context) {
 	user.UserName = registerInfo.UserName
 	user.RealName = registerInfo.RealName
 	user.Password = registerInfo.Password
-	user.Email = registerInfo.Email
+	user.Email = database.EmailPointer(registerInfo.Email)
 	user.InstitutionID = registerInfo.InstitutionID
 	user.Overview = registerInfo.Overview
 	user.Role = pkg.RoleToString(pkg.RUser)
@@ -82,11 +82,11 @@ func Register(c *gin.Context) {
 	}
 	user.Password = pkg.EncryptPassword(plainPassword)
 	// email
-	if user.Email == "" {
+	if registerInfo.Email == "" {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "empty email"})
 		return
 	}
-	if database.GetEmailIsExist(user.Email) {
+	if database.GetEmailIsExist(registerInfo.Email) {
 		c.JSON(http.StatusBadRequest, gin.H{"result": "email exists"})
 		return
 	}
@@ -174,7 +174,7 @@ func ModifyInfo(c *gin.Context) {
 	// modify
 	user.UserName = modifyInfo.UserName
 	user.RealName = modifyInfo.RealName
-	user.Email = modifyInfo.Email
+	user.Email = database.EmailPointer(modifyInfo.Email)
 	user.InstitutionID = modifyInfo.InstitutionID
 	user.Overview = modifyInfo.Overview
 

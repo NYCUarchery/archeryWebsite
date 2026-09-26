@@ -84,7 +84,7 @@ func TestMigrationIntegration(t *testing.T) {
 		require.ErrorContains(t, migration.ValidateV1(context.Background(), db), "schema mismatch")
 	})
 
-	t.Run("fresh V2 equals baselined V1 upgraded to V2", func(t *testing.T) {
+	t.Run("fresh V3 equals baselined V1 upgraded to V3", func(t *testing.T) {
 		db := migrationTestDB(t)
 		resetMigrationSchema(t, db)
 		require.NoError(t, migration.Up(context.Background(), db, 0))
@@ -98,6 +98,34 @@ func TestMigrationIntegration(t *testing.T) {
 		require.NoError(t, migration.Baseline(context.Background(), db), "repeat baseline validates without rerunning DDL")
 		require.NoError(t, migration.Up(context.Background(), db, 0))
 		require.Equal(t, fresh, schemaSignature(t, db))
+	})
+
+	t.Run("V3 makes user email nullable while preserving unique non-null email", func(t *testing.T) {
+		db := migrationTestDB(t)
+		resetMigrationSchema(t, db)
+		require.NoError(t, migration.Up(context.Background(), db, 2))
+		_, err := db.Exec(`INSERT INTO users (role, user_name, password, email) VALUES ('User', 'existing-email', 'password', 'existing@example.test')`)
+		require.NoError(t, err)
+		require.NoError(t, migration.Up(context.Background(), db, 3))
+
+		var nullable string
+		require.NoError(t, db.QueryRow(`SELECT is_nullable FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'users' AND column_name = 'email'`).Scan(&nullable))
+		require.Equal(t, "YES", nullable)
+		var existing sql.NullString
+		require.NoError(t, db.QueryRow(`SELECT email FROM users WHERE user_name = 'existing-email'`).Scan(&existing))
+		require.True(t, existing.Valid)
+		require.Equal(t, "existing@example.test", existing.String)
+
+		for _, username := range []string{"empty-email-one", "empty-email-two"} {
+			_, err = db.Exec(`INSERT INTO users (role, user_name, password) VALUES ('User', ?, 'password')`, username)
+			require.NoError(t, err)
+		}
+		_, err = db.Exec(`INSERT INTO users (role, user_name, password, email) VALUES ('User', 'duplicate-email', 'password', 'existing@example.test')`)
+		require.Error(t, err, "unique index must still reject duplicate non-null email")
+		state, err := migration.ReadVersion(context.Background(), db)
+		require.NoError(t, err)
+		require.Equal(t, uint(3), state.Version)
+		require.False(t, state.Dirty)
 	})
 
 	t.Run("V2 preserves records except removed total points", func(t *testing.T) {
@@ -224,7 +252,7 @@ func TestMigrationIntegration(t *testing.T) {
 		resetMigrationSchema(t, db)
 		require.NoError(t, migration.Up(context.Background(), db, 0))
 		require.ErrorContains(t, migration.Up(context.Background(), db, 1), "downgrade")
-		_, err = db.Exec(`UPDATE schema_migrations SET version = 3, dirty = 0`)
+		_, err = db.Exec(`UPDATE schema_migrations SET version = 4, dirty = 0`)
 		require.NoError(t, err)
 		require.ErrorContains(t, migration.Up(context.Background(), db, 0), "newer than this binary")
 	})
