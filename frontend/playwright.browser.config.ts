@@ -8,6 +8,7 @@ const port = new URL(baseURL).port || "3000";
 
 export default defineConfig({
   testDir: "./tests/browser",
+  testIgnore: process.env.ARCHERY_MANUAL_SCREENSHOTS === "1" ? [] : ["**/manual/**"],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: 0,
