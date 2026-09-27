@@ -22,7 +22,7 @@ const waves = [
   [9, 9, 9, 9, 8, 8],
 ];
 
-async function registerScoreSummaryRoutes(page: Page) {
+async function registerScoreSummaryRoutes(page: Page, asPlayer = false) {
   const player = {
     id: playerId,
     group_id: groupId,
@@ -103,10 +103,10 @@ async function registerScoreSummaryRoutes(page: Page) {
   };
   await page.route("**/user/me", (route) => route.fulfill({ json: { id: userId } }));
   await page.route(`**/user/${userId}`, (route) => route.fulfill({
-    json: { id: userId, username: "score-admin", real_name: "裁判" },
+    json: { id: userId, username: "score-admin", real_name: asPlayer ? "選手 01" : "裁判" },
   }));
   await page.route(`**/participant/competition/user/${competitionId}/${userId}`, (route) => route.fulfill({
-    json: [{ id: 9740, userID: userId, competitionID: competitionId, role: "Admin", status: "approved" }],
+    json: [{ id: 9740, userID: userId, competitionID: competitionId, role: asPlayer ? "Player" : "Admin", status: "approved" }],
   }));
   await page.route(`**/competition/${competitionId}`, (route) => route.fulfill({ json: competition }));
   await page.route(`**/competition/groups/${competitionId}`, (route) => route.fulfill({ json: competition }));
@@ -130,6 +130,36 @@ async function registerScoreSummaryRoutes(page: Page) {
   }));
   await page.route(`**/player/scores/${playerId}`, (route) => route.fulfill({ json: player }));
 }
+
+test("選手從我的比賽進入賽事並開啟切換選單", async ({ page }) => {
+  await page.setViewportSize({ width: 430, height: 932 });
+  await registerScoreSummaryRoutes(page, true);
+  await page.route(`**/competition/user/${userId}/0/4`, (route) => route.fulfill({
+    json: [{ id: competitionId, title: "2026 射箭公開賽", sub_title: "公開男子反曲弓組" }],
+    headers: { "X-Total-Count": "1" },
+  }));
+  await page.route("**/qualification/lanes/players/9709", (route) => route.fulfill({
+    json: { id: 9709, advancing_num: 0, lanes: [] },
+  }));
+
+  await page.goto("/my_competitions");
+  await expect(page.getByRole("heading", { name: "我的比賽" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "查看記分板" })).toBeVisible();
+  await manualScreenshot(page, "player/my-competitions", { mobile: true });
+
+  await page.getByRole("button", { name: "查看記分板" }).click();
+  await expect(page).toHaveURL(new RegExp(`/competition/${competitionId}/scoreboard/0/qualification$`));
+  await expect(page.locator(".board_switch")).toHaveText("分");
+  await page.getByText("未分組", { exact: true }).click();
+  await page.getByText("公開男子反曲弓組", { exact: true }).last().click();
+  await expect(page).toHaveURL(new RegExp(`/competition/${competitionId}/scoreboard/1/qualification$`));
+  await expect(page.getByText("選手 01", { exact: true })).toBeVisible();
+  await manualScreenshot(page, "player/competition-scoreboard", { mobile: true });
+
+  await page.locator(".board_switch").click();
+  await expect(page.getByRole("menuitem", { name: "紀錄分數" })).toBeVisible();
+  await manualScreenshot(page, "player/competition-menu", { mobile: true });
+});
 
 async function selectPlayerForJudge(page: Page) {
   await page.goto(`/competition/${competitionId}/judge`);

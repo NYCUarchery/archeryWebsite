@@ -142,7 +142,7 @@ node scripts/compare-lifecycle-results.mjs \
 | mock browser | `frontend/playwright-report/browser/`、`frontend/test-results/browser/` |
 | 真 E2E | `test-artifacts/e2e/<run-id>/`：JSON、HTML、trace、截圖、service log |
 
-Playwright 只在失敗時保留 trace 與截圖；lifecycle trace 關閉連續 screenshot filmstrip，但保留失敗頁面證據。先讀 JSON／HTML、trace、服務 log 與 attachment，按模式、UI/API、角色、組別、階段、對戰與波次定位；不可以 retry 或改走另一條路徑掩蓋失敗。
+Playwright 只在失敗時保留 trace 與截圖；lifecycle trace 關閉連續 screenshot filmstrip，但保留失敗頁面證據。 [使用者操作手冊](user-manual.md) 的示意圖由 `frontend/tests/browser/manual/` 專用測試截取；一般 browser 測試不執行這些拍圖情境。在 `frontend/` 目錄執行 `npm run manual:screenshots` 可重製 `docs/user-manual-images/`，使用的都是 mock 資料。先讀 JSON／HTML、trace、服務 log 與 attachment，按模式、UI/API、角色、組別、階段、對戰與波次定位；不可以 retry 或改走另一條路徑掩蓋失敗。
 
 接受 lifecycle 的故障注入時，僅在可丟棄 source 副本做單一 UI 範圍 mutation，預期對應 A→B 切換／scope assertion 失敗；移除副本後比對原專案未變，再在全新隔離環境跑正向流程。此法驗證 assertion 能捕捉缺陷，不將故障 run 當通過結果。
 

@@ -223,6 +223,38 @@ test("選手查看完整對抗樹及比分詳情", async ({ page }) => {
   await manualScreenshot(page, "player/public-elimination-detail", { mobile: true });
 });
 
+test("裁判從我的比賽進入裁判頁", async ({ page }) => {
+  const fixture = buildEliminationFixture("individual", { targets: ["A", "B"] });
+  prepareManualFixture(fixture);
+  fixture.user.real_name = "裁判";
+  fixture.participants[0].role = "Judge";
+  fixture.participants[0].status = "approved";
+  await registerEliminationRoutes(page, fixture);
+  await page.route(`**/competition/user/${fixture.userId}/0/4`, (route) =>
+    route.fulfill({
+      json: [fixture.competition],
+      headers: { "X-Total-Count": "1" },
+    }),
+  );
+  await page.route("**/qualification/lanes/players/*", (route) =>
+    route.fulfill({ json: { lanes: [] } }),
+  );
+  await page.setViewportSize({ width: 430, height: 932 });
+  await page.goto("/my_competitions");
+  await expect(page.getByRole("heading", { name: "2026 射箭公開賽" })).toBeVisible();
+  await manualScreenshot(page, "judge/my-competitions", { mobile: true });
+
+  await page.getByRole("button", { name: /查看記分板/ }).click();
+  const panelButton = page.getByRole("button", { name: "分", exact: true });
+  await expect(panelButton).toBeVisible();
+  await panelButton.click();
+  await expect(page.getByRole("menuitem", { name: "裁判" })).toBeVisible();
+  await manualScreenshot(page, "judge/competition-menu", { mobile: true });
+  await page.getByRole("menuitem", { name: "裁判" }).click();
+  await expect(page).toHaveURL(`/competition/${fixture.competitionId}/judge`);
+  await expect(page.getByRole("heading", { name: "裁判記分" })).toBeVisible();
+});
+
 test("裁判查看對抗賽並編輯已確認分數", async ({ page }) => {
   const fixture = buildEliminationFixture("individual", { targets: ["A", "B"] });
   prepareManualFixture(fixture);
