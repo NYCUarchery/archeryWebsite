@@ -11,6 +11,7 @@
     "test:unit": "vitest run",
     "test:unit:coverage": "vitest run --coverage",
     "test:browser": "playwright test --config=playwright.browser.config.ts --project=chromium",
+    "manual:screenshots": "ARCHERY_MANUAL_SCREENSHOTS=1 playwright test --config=playwright.browser.config.ts --project=chromium --workers=1 tests/browser/manual",
     "test:browser:firefox": "playwright test --config=playwright.browser.config.ts --project=firefox",
     "test:browser:webkit": "playwright test --config=playwright.browser.config.ts --project=webkit",
     "test:e2e": "node ../scripts/test-env.mjs e2e --project=chromium",
