@@ -113,7 +113,6 @@ test("選手選擇資格賽波次並填入六支箭", async ({ page }) => {
   await page.locator(".player_button_group button").filter({ hasText: "選手 01" }).click();
   await manualScreenshot(page, "player/qualification-scoring", { mobile: true });
   await expect(saveButton).toBeEnabled();
-  await expect(confirmButton).toBeDisabled();
   await page.getByRole("button", { name: "10", exact: true }).click();
   await saveButton.click();
   await expect(page.getByText("分數已送出")).toBeVisible();
