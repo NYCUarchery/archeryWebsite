@@ -84,7 +84,7 @@ func TestMigrationIntegration(t *testing.T) {
 		require.ErrorContains(t, migration.ValidateV1(context.Background(), db), "schema mismatch")
 	})
 
-	t.Run("fresh V3 equals baselined V1 upgraded to V3", func(t *testing.T) {
+	t.Run("fresh V4 equals baselined V1 upgraded to V4", func(t *testing.T) {
 		db := migrationTestDB(t)
 		resetMigrationSchema(t, db)
 		require.NoError(t, migration.Up(context.Background(), db, 0))
@@ -128,6 +128,36 @@ func TestMigrationIntegration(t *testing.T) {
 		require.False(t, state.Dirty)
 	})
 
+	t.Run("V4 adds nullable Competition soft deletion without removing its relations", func(t *testing.T) {
+		db := migrationTestDB(t)
+		resetMigrationSchema(t, db)
+		require.NoError(t, migration.Up(context.Background(), db, 3))
+		seedV3CompetitionGraph(t, db)
+
+		require.NoError(t, migration.Up(context.Background(), db, 4))
+
+		var nullable, columnType string
+		require.NoError(t, db.QueryRow(`SELECT is_nullable, column_type FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = 'competitions' AND column_name = 'deleted_at'`).Scan(&nullable, &columnType))
+		require.Equal(t, "YES", nullable)
+		require.Equal(t, "datetime(3)", columnType)
+		var indexedColumns int
+		require.NoError(t, db.QueryRow(`SELECT COUNT(*) FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = 'competitions' AND index_name = 'idx_competitions_deleted_at' AND column_name = 'deleted_at'`).Scan(&indexedColumns))
+		require.Equal(t, 1, indexedColumns)
+
+		var deletedAt sql.NullTime
+		require.NoError(t, db.QueryRow(`SELECT deleted_at FROM competitions WHERE id = 1`).Scan(&deletedAt))
+		require.False(t, deletedAt.Valid, "existing competition must remain visible after V4")
+		for _, table := range []string{"competitions", "groups", "qualifications", "lanes", "participants", "players", "rounds", "round_ends", "round_scores", "eliminations", "player_sets", "player_set_match_tables", "stages", "matches", "match_results", "match_ends", "match_scores", "medals"} {
+			var count int
+			require.NoError(t, db.QueryRow("SELECT COUNT(*) FROM `"+table+"`").Scan(&count))
+			require.Equalf(t, 1, count, "%s row must survive V3 to V4", table)
+		}
+
+		state, err := migration.ReadVersion(context.Background(), db)
+		require.NoError(t, err)
+		require.Equal(t, uint(4), state.Version)
+		require.False(t, state.Dirty)
+	})
 	t.Run("V2 preserves records except removed total points", func(t *testing.T) {
 		db := migrationTestDB(t)
 		resetMigrationSchema(t, db)
@@ -252,7 +282,7 @@ func TestMigrationIntegration(t *testing.T) {
 		resetMigrationSchema(t, db)
 		require.NoError(t, migration.Up(context.Background(), db, 0))
 		require.ErrorContains(t, migration.Up(context.Background(), db, 1), "downgrade")
-		_, err = db.Exec(`UPDATE schema_migrations SET version = 4, dirty = 0`)
+		_, err = db.Exec(`UPDATE schema_migrations SET version = 5, dirty = 0`)
 		require.NoError(t, err)
 		require.ErrorContains(t, migration.Up(context.Background(), db, 0), "newer than this binary")
 	})
@@ -417,6 +447,35 @@ func seedV2MatchResult(t *testing.T, db *sql.DB) {
 		`INSERT INTO stages (id, elimination_id) VALUES (1, 1)`,
 		`INSERT INTO matches (id, stage_id) VALUES (1, 1)`,
 		`INSERT INTO match_results (id, match_id, player_set_id, target, shoot_off_score, is_winner, lane_number) VALUES (1, 1, 1, 'A', 17, 1, 3)`,
+	} {
+		_, err := db.Exec(statement)
+		require.NoError(t, err)
+	}
+}
+
+func seedV3CompetitionGraph(t *testing.T, db *sql.DB) {
+	t.Helper()
+	for _, statement := range []string{
+		`INSERT INTO institutions (id, name) VALUES (1, 'V4 migration institution')`,
+		`INSERT INTO users (id, role, user_name, password, email, institution_id) VALUES (1, 'User', 'v4-migration-user', 'password', 'v4-migration@example.test', 1)`,
+		`INSERT INTO competitions (id, title) VALUES (1, 'V4 migration competition')`,
+		"INSERT INTO `groups` (id, competition_id, group_name) VALUES (1, 1, 'V4 migration group')",
+		`INSERT INTO qualifications (id) VALUES (1)`,
+		`INSERT INTO lanes (id, competition_id, qualification_id, lane_number) VALUES (1, 1, 1, 1)`,
+		`INSERT INTO participants (id, user_id, competition_id, role, status) VALUES (1, 1, 1, 'Player', 'Approved')`,
+		`INSERT INTO players (id, group_id, lane_id, participant_id, name) VALUES (1, 1, 1, 1, 'V4 migration player')`,
+		`INSERT INTO rounds (id, player_id, total_score) VALUES (1, 1, 10)`,
+		`INSERT INTO round_ends (id, round_id, is_confirmed) VALUES (1, 1, TRUE)`,
+		`INSERT INTO round_scores (id, round_end_id, score) VALUES (1, 1, 10)`,
+		`INSERT INTO eliminations (id, group_id, team_size) VALUES (1, 1, 1)`,
+		"INSERT INTO player_sets (id, elimination_id, total_score, `rank`) VALUES (1, 1, 10, 1)",
+		`INSERT INTO player_set_match_tables (player_set_id, player_id) VALUES (1, 1)`,
+		`INSERT INTO stages (id, elimination_id) VALUES (1, 1)`,
+		`INSERT INTO matches (id, stage_id) VALUES (1, 1)`,
+		`INSERT INTO match_results (id, match_id, player_set_id, target, shoot_off_score, is_winner, lane_number) VALUES (1, 1, 1, 'A', 10, TRUE, 1)`,
+		`INSERT INTO match_ends (id, match_result_id, total_score, is_confirmed) VALUES (1, 1, 10, TRUE)`,
+		`INSERT INTO match_scores (id, match_end_id, score) VALUES (1, 1, 10)`,
+		`INSERT INTO medals (id, elimination_id, type, player_set_id) VALUES (1, 1, 1, 1)`,
 	} {
 		_, err := db.Exec(statement)
 		require.NoError(t, err)
