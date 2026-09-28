@@ -29,12 +29,20 @@ func AddParticipant(par *Participant) {
 
 func CheckParticipantExist(userID uint, compID uint) bool {
 	var par Participant
-	err := DB.Where("user_id = ? AND competition_id = ?", userID, compID).First(&par).Error
+	err := DB.Table("participants").
+		Select("participants.*").
+		Joins("JOIN competitions ON competitions.id = participants.competition_id").
+		Where("participants.user_id = ? AND participants.competition_id = ? AND competitions.deleted_at IS NULL", userID, compID).
+		First(&par).Error
 	return err == nil
 }
 
 func CompetitionParticipants(compID uint) (pars []Participant, err error) {
-	result := DB.Where("competition_id = ?", compID).Find(&pars)
+	result := DB.Table("participants").
+		Select("participants.*").
+		Joins("JOIN competitions ON competitions.id = participants.competition_id").
+		Where("participants.competition_id = ? AND competitions.deleted_at IS NULL", compID).
+		Find(&pars)
 
 	if result.Error != nil {
 		err = result.Error
@@ -46,28 +54,48 @@ func CompetitionParticipants(compID uint) (pars []Participant, err error) {
 /*mushroom*/
 func GetParticipantIsExist(id uint) bool {
 	var data Participant
-	DB.Model(&Participant{}).Where("id = ?", id).First(&data)
+	DB.Table("participants").
+		Select("participants.*").
+		Joins("JOIN competitions ON competitions.id = participants.competition_id").
+		Where("participants.id = ? AND competitions.deleted_at IS NULL", id).
+		First(&data)
 	return data.ID != 0
 }
 
 func GetParticipant(ID uint) (Participant, error) {
 	var data Participant
-	result := DB.Model(&Participant{}).Where("id = ?", ID).First(&data)
+	result := DB.Table("participants").
+		Select("participants.*").
+		Joins("JOIN competitions ON competitions.id = participants.competition_id").
+		Where("participants.id = ? AND competitions.deleted_at IS NULL", ID).
+		First(&data)
 	return data, result.Error
 }
 
 func GetParticipantByUserId(userID uint) (pars []Participant, err error) {
-	result := DB.Where("user_id = ?", userID).Find(&pars)
+	result := DB.Table("participants").
+		Select("participants.*").
+		Joins("JOIN competitions ON competitions.id = participants.competition_id").
+		Where("participants.user_id = ? AND competitions.deleted_at IS NULL", userID).
+		Find(&pars)
 	return pars, result.Error
 }
 
 func GetParticipantByCompetitionId(compID uint) (pars []Participant, err error) {
-	result := DB.Where("competition_id = ?", compID).Find(&pars)
+	result := DB.Table("participants").
+		Select("participants.*").
+		Joins("JOIN competitions ON competitions.id = participants.competition_id").
+		Where("participants.competition_id = ? AND competitions.deleted_at IS NULL", compID).
+		Find(&pars)
 	return pars, result.Error
 }
 
 func GetParticipantByCompetitionIdUserId(compID uint, userID uint) (pars []Participant, err error) {
-	result := DB.Where("competition_id = ? AND user_id = ?", compID, userID).Find(&pars)
+	result := DB.Table("participants").
+		Select("participants.*").
+		Joins("JOIN competitions ON competitions.id = participants.competition_id").
+		Where("participants.competition_id = ? AND participants.user_id = ? AND competitions.deleted_at IS NULL", compID, userID).
+		Find(&pars)
 	return pars, result.Error
 }
 

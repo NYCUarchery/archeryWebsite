@@ -185,25 +185,48 @@ func DropElimination() {
 
 func GetEliminationIsExist(id uint) bool {
 	var data Elimination
-	DB.Table("eliminations").Where("id = ?", id).First(&data)
+	DB.Table("eliminations").
+		Select("eliminations.*").
+		Joins("JOIN `groups` ON `groups`.id = eliminations.group_id").
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("eliminations.id = ? AND competitions.deleted_at IS NULL", id).
+		First(&data)
 	return data.ID != 0
 }
 
 func GetStageIsExist(id uint) bool {
 	var data Stage
-	DB.Table("stages").Where("id = ?", id).First(&data)
+	DB.Table("stages").
+		Select("stages.*").
+		Joins("JOIN eliminations ON eliminations.id = stages.elimination_id").
+		Joins("JOIN `groups` ON `groups`.id = eliminations.group_id").
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("stages.id = ? AND competitions.deleted_at IS NULL", id).
+		First(&data)
 	return data.ID != 0
 }
 
 func GetMatchIsExist(id uint) bool {
 	var data Match
-	DB.Table("matches").Where("id = ?", id).First(&data)
+	DB.Table("matches").
+		Select("matches.*").
+		Joins("JOIN stages ON stages.id = matches.stage_id").
+		Joins("JOIN eliminations ON eliminations.id = stages.elimination_id").
+		Joins("JOIN `groups` ON `groups`.id = eliminations.group_id").
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("matches.id = ? AND competitions.deleted_at IS NULL", id).
+		First(&data)
 	return data.ID != 0
 }
 
 func GetOnlyEliminationById(id uint) (Elimination, error) {
 	var data Elimination
-	result := DB.Table("eliminations").Where("id = ?", id).First(&data)
+	result := DB.Table("eliminations").
+		Select("eliminations.*").
+		Joins("JOIN `groups` ON `groups`.id = eliminations.group_id").
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("eliminations.id = ? AND competitions.deleted_at IS NULL", id).
+		First(&data)
 	return data, result.Error
 }
 
@@ -223,7 +246,9 @@ func GetEliminationWPlayerSetsById(id uint) (Elimination, error) {
 			return DB.Order("`rank` asc")
 		}).
 		Model(&Elimination{}).
-		Where("id = ?", id).
+		Joins("JOIN `groups` ON `groups`.id = eliminations.group_id").
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("eliminations.id = ? AND competitions.deleted_at IS NULL", id).
 		First(&data)
 	return data, result.Error
 }
@@ -238,7 +263,9 @@ func GetEliminationWStagesMatchesById(id uint) (Elimination, error) {
 			return tx.Order("id asc")
 		}).
 		Model(&Elimination{}).
-		Where("id = ?", id).
+		Joins("JOIN `groups` ON `groups`.id = eliminations.group_id").
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("eliminations.id = ? AND competitions.deleted_at IS NULL", id).
 		First(&data)
 	return data, result.Error
 }
@@ -262,7 +289,9 @@ func GetEliminationWScoresById(id uint) (Elimination, error) {
 			return tx.Order("id asc")
 		}).
 		Model(&Elimination{}).
-		Where("id = ?", id).
+		Joins("JOIN `groups` ON `groups`.id = eliminations.group_id").
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("eliminations.id = ? AND competitions.deleted_at IS NULL", id).
 		First(&data)
 	if result.Error == nil {
 		computeEliminationMatchPoints(&data)
@@ -316,7 +345,9 @@ func GetEliminationById(id uint) (Elimination, error) {
 			return tx.Order("score DESC")
 		}).
 		Model(&Elimination{}).
-		Where("id = ?", id).
+		Joins("JOIN `groups` ON `groups`.id = eliminations.group_id").
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("eliminations.id = ? AND competitions.deleted_at IS NULL", id).
 		First(&data)
 	if result.Error == nil {
 		computeEliminationMatchPoints(&data)

@@ -36,7 +36,8 @@ func requireConfirmedMatchEndCompetitionAdmin(context *gin.Context, tx *gorm.DB,
 	if err := tx.Table("eliminations").
 		Select("competition_group.competition_id AS competition_id").
 		Joins("JOIN `groups` AS competition_group ON competition_group.id = eliminations.group_id").
-		Where("eliminations.id = ?", eliminationID).
+		Joins("JOIN competitions ON competitions.id = competition_group.competition_id").
+		Where("eliminations.id = ? AND competitions.deleted_at IS NULL", eliminationID).
 		Take(&relation).Error; err != nil {
 		return err
 	}
@@ -58,6 +59,9 @@ func writeConfirmedMatchEndAuthorizationError(context *gin.Context, err error) b
 		return true
 	case errors.Is(err, errConfirmedMatchEndAdminRequired):
 		context.JSON(http.StatusForbidden, gin.H{"error": "Competition admin required"})
+		return true
+	case errors.Is(err, gorm.ErrRecordNotFound):
+		context.JSON(http.StatusBadRequest, gin.H{"error": "Competition resource not found"})
 		return true
 	default:
 		return false

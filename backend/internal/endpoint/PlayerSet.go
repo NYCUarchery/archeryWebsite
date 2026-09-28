@@ -132,6 +132,9 @@ func GetPlayerSetWPlayerById(context *gin.Context) {
 func GetAllPlayerSetsByEliminationId(context *gin.Context) {
 	id := Convert2uint(context, "eliminationid")
 	var data []database.PlayerSet
+	if response.ErrorIdTest(context, id, database.GetEliminationIsExist(id), "elimination when getting player sets") {
+		return
+	}
 	data, err := database.GetPlayerSetsByEliminationId(id)
 	if response.ErrorInternalErrorTest(context, id, "get player sets by elimination id", err) {
 		return

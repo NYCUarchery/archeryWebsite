@@ -66,38 +66,72 @@ func DropPlayer() {
 
 func GetPlayerIsExist(id uint) bool {
 	var data Player
-	DB.Table("players").Where("id = ?", id).First(&data)
+	DB.Table("players").
+		Select("players.*").
+		Joins("JOIN `groups` ON `groups`.id = players.group_id").
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("players.id = ? AND competitions.deleted_at IS NULL", id).
+		First(&data)
 	return data.ID != 0
 }
 
 func GetRoundIsExist(id uint) bool {
 	var data Round
-	DB.Table("rounds").Where("id = ?", id).First(&data)
+	DB.Table("rounds").
+		Select("rounds.*").
+		Joins("JOIN players ON players.id = rounds.player_id").
+		Joins("JOIN `groups` ON `groups`.id = players.group_id").
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("rounds.id = ? AND competitions.deleted_at IS NULL", id).
+		First(&data)
 	return data.ID != 0
 }
 
 func GetRoundEndIsExist(id uint) bool {
 	var data RoundEnd
-	DB.Table("round_ends").Where("id = ?", id).First(&data)
+	DB.Table("round_ends").
+		Select("round_ends.*").
+		Joins("JOIN rounds ON rounds.id = round_ends.round_id").
+		Joins("JOIN players ON players.id = rounds.player_id").
+		Joins("JOIN `groups` ON `groups`.id = players.group_id").
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("round_ends.id = ? AND competitions.deleted_at IS NULL", id).
+		First(&data)
 	return data.ID != 0
 }
 
 func GetRoundScoreIsExist(id uint) bool {
 	var data RoundScore
-	DB.Table("round_scores").Where("id = ?", id).First(&data)
+	DB.Table("round_scores").
+		Select("round_scores.*").
+		Joins("JOIN round_ends ON round_ends.id = round_scores.round_end_id").
+		Joins("JOIN rounds ON rounds.id = round_ends.round_id").
+		Joins("JOIN players ON players.id = rounds.player_id").
+		Joins("JOIN `groups` ON `groups`.id = players.group_id").
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("round_scores.id = ? AND competitions.deleted_at IS NULL", id).
+		First(&data)
 	return data.ID != 0
 }
 
 func GetOnlyPlayer(id uint) (Player, error) {
 	var data Player
-	result := DB.Table("players").Where("id = ?", id).First(&data)
+	result := DB.Table("players").
+		Select("players.*").
+		Joins("JOIN `groups` ON `groups`.id = players.group_id").
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("players.id = ? AND competitions.deleted_at IS NULL", id).
+		First(&data)
 	return data, result.Error
 }
 func GetDummyPlayersByParticipantId(participantId uint) ([]Player, error) {
 	var data []Player
 	result := DB.
 		Table("players").
-		Where("participant_id = ? AND total_score = -1", participantId).
+		Select("players.*").
+		Joins("JOIN `groups` ON `groups`.id = players.group_id").
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("players.participant_id = ? AND players.total_score = -1 AND competitions.deleted_at IS NULL", participantId).
 		Find(&data)
 	return data, result.Error
 }
@@ -107,7 +141,9 @@ func GetPlayerWScores(id uint) (Player, error) {
 	result := DB.
 		Preload("Rounds.RoundEnds.RoundScores").
 		Model(&Player{}).
-		Where("id = ?", id).
+		Joins("JOIN `groups` ON `groups`.id = players.group_id").
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("players.id = ? AND competitions.deleted_at IS NULL", id).
 		First(&data)
 	return data, result.Error
 }
@@ -134,8 +170,9 @@ func GetPlayerIdsByCompetitionIdGroupId(competitionId uint, groupId uint) ([]uin
 	var playerIds []uint
 	result := DB.Table("players").
 		Select("players.id").
-		Joins("JOIN participants ON participants.id = players.participant_id").
-		Where("participants.competition_id = ?", competitionId).
+		Joins("JOIN `groups` ON `groups`.id = players.group_id").
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("`groups`.competition_id = ? AND competitions.deleted_at IS NULL", competitionId).
 		Where("players.group_id = ?", groupId).
 		Order("players.order_number ASC").
 		Find(&playerIds)
