@@ -1124,14 +1124,14 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Delete one Competition by id.\nDelete all related groups, lanes, players, participants.",
+                "description": "Requires an approved Admin of the target competition. Retains all related records.",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Competition"
                 ],
-                "summary": "Delete one Competition.",
+                "summary": "Soft-delete one Competition.",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1154,8 +1154,14 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.ErrorIdResponse"
                         }
                     },
+                    "403": {
+                        "description": "login and approved competition admin required",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorReceiveDataFormatResponse"
+                        }
+                    },
                     "500": {
-                        "description": "internal db error / Delete Competition with Groups / Delete GroupInfo By Id Through Competition / Delete Player Through Competition / Delete Participaint / Delete Lane By Competition Id",
+                        "description": "internal db error while soft-deleting competition",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorInternalErrorResponse"
                         }

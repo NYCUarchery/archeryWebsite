@@ -41,10 +41,11 @@ func requireCompetitionAdminTx(context *gin.Context, tx *gorm.DB, competitionID 
 	// an ID lookup; each candidate is then current-read locked by primary key
 	// and revalidated below before it authorizes the transaction.
 	var candidateIDs []uint
-	if err := tx.Model(&database.Participant{}).
-		Where("competition_id = ? AND user_id = ? AND status = ? AND role = ?", competitionID, userID, "approved", pkg.RoleToString(pkg.RAdmin)).
-		Order("id").
-		Pluck("id", &candidateIDs).Error; err != nil {
+	if err := tx.Table("participants").
+		Joins("JOIN competitions ON competitions.id = participants.competition_id").
+		Where("participants.competition_id = ? AND participants.user_id = ? AND participants.status = ? AND participants.role = ? AND competitions.deleted_at IS NULL", competitionID, userID, "approved", pkg.RoleToString(pkg.RAdmin)).
+		Order("participants.id").
+		Pluck("participants.id", &candidateIDs).Error; err != nil {
 		return err
 	}
 	for _, candidateID := range candidateIDs {
@@ -132,6 +133,8 @@ func writeControlAuthorizationError(context *gin.Context, err error) bool {
 		context.JSON(409, gin.H{"error": "Cannot delete the last approved competition admin"})
 	case errors.Is(err, errControlPlayerExists):
 		context.JSON(409, gin.H{"error": "Participant already has a player"})
+	case errors.Is(err, gorm.ErrRecordNotFound):
+		context.JSON(400, gin.H{"error": "Competition resource not found"})
 	default:
 		return false
 	}

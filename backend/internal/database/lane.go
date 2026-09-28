@@ -25,13 +25,21 @@ func DropLane() {
 
 func GetLaneIsExist(id uint) bool {
 	var lane Lane
-	DB.Model(&Lane{}).Where("id = ?", id).First(&lane)
+	DB.Table("lanes").
+		Select("lanes.*").
+		Joins("JOIN competitions ON competitions.id = lanes.competition_id").
+		Where("lanes.id = ? AND competitions.deleted_at IS NULL", id).
+		First(&lane)
 	return lane.ID != 0
 }
 
 func GetLaneById(id uint) (Lane, error) {
 	var lane Lane
-	result := DB.Model(&Lane{}).Where("id = ?", id).First(&lane)
+	result := DB.Table("lanes").
+		Select("lanes.*").
+		Joins("JOIN competitions ON competitions.id = lanes.competition_id").
+		Where("lanes.id = ? AND competitions.deleted_at IS NULL", id).
+		First(&lane)
 	return lane, result.Error
 }
 
@@ -56,13 +64,22 @@ func GetLaneWScoresById(id uint) (Lane, error) {
 
 func GetUnassignedLaneId(competitionId uint) uint {
 	var data Lane
-	DB.Model(&Lane{}).Where("competition_id = ?", competitionId).First(&data)
+	DB.Table("lanes").
+		Select("lanes.*").
+		Joins("JOIN competitions ON competitions.id = lanes.competition_id").
+		Where("lanes.competition_id = ? AND competitions.deleted_at IS NULL", competitionId).
+		First(&data)
 	return data.ID
 }
 
 func GetAllLanesByCompetitionId(competitionId uint) ([]Lane, error) {
 	var data []Lane
-	result := DB.Model(&Lane{}).Where("competition_id = ?", competitionId).Order("`lane_number` asc").Find(&data)
+	result := DB.Table("lanes").
+		Select("lanes.*").
+		Joins("JOIN competitions ON competitions.id = lanes.competition_id").
+		Where("lanes.competition_id = ? AND competitions.deleted_at IS NULL", competitionId).
+		Order("lanes.`lane_number` asc").
+		Find(&data)
 	return data, result.Error
 }
 
@@ -84,11 +101,6 @@ func UpdateLane(id uint, lane Lane) (bool, error) {
 
 func UpdateLaneQualificationId(id uint, qualificationId uint) error {
 	result := DB.Model(&Lane{}).Where("id = ?", id).Update("qualification_id", qualificationId)
-	return result.Error
-}
-
-func DeleteLaneByCompetitionId(competitionId uint) error {
-	result := DB.Delete(&Lane{}, "competition_id =?", competitionId)
 	return result.Error
 }
 

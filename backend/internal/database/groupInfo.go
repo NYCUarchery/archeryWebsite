@@ -29,13 +29,21 @@ func DropGroupInfo() {
 
 func GetGroupIsExist(id uint) bool {
 	var group Group
-	DB.Table("groups").Where("id = ?", id).First(&group)
+	DB.Table("groups").
+		Select("`groups`.*").
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("`groups`.id = ? AND competitions.deleted_at IS NULL", id).
+		First(&group)
 	return group.ID != 0
 }
 
 func GetGroupInfoById(id uint) (Group, error) {
 	var group Group
-	result := DB.Table("groups").Where("id = ?", id).First(&group)
+	result := DB.Table("groups").
+		Select("`groups`.*").
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("`groups`.id = ? AND competitions.deleted_at IS NULL", id).
+		First(&group)
 	return group, result.Error
 }
 
@@ -46,7 +54,8 @@ func GetGroupInfoWPlayersById(id uint) (Group, error) {
 			return DB.Order("`rank` asc")
 		}).
 		Model(&Group{}).
-		Where("id = ?", id).
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("`groups`.id = ? AND competitions.deleted_at IS NULL", id).
 		First(&group)
 	return group, result.Error
 }

@@ -4,12 +4,15 @@ import (
 	"backend/internal/database"
 	pkg "backend/internal/pkg"
 	response "backend/internal/response"
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 var zeroTime, _ = time.Parse(time.RFC3339, "0001-01-01T00:00:00+00:01")
@@ -513,61 +516,52 @@ func RefreshCompetitionRank(context *gin.Context) {
 
 // Delete Competition by id godoc
 //
-//	@Summary		Delete one Competition.
-//	@Description	Delete one Competition by id.
-//	@Description	Delete all related groups, lanes, players, participants.
+//	@Summary		Soft-delete one Competition.
+//	@Description	Requires an approved Admin of the target competition. Retains all related records.
 //	@Tags			Competition
 //	@Produce		json
-//	@Param			id	path		int									true	"Competition ID"
+//	@Param			id	path		int								true	"Competition ID"
 //	@Success		200	{object}	response.DeleteSuccessResponse		"delete success"
 //	@Failure		400	{object}	response.ErrorIdResponse			"invalid competition id parameter"
-//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error / Delete Competition with Groups / Delete GroupInfo By Id Through Competition / Delete Player Through Competition / Delete Participaint / Delete Lane By Competition Id"
+//	@Failure		403	{object}	response.ErrorReceiveDataFormatResponse	"login and approved competition admin required"
+//	@Failure		500	{object}	response.ErrorInternalErrorResponse	"internal db error while soft-deleting competition"
 //	@Router			/competition/{id} [delete]
 func DeleteCompetition(context *gin.Context) {
 	id := Convert2uint(context, "id")
-	/*check data exist*/
-	isExist, data := IsGetCompetitionWGroupsPlayers(context, id)
-	if !isExist {
+	userID, err := controlSessionUserID(context)
+	if writeControlAuthorizationError(context, err) {
 		return
 	}
-	/*delete all related player*/
-	for _, group := range data.Groups {
-		for _, player := range group.Players {
-			playerId := player.ID
-			success := DeletePlayerThroughCompetition(context, playerId)
-			if !success {
-				return
-			}
+	var affected bool
+	err = database.DB.Transaction(func(tx *gorm.DB) error {
+		var competition database.Competition
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("id = ?", id).First(&competition).Error; err != nil {
+			return err
 		}
-	}
-	_, data = IsGetCompetitionWParticipants(context, id)
-	/*delete all related participant*/
-	for _, participant := range data.Participants {
-		participantId := participant.ID
-		success := DeleteParticipaintThroughCompetition(context, participantId)
-		if !success {
-			return
+		// Only the parent changes. Do not lock retained Participants: child control
+		// writers can acquire Participant and Competition locks in the reverse order.
+		var participants []database.Participant
+		if err := tx.Where("competition_id = ? AND user_id = ?", id, userID).Find(&participants).Error; err != nil {
+			return err
 		}
-	}
-	/*delete all related lanes*/
-	success := DeleteLaneByCompetitionId(context, id)
-	if !success {
+		if !hasCompetitionAdmin(participants) {
+			return errControlForbidden
+		}
+		var err error
+		affected, err = database.DeleteCompetition(tx, id)
+		return err
+	})
+	if writeControlAuthorizationError(context, err) {
 		return
 	}
-	/*delete all related groups*/
-	for _, group := range data.Groups {
-		groupId := group.ID
-		success, _ := DeleteGroupInfoByIdThroughCompetition(context, groupId)
-		if !success {
-			return
-		}
-	}
-	/*delete competition*/
-	affected, err := database.DeleteCompetition(id)
-	if response.ErrorInternalErrorTest(context, id, "Delete Competition with Groups", err) {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		response.ErrorIdTest(context, id, false, "Competition")
 		return
 	}
-	response.AcceptDeleteSuccess(context, id, affected, "Competition with Groups, Lanes, Players, Participants")
+	if response.ErrorInternalErrorTest(context, id, "Soft-delete Competition", err) {
+		return
+	}
+	response.AcceptDeleteSuccess(context, id, affected, "Competition")
 }
 
 // AllCompetitionInfo godoc

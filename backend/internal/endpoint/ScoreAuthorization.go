@@ -55,7 +55,11 @@ func scoreSessionUserID(context *gin.Context) (uint, error) {
 
 func approvedScoreActor(tx *gorm.DB, competitionID, userID uint) (scoreActor, error) {
 	var participants []database.Participant
-	if err := tx.Where("competition_id = ? AND user_id = ? AND status = ?", competitionID, userID, "approved").Find(&participants).Error; err != nil {
+	if err := tx.Table("participants").
+		Select("participants.*").
+		Joins("JOIN competitions ON competitions.id = participants.competition_id").
+		Where("participants.competition_id = ? AND participants.user_id = ? AND participants.status = ? AND competitions.deleted_at IS NULL", competitionID, userID, "approved").
+		Find(&participants).Error; err != nil {
 		return 0, err
 	}
 	// A malformed legacy database can contain more than one Participant. Keep
@@ -90,7 +94,7 @@ func eliminationScoreTargetForMatch(tx *gorm.DB, matchID uint) (eliminationScore
 		Joins("JOIN eliminations ON eliminations.id = stages.elimination_id").
 		Joins("JOIN `groups` AS competition_group ON competition_group.id = eliminations.group_id").
 		Joins("JOIN competitions ON competitions.id = competition_group.competition_id").
-		Where("matches.id = ?", matchID).
+		Where("matches.id = ? AND competitions.deleted_at IS NULL", matchID).
 		Clauses(clause.Locking{Strength: "UPDATE"}).
 		Take(&target).Error
 	if err != nil {
@@ -108,7 +112,7 @@ func eliminationScoreTargetForMatch(tx *gorm.DB, matchID uint) (eliminationScore
 		Select("elimination_is_active AS individual_active, team_elimination_is_active AS team_active, mixed_elimination_is_active AS mixed_active").
 		Joins("JOIN `groups` AS competition_group ON competition_group.competition_id = competitions.id").
 		Joins("JOIN eliminations ON eliminations.group_id = competition_group.id").
-		Where("eliminations.id = ?", target.EliminationID).
+		Where("eliminations.id = ? AND competitions.deleted_at IS NULL", target.EliminationID).
 		Take(&active).Error; err != nil {
 		return target, err
 	}
@@ -231,7 +235,7 @@ func qualificationScoreTargetForEnd(tx *gorm.DB, roundEndID uint) (qualification
 		Joins("JOIN players ON players.id = rounds.player_id").
 		Joins("JOIN participants ON participants.id = players.participant_id").
 		Joins("JOIN competitions ON competitions.id = participants.competition_id").
-		Where("round_ends.id = ?", roundEndID).
+		Where("round_ends.id = ? AND competitions.deleted_at IS NULL", roundEndID).
 		Clauses(clause.Locking{Strength: "UPDATE"}).
 		Take(&target).Error
 	return target, err
@@ -242,7 +246,8 @@ func qualificationCompetitionForPlayer(tx *gorm.DB, playerID uint) (uint, error)
 	err := tx.Table("players").
 		Select("participants.competition_id AS competition_id").
 		Joins("JOIN participants ON participants.id = players.participant_id").
-		Where("players.id = ?", playerID).
+		Joins("JOIN competitions ON competitions.id = participants.competition_id").
+		Where("players.id = ? AND competitions.deleted_at IS NULL", playerID).
 		Clauses(clause.Locking{Strength: "UPDATE"}).
 		Take(&relation).Error
 	return relation.CompetitionID, err
@@ -313,6 +318,10 @@ func authorizeQualificationScore(context *gin.Context, tx *gorm.DB, roundEndID u
 }
 
 func writeScoreAuthorizationError(context *gin.Context, err error) bool {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		context.JSON(400, gin.H{"error": "Competition resource not found"})
+		return true
+	}
 	if errors.Is(err, errScoreLoginRequired) {
 		context.JSON(403, gin.H{"error": "Require login"})
 		return true

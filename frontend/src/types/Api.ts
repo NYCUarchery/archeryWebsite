@@ -1219,15 +1219,15 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Delete one Competition by id. Delete all related groups, lanes, players, participants.
+     * @description Requires an approved Admin of the target competition. Retains all related records.
      *
      * @tags Competition
      * @name CompetitionDelete
-     * @summary Delete one Competition.
+     * @summary Soft-delete one Competition.
      * @request DELETE:/competition/{id}
      */
     competitionDelete: (id: number, params: RequestParams = {}) =>
-      this.request<ResponseDeleteSuccessResponse, ResponseErrorIdResponse | ResponseErrorInternalErrorResponse>({
+      this.request<ResponseDeleteSuccessResponse, ResponseErrorIdResponse | ResponseErrorReceiveDataFormatResponse | ResponseErrorInternalErrorResponse>({
         path: `/competition/${id}`,
         method: "DELETE",
         format: "json",

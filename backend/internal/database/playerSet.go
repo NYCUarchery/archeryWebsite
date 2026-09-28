@@ -40,7 +40,13 @@ func DropPlayerSet() {
 
 func GetPlayerSetIsExist(id uint) bool {
 	var data PlayerSet
-	DB.Table("player_sets").Where("id = ?", id).First(&data)
+	DB.Table("player_sets").
+		Select("player_sets.*").
+		Joins("JOIN eliminations ON eliminations.id = player_sets.elimination_id").
+		Joins("JOIN `groups` ON `groups`.id = eliminations.group_id").
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("player_sets.id = ? AND competitions.deleted_at IS NULL", id).
+		First(&data)
 	return data.ID != 0
 }
 

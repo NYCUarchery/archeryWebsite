@@ -250,7 +250,7 @@ func (suite *PlayerControlIntegrationTestSuite) TestGroupAssignmentRejectsAdminR
 	responseDone := make(chan *httptest.ResponseRecorder, 1)
 	responseReceived := false
 	suite.Require().NoError(database.DB.Callback().Query().After("gorm:query").Register(callbackName, func(tx *gorm.DB) {
-		if tx.Statement.Table != "participants" || strings.Contains(tx.Statement.SQL.String(), "FOR UPDATE") || !strings.Contains(tx.Statement.SQL.String(), "SELECT `id`") {
+		if tx.Statement.Table != "participants" || strings.Contains(tx.Statement.SQL.String(), "FOR UPDATE") || !strings.Contains(tx.Statement.SQL.String(), "SELECT `participants`.`id`") {
 			return
 		}
 		once.Do(func() {
