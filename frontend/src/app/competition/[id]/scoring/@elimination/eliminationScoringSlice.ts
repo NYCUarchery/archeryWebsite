@@ -170,17 +170,16 @@ export const eliminationScoringSlice = createSlice({
       selected.dirty = true; // 本地已變動但尚未成功存分，確認前須先擋下
     },
 
-    // 標記某一方目前 MatchEnd 已確認；預設為選中方。找不到對應 matchResultId 則不變。
+    // 僅回填同一 MatchEnd；換波後的舊確認回應不得鎖住新波。
     // 僅動 isConfirmed，不動分數、totalPoints、isWinner。
-    markConfirmed: (state, action: PayloadAction<number | undefined>) => {
-      const targetId =
-        action.payload !== undefined
-          ? action.payload
-          : state.selectedMatchResultIdentifier;
+    markConfirmed: (state, action: PayloadAction<{
+      matchResultId: number;
+      currentMatchEndId: number;
+    }>) => {
       const target = state.matchResults.find(
-        (mr) => mr.matchResultId === targetId
+        (mr) => mr.matchResultId === action.payload.matchResultId
       );
-      if (!target) return; // 找不到則不變
+      if (!target || target.currentMatchEndId !== action.payload.currentMatchEndId) return;
       target.isConfirmed = true;
     },
 
@@ -189,6 +188,7 @@ export const eliminationScoringSlice = createSlice({
       state,
       action: PayloadAction<{
         matchResultId: number;
+        currentMatchEndId: number;
         scores: LocalMatchScore[];
         totalScores: number;
       }>
@@ -196,7 +196,7 @@ export const eliminationScoringSlice = createSlice({
       const target = state.matchResults.find(
         (mr) => mr.matchResultId === action.payload.matchResultId
       );
-      if (!target) return; // 找不到則不變
+      if (!target || target.currentMatchEndId !== action.payload.currentMatchEndId) return;
       target.scores = action.payload.scores;
       target.totalScores = action.payload.totalScores;
       target.dirty = false; // 存分成功，本地已與伺服器同步
