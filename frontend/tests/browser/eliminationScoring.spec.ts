@@ -1,6 +1,6 @@
 import { expect, test } from "./fixtures";
 import type { Page } from "@playwright/test";
-import type { DatabaseMatchEnd } from "@/types/Api";
+import type { DatabaseMatchEnd, DatabaseStage } from "@/types/Api";
 import type { EliminationFixture, EliminationVariant } from "./eliminationFixtures";
 import {
   buildEliminationFixture,
@@ -168,6 +168,168 @@ test.describe("Elimination Scoring Board", () => {
       }
       expect(await selectorGroup(page).evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(baselineWidth);
+    });
+  }
+
+  test("反曲弓：雙方完整且未確認，存分後立即更新積點", async ({ page }) => {
+    const fixture = buildEliminationFixture("individual");
+    fixture.competition.groups![0].bow_type = "反曲弓";
+    fixture.elimination.current_end = 1;
+    fixtureMatchResults(fixture).forEach((result, index) => {
+      const current = result.match_ends![0];
+      result.match_ends = [copyEndWithScores(current, 1000, [9, 9, 9]), current];
+      result.total_points = 1;
+      if (index === 1) {
+        current.match_scores!.forEach((score) => { score.score = 8; });
+        current.total_scores = 24;
+      }
+    });
+    const handles = await registerEliminationRoutes(page, fixture);
+    await gotoEliminationScoring(page, fixture.competitionId);
+    await waitReady(page, fixture);
+    const detailReads = handles.eliminationDetailRequests.length;
+    await scoreButton(page, "X").click();
+    await scoreButton(page, "9").click();
+    await expect(matchTotal(page, fixture.setNameOpponent)).toHaveText("總積點：1");
+    await scoreButton(page, "M").click();
+    await expect(matchTotal(page, fixture.setNameMine)).toHaveText("總積點：1");
+    await expect(matchTotal(page, fixture.setNameOpponent)).toHaveText("總積點：3");
+    expect(handles.eliminationDetailRequests.length).toBeGreaterThan(detailReads);
+    expect(handles.confirmRequests).toHaveLength(0);
+    expect(handles.getMatchEndState(fixture.myMatchEndId)?.is_confirmed).toBe(false);
+    expect(handles.getMatchEndState(fixture.opponentMatchEndId)?.is_confirmed).toBe(false);
+  });
+
+  test("複合弓：存分重取全場總計且保留另一側草稿", async ({ page }) => {
+    const fixture = compoundFixture("team");
+    const handles = await registerEliminationRoutes(page, fixture);
+    await gotoEliminationScoring(page, fixture.competitionId);
+    await waitReady(page, fixture);
+    await scoreButton(page, "X").click();
+    await sideButton(page, fixture.setNameOpponent).click();
+    await scoreButton(page, "8").click();
+    await sideButton(page, fixture.setNameMine).click();
+
+    // 同時更新歷波，使總計變化證明新 detail 已被畫面採用。
+    handles.setMatchEndScores(fixtureMatchResults(fixture)[0].match_ends![0].id!, [11, 2, 0, 0, 0, 0]);
+    const detailReads = handles.eliminationDetailRequests.length;
+    await controlGroup(page).getByRole("button", { name: "送出", exact: true }).click();
+    await expect(matchTotal(page, fixture.setNameMine)).toHaveText("總積分：29");
+    await expect(matchTotal(page, fixture.setNameOpponent)).toHaveText("總積分：31");
+    expect(handles.eliminationDetailRequests.length).toBeGreaterThan(detailReads);
+    await expect.poll(() => sideScoreLabels(page, fixture.setNameOpponent))
+      .toEqual(["8", "6", "-1", "-1", "-1", "-1"]);
+  });
+
+  for (const advance of ["換波", "換輪"] as const) {
+    test(`複合弓：${advance}重取詳細資料並載入最新箭分與總計`, async ({ page }) => {
+      const fixture = buildEliminationFixture("individual");
+      fixture.competition.groups![0].bow_type = "Compound";
+      const firstResults = fixtureMatchResults(fixture);
+      firstResults[0].match_ends![0].match_scores![0].score = 7;
+      firstResults[0].match_ends![0].total_scores = 7;
+      let nextEndId: number;
+      if (advance === "換波") {
+        firstResults.forEach((result) => {
+          result.match_ends!.push(copyEndWithScores(result.match_ends![0], 1000, []));
+        });
+        nextEndId = firstResults[0].match_ends![1].id!;
+      } else {
+        const nextStage = JSON.parse(JSON.stringify(fixture.elimination.stages![0])) as DatabaseStage;
+        nextStage.id! += 1000;
+        const nextMatch = nextStage.matchs![0];
+        nextMatch.id! += 1000;
+        nextMatch.stage_id = nextStage.id;
+        nextMatch.match_results!.forEach((result) => {
+          result.id! += 1000;
+          result.match_id = nextMatch.id;
+          const nextEnd = copyEndWithScores(result.match_ends![0], 1000, []);
+          nextEnd.match_result_id = result.id;
+          result.match_ends = [nextEnd];
+        });
+        fixture.elimination.stages!.push(nextStage);
+        nextEndId = nextMatch.match_results![0].match_ends![0].id!;
+      }
+      const handles = await registerEliminationRoutes(page, fixture);
+      await gotoEliminationScoring(page, fixture.competitionId);
+      await waitReady(page, fixture);
+      await scoreButton(page, "X").click();
+      await expect(matchTotal(page, fixture.setNameMine)).toHaveText("總積分：17");
+      const detailReads = handles.eliminationDetailRequests.length;
+      handles.setMatchEndScores(fixture.myMatchEndId, [11, 8, 7]);
+      handles.setMatchEndScores(nextEndId, [9, 0, -1]);
+      handles.setEliminationProgress(advance === "換輪" ? 1 : 0, advance === "換波" ? 1 : 0);
+
+      await expect.poll(() => sideScoreLabels(page, fixture.setNameMine))
+        .toEqual(["9", "M", "-1"]);
+      await expect(sideTotal(page, fixture.setNameMine)).toHaveText("9");
+      await expect(matchTotal(page, fixture.setNameMine))
+        .toHaveText(`總積分：${advance === "換波" ? 34 : 9}`);
+      expect(handles.eliminationDetailRequests.length).toBeGreaterThan(detailReads);
+      expect(handles.savedScoreRequests).toHaveLength(0);
+    });
+  }
+
+  for (const operation of ["存分", "確認"] as const) {
+    test(`複合弓：舊波${operation}回應晚於換波，不覆寫新波`, async ({ page }) => {
+      const fixture = buildEliminationFixture("individual");
+      fixture.competition.groups![0].bow_type = "Compound";
+      fixtureMatchResults(fixture).forEach((result, index) => {
+        const current = result.match_ends![0];
+        if (operation === "確認" && index === 0) {
+          current.match_scores!.forEach((score) => { score.score = 9; });
+          current.total_scores = 27;
+        }
+        result.match_ends!.push(copyEndWithScores(current, 1000, index === 0 ? [8, 0, -1] : []));
+      });
+      const handles = await registerEliminationRoutes(page, fixture);
+      let releaseResponse!: () => void;
+      const responseGate = new Promise<void>((resolve) => { releaseResponse = resolve; });
+      let requestStarted!: () => void;
+      const pendingRequest = new Promise<void>((resolve) => { requestStarted = resolve; });
+      const endpoint = operation === "存分" ? "scores" : "isconfirmed";
+      await page.route(`**/matchresult/matchend/${endpoint}/${fixture.myMatchEndId}`, async (route) => {
+        if (operation === "存分") {
+          const body = route.request().postDataJSON() as { scores: number[] };
+          handles.setMatchEndScores(fixture.myMatchEndId, body.scores);
+        }
+        requestStarted();
+        await responseGate;
+        await route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
+      });
+      await gotoEliminationScoring(page, fixture.competitionId);
+      await waitReady(page, fixture);
+
+      try {
+        if (operation === "存分") {
+          for (let arrow = 0; arrow < fixture.capacity; arrow++) {
+            await scoreButton(page, "9").click();
+          }
+        } else {
+          await controlGroup(page).getByRole("button", { name: "確認", exact: true }).click();
+        }
+        await pendingRequest;
+        handles.setEliminationProgress(0, 1);
+        await expect.poll(() => sideScoreLabels(page, fixture.setNameMine))
+          .toEqual(["8", "M", "-1"]);
+        await expect(sideTotal(page, fixture.setNameMine)).toHaveText("8");
+        releaseResponse();
+        await expect(page.getByText(operation === "存分" ? "已儲存分數" : "已確認本波", { exact: true })).toBeVisible();
+        await expect.poll(() => sideScoreLabels(page, fixture.setNameMine))
+          .toEqual(["8", "M", "-1"]);
+        await expect(sideTotal(page, fixture.setNameMine)).toHaveText("8");
+        await expect(matchTotal(page, fixture.setNameMine)).toHaveText("總積分：35");
+        await expect(controlGroup(page).getByRole("button", { name: "確認", exact: true })).toBeDisabled();
+        await expect(scoreButton(page, "9")).toBeEnabled();
+        if (operation === "存分") {
+          await scoreButton(page, "9").click();
+          await expect.poll(() => handles.savedScoreRequests.length).toBe(1);
+          expect(handles.savedScoreRequests[0].url).toMatch(new RegExp(`/${fixture.myMatchEndId + 1000}$`));
+          expect(handles.savedScoreRequests[0].body).toMatchObject({ scores: [9, 8, 0], total_scores: 17 });
+        }
+      } finally {
+        releaseResponse();
+      }
     });
   }
 

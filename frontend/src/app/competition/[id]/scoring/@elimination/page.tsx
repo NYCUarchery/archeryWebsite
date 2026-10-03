@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import { useMutation } from "react-query";
+import { useMutation, useQueryClient } from "react-query";
 import { Snackbar, Alert } from "@mui/material";
 import { apiClient } from "@/utils/ApiClient";
 import { useAppDispatch, useAppSelector } from "store/hooks";
@@ -62,7 +62,7 @@ function toLocalMatchResults(
       isConfirmed: matchEnd.is_confirmed ?? false,
       capacity: matchEnd.match_scores?.length ?? 0,
       scores,
-      totalScores: matchEnd.total_scores ?? 0,
+      totalScores: matchEnd.total_scores ?? scores.reduce((total, score) => total + scorefmt(score.score), 0),
       dirty: false, // 初始化即與伺服器一致，尚無本地未存的編輯
     };
     return [local];
@@ -72,6 +72,7 @@ function toLocalMatchResults(
 export default function Page({ params }: { params: { id: string } }) {
   const competitionId = parseInt(params.id);
   const status = useCurrentEliminationMatch(competitionId);
+  const queryClient = useQueryClient();
 
   const dispatch = useAppDispatch();
   const matchResults = useAppSelector(
@@ -93,7 +94,7 @@ export default function Page({ params }: { params: { id: string } }) {
     message: string;
   }>({ open: false, severity: "success", message: "" });
 
-  // 避免「本地資料因初始化/存分回填而變動」被誤判為「使用者剛填滿容量」而重觸自動存分。
+  // 避免初始化被誤判為使用者剛填滿容量而觸發自動存分。
   const isLocalRefreshRef = useRef(false);
   const prevSelectedIdRef = useRef<number>(-1);
   const prevFilledCountRef = useRef<number | null>(null);
@@ -139,7 +140,13 @@ export default function Page({ params }: { params: { id: string } }) {
           total_scores: totalScores,
         }
       );
-      return { matchResultId: target.matchResultId, scores: target.scores, totalScores };
+      return {
+        matchResultId: target.matchResultId,
+        currentMatchEndId: target.currentMatchEndId,
+        scores: target.scores,
+        totalScores,
+        eliminationId: status.kind === "ready" ? status.data.elimination.id : undefined,
+      };
     },
     {
       onMutate: () => {
@@ -147,14 +154,20 @@ export default function Page({ params }: { params: { id: string } }) {
         dispatch(setSaveError(null));
         dispatch(setSaving(true));
       },
-      onSuccess: ({ matchResultId, scores, totalScores }) => {
+      onSuccess: ({ matchResultId, currentMatchEndId, scores, totalScores, eliminationId }) => {
         dispatch(setSaving(false));
         dispatch(setSaveError(null));
         // 存分成功不改 is_confirmed/total_points/is_winner/current_end，僅回填本波分數。
-        isLocalRefreshRef.current = true;
         dispatch(
-          replaceSavedMatchEnd({ matchResultId, scores, totalScores })
+          replaceSavedMatchEnd({ matchResultId, currentMatchEndId, scores, totalScores })
         );
+        if (eliminationId !== undefined) {
+          // 重取伺服器衍生的雙方積點；同輪同波不會重新初始化本地草稿。
+          void queryClient.invalidateQueries(
+            ["eliminationDetail", eliminationId],
+            { exact: true }
+          );
+        }
         setSnackbar({ open: true, severity: "success", message: "已儲存分數" });
       },
       onError: (error: unknown) => {
@@ -174,11 +187,14 @@ export default function Page({ params }: { params: { id: string } }) {
         target.currentMatchEndId,
         { is_confirmed: true }
       );
-      return target.matchResultId;
+      return {
+        matchResultId: target.matchResultId,
+        currentMatchEndId: target.currentMatchEndId,
+      };
     },
     {
-      onSuccess: (matchResultId) => {
-        dispatch(markConfirmed(matchResultId));
+      onSuccess: (target) => {
+        dispatch(markConfirmed(target));
         setSnackbar({ open: true, severity: "success", message: "已確認本波" });
       },
       onError: () => {
@@ -191,7 +207,7 @@ export default function Page({ params }: { params: { id: string } }) {
     }
   );
 
-  // 自動儲存：選中側由未滿轉為填滿容量時自動觸發存分；guard 避免初始化/伺服器回填後重觸，
+  // 自動儲存：選中側由未滿轉為填滿容量時自動觸發存分；guard 避免初始化後重觸，
   // 亦避免切換選中側時被舊的填滿狀態誤判。
   useEffect(() => {
     if (!selectedMatchResult) {
