@@ -4,6 +4,8 @@ import { LocalMatchResult } from "./eliminationScoringSlice";
 
 interface Props {
   matchResults: LocalMatchResult[];
+  totalLabel: string;
+  matchTotals: Record<number, number | undefined>;
   selectedMatchResultIdentifier: number;
   onSelect: (matchResultId: number) => void;
 }
@@ -12,6 +14,8 @@ interface Props {
 // 鈕內直接以 ScoreBlock 呈現本波各箭分數與波總分。確認狀態由下方 ControllButtonGroup 顯示，此處不重覆。
 export default function MatchResultSelector({
   matchResults,
+  totalLabel,
+  matchTotals,
   selectedMatchResultIdentifier,
   onSelect,
 }: Props) {
@@ -39,7 +43,7 @@ export default function MatchResultSelector({
           className="match_result_button"
           key={mr.matchResultId}
           value={mr.matchResultId}
-          sx={{ alignItems: "start", py: 1 }}
+          sx={{ alignItems: "start", py: 1, flex: 1, minWidth: 0 }}
         >
           <Box
             sx={{
@@ -47,15 +51,23 @@ export default function MatchResultSelector({
               flexDirection: "column",
               alignItems: "center",
               width: "100%",
+              minWidth: 0,
+              overflowWrap: "anywhere",
             }}
           >
             <div className="name_bar">{mr.setName || "未命名"}</div>
+            <Typography className="match_total" variant="subtitle1" fontWeight={700}>
+              {totalLabel}：{matchTotals[mr.matchResultId] ?? "—"}
+            </Typography>
             {mr.memberNames.length > 1 && (
               <Box sx={{ fontSize: 12 }}>{mr.memberNames.join("、")}</Box>
             )}
-            <Typography className="match_total_score" variant="h6">
-              {mr.totalScores}
-            </Typography>
+            <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.5, flexWrap: "wrap", justifyContent: "center" }}>
+              <Typography variant="caption">本波總分</Typography>
+              <Typography className="match_total_score" variant="h6">
+                {mr.totalScores}
+              </Typography>
+            </Box>
             <Box
               className="match_score_bar"
               sx={{

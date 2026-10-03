@@ -1,6 +1,7 @@
 import { expect, test } from "./fixtures";
 import type { Page } from "@playwright/test";
-import type { EliminationFixture } from "./eliminationFixtures";
+import type { DatabaseMatchEnd } from "@/types/Api";
+import type { EliminationFixture, EliminationVariant } from "./eliminationFixtures";
 import {
   buildEliminationFixture,
   registerEliminationRoutes,
@@ -49,12 +50,127 @@ function sideTotal(page: Page, setName: string) {
   return sideButton(page, setName).locator(".match_total_score");
 }
 
+function matchTotal(page: Page, setName: string) {
+  return sideButton(page, setName).locator(".match_total");
+}
+
+function fixtureMatchResults(fixture: EliminationFixture) {
+  return fixture.elimination.stages![0].matchs![0].match_results!;
+}
+
+function copyEndWithScores(
+  end: DatabaseMatchEnd,
+  idOffset: number,
+  scores: number[],
+): DatabaseMatchEnd {
+  return {
+    ...end,
+    id: end.id! + idOffset,
+    total_scores: undefined,
+    match_scores: end.match_scores!.map((score, index) => ({
+      id: score.id! + idOffset,
+      score: scores[index] ?? -1,
+    })),
+  };
+}
+
+function compoundFixture(variant: EliminationVariant, bowType = "Compound") {
+  const fixture = buildEliminationFixture(variant);
+  fixture.competition.groups![0].bow_type = bowType;
+  fixture.elimination.current_end = 1;
+  fixtureMatchResults(fixture).forEach((result, index) => {
+    const current = result.match_ends![0];
+    const previousScores = index === 0 ? [11] : [9, 8];
+    const previous = copyEndWithScores(
+      current, 1000,
+      Array.from({ length: fixture.capacity }, (_, arrow) => previousScores[arrow] ?? 0),
+    );
+    current.match_scores![0].score = index === 0 ? 7 : 6;
+    current.total_scores = index === 0 ? 7 : 6;
+    result.match_ends = [previous, current];
+    result.shoot_off_score = 11;
+  });
+  return fixture;
+}
+
 // 等待記分板就緒（雙方資料已載入、可看到雙方切換鈕）。
 async function waitReady(page: Page, fixture: EliminationFixture) {
   await expect(sideButton(page, fixture.setNameMine)).toBeVisible();
 }
 
 test.describe("Elimination Scoring Board", () => {
+  test("反曲弓：雙方總積點取伺服器，不預估未送出草稿", async ({ page }) => {
+    const fixture = buildEliminationFixture("individual");
+    fixture.competition.groups![0].bow_type = "Recurve";
+    const [mine, opponent] = fixtureMatchResults(fixture);
+    mine.total_points = 4;
+    opponent.total_points = 2;
+    await registerEliminationRoutes(page, fixture);
+    await gotoEliminationScoring(page, fixture.competitionId);
+    await waitReady(page, fixture);
+
+    await expect(matchTotal(page, fixture.setNameMine)).toHaveText("總積點：4");
+    await expect(matchTotal(page, fixture.setNameOpponent)).toHaveText("總積點：2");
+    await scoreButton(page, "X").click();
+    await scoreButton(page, "9").click();
+    await expect(sideTotal(page, fixture.setNameMine)).toHaveText("19");
+    await expect(matchTotal(page, fixture.setNameMine)).toHaveText("總積點：4");
+    await expect(matchTotal(page, fixture.setNameOpponent)).toHaveText("總積點：2");
+  });
+
+  for (const { variant, bowType, width } of [
+    { variant: "individual", bowType: "Compound", width: 1280 },
+    { variant: "mixed", bowType: "複合弓", width: 390 },
+    { variant: "team", bowType: "Compound", width: 390 },
+  ] as const) {
+    test(`複合弓 ${variant} ${width}px：歷波加草稿，增刪換側與儲存失敗保留總計`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 844 });
+      const fixture = compoundFixture(variant, bowType);
+      const handles = await registerEliminationRoutes(page, fixture);
+      handles.setScoresShouldFail(true);
+      await gotoEliminationScoring(page, fixture.competitionId);
+      await waitReady(page, fixture);
+      // 既有 GroupPhaseTag 固定 400px；編輯總計不得增加整頁寬度。
+      const baselineWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+
+      // 歷波 X=10、M=0；本波未填箭與加射另計，不重複加本波。
+      await expect(matchTotal(page, fixture.setNameMine)).toHaveText("總積分：17");
+      await expect(matchTotal(page, fixture.setNameOpponent)).toHaveText("總積分：23");
+      await expect(sideTotal(page, fixture.setNameMine)).toHaveText("7");
+      await expect(selectorGroup(page).getByText("本波總分", { exact: true })).toHaveCount(2);
+      await scoreButton(page, "X").click();
+      await expect(matchTotal(page, fixture.setNameMine)).toHaveText("總積分：27");
+      await controlGroup(page).getByRole("button").last().click();
+      await expect(matchTotal(page, fixture.setNameMine)).toHaveText("總積分：20");
+      await scoreButton(page, "M").click();
+      await expect(sideTotal(page, fixture.setNameMine)).toHaveText("10");
+      await expect(matchTotal(page, fixture.setNameMine)).toHaveText("總積分：20");
+
+      await sideButton(page, fixture.setNameOpponent).click();
+      await scoreButton(page, "8").click();
+      await expect(matchTotal(page, fixture.setNameOpponent)).toHaveText("總積分：31");
+      await expect(matchTotal(page, fixture.setNameMine)).toHaveText("總積分：20");
+      await controlGroup(page).getByRole("button", { name: "送出", exact: true }).click();
+      await expect(page.getByText("儲存分數失敗，請稍後再試")).toBeVisible();
+      await expect(matchTotal(page, fixture.setNameOpponent)).toHaveText("總積分：31");
+      await expect(sideTotal(page, fixture.setNameOpponent)).toHaveText("14");
+      await sideButton(page, fixture.setNameMine).click();
+      await expect.poll(() => sideScoreLabels(page, fixture.setNameMine))
+        .toEqual(["X", "M", ...Array(fixture.capacity - 2).fill("-1")]);
+
+      for (const name of [fixture.setNameMine, fixture.setNameOpponent]) {
+        const total = matchTotal(page, name);
+        await expect(total).toBeVisible();
+        expect(await total.evaluate((element) => {
+          const box = element.getBoundingClientRect();
+          return box.left >= 0 && box.right <= window.innerWidth;
+        })).toBe(true);
+      }
+      expect(await selectorGroup(page).evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(baselineWidth);
+    });
+  }
+
   test("個人賽：同靶位 A/B 配置於記分頁標頭顯示", async ({ page }) => {
     const fixture = buildEliminationFixture("individual", {
       targets: ["A", "B"],
