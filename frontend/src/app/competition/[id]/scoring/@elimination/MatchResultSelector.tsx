@@ -11,13 +11,13 @@ interface Props {
 }
 
 const SEGMENT_POINTS = {
-  a: "6,0 26,0 30,4 26,8 6,8 2,4",
-  b: "28,6 32,10 32,26 28,30 24,26 24,10",
-  c: "28,32 32,36 32,52 28,56 24,52 24,36",
-  d: "6,54 26,54 30,58 26,62 6,62 2,58",
-  e: "4,32 8,36 8,52 4,56 0,52 0,36",
-  f: "4,6 8,10 8,26 4,30 0,26 0,10",
-  g: "6,27 26,27 30,31 26,35 6,35 2,31",
+  a: "8,1 24,1 27,4 24,7 8,7 5,4",
+  b: "28,10 31,13 31,23 28,26 25,23 25,13",
+  c: "28,36 31,39 31,49 28,52 25,49 25,39",
+  d: "8,55 24,55 27,58 24,61 8,61 5,58",
+  e: "4,36 7,39 7,49 4,52 1,49 1,39",
+  f: "4,10 7,13 7,23 4,26 1,23 1,13",
+  g: "8,28 24,28 27,31 24,34 8,34 5,31",
 };
 const DIGIT_SEGMENTS: Record<string, string> = {
   "0": "abcdef", "1": "bc", "2": "abdeg", "3": "abcdg", "4": "bcfg",
@@ -35,7 +35,7 @@ function SevenSegmentTotal({ value, label }: { value?: number; label: string }) 
       aria-label={`${label}：${digits}`}
       focusable="false"
       viewBox={`0 0 ${digits.length * 36 + 12} 74`}
-      sx={{ width: digits.length * 26 + 16, height: 56, minWidth: 46, maxWidth: "100%", my: 0.5, bgcolor: "#000", color: "#fff700", borderRadius: 0.75 }}
+      sx={{ width: digits.length * 20 + 12, height: 44, minWidth: 36, maxWidth: "100%", my: 0.5, bgcolor: "#000", color: "#fff700", borderRadius: 0.75 }}
     >
       {[...digits].map((digit, index) => (
         <g key={index} data-digit={digit} transform={`translate(${6 + index * 36} 6)`}>
