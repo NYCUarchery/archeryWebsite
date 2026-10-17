@@ -42,7 +42,7 @@ func TestMigrationIntegration(t *testing.T) {
 		require.False(t, state.Dirty)
 	})
 
-	t.Run("production starts with V1 without migrating", func(t *testing.T) {
+	t.Run("production starts with V1 without migrating or initializing data", func(t *testing.T) {
 		db := migrationTestDB(t)
 		resetMigrationSchema(t, db)
 		require.NoError(t, migration.Up(context.Background(), db, 1))
@@ -62,9 +62,11 @@ func TestMigrationIntegration(t *testing.T) {
 		require.NoError(t, migration.ValidateV1(context.Background(), db), "production startup must not change V1 schema")
 		var count int
 		require.NoError(t, db.QueryRow(`SELECT COUNT(*) FROM users WHERE user_name = 'migration-admin'`).Scan(&count))
-		require.Equal(t, 1, count)
+		require.Zero(t, count, "stale schema startup must skip Dictator initialization")
+		require.NoError(t, db.QueryRow(`SELECT COUNT(*) FROM institutions`).Scan(&count))
+		require.Zero(t, count, "stale schema startup must skip institution initialization")
 		app.Environment = "development"
-		require.ErrorContains(t, database.DatabaseInitial(app), "database schema is not current")
+		require.NoError(t, database.DatabaseInitial(app), "server does not exit solely for migration state")
 		app.Environment = "production"
 		_, err = db.Exec(`UPDATE schema_migrations SET dirty = TRUE`)
 		require.NoError(t, err)

@@ -38,6 +38,7 @@ export function run(command, args, options = {}) {
     if (logFile) {
       log = createWriteStream(logFile);
       child.stdout.pipe(log);
+      child.stdout.pipe(process.stdout, { end: false });
       log.on('error', error => { terminateChild(child, 'SIGKILL'); reject(error); });
     }
     child.on('error', error => { clearTimeout(timer); reject(error); });
