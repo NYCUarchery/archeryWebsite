@@ -548,6 +548,73 @@ func (suite *EliminationBracketIntegrationTestSuite) TestFirstRoundSyncRequiresE
 	suite.Equal(teams[3].ID, *bracket.Stages[0].Matchs[0].MatchResults[1].PlayerSetId)
 }
 
+func (suite *EliminationBracketIntegrationTestSuite) TestManualPlayerSetCreationDefaultsRanksForFirstRoundSync() {
+	for _, teamSize := range []int{1, 2, 3} {
+		suite.Run(fmt.Sprintf("team size %d", teamSize), func() {
+			elimination, _, admin, _ := suite.createFixture(teamSize, 0, nil)
+			group, err := database.GetGroupInfoById(elimination.GroupId)
+			suite.Require().NoError(err)
+			suite.Require().NoError(database.DB.FirstOrCreate(&database.Qualification{ID: group.ID}, database.Qualification{ID: group.ID}).Error)
+			lane, err := database.PostLane(database.Lane{CompetitionId: group.CompetitionId, QualificationId: group.ID, LaneNumber: 100 + teamSize})
+			suite.Require().NoError(err)
+
+			created := make([]database.PlayerSet, 0, 4)
+			for teamIndex := 0; teamIndex < 4; teamIndex++ {
+				playerIDs := make([]uint, 0, teamSize)
+				for memberIndex := 0; memberIndex < teamSize; memberIndex++ {
+					participant, err := database.CreateParticipant(database.Participant{
+						UserID:        uint(90000 + teamSize*100 + teamIndex*teamSize + memberIndex),
+						CompetitionID: group.CompetitionId,
+						Role:          pkg.RoleToString(pkg.RPlayer),
+						Status:        "approved",
+					})
+					suite.Require().NoError(err)
+					player, err := database.CreatePlayer(database.Player{
+						GroupId:       group.ID,
+						LaneId:        lane.ID,
+						ParticipantId: participant.ID,
+						Name:          fmt.Sprintf("team-%d-player-%d", teamIndex+1, memberIndex+1),
+					})
+					suite.Require().NoError(err)
+					playerIDs = append(playerIDs, player.ID)
+				}
+
+				recorder := suite.requestJSON(http.MethodPost, "/playerset", map[string]any{
+					"elimination_id": elimination.ID,
+					"set_name":       fmt.Sprintf("team-%d", teamIndex+1),
+					"player_ids":     playerIDs,
+				}, admin)
+				suite.Require().Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+				var playerSet database.PlayerSet
+				suite.Require().NoError(json.Unmarshal(recorder.Body.Bytes(), &playerSet))
+				suite.Equal(teamIndex+1, playerSet.Rank)
+				created = append(created, playerSet)
+			}
+			var stored []database.PlayerSet
+			suite.Require().NoError(database.DB.Where("elimination_id = ?", elimination.ID).Order("id ASC").Find(&stored).Error)
+			suite.Require().Len(stored, len(created))
+			for index, playerSet := range stored {
+				suite.Equal(index+1, playerSet.Rank)
+			}
+
+			recorder, _ := suite.postBracket(elimination.ID, admin)
+			suite.Require().Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+			recorder, response := suite.postFirstRoundSync(elimination.ID, admin)
+			suite.Require().Equal(http.StatusOK, recorder.Code, recorder.Body.String())
+			suite.True(response.Changed)
+
+			firstRoundIDs := make([]uint, 0, len(created))
+			for _, match := range suite.loadBracket(elimination.ID).Stages[0].Matchs {
+				for _, result := range match.MatchResults {
+					suite.Require().NotNil(result.PlayerSetId)
+					firstRoundIDs = append(firstRoundIDs, *result.PlayerSetId)
+				}
+			}
+			suite.Equal([]uint{created[0].ID, created[3].ID, created[2].ID, created[1].ID}, firstRoundIDs)
+		})
+	}
+}
+
 func (suite *EliminationBracketIntegrationTestSuite) TestInitializeAllowsEmptyAndGappedSetupRosterWithoutAdvancingByes() {
 	empty, _, emptyAdmin, _ := suite.createFixture(1, 0, nil)
 	recorder, response := suite.postSeededBracket(empty.ID, emptyAdmin)

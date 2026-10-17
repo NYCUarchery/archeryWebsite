@@ -400,6 +400,15 @@ func PostPlayerSet(context *gin.Context) {
 	}
 	/*create player set*/
 	err = withPlayerSetMutationLock(data.EliminationId, func(tx *gorm.DB) error {
+		var highestRank int
+		if err := tx.Model(&database.PlayerSet{}).
+			Where("elimination_id = ?", data.EliminationId).
+			Select("COALESCE(MAX(`rank`), 0)").
+			Scan(&highestRank).Error; err != nil {
+			return err
+		}
+		// Creation order is the initial seed; ranking endpoints may later replace it.
+		playerSet.Rank = highestRank + 1
 		if err := tx.Create(&playerSet).Error; err != nil {
 			return err
 		}
