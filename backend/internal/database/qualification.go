@@ -25,13 +25,23 @@ func DropQualification() {
 
 func GetQualificationIsExist(id uint) bool {
 	var data Qualification
-	DB.Model(&Qualification{}).Where("id = ?", id).First(&data)
+	DB.Table("qualifications").
+		Select("qualifications.*").
+		Joins("JOIN `groups` ON `groups`.id = qualifications.id").
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("qualifications.id = ? AND competitions.deleted_at IS NULL", id).
+		First(&data)
 	return data.ID != 0
 }
 
 func GetOnlyQualification(ID uint) (Qualification, error) {
 	var data Qualification
-	result := DB.Model(&Qualification{}).Where("id = ?", ID).First(&data)
+	result := DB.Table("qualifications").
+		Select("qualifications.*").
+		Joins("JOIN `groups` ON `groups`.id = qualifications.id").
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("qualifications.id = ? AND competitions.deleted_at IS NULL", ID).
+		First(&data)
 	return data, result.Error
 }
 

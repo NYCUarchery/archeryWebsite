@@ -63,22 +63,59 @@ func DropMatchResult() {
 
 func GetMatchResultIsExist(id uint) bool {
 	var data MatchResult
-	DB.Table("match_results").Where("id = ?", id).First(&data)
+	DB.Table("match_results").
+		Select("match_results.*").
+		Joins("JOIN matches ON matches.id = match_results.match_id").
+		Joins("JOIN stages ON stages.id = matches.stage_id").
+		Joins("JOIN eliminations ON eliminations.id = stages.elimination_id").
+		Joins("JOIN `groups` ON `groups`.id = eliminations.group_id").
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("match_results.id = ? AND competitions.deleted_at IS NULL", id).
+		First(&data)
 	return data.ID != 0
 }
 func GetMatchEndIsExist(id uint) bool {
 	var data MatchEnd
-	DB.Table("match_ends").Where("id = ?", id).First(&data)
+	DB.Table("match_ends").
+		Select("match_ends.*").
+		Joins("JOIN match_results ON match_results.id = match_ends.match_result_id").
+		Joins("JOIN matches ON matches.id = match_results.match_id").
+		Joins("JOIN stages ON stages.id = matches.stage_id").
+		Joins("JOIN eliminations ON eliminations.id = stages.elimination_id").
+		Joins("JOIN `groups` ON `groups`.id = eliminations.group_id").
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("match_ends.id = ? AND competitions.deleted_at IS NULL", id).
+		First(&data)
 	return data.ID != 0
 }
 func GetMatchScoreIsExist(id uint) bool {
 	var data MatchScore
-	DB.Table("match_scores").Where("id = ?", id).First(&data)
+	DB.Table("match_scores").
+		Select("match_scores.*").
+		Joins("JOIN match_ends ON match_ends.id = match_scores.match_end_id").
+		Joins("JOIN match_results ON match_results.id = match_ends.match_result_id").
+		Joins("JOIN matches ON matches.id = match_results.match_id").
+		Joins("JOIN stages ON stages.id = matches.stage_id").
+		Joins("JOIN eliminations ON eliminations.id = stages.elimination_id").
+		Joins("JOIN `groups` ON `groups`.id = eliminations.group_id").
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("match_scores.id = ? AND competitions.deleted_at IS NULL", id).
+		First(&data)
 	return data.ID != 0
 }
 func GetMatchScoreWMEndIdIsExist(id uint, match_end_id uint) bool {
 	var data MatchScore
-	DB.Table("match_scores").Where("id = ? AND match_end_id = ?", id, match_end_id).First(&data)
+	DB.Table("match_scores").
+		Select("match_scores.*").
+		Joins("JOIN match_ends ON match_ends.id = match_scores.match_end_id").
+		Joins("JOIN match_results ON match_results.id = match_ends.match_result_id").
+		Joins("JOIN matches ON matches.id = match_results.match_id").
+		Joins("JOIN stages ON stages.id = matches.stage_id").
+		Joins("JOIN eliminations ON eliminations.id = stages.elimination_id").
+		Joins("JOIN `groups` ON `groups`.id = eliminations.group_id").
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("match_scores.id = ? AND match_scores.match_end_id = ? AND competitions.deleted_at IS NULL", id, match_end_id).
+		First(&data)
 	return data.ID != 0
 }
 

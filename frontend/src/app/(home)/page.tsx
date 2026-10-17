@@ -1,5 +1,6 @@
 "use client";
 import Box from "@mui/material/Box";
+import { Button } from "@mui/material";
 import CircularProgress from "@mui/material/CircularProgress";
 import Alert from "@mui/material/Alert";
 import Typography from "@mui/material/Typography";
@@ -10,12 +11,14 @@ import NoticeSnackbars from "@/components/NoticeSnackbars";
 import { DatabaseCompetition } from "@/types/Api";
 import { apiClient } from "@/utils/ApiClient";
 import { useGetUserId } from "@/utils/QueryHooks/useGetUserID";
+import { useGetCurrentUserDetail } from "@/utils/QueryHooks/useGetCurrentUserDetail";
 import { useState } from "react";
 
 const Homepage = () => {
   const [snackbarSuccess, setSnackbarSuccess] = useState(false);
   const [snackbarError, setSnackbarError] = useState(false);
   const { data: uid } = useGetUserId();
+  const { data: user } = useGetCurrentUserDetail();
   const {
     data: competitions,
     isLoading,
@@ -41,7 +44,14 @@ const Homepage = () => {
     <Box component="section" className="home-section" aria-labelledby="events-title">
       <Box className="home-section-head">
         <Typography component="h1" id="events-title">近期比賽</Typography>
-        <Link className="home-text-button" href="/recent_competitions">查看全部比賽</Link>
+        <Box sx={{ display: "flex", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
+          {user?.role === "Dictator" && (
+            <Button component={Link} href="/bulk_register" className="home-button-primary">
+              管理員批次註冊
+            </Button>
+          )}
+          <Link className="home-text-button" href="/recent_competitions">查看全部比賽</Link>
+        </Box>
       </Box>
       {isLoading && (
         <Box className="home-status" role="status">

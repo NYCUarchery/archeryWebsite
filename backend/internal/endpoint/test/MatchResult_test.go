@@ -85,7 +85,7 @@ func createApprovedJudge(t *testing.T) uint {
 	t.Helper()
 	judge, err := database.CreateUser(database.User{
 		Role: "User", UserName: "integration.score.judge", RealName: "Integration Score Judge",
-		Password: "not-used-by-session-helper", Email: "integration.score.judge@example.test",
+		Password: "not-used-by-session-helper", Email: database.EmailPointer("integration.score.judge@example.test"),
 	})
 	require.NoError(t, err)
 	participant, err := database.CreateParticipant(database.Participant{

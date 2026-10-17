@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import {
   DatabaseElimination,
   DatabaseGroup,
@@ -98,6 +99,22 @@ export default function useCurrentEliminationMatch(
   const eliminationProgressQuery = useGetEliminationProgress(
     eliminationIdQuery.data
   );
+  const detail = eliminationDetailQuery.data;
+  const progress = eliminationProgressQuery.data;
+  const progressChanged =
+    detail !== undefined &&
+    progress !== undefined &&
+    (detail.current_stage !== progress.current_stage ||
+      detail.current_end !== progress.current_end);
+
+  useEffect(() => {
+    if (progressChanged) void eliminationDetailQuery.refetch();
+  }, [
+    progressChanged,
+    progress?.current_stage,
+    progress?.current_end,
+    eliminationDetailQuery.refetch,
+  ]);
 
   const retryAll = () => {
     userQuery.refetch();
@@ -183,7 +200,7 @@ export default function useCurrentEliminationMatch(
   if (eliminationDetailQuery.isLoading) {
     return { kind: "loading" };
   }
-  if (eliminationDetailQuery.isError) {
+  if (eliminationDetailQuery.isError && (!detail || progressChanged)) {
     return { kind: "error", message: "無法取得對抗賽詳細資料", retry: retryAll };
   }
   const elimination = eliminationDetailQuery.data;
@@ -201,6 +218,9 @@ export default function useCurrentEliminationMatch(
       retry: retryAll,
     };
   }
+
+  // 換輪／換波須待完整比分同步，才可初始化新一波的本地資料。
+  if (progressChanged) return { kind: "loading" };
 
   const group = competitionQuery.data.groups?.find(
     (g) => g.id === myPlayer.group_id

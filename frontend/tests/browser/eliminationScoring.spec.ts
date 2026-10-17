@@ -1,6 +1,7 @@
 import { expect, test } from "./fixtures";
 import type { Page } from "@playwright/test";
-import type { EliminationFixture } from "./eliminationFixtures";
+import type { DatabaseMatchEnd, DatabaseStage } from "@/types/Api";
+import type { EliminationFixture, EliminationVariant } from "./eliminationFixtures";
 import {
   buildEliminationFixture,
   registerEliminationRoutes,
@@ -49,12 +50,344 @@ function sideTotal(page: Page, setName: string) {
   return sideButton(page, setName).locator(".match_total_score");
 }
 
+function matchTotal(page: Page, setName: string) {
+  return sideButton(page, setName).locator(".match_total");
+}
+
+function fixtureMatchResults(fixture: EliminationFixture) {
+  return fixture.elimination.stages![0].matchs![0].match_results!;
+}
+
+function copyEndWithScores(
+  end: DatabaseMatchEnd,
+  idOffset: number,
+  scores: number[],
+): DatabaseMatchEnd {
+  return {
+    ...end,
+    id: end.id! + idOffset,
+    total_scores: undefined,
+    match_scores: end.match_scores!.map((score, index) => ({
+      id: score.id! + idOffset,
+      score: scores[index] ?? -1,
+    })),
+  };
+}
+
+function compoundFixture(variant: EliminationVariant, bowType = "Compound") {
+  const fixture = buildEliminationFixture(variant);
+  fixture.competition.groups![0].bow_type = bowType;
+  fixture.elimination.current_end = 1;
+  fixtureMatchResults(fixture).forEach((result, index) => {
+    const current = result.match_ends![0];
+    const previousScores = index === 0 ? [11] : [9, 8];
+    const previous = copyEndWithScores(
+      current, 1000,
+      Array.from({ length: fixture.capacity }, (_, arrow) => previousScores[arrow] ?? 0),
+    );
+    current.match_scores![0].score = index === 0 ? 7 : 6;
+    current.total_scores = index === 0 ? 7 : 6;
+    result.match_ends = [previous, current];
+    result.shoot_off_score = 11;
+  });
+  return fixture;
+}
+
 // 等待記分板就緒（雙方資料已載入、可看到雙方切換鈕）。
 async function waitReady(page: Page, fixture: EliminationFixture) {
   await expect(sideButton(page, fixture.setNameMine)).toBeVisible();
 }
 
 test.describe("Elimination Scoring Board", () => {
+  test("反曲弓：雙方總積點取伺服器，不預估未送出草稿", async ({ page }) => {
+    const fixture = buildEliminationFixture("individual");
+    fixture.competition.groups![0].bow_type = "Recurve";
+    const [mine, opponent] = fixtureMatchResults(fixture);
+    mine.total_points = 4;
+    opponent.total_points = 2;
+    await registerEliminationRoutes(page, fixture);
+    await gotoEliminationScoring(page, fixture.competitionId);
+    await waitReady(page, fixture);
+
+    await expect(matchTotal(page, fixture.setNameMine)).toHaveAttribute("aria-label", "總積點：4");
+    await expect(matchTotal(page, fixture.setNameOpponent)).toHaveAttribute("aria-label", "總積點：2");
+    await scoreButton(page, "X").click();
+    await scoreButton(page, "9").click();
+    await expect(sideTotal(page, fixture.setNameMine)).toHaveText("19");
+    await expect(matchTotal(page, fixture.setNameMine)).toHaveAttribute("aria-label", "總積點：4");
+    await expect(matchTotal(page, fixture.setNameOpponent)).toHaveAttribute("aria-label", "總積點：2");
+  });
+
+  for (const { variant, bowType, width } of [
+    { variant: "individual", bowType: "Compound", width: 1280 },
+    { variant: "mixed", bowType: "複合弓", width: 390 },
+    { variant: "team", bowType: "Compound", width: 390 },
+  ] as const) {
+    test(`複合弓 ${variant} ${width}px：歷波加草稿，增刪換側與儲存失敗保留總計`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 844 });
+      const fixture = compoundFixture(variant, bowType);
+      const handles = await registerEliminationRoutes(page, fixture);
+      handles.setScoresShouldFail(true);
+      await gotoEliminationScoring(page, fixture.competitionId);
+      await waitReady(page, fixture);
+      // 既有 GroupPhaseTag 固定 400px；編輯總計不得增加整頁寬度。
+      const baselineWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+
+      // 歷波 X=10、M=0；本波未填箭與加射另計，不重複加本波。
+      await expect(matchTotal(page, fixture.setNameMine)).toHaveAttribute("aria-label", "總積分：17");
+      await expect(matchTotal(page, fixture.setNameOpponent)).toHaveAttribute("aria-label", "總積分：23");
+      await expect(sideTotal(page, fixture.setNameMine)).toHaveText("7");
+      await expect(selectorGroup(page).getByText("本波總分", { exact: true })).toHaveCount(0);
+      await expect(sideTotal(page, fixture.setNameMine)).toHaveCSS("color", "rgb(128, 128, 128)");
+      const mineTotal = matchTotal(page, fixture.setNameMine);
+      await expect(mineTotal).toHaveAttribute("role", "img");
+      await expect(mineTotal).toHaveText("");
+      await expect(mineTotal).toHaveCSS("background-color", "rgb(0, 0, 0)");
+      await expect(mineTotal).toHaveCSS("color", "rgb(255, 247, 0)");
+      await expect(mineTotal.locator('g[data-digit="1"]')).toHaveCount(1);
+      await expect(mineTotal.locator('g[data-digit="7"]')).toHaveCount(1);
+      await expect(mineTotal.locator("g polygon")).toHaveCount(14);
+      await scoreButton(page, "X").click();
+      await expect(matchTotal(page, fixture.setNameMine)).toHaveAttribute("aria-label", "總積分：27");
+      await controlGroup(page).getByRole("button").last().click();
+      await expect(matchTotal(page, fixture.setNameMine)).toHaveAttribute("aria-label", "總積分：20");
+      await scoreButton(page, "M").click();
+      await expect(sideTotal(page, fixture.setNameMine)).toHaveText("10");
+      await expect(matchTotal(page, fixture.setNameMine)).toHaveAttribute("aria-label", "總積分：20");
+
+      await sideButton(page, fixture.setNameOpponent).click();
+      await scoreButton(page, "8").click();
+      await expect(matchTotal(page, fixture.setNameOpponent)).toHaveAttribute("aria-label", "總積分：31");
+      await expect(matchTotal(page, fixture.setNameMine)).toHaveAttribute("aria-label", "總積分：20");
+      await controlGroup(page).getByRole("button", { name: "送出", exact: true }).click();
+      await expect(page.getByText("儲存分數失敗，請稍後再試")).toBeVisible();
+      await expect(matchTotal(page, fixture.setNameOpponent)).toHaveAttribute("aria-label", "總積分：31");
+      await expect(sideTotal(page, fixture.setNameOpponent)).toHaveText("14");
+      await sideButton(page, fixture.setNameMine).click();
+      await expect.poll(() => sideScoreLabels(page, fixture.setNameMine))
+        .toEqual(["X", "M", ...Array(fixture.capacity - 2).fill("-1")]);
+
+      for (const name of [fixture.setNameMine, fixture.setNameOpponent]) {
+        const total = matchTotal(page, name);
+        await expect(total).toBeVisible();
+        expect(await total.evaluate((element) => {
+          const box = element.getBoundingClientRect();
+          return box.left >= 0 && box.right <= window.innerWidth;
+        })).toBe(true);
+      }
+      expect(await selectorGroup(page).evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(baselineWidth);
+    });
+  }
+
+  test("複合弓團體 390px：三位數七段總積分與 0 不溢出", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const fixture = buildEliminationFixture("team");
+    fixture.competition.groups![0].bow_type = "Compound";
+    fixture.elimination.current_end = 2;
+    fixtureMatchResults(fixture).forEach((result, index) => {
+      const current = result.match_ends![0];
+      const history = Array.from({ length: 2 }, (_, endIndex) =>
+        copyEndWithScores(
+          current,
+          1000 * (endIndex + 1),
+          Array(fixture.capacity).fill(index === 0 ? 10 : 0),
+        ),
+      );
+      result.match_ends = [...history, current];
+      current.match_scores!.forEach((score) => { score.score = -1; });
+      current.total_scores = undefined;
+    });
+    await registerEliminationRoutes(page, fixture);
+    await gotoEliminationScoring(page, fixture.competitionId);
+    await waitReady(page, fixture);
+    const baselineWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+    const mineTotal = matchTotal(page, fixture.setNameMine);
+    const opponentTotal = matchTotal(page, fixture.setNameOpponent);
+
+    await expect(mineTotal).toHaveAttribute("aria-label", "總積分：120");
+    await expect(mineTotal).toHaveText("");
+    expect(await mineTotal.locator("g[data-digit]").evaluateAll((digits) =>
+      digits.map((digit) => digit.getAttribute("data-digit")),
+    )).toEqual(["1", "2", "0"]);
+    await expect(mineTotal.locator("g polygon")).toHaveCount(21);
+    await expect(opponentTotal).toHaveAttribute("aria-label", "總積分：0");
+    await expect(opponentTotal.locator("g[data-digit]")).toHaveCount(1);
+
+    await scoreButton(page, "X").click();
+    await expect(mineTotal).toHaveAttribute("aria-label", "總積分：130");
+    expect(await mineTotal.locator("g[data-digit]").evaluateAll((digits) =>
+      digits.map((digit) => digit.getAttribute("data-digit")),
+    )).toEqual(["1", "3", "0"]);
+    await expect(mineTotal).toHaveCSS("background-color", "rgb(0, 0, 0)");
+    await expect(mineTotal).toHaveCSS("color", "rgb(255, 247, 0)");
+    expect(await selectorGroup(page).evaluate((element) => element.scrollWidth <= element.clientWidth)).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(baselineWidth);
+    await selectorGroup(page).screenshot({ path: test.info().outputPath("seven-segment-totals.png") });
+  });
+
+  test("反曲弓：雙方完整且未確認，存分後立即更新積點", async ({ page }) => {
+    const fixture = buildEliminationFixture("individual");
+    fixture.competition.groups![0].bow_type = "反曲弓";
+    fixture.elimination.current_end = 1;
+    fixtureMatchResults(fixture).forEach((result, index) => {
+      const current = result.match_ends![0];
+      result.match_ends = [copyEndWithScores(current, 1000, [9, 9, 9]), current];
+      result.total_points = 1;
+      if (index === 1) {
+        current.match_scores!.forEach((score) => { score.score = 8; });
+        current.total_scores = 24;
+      }
+    });
+    const handles = await registerEliminationRoutes(page, fixture);
+    await gotoEliminationScoring(page, fixture.competitionId);
+    await waitReady(page, fixture);
+    const detailReads = handles.eliminationDetailRequests.length;
+    await scoreButton(page, "X").click();
+    await scoreButton(page, "9").click();
+    await expect(matchTotal(page, fixture.setNameOpponent)).toHaveAttribute("aria-label", "總積點：1");
+    await scoreButton(page, "M").click();
+    await expect(matchTotal(page, fixture.setNameMine)).toHaveAttribute("aria-label", "總積點：1");
+    await expect(matchTotal(page, fixture.setNameOpponent)).toHaveAttribute("aria-label", "總積點：3");
+    expect(handles.eliminationDetailRequests.length).toBeGreaterThan(detailReads);
+    expect(handles.confirmRequests).toHaveLength(0);
+    expect(handles.getMatchEndState(fixture.myMatchEndId)?.is_confirmed).toBe(false);
+    expect(handles.getMatchEndState(fixture.opponentMatchEndId)?.is_confirmed).toBe(false);
+  });
+
+  test("複合弓：存分重取全場總計且保留另一側草稿", async ({ page }) => {
+    const fixture = compoundFixture("team");
+    const handles = await registerEliminationRoutes(page, fixture);
+    await gotoEliminationScoring(page, fixture.competitionId);
+    await waitReady(page, fixture);
+    await scoreButton(page, "X").click();
+    await sideButton(page, fixture.setNameOpponent).click();
+    await scoreButton(page, "8").click();
+    await sideButton(page, fixture.setNameMine).click();
+
+    // 同時更新歷波，使總計變化證明新 detail 已被畫面採用。
+    handles.setMatchEndScores(fixtureMatchResults(fixture)[0].match_ends![0].id!, [11, 2, 0, 0, 0, 0]);
+    const detailReads = handles.eliminationDetailRequests.length;
+    await controlGroup(page).getByRole("button", { name: "送出", exact: true }).click();
+    await expect(matchTotal(page, fixture.setNameMine)).toHaveAttribute("aria-label", "總積分：29");
+    await expect(matchTotal(page, fixture.setNameOpponent)).toHaveAttribute("aria-label", "總積分：31");
+    expect(handles.eliminationDetailRequests.length).toBeGreaterThan(detailReads);
+    await expect.poll(() => sideScoreLabels(page, fixture.setNameOpponent))
+      .toEqual(["8", "6", "-1", "-1", "-1", "-1"]);
+  });
+
+  for (const advance of ["換波", "換輪"] as const) {
+    test(`複合弓：${advance}重取詳細資料並載入最新箭分與總計`, async ({ page }) => {
+      const fixture = buildEliminationFixture("individual");
+      fixture.competition.groups![0].bow_type = "Compound";
+      const firstResults = fixtureMatchResults(fixture);
+      firstResults[0].match_ends![0].match_scores![0].score = 7;
+      firstResults[0].match_ends![0].total_scores = 7;
+      let nextEndId: number;
+      if (advance === "換波") {
+        firstResults.forEach((result) => {
+          result.match_ends!.push(copyEndWithScores(result.match_ends![0], 1000, []));
+        });
+        nextEndId = firstResults[0].match_ends![1].id!;
+      } else {
+        const nextStage = JSON.parse(JSON.stringify(fixture.elimination.stages![0])) as DatabaseStage;
+        nextStage.id! += 1000;
+        const nextMatch = nextStage.matchs![0];
+        nextMatch.id! += 1000;
+        nextMatch.stage_id = nextStage.id;
+        nextMatch.match_results!.forEach((result) => {
+          result.id! += 1000;
+          result.match_id = nextMatch.id;
+          const nextEnd = copyEndWithScores(result.match_ends![0], 1000, []);
+          nextEnd.match_result_id = result.id;
+          result.match_ends = [nextEnd];
+        });
+        fixture.elimination.stages!.push(nextStage);
+        nextEndId = nextMatch.match_results![0].match_ends![0].id!;
+      }
+      const handles = await registerEliminationRoutes(page, fixture);
+      await gotoEliminationScoring(page, fixture.competitionId);
+      await waitReady(page, fixture);
+      await scoreButton(page, "X").click();
+      await expect(matchTotal(page, fixture.setNameMine)).toHaveAttribute("aria-label", "總積分：17");
+      const detailReads = handles.eliminationDetailRequests.length;
+      handles.setMatchEndScores(fixture.myMatchEndId, [11, 8, 7]);
+      handles.setMatchEndScores(nextEndId, [9, 0, -1]);
+      handles.setEliminationProgress(advance === "換輪" ? 1 : 0, advance === "換波" ? 1 : 0);
+
+      await expect.poll(() => sideScoreLabels(page, fixture.setNameMine))
+        .toEqual(["9", "M", "-1"]);
+      await expect(sideTotal(page, fixture.setNameMine)).toHaveText("9");
+      await expect(matchTotal(page, fixture.setNameMine))
+        .toHaveAttribute("aria-label", `總積分：${advance === "換波" ? 34 : 9}`);
+      expect(handles.eliminationDetailRequests.length).toBeGreaterThan(detailReads);
+      expect(handles.savedScoreRequests).toHaveLength(0);
+    });
+  }
+
+  for (const operation of ["存分", "確認"] as const) {
+    test(`複合弓：舊波${operation}回應晚於換波，不覆寫新波`, async ({ page }) => {
+      const fixture = buildEliminationFixture("individual");
+      fixture.competition.groups![0].bow_type = "Compound";
+      fixtureMatchResults(fixture).forEach((result, index) => {
+        const current = result.match_ends![0];
+        if (operation === "確認" && index === 0) {
+          current.match_scores!.forEach((score) => { score.score = 9; });
+          current.total_scores = 27;
+        }
+        result.match_ends!.push(copyEndWithScores(current, 1000, index === 0 ? [8, 0, -1] : []));
+      });
+      const handles = await registerEliminationRoutes(page, fixture);
+      let releaseResponse!: () => void;
+      const responseGate = new Promise<void>((resolve) => { releaseResponse = resolve; });
+      let requestStarted!: () => void;
+      const pendingRequest = new Promise<void>((resolve) => { requestStarted = resolve; });
+      const endpoint = operation === "存分" ? "scores" : "isconfirmed";
+      await page.route(`**/matchresult/matchend/${endpoint}/${fixture.myMatchEndId}`, async (route) => {
+        if (operation === "存分") {
+          const body = route.request().postDataJSON() as { scores: number[] };
+          handles.setMatchEndScores(fixture.myMatchEndId, body.scores);
+        }
+        requestStarted();
+        await responseGate;
+        await route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
+      });
+      await gotoEliminationScoring(page, fixture.competitionId);
+      await waitReady(page, fixture);
+
+      try {
+        if (operation === "存分") {
+          for (let arrow = 0; arrow < fixture.capacity; arrow++) {
+            await scoreButton(page, "9").click();
+          }
+        } else {
+          await controlGroup(page).getByRole("button", { name: "確認", exact: true }).click();
+        }
+        await pendingRequest;
+        handles.setEliminationProgress(0, 1);
+        await expect.poll(() => sideScoreLabels(page, fixture.setNameMine))
+          .toEqual(["8", "M", "-1"]);
+        await expect(sideTotal(page, fixture.setNameMine)).toHaveText("8");
+        releaseResponse();
+        await expect(page.getByText(operation === "存分" ? "已儲存分數" : "已確認本波", { exact: true })).toBeVisible();
+        await expect.poll(() => sideScoreLabels(page, fixture.setNameMine))
+          .toEqual(["8", "M", "-1"]);
+        await expect(sideTotal(page, fixture.setNameMine)).toHaveText("8");
+        await expect(matchTotal(page, fixture.setNameMine)).toHaveAttribute("aria-label", "總積分：35");
+        await expect(controlGroup(page).getByRole("button", { name: "確認", exact: true })).toBeDisabled();
+        await expect(scoreButton(page, "9")).toBeEnabled();
+        if (operation === "存分") {
+          await scoreButton(page, "9").click();
+          await expect.poll(() => handles.savedScoreRequests.length).toBe(1);
+          expect(handles.savedScoreRequests[0].url).toMatch(new RegExp(`/${fixture.myMatchEndId + 1000}$`));
+          expect(handles.savedScoreRequests[0].body).toMatchObject({ scores: [9, 8, 0], total_scores: 17 });
+        }
+      } finally {
+        releaseResponse();
+      }
+    });
+  }
+
   test("個人賽：同靶位 A/B 配置於記分頁標頭顯示", async ({ page }) => {
     const fixture = buildEliminationFixture("individual", {
       targets: ["A", "B"],
@@ -73,9 +406,13 @@ test.describe("Elimination Scoring Board", () => {
     await gotoEliminationScoring(page, fixture.competitionId);
     await waitReady(page, fixture);
 
+    const confirmButton = controlGroup(page).getByRole("button", { name: "確認", exact: true });
+    await expect(confirmButton).toBeDisabled();
     await scoreButton(page, "9").click();
     await scoreButton(page, "9").click();
+    await expect(confirmButton).toBeDisabled();
     await scoreButton(page, "9").click();
+    await expect(confirmButton).toBeEnabled();
 
     // 已達容量上限（3 箭），所有可能分數鈕皆應停用。
     for (const label of ALL_SCORE_LABELS) {
@@ -91,6 +428,8 @@ test.describe("Elimination Scoring Board", () => {
       .poll(() => sideScoreLabels(page, fixture.setNameMine))
       .toEqual(["9", "9", "9"]);
     await expect(sideTotal(page, fixture.setNameMine)).toHaveText("27");
+    await controlGroup(page).getByRole("button").last().click();
+    await expect(confirmButton).toBeDisabled();
   });
 
   test("混雙賽：第 4 箭後不能再輸入", async ({ page }) => {
@@ -253,10 +592,10 @@ test.describe("Elimination Scoring Board", () => {
     await selectorGroup(page)
       .getByRole("button", { name: fixture.setNameOpponent })
       .click();
-    // 對手側未被自動確認：控制鈕群仍顯示可按之「確認」而非「已確認」。
+    // 對手側未填滿：控制鈕群仍顯示「確認」，但不可按。
     await expect(
       controlGroup(page).getByRole("button", { name: "確認", exact: true })
-    ).toBeVisible();
+    ).toBeDisabled();
     await expect(scoreButton(page, "9")).toBeEnabled();
   });
 
@@ -284,18 +623,19 @@ test.describe("Elimination Scoring Board", () => {
     await gotoEliminationScoring(page, fixture.competitionId);
     await waitReady(page, fixture);
 
-    // 確認前必須先讓本波分數成功存過一次（否則會被前端「尚未儲存不可確認」之守衛擋下，
-    // 根本不會呼叫確認 API），故先手動存分成功，再讓確認 API 本身失敗。
+    // 填滿並等自動存分成功，再讓確認 API 本身失敗。
     await scoreButton(page, "9").click();
     await scoreButton(page, "9").click();
-    await controlGroup(page).getByRole("button", { name: "送出", exact: true }).click();
+    await scoreButton(page, "9").click();
     await expect.poll(() => handles.savedScoreRequests.length).toBe(1);
 
     handles.setConfirmShouldFail(true);
     await controlGroup(page).getByRole("button", { name: "確認", exact: true }).click();
     await expect(page.getByText("確認失敗，請稍後再試")).toBeVisible();
 
-    // 確認失敗，isConfirmed 仍為 false，應仍可新增分數（證明未被鎖定）。
+    // 確認失敗，isConfirmed 仍為 false，刪除後可再輸入。
+    await controlGroup(page).getByRole("button").last().click();
+    await expect(controlGroup(page).getByRole("button", { name: "確認", exact: true })).toBeDisabled();
     await scoreButton(page, "7").click();
     await expect
       .poll(() => sideScoreLabels(page, fixture.setNameMine))

@@ -46,7 +46,7 @@ func TestDatabaseInitialPreservesExistingDictator(t *testing.T) {
 
 	const changedPassword = "dictator-restart-password"
 	dictator.RealName = "persisted Dictator profile"
-	dictator.Email = "persisted-dictator@example.test"
+	dictator.Email = EmailPointer("persisted-dictator@example.test")
 	dictator.Overview = "persisted overview"
 	dictator.Password = pkg.EncryptPassword(changedPassword)
 	_, err = UpdataUser(dictator.ID, dictator)
@@ -89,7 +89,7 @@ func TestDatabaseInitialRejectsNonDictatorUsernameCollision(t *testing.T) {
 	require.NotZero(t, configured.ID)
 	configured.Role = pkg.RoleToString(pkg.RUser)
 	configured.RealName = "must not be promoted"
-	configured.Email = "non-dictator-collision@example.test"
+	configured.Email = EmailPointer("non-dictator-collision@example.test")
 	configured.Overview = "must not be changed"
 	_, err = UpdataUser(configured.ID, configured)
 	require.NoError(t, err)

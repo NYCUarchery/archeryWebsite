@@ -169,7 +169,7 @@ func seedTestAdmin(db *gorm.DB) error {
 		return err
 	}
 	NoInstitutionID = institution.ID
-	admin := User{Role: "Dictator", UserName: "e2e.admin", RealName: "E2E Admin", Password: pkg.EncryptPassword(LifecycleAccountPassword), Email: "e2e.admin@example.test", InstitutionID: institution.ID}
+	admin := User{Role: "Dictator", UserName: "e2e.admin", RealName: "E2E Admin", Password: pkg.EncryptPassword(LifecycleAccountPassword), Email: EmailPointer("e2e.admin@example.test"), InstitutionID: institution.ID}
 	return db.Create(&admin).Error
 }
 
@@ -182,13 +182,13 @@ func seedLifecycleAccounts(db *gorm.DB) error {
 		return fmt.Errorf("create lifecycle institution: %w", err)
 	}
 	accounts := []User{
-		{Role: pkg.RoleToString(pkg.RUser), UserName: "e2e.judge", RealName: "E2E Judge", Password: pkg.EncryptPassword(LifecycleAccountPassword), Email: "e2e.judge@example.test", InstitutionID: institution.ID},
+		{Role: pkg.RoleToString(pkg.RUser), UserName: "e2e.judge", RealName: "E2E Judge", Password: pkg.EncryptPassword(LifecycleAccountPassword), Email: EmailPointer("e2e.judge@example.test"), InstitutionID: institution.ID},
 	}
 	for index := 1; index <= 24; index++ {
 		accounts = append(accounts, User{
 			Role: pkg.RoleToString(pkg.RUser), UserName: fmt.Sprintf("e2e.archer.%02d", index),
 			RealName: fmt.Sprintf("E2E Archer %02d", index), Password: pkg.EncryptPassword(LifecycleAccountPassword),
-			Email: fmt.Sprintf("e2e.archer.%02d@example.test", index), InstitutionID: institution.ID,
+			Email: EmailPointer(fmt.Sprintf("e2e.archer.%02d@example.test", index)), InstitutionID: institution.ID,
 		})
 	}
 	if err := db.Create(&accounts).Error; err != nil {

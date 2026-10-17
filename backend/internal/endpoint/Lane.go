@@ -139,14 +139,3 @@ func UpdateLaneQualificationId(context *gin.Context, id uint, qualificationId ui
 	response.AcceptPrint(id, fmt.Sprintf("id = %v, qualificationID = %v", id, qualificationId), "Lane")
 	return true
 }
-
-// lane is deleted when competition is deleted
-func DeleteLaneByCompetitionId(context *gin.Context, competitionId uint) bool {
-	/*delete data*/
-	err := database.DeleteLaneByCompetitionId(competitionId)
-	if response.ErrorInternalErrorTest(context, competitionId, "Delete Lane by competition ", err) {
-		return false
-	}
-	response.AcceptPrint(competitionId, fmt.Sprint(competitionId), "Delete Lane by competition")
-	return true
-}

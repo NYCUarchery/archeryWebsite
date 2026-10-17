@@ -81,6 +81,8 @@ func competitionRouter(api *gin.RouterGroup) {
 		competitionssr.GET("/current/:head/:tail", endpoint.GetCurrentCompetitions)
 		competitionssr.GET("/user/:userid/:head/:tail", endpoint.GetCompetitionsOfUser)
 		competitionssr.POST("/", pkg.RBACMiddleware(pkg.RoleSystem, pkg.RDictator), endpoint.PostCompetition)
+		competitionssr.POST("/:id/qualification-assignments/preview", endpoint.PreviewQualificationAssignments)
+		competitionssr.POST("/:id/qualification-assignments", endpoint.ImportQualificationAssignments)
 		competitionssr.PATCH("/refresh/groups/players/rank/:id", endpoint.RefreshCompetitionRank)
 		competitionssr.PUT("/:id", endpoint.PutCompetition)
 		competitionssr.DELETE("/:id", endpoint.DeleteCompetition)
@@ -192,6 +194,8 @@ func profileRouter(api *gin.RouterGroup) {
 	userssr := api.Group("/user")
 	{
 		userssr.POST("/", endpoint.Register)
+		userssr.POST("/bulk/preview", pkg.AuthSessionMiddleware(), pkg.RBACMiddleware(pkg.RoleSystem, pkg.RDictator), endpoint.PreviewBulkRegister)
+		userssr.POST("/bulk", pkg.AuthSessionMiddleware(), pkg.RBACMiddleware(pkg.RoleSystem, pkg.RDictator), endpoint.BulkRegister)
 		userssr.PUT("/:id", pkg.AuthSessionMiddleware(), endpoint.ModifyInfo)
 		userssr.PATCH("/password/:id", pkg.AuthSessionMiddleware(), endpoint.ModifyPassword)
 		userssr.GET("/me", pkg.AuthSessionMiddleware(), endpoint.GetUserID)

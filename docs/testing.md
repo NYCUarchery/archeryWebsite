@@ -55,7 +55,7 @@ ARCHERY_E2E_MODE=full-ui bash scripts/test.sh e2e competitionLifecycle.spec.ts -
 
 可用 fixtures 為：
 
-- `empty`：清除 runner schema 與 migration 版本紀錄，再執行正式 V1、V2 SQL；只有最新 schema。
+- `empty`：清除 runner schema 與 migration 版本紀錄，再執行正式 V1、V2、V3、V4 SQL；只有最新 schema。
 - `legacy`：既有 SQL fixture 加測試主辦人。
 - `accounts`：lifecycle 用的組織與角色帳號；不建立比賽、participant、分數或賽果。
 
@@ -142,7 +142,7 @@ node scripts/compare-lifecycle-results.mjs \
 | mock browser | `frontend/playwright-report/browser/`、`frontend/test-results/browser/` |
 | 真 E2E | `test-artifacts/e2e/<run-id>/`：JSON、HTML、trace、截圖、service log |
 
-Playwright 只在失敗時保留 trace 與截圖；lifecycle trace 關閉連續 screenshot filmstrip，但保留失敗頁面證據。先讀 JSON／HTML、trace、服務 log 與 attachment，按模式、UI/API、角色、組別、階段、對戰與波次定位；不可以 retry 或改走另一條路徑掩蓋失敗。
+Playwright 只在失敗時保留 trace 與截圖；lifecycle trace 關閉連續 screenshot filmstrip，但保留失敗頁面證據。 [使用者操作手冊](user-manual.md) 的示意圖由 `frontend/tests/browser/manual/` 專用測試截取；一般 browser 測試不執行這些拍圖情境。在 `frontend/` 目錄執行 `npm run manual:screenshots` 可重製 `docs/user-manual-images/`，使用的都是 mock 資料。先讀 JSON／HTML、trace、服務 log 與 attachment，按模式、UI/API、角色、組別、階段、對戰與波次定位；不可以 retry 或改走另一條路徑掩蓋失敗。
 
 接受 lifecycle 的故障注入時，僅在可丟棄 source 副本做單一 UI 範圍 mutation，預期對應 A→B 切換／scope assertion 失敗；移除副本後比對原專案未變，再在全新隔離環境跑正向流程。此法驗證 assertion 能捕捉缺陷，不將故障 run 當通過結果。
 
@@ -158,4 +158,4 @@ PR workflow 於 [`.github/workflows/test.yml`](../.github/workflows/test.yml) �
 
 ## Migration 驗證
 
-Go 整合層在同一個 runner 隔離 DB 驗證空庫建置、V1 baseline、V1→V2 資料保全、schema 不符拒絕、dirty／版本啟動防護、執行鎖、外鍵與 CHECK。CI 使用合成資料，不需要 `prod_dump.sql`。測試 reset 不使用 AutoMigrate，與正式環境共用嵌入的 SQL。實際 production dump 的還原演練只可在另建的可丟棄 MySQL 8.4.2 執行，不得接觸現有開發或 production volume。
+Go 整合層在同一個 runner 隔離 DB 驗證空庫建置、V1 baseline、V1→V2 與 V3→V4 資料保全、schema 不符拒絕、dirty／版本啟動防護、執行鎖、外鍵與 CHECK。CI 使用合成資料，不需要 `prod_dump.sql`。測試 reset 不使用 AutoMigrate，與正式環境共用嵌入的 SQL。實際 production dump 的還原演練只可在另建的可丟棄 MySQL 8.4.2 執行，不得接觸現有開發或 production volume。

@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"backend/internal/migration"
+
 	"github.com/stretchr/testify/require"
 )
 
@@ -62,12 +64,12 @@ func TestNonProductionInitializersRejectNonCurrentMigrationStateWithoutSchemaRep
 			name: "ahead version",
 			setup: func(t *testing.T, db *sql.DB) {
 				t.Helper()
-				_, err := db.Exec("UPDATE schema_migrations SET version = 3, dirty = FALSE")
+				_, err := db.Exec("UPDATE schema_migrations SET version = ?, dirty = FALSE", migration.LatestVersion+1)
 				require.NoError(t, err)
 			},
 			check: func(t *testing.T, db *sql.DB) {
 				t.Helper()
-				assertMigrationVersion(t, db, 3, false)
+				assertMigrationVersion(t, db, migration.LatestVersion+1, false)
 			},
 		},
 	}

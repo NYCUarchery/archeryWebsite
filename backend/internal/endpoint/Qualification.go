@@ -312,22 +312,3 @@ func DeleteQualificationThroughGroup(context *gin.Context, id uint) bool {
 	response.AcceptPrint(id, fmt.Sprint(id), "Qualification")
 	return true
 }
-
-func DeleteQualificationThroughGroupThroughCompetition(context *gin.Context, id uint) bool {
-	/*check data exist*/
-	isExist, _ := IsGetQualification(context, id)
-	if !isExist {
-		return false
-	}
-
-	/*delete data*/
-	isChanged, err := database.DeleteQualification(id)
-	if response.ErrorInternalErrorTest(context, id, "Delete Qualification", err) {
-		return false
-	} else if !isChanged {
-		response.AcceptNotChange(context, id, isChanged)
-		return false
-	}
-	response.AcceptPrint(id, fmt.Sprint(id), "Qualification")
-	return true
-}

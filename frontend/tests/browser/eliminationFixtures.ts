@@ -337,6 +337,7 @@ export interface RecordedRequest {
 }
 
 export interface EliminationRouteHandles {
+  eliminationDetailRequests: RecordedRequest[];
   savedScoreRequests: RecordedRequest[];
   confirmRequests: RecordedRequest[];
   // 積點／勝負／推進局數等「本功能不應呼叫」之其他對抗賽端點，若被呼叫會記錄於此。
@@ -345,6 +346,8 @@ export interface EliminationRouteHandles {
   setConfirmShouldFail(shouldFail: boolean): void;
   setScoreSaveWinner(matchResultId: number | null): void;
   setCompetitionPhase(phase: number): void;
+  setEliminationProgress(stage: number, end: number): void;
+  setMatchEndScores(matchEndId: number, scores: number[]): void;
   // 取得目前「伺服器端」某 MatchEnd 之狀態（PATCH 後會更新），供測試斷言持久化結果。
   getMatchEndState(matchEndId: number): DatabaseMatchEnd | undefined;
 }
@@ -447,6 +450,7 @@ export async function registerEliminationRoutes(
     JSON.stringify(fixture.competition)
   );
 
+  const eliminationDetailRequests: RecordedRequest[] = [];
   const savedScoreRequests: RecordedRequest[] = [];
   const confirmRequests: RecordedRequest[] = [];
   const forbiddenRequests: RecordedRequest[] = [];
@@ -533,6 +537,8 @@ export async function registerEliminationRoutes(
   await page.route(
     `**/elimination/stages/scores/medals/${fixture.eliminationId}`,
     async (route) => {
+      const request = route.request();
+      eliminationDetailRequests.push({ url: request.url(), method: request.method(), body: null });
       // 每次皆回傳目前「伺服器端」最新狀態，讓存分／確認後的 reload 能讀到最新結果。
       await route.fulfill({
         status: 200,
@@ -661,6 +667,7 @@ export async function registerEliminationRoutes(
   }
 
   return {
+    eliminationDetailRequests,
     savedScoreRequests,
     confirmRequests,
     forbiddenRequests,
@@ -675,6 +682,18 @@ export async function registerEliminationRoutes(
 	},
     setCompetitionPhase: (phase: number) => {
       serverCompetition.current_phase = phase;
+    },
+    setEliminationProgress: (stage: number, end: number) => {
+      serverElimination.current_stage = stage;
+      serverElimination.current_end = end;
+    },
+    setMatchEndScores: (matchEndId: number, scores: number[]) => {
+      const matchEnd = findMatchEndById(serverElimination, matchEndId);
+      if (!matchEnd) throw new Error(`找不到測試波次 ${matchEndId}`);
+      matchEnd.match_scores?.forEach((score, index) => {
+        score.score = scores[index] ?? -1;
+      });
+      matchEnd.total_scores = scores.reduce((total, score) => total + scoreValue(score), 0);
     },
     getMatchEndState: (matchEndId: number) => findMatchEndById(serverElimination, matchEndId),
   };

@@ -6,14 +6,25 @@ import (
 )
 
 type User struct {
-	ID            uint   `gorm:"primaryKey;autoIncrement" json:"id"`
-	Role          string `gorm:"not null" json:"role"`
-	UserName      string `gorm:"unique;not null" json:"user_name"`
-	RealName      string `json:"real_name"`
-	Password      string `gorm:"not null" json:"-"`
-	Email         string `gorm:"unique;not null" json:"email"`
-	InstitutionID uint   `json:"institution_id"`
-	Overview      string `json:"overview"`
+	ID            uint    `gorm:"primaryKey;autoIncrement" json:"id"`
+	Role          string  `gorm:"not null" json:"role"`
+	UserName      string  `gorm:"unique;not null" json:"user_name"`
+	RealName      string  `json:"real_name"`
+	Password      string  `gorm:"not null" json:"-"`
+	Email         *string `gorm:"unique" json:"email"`
+	InstitutionID uint    `json:"institution_id"`
+	Overview      string  `json:"overview"`
+}
+
+func EmailPointer(value string) *string {
+	return &value
+}
+
+func EmailValue(value *string) string {
+	if value == nil {
+		return ""
+	}
+	return *value
 }
 
 func DropUser() {

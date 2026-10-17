@@ -8,6 +8,7 @@ const port = new URL(baseURL).port || "3000";
 
 export default defineConfig({
   testDir: "./tests/browser",
+  testIgnore: process.env.ARCHERY_MANUAL_SCREENSHOTS === "1" ? [] : ["**/manual/**"],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: 0,
@@ -38,7 +39,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `npm run dev -- --hostname 127.0.0.1 --port ${port}`,
+    command: `npm run ${process.env.CI ? "start" : "dev"} -- --hostname 127.0.0.1 --port ${port}`,
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     env: {

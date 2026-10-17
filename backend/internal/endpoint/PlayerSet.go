@@ -132,6 +132,9 @@ func GetPlayerSetWPlayerById(context *gin.Context) {
 func GetAllPlayerSetsByEliminationId(context *gin.Context) {
 	id := Convert2uint(context, "eliminationid")
 	var data []database.PlayerSet
+	if response.ErrorIdTest(context, id, database.GetEliminationIsExist(id), "elimination when getting player sets") {
+		return
+	}
 	data, err := database.GetPlayerSetsByEliminationId(id)
 	if response.ErrorInternalErrorTest(context, id, "get player sets by elimination id", err) {
 		return
@@ -400,6 +403,15 @@ func PostPlayerSet(context *gin.Context) {
 	}
 	/*create player set*/
 	err = withPlayerSetMutationLock(data.EliminationId, func(tx *gorm.DB) error {
+		var highestRank int
+		if err := tx.Model(&database.PlayerSet{}).
+			Where("elimination_id = ?", data.EliminationId).
+			Select("COALESCE(MAX(`rank`), 0)").
+			Scan(&highestRank).Error; err != nil {
+			return err
+		}
+		// Creation order is the initial seed; ranking endpoints may later replace it.
+		playerSet.Rank = highestRank + 1
 		if err := tx.Create(&playerSet).Error; err != nil {
 			return err
 		}
