@@ -66,7 +66,7 @@ func TestSeedRejectsConflictingJudgeAccount(t *testing.T) {
 		UserName:      seedJudgeUserName,
 		RealName:      "not the fixture judge",
 		Password:      "not-a-seeder-password",
-		Email:         seedJudgeEmail,
+		Email:         database.EmailPointer(seedJudgeEmail),
 		InstitutionID: database.NoInstitutionID,
 	}
 	if err := database.DB.Create(&conflicting).Error; err != nil {

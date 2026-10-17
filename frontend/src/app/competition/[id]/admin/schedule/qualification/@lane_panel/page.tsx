@@ -52,6 +52,7 @@ export default function Page({ params }: { params: { id: string } }) {
 
   const handleSuccess = () => {
     queryClient.invalidateQueries(["qualificationLanes", groupIndex]);
+    queryClient.invalidateQueries(["competitionGroupsPlayersDetail", competitionId]);
     setSelectedPlayer(null);
   };
   const { mutate: assignPlayerLane } = useMutation(

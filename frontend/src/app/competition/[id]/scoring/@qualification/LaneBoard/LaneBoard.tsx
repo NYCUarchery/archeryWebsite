@@ -128,6 +128,7 @@ export default function LaneBoard({
         onSave={onSendScore}
         onConfirm={onConfirm}
         canConfirm={selectedEnd !== undefined}
+        canSave={selectedEnd !== undefined && !selectedEnd.is_confirmed}
         isSaving={false}
       ></ScoreController>
     </Box>

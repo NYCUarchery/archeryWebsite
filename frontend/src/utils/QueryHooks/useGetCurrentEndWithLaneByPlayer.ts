@@ -15,7 +15,7 @@ export default function useGetCurrentEndWithLaneByPlayer(
   onSuccess?: UseQueryOptions<LaneWithEnds, unknown>["onSuccess"]
 ) {
   return useQuery(
-    ["currentEndWithLaneByPlayer", player?.id, currentEndIndex],
+    ["currentEndWithLaneByPlayer", player?.id, player?.lane_id, currentEndIndex],
     () => apiClient.lane.scoresDetail(player?.lane_id ?? -1),
     {
       select: (data: any) => {

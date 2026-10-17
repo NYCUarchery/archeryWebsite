@@ -222,7 +222,7 @@ func ensurePlayers(tx *gorm.DB) ([]database.User, error) {
 		err := tx.Where("user_name = ?", username).First(&user).Error
 		switch {
 		case err == nil:
-			if user.Role != pkg.RoleToString(pkg.RUser) || user.Email != email || user.InstitutionID != database.NoInstitutionID || pkg.Compare(user.Password, seedPassword) != nil {
+			if user.Role != pkg.RoleToString(pkg.RUser) || database.EmailValue(user.Email) != email || user.InstitutionID != database.NoInstitutionID || pkg.Compare(user.Password, seedPassword) != nil {
 				return nil, fmt.Errorf("existing user %q is not this seeder's development account; refusing to modify it", username)
 			}
 		case errors.Is(err, gorm.ErrRecordNotFound):
@@ -231,7 +231,7 @@ func ensurePlayers(tx *gorm.DB) ([]database.User, error) {
 				UserName:      username,
 				RealName:      fmt.Sprintf("種子選手%02d", index),
 				Password:      pkg.EncryptPassword(seedPassword),
-				Email:         email,
+				Email:         database.EmailPointer(email),
 				InstitutionID: database.NoInstitutionID,
 				Overview:      "development seeder account",
 			}
@@ -254,7 +254,7 @@ func ensureJudge(tx *gorm.DB) (database.User, error) {
 	err := tx.Where("user_name = ?", seedJudgeUserName).First(&judge).Error
 	switch {
 	case err == nil:
-		if judge.Role != pkg.RoleToString(pkg.RUser) || judge.Email != seedJudgeEmail || judge.InstitutionID != database.NoInstitutionID || pkg.Compare(judge.Password, seedPassword) != nil {
+		if judge.Role != pkg.RoleToString(pkg.RUser) || database.EmailValue(judge.Email) != seedJudgeEmail || judge.InstitutionID != database.NoInstitutionID || pkg.Compare(judge.Password, seedPassword) != nil {
 			return judge, fmt.Errorf("existing user %q is not this seeder's development account; refusing to modify it", seedJudgeUserName)
 		}
 	case errors.Is(err, gorm.ErrRecordNotFound):
@@ -263,7 +263,7 @@ func ensureJudge(tx *gorm.DB) (database.User, error) {
 			UserName:      seedJudgeUserName,
 			RealName:      "種子裁判",
 			Password:      pkg.EncryptPassword(seedPassword),
-			Email:         seedJudgeEmail,
+			Email:         database.EmailPointer(seedJudgeEmail),
 			InstitutionID: database.NoInstitutionID,
 			Overview:      "development seeder judge account",
 		}
@@ -754,7 +754,7 @@ func assertParticipantsAndUsers(db *gorm.DB, competition database.Competition) e
 	if err := db.Where("user_name = ?", seedJudgeUserName).First(&judge).Error; err != nil {
 		return fmt.Errorf("find seeder judge account: %w", err)
 	}
-	if judge.Role != pkg.RoleToString(pkg.RUser) || judge.Email != seedJudgeEmail || judge.InstitutionID != database.NoInstitutionID || pkg.Compare(judge.Password, seedPassword) != nil {
+	if judge.Role != pkg.RoleToString(pkg.RUser) || database.EmailValue(judge.Email) != seedJudgeEmail || judge.InstitutionID != database.NoInstitutionID || pkg.Compare(judge.Password, seedPassword) != nil {
 		return fmt.Errorf("seeder judge account %q does not match the development account contract", seedJudgeUserName)
 	}
 	var judgeParticipants, judgePlayers, otherJudgeParticipants int64

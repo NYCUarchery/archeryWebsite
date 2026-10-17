@@ -9,6 +9,7 @@ import (
 
 type Competition struct { // DB : game_info
 	ID                       uint           `json:"id"        gorm:"primary_key"`
+	DeletedAt                gorm.DeletedAt `json:"-"         gorm:"index"`
 	Title                    string         `json:"title"`
 	SubTitle                 string         `json:"sub_title"`
 	StartTime                time.Time      `json:"start_time"`
@@ -41,13 +42,13 @@ func DropCompetition() {
 
 func GetCompetitionIsExist(id uint) bool {
 	var data Competition
-	DB.Table("competitions").Where("id = ?", id).First(&data)
+	DB.Model(&Competition{}).Where("id = ?", id).First(&data)
 	return data.ID != 0
 }
 
 func GetOnlyCompetition(ID uint) (Competition, error) {
 	var data Competition
-	result := DB.Table("competitions").Where("id = ?", ID).First(&data)
+	result := DB.Model(&Competition{}).Where("id = ?", ID).First(&data)
 	return data, result.Error
 }
 
@@ -139,7 +140,7 @@ func GetCurrentCompetitions(head int, tail int) ([]Competition, int, error) {
 		return nil, 0, err
 	}
 	result := DB.
-		Table("competitions").
+		Model(&Competition{}).
 		Order("start_time desc").
 		Offset(head).
 		Limit(tail - head + 1).
@@ -178,8 +179,8 @@ func UpdateCompetition(ID uint, newdata Competition) (bool, error) {
 	return isChanged, result.Error
 }
 
-func DeleteCompetition(ID uint) (bool, error) {
-	result := DB.Delete(&Competition{}, "id =?", ID)
+func DeleteCompetition(tx *gorm.DB, ID uint) (bool, error) {
+	result := tx.Delete(&Competition{}, "id =?", ID)
 	isChanged := result.RowsAffected != 0
 	return isChanged, result.Error
 }
@@ -194,23 +195,23 @@ func MinusOneCompetitionGroupNum(CompetitionID uint) {
 }
 func GetCompetitionGroupNum(ID uint) int {
 	var data Competition
-	DB.Table("competitions").Where("id = ?", ID).First(&data)
+	DB.Model(&Competition{}).Where("id = ?", ID).First(&data)
 	return data.GroupsNum
 }
 func UpdateCompetitionGroupNum(ID uint, newGroupNum int) bool {
-	result := DB.Table("competitions").Where("id = ?", ID).UpdateColumn("groups_num", newGroupNum)
+	result := DB.Model(&Competition{}).Where("id = ?", ID).UpdateColumn("groups_num", newGroupNum)
 	isChanged := result.RowsAffected != 0
 	return isChanged
 }
 
 func GetCompetitionLaneNum(ID uint) int {
 	var data Competition
-	DB.Table("competitions").Where("id = ?", ID).First(&data)
+	DB.Model(&Competition{}).Where("id = ?", ID).First(&data)
 	return data.LanesNum
 }
 func GetCompetitionUnassignedLaneId(ID uint) uint {
 	var data Competition
-	DB.Table("competitions").Where("id = ?", ID).First(&data)
+	DB.Model(&Competition{}).Where("id = ?", ID).First(&data)
 	return data.UnassignedLaneId
 }
 func UpdateCompetitionUnassignedLaneId(ID uint, newUnassignedLaneId uint) bool {
@@ -221,7 +222,7 @@ func UpdateCompetitionUnassignedLaneId(ID uint, newUnassignedLaneId uint) bool {
 
 func GetCompetitionUnassignedGroupId(ID uint) uint {
 	var data Competition
-	DB.Table("competitions").Where("id = ?", ID).First(&data)
+	DB.Model(&Competition{}).Where("id = ?", ID).First(&data)
 	return data.UnassignedGroupId
 }
 func UpdateCompetitionUnassignedGroupId(ID uint, newUnassignedGroupId uint) bool {
@@ -232,7 +233,7 @@ func UpdateCompetitionUnassignedGroupId(ID uint, newUnassignedGroupId uint) bool
 
 func GetCompetitionRoundsNum(ID uint) int {
 	var data Competition
-	DB.Table("competitions").Where("id = ?", ID).First(&data)
+	DB.Model(&Competition{}).Where("id = ?", ID).First(&data)
 	return data.RoundsNum
 }
 

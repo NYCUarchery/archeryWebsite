@@ -8,6 +8,8 @@ interface Props {
   canDelete: boolean;
   isSaving: boolean;
   canConfirm?: boolean; // false 表示尚未選定記分對象，確認鈕停用並改為提示文字
+  isScoreComplete: boolean;
+  canSave?: boolean;
   onDeleteScore: () => void;
   onSave: () => void;
   onConfirm?: () => void;
@@ -18,6 +20,8 @@ export default function ControllButtonGroup({
   canDelete,
   isSaving,
   canConfirm = true,
+  isScoreComplete,
+  canSave = true,
   onDeleteScore,
   onSave,
   onConfirm,
@@ -36,13 +40,13 @@ export default function ControllButtonGroup({
           id={
             !canConfirm ? "no-selection" : isConfirmed ? "confirmed" : "unconfirmed"
           }
-          disabled={!canConfirm}
+          disabled={!canConfirm || !isScoreComplete}
           disableRipple={isConfirmed}
           sx={{
             height: "3rem",
             fontSize: "1rem",
             // 停用時交還 MUI 預設灰底，避免紅底誤導使用者以為可按。
-            ...(canConfirm && {
+            ...(canConfirm && (isConfirmed || isScoreComplete) && {
               backgroundColor: isConfirmed ? "success.light" : "error.main",
             }),
           }}
@@ -53,7 +57,7 @@ export default function ControllButtonGroup({
       ) : (
         <></>
       )}
-      <Button variant="contained" disabled={isSaving} onClick={onSave}>
+      <Button variant="contained" disabled={isSaving || !canSave} onClick={onSave}>
         送出
       </Button>
       <Button

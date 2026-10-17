@@ -1,8 +1,9 @@
 import { Box } from "@mui/material";
 import ScoreController from "@/components/ScoreController/ScoreController";
+import { isCompoundBowType, totalMatchScore } from "@/utils/eliminationScore";
 import MatchHeader from "./MatchHeader";
 import MatchResultSelector from "./MatchResultSelector";
-import { LocalMatchResult } from "./eliminationScoringSlice";
+import { LocalMatchResult, scorefmt } from "./eliminationScoringSlice";
 import { EliminationMatchData } from "./useCurrentEliminationMatch";
 
 // 12 種可能分數：X(11)/10..1/M(0)。
@@ -35,6 +36,30 @@ export default function EliminationScoringBoard({
   const selected = matchResults.find(
     (mr) => mr.matchResultId === selectedMatchResultIdentifier
   );
+  const isCompound = isCompoundBowType(data.group.bow_type);
+  const matchTotals: Record<number, number | undefined> = {};
+  for (const local of matchResults) {
+    const result = data.matchResults.find((mr) => mr.id === local.matchResultId);
+    const currentEnd = result?.match_ends?.[data.currentEndIndex];
+    matchTotals[local.matchResultId] = isCompound
+      ? totalMatchScore({
+          ...result,
+          match_ends: result?.match_ends?.map((end) =>
+            currentEnd?.id === local.currentMatchEndId &&
+            end.id === local.currentMatchEndId
+              ? {
+                  ...end,
+                  match_scores: local.scores,
+                  total_scores: local.scores.reduce(
+                    (sum, score) => sum + scorefmt(score.score),
+                    0
+                  ),
+                }
+              : end
+          ),
+        })
+      : result?.total_points;
+  }
 
   return (
     <Box className="elimination_board">
@@ -45,6 +70,8 @@ export default function EliminationScoringBoard({
       />
       <MatchResultSelector
         matchResults={matchResults}
+        totalLabel={isCompound ? "總積分" : "總積點"}
+        matchTotals={matchTotals}
         selectedMatchResultIdentifier={selectedMatchResultIdentifier}
         onSelect={onSelectMatchResult}
       />

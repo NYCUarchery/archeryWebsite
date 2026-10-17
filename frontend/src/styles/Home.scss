@@ -226,3 +226,19 @@
   .home-brand-word small { display: none; }
   .home-competition-actions { grid-template-columns: 1fr; }
 }
+
+.bulk-register-page { max-width: 840px; }
+.bulk-register-form { display: grid; gap: 18px; padding: 24px; border: 1px solid var(--home-line); border-radius: var(--home-radius); background: #fff; }
+.bulk-register-actions { display: flex; justify-content: flex-end; gap: 12px; }
+.bulk-register-alert { margin-top: 18px; }
+.bulk-register-preview { display: grid; gap: 12px; margin-top: 20px; padding: 24px; border: 1px solid var(--home-line); border-radius: var(--home-radius); background: #fff; }
+.bulk-register-preview h2 { margin: 0; font-size: 18px; }
+.bulk-register-error { color: #b3261e; }
+.bulk-register-rows { max-height: 320px; margin: 0; padding-left: 24px; overflow: auto; }
+.bulk-register-rows li { padding: 4px 0; overflow-wrap: anywhere; }
+
+@media (max-width: 760px) {
+  .bulk-register-form, .bulk-register-preview { padding: 18px; }
+  .bulk-register-actions { display: grid; grid-template-columns: 1fr; }
+  .bulk-register-actions .MuiButton-root { width: 100%; }
+}

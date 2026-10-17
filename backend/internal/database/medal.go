@@ -20,7 +20,13 @@ func DropMedal() {
 
 func GetMedalIsExist(id uint) bool {
 	var data Medal
-	DB.Table("medals").Where("id = ?", id).First(&data)
+	DB.Table("medals").
+		Select("medals.*").
+		Joins("JOIN eliminations ON eliminations.id = medals.elimination_id").
+		Joins("JOIN `groups` ON `groups`.id = eliminations.group_id").
+		Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+		Where("medals.id = ? AND competitions.deleted_at IS NULL", id).
+		First(&data)
 	return data.ID != 0
 }
 

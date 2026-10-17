@@ -92,20 +92,14 @@ export default function Page({ params }: { params: { id: string } }) {
       oldEndsRef.current = ends;
       return;
     }
-    const isEndScored = ends.some((end, index) => {
-      const oldLastScoreSlot = oldEndsRef.current[index].round_scores![5].score;
-      const newLastScoreSlot = end.round_scores![5].score;
-      if (oldLastScoreSlot !== -1) {
-        return false;
-      }
+    const completedEnd = ends.find((end, index) =>
+      !end.is_confirmed &&
+      oldEndsRef.current[index]?.round_scores?.[5]?.score === -1 &&
+      end.round_scores?.[5]?.score !== -1
+    );
 
-      if (oldLastScoreSlot === -1 && newLastScoreSlot !== -1) {
-        return true;
-      }
-    });
-
-    if (isEndScored) {
-      sendScore(extractEnds(ends));
+    if (completedEnd) {
+      sendScore(extractEnds([completedEnd]));
     }
 
     oldEndsRef.current = ends;
@@ -122,8 +116,10 @@ export default function Page({ params }: { params: { id: string } }) {
     dispatch(deleteScore());
   };
   const onSendScore = () => {
-    const endsToPatch = extractEnds(ends);
-    sendScore(endsToPatch);
+    const selectedEnd = ends[selectedOrder - 1];
+    if (selectedEnd && !selectedEnd.is_confirmed) {
+      sendScore(extractEnds([selectedEnd]));
+    }
   };
   const onConfirm = () => {
     const endId = lane?.ends[selectedOrder - 1].id;
@@ -160,7 +156,7 @@ export default function Page({ params }: { params: { id: string } }) {
         onClose={handleClose}
       >
         <Alert onClose={handleClose} severity="success" sx={{ width: "100%" }}>
-          已更新所有資料d(`･∀･)b
+          分數已送出
         </Alert>
       </Snackbar>
       <Snackbar
@@ -170,7 +166,7 @@ export default function Page({ params }: { params: { id: string } }) {
         onClose={handleClose}
       >
         <Alert onClose={handleClose} severity="error" sx={{ width: "100%" }}>
-          送出部分失敗或完全失敗(´;ω;`)
+          分數送出失敗：
           {errorMessage}
         </Alert>
       </Snackbar>
