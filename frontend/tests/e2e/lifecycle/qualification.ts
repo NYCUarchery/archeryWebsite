@@ -2,11 +2,30 @@ import { expect, type Page, type Response } from "@playwright/test";
 import { qualificationWriteActor, type LifecycleExecutionMode } from "./execution";
 import { readQualificationEnd, resolveCurrentQualificationEnd, type QualificationEndRef, type ScopedActor, writeQualificationEnd } from "./formalApi";
 
+/** Resolve the displayed target from official roster and actual lane numbers. */
+export async function selectJudgeQualificationPlayer(page: Page, competitionId: number, playerName: string) {
+  const rosterResponse = await page.request.get(`/api/competition/groups/players/${competitionId}`);
+  expect(rosterResponse.ok(), "qualification roster").toBeTruthy();
+  const roster = await rosterResponse.json() as { groups?: Array<{ players?: Array<{ id: number; name: string; lane_id: number; order: number }> }> };
+  const players = roster.groups?.flatMap((group) => group.players ?? []).filter((player) => player.name === playerName) ?? [];
+  expect(players, `unique qualification player ${playerName}`).toHaveLength(1);
+  const player = players[0];
+  const lanesResponse = await page.request.get(`/api/lane/all/${competitionId}`);
+  expect(lanesResponse.ok(), "qualification lanes").toBeTruthy();
+  const lanes = await lanesResponse.json() as Array<{ id: number; lane_number: number }>;
+  const lane = lanes.find((candidate) => candidate.id === player.lane_id);
+  expect(lane?.lane_number, "assigned qualification lane").toBeGreaterThan(0);
+  expect([1, 2, 3, 4]).toContain(player.order);
+  const target = `${lane!.lane_number}${"ABCD"[player.order - 1]}`;
+  await page.getByRole("combobox", { name: "靶位", exact: true }).fill(target);
+  await page.getByRole("option", { name: `${target} ${playerName}`, exact: true }).click();
+}
+
 /** Scores a complete six-arrow end through the judge editor and confirms it. */
 export async function scoreJudgeQualificationEnd(page: Page, playerName: string, endIndex: number, scores: readonly ("10" | "9" | "8")[], expected?: QualificationEndRef) {
-  const selector = page.getByLabel("選手姓名");
-  await selector.fill(playerName);
-  await page.getByRole("option", { name: playerName, exact: true }).click();
+  const competitionId = Number(new URL(page.url()).pathname.match(/\/competition\/(\d+)/)?.[1]);
+  expect(competitionId, "judge competition id").toBeGreaterThan(0);
+  await selectJudgeQualificationPlayer(page, competitionId, playerName);
   const editor = page.getByTestId("qualification-score-editor-table");
   const editButtons = editor.getByRole("button", { name: /編輯第1局第[1-6]波分數/ });
   await editButtons.nth(endIndex).click();

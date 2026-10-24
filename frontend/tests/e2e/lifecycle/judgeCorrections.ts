@@ -1,4 +1,5 @@
 import { expect, type Locator, type Page } from "@playwright/test";
+import { selectJudgeQualificationPlayer } from "./qualification";
 
 type Arrow = "9" | "10";
 
@@ -122,8 +123,7 @@ export async function correctConfirmedQualificationEnd(page: Page, options: Qual
   expectArrows(beforeEnd.round_scores, options.provisional);
   const expectedPlayerTotal = (before.player.total_score ?? 0) - scoreTotal(options.provisional) + scoreTotal(options.expected);
 
-  await page.getByLabel("選手姓名").fill(options.playerName);
-  await page.getByRole("option", { name: options.playerName, exact: true }).click();
+  await selectJudgeQualificationPlayer(page, options.competitionId, options.playerName);
   await qualificationEndButton(page, options.endIndex).click();
   const dialog = page.getByRole("dialog", { name: "編輯分數" });
   await expect(dialog.getByText("已確認（改分後維持確認）")).toBeVisible();

@@ -241,6 +241,9 @@ async function registerQualificationRoutes(page: Page): Promise<QualificationRou
       },
     });
   });
+  await page.route(`**/lane/all/${competitionId}`, (route) => route.fulfill({
+    json: [{ id: 9730, competition_id: competitionId, qualification_id: groupId, lane_number: 1 }],
+  }));
   await page.route(`**/player/scores/${playerId}`, async (route) => {
     playerScoreGets += 1;
     await route.fulfill({ json: clone(serverPlayer) });
@@ -316,8 +319,8 @@ async function gotoPublicQualificationScoreboard(page: Page) {
 async function selectPlayerForScoreEditing(page: Page) {
   const baseUrl = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1";
   await page.goto(`${baseUrl}/competition/${competitionId}/judge`);
-  await page.getByLabel("選手姓名").fill("甲");
-  await page.getByRole("option", { name: "甲選手" }).click();
+  await page.getByRole("combobox", { name: "靶位", exact: true }).fill("1A");
+  await page.getByRole("option", { name: "1A 甲選手", exact: true }).click();
   await expect(page.getByText("1-1", { exact: true })).toBeVisible();
 }
 
@@ -374,10 +377,10 @@ test.describe("Qualification score summaries", () => {
     const baseUrl = process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1";
     await page.goto(`${baseUrl}/competition/${competitionId}/judge`);
     const switcher = await page.getByRole("button", { name: "判", exact: true }).boundingBox();
-    const playerField = await page.getByLabel("選手姓名").boundingBox();
+    const playerField = await page.getByRole("combobox", { name: "靶位", exact: true }).boundingBox();
     expect(switcher && playerField && switcher.y + switcher.height <= playerField.y).toBe(true);
-    await page.getByLabel("選手姓名").fill("甲");
-    await page.getByRole("option", { name: "甲選手" }).click();
+    await page.getByRole("combobox", { name: "靶位", exact: true }).fill("1A");
+    await page.getByRole("option", { name: "1A 甲選手", exact: true }).click();
 
     const table = page.getByTestId("qualification-score-editor-table");
     await expect(table).toBeVisible();
@@ -514,4 +517,102 @@ test.describe("Qualification score summaries", () => {
     await expect(editDialog).not.toBeVisible();
     await expect.poll(() => routes.playerScoreGetCount()).toBe(2);
   });
+});
+
+const targetPlayer = (id: number, lane_id: number, order: number, name = "同名選手") => ({
+  id, lane_id, order, name, group_id: groupId, participant_id: id + 100,
+});
+
+async function mockTargetRoster(page: Page, players: Array<Record<string, unknown>>, lanes: Array<Record<string, unknown>>) {
+  await page.route(`**/competition/groups/players/${competitionId}`, (route) => route.fulfill({ json: { groups: [{ id: groupId, players }] } }));
+  await page.route(`**/lane/all/${competitionId}`, (route) => route.fulfill({ json: lanes }));
+}
+
+async function gotoTargetEditor(page: Page) {
+  await page.goto(`${process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1"}/competition/${competitionId}/judge`);
+  return page.getByRole("combobox", { name: "靶位", exact: true });
+}
+
+test("靶位依數字與 ABCD 排序，僅以前綴搜尋，排除未排靶及無效資料", async ({ page }) => {
+  await registerQualificationRoutes(page);
+  await mockTargetRoster(page, [
+    targetPlayer(100, 10, 4), targetPlayer(101, 10, 2), targetPlayer(102, 2, 1),
+    targetPlayer(103, 10, 3), targetPlayer(104, 10, 1), targetPlayer(105, 0, 1, "未排靶"),
+    targetPlayer(106, 20, 1, "零號靶"), targetPlayer(107, 10, 0, "無順序"),
+    targetPlayer(108, 10, 5, "越界順序"), targetPlayer(0, 10, 1, "無識別碼"),
+    targetPlayer(109, 99, 1, "未知靶"), targetPlayer(110, 30, 1, "負號靶"),
+  ], [{ id: 10, lane_number: 12 }, { id: 2, lane_number: 2 }, { id: 20, lane_number: 0 }, { id: 30, lane_number: -1 }]);
+  const field = await gotoTargetEditor(page);
+  await field.click();
+  await expect(page.getByRole("option")).toHaveText(["2A 同名選手", "12A 同名選手", "12B 同名選手", "12C 同名選手", "12D 同名選手"]);
+  await field.fill(" 12b ");
+  await expect(page.getByRole("option")).toHaveText(["12B 同名選手"]);
+  await field.fill("同名選手");
+  await expect(page.getByRole("option")).toHaveCount(0);
+  await field.fill("2");
+  await expect(page.getByRole("option")).toHaveText(["2A 同名選手"]);
+});
+
+test("清除靶位後換選同名選手，以識別碼載入正確分數", async ({ page }) => {
+  await registerQualificationRoutes(page);
+  await mockTargetRoster(page, [targetPlayer(playerId, 9730, 1), targetPlayer(playerId + 1, 9730, 2)], [{ id: 9730, lane_number: 12 }]);
+  const fetched: number[] = [];
+  await page.route("**/player/scores/*", (route) => {
+    const id = Number(route.request().url().split("/").pop());
+    fetched.push(id);
+    return route.fulfill({ json: { ...buildDetailedPlayer(), id, name: "同名選手" } });
+  });
+  const field = await gotoTargetEditor(page);
+  await field.fill("12A");
+  await page.getByRole("option", { name: "12A 同名選手", exact: true }).click();
+  await expect(page.getByTestId("qualification-score-editor-table")).toBeVisible();
+  await page.getByRole("button", { name: "Clear", exact: true }).click();
+  await expect(field).toHaveValue("");
+  await expect(page.getByTestId("qualification-score-editor-table")).toBeHidden();
+  await field.fill("12B");
+  await page.getByRole("option", { name: "12B 同名選手", exact: true }).click();
+  await expect.poll(() => fetched).toEqual([playerId, playerId + 1]);
+  await expect(page.getByTestId("qualification-score-editor-table")).toBeVisible();
+});
+
+test("無已排靶選手時顯示空清單提示", async ({ page }) => {
+  await registerQualificationRoutes(page);
+  await mockTargetRoster(page, [targetPlayer(playerId, 0, 0)], []);
+  const field = await gotoTargetEditor(page);
+  await field.click();
+  await expect(page.getByText("無已排靶選手", { exact: true })).toBeVisible();
+  await expect(page.getByRole("option")).toHaveCount(0);
+});
+
+test("靶位載入期間停用，完成後可選", async ({ page }) => {
+  await registerQualificationRoutes(page);
+  let release!: () => void;
+  const pending = new Promise<void>((resolve) => { release = resolve; });
+  await page.route(`**/lane/all/${competitionId}`, async (route) => {
+    await pending;
+    await route.fulfill({ json: [{ id: 9730, lane_number: 1 }] });
+  });
+  const field = await gotoTargetEditor(page);
+  await expect(field).toBeDisabled();
+  release();
+  await expect(field).toBeEnabled();
+  await field.fill("1A");
+  await expect(page.getByRole("option", { name: "1A 甲選手", exact: true })).toBeVisible();
+});
+
+test("靶位載入失敗可重試", async ({ page }) => {
+  await registerQualificationRoutes(page);
+  let fail = true;
+  await page.route(`**/lane/all/${competitionId}`, (route) => fail
+    ? route.fulfill({ status: 500, json: { message: "mock lanes unavailable" } })
+    : route.fulfill({ json: [{ id: 9730, lane_number: 1 }] }));
+  const field = await gotoTargetEditor(page);
+  await expect(page.getByText("靶位資料載入失敗，請重試。", { exact: true })).toBeVisible({ timeout: 20000 });
+  await expect(field).toBeDisabled();
+  fail = false;
+  await page.getByRole("button", { name: "重試", exact: true }).click();
+  await expect(field).toBeEnabled();
+  await field.fill("1A");
+  await page.getByRole("option", { name: "1A 甲選手", exact: true }).click();
+  await expect(page.getByTestId("qualification-score-editor-table")).toBeVisible();
 });
