@@ -9,6 +9,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useMutation, useQueryClient } from "react-query";
+import type { AxiosError, AxiosResponse } from "axios";
 import { apiClient } from "@/utils/ApiClient";
 import useGetCompetitionWithGroups from "@/utils/QueryHooks/useGetCompetitionWithGroups";
 import { useState } from "react";
@@ -19,6 +20,7 @@ export default function Page({ params }: { params: { id: string } }) {
   const competitionId = parseInt(params.id);
   const { data: competition } = useGetCompetitionWithGroups(competitionId);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const {
     mutate: activateQualification,
     isLoading: isActivatingQualification,
@@ -36,49 +38,107 @@ export default function Page({ params }: { params: { id: string } }) {
   const {
     mutate: activateElimination,
     isLoading: isActivatingElimination,
-  } = useMutation(
-    (id: number) => apiClient.competition.eliminationIsactivePartialUpdate(id),
+  } = useMutation<AxiosResponse, AxiosError, boolean>(
+    () => apiClient.competition.eliminationIsactivePartialUpdate(competitionId),
     {
-      onSuccess: () => {
-        queryClient.invalidateQueries(["competitionWithGroups", competitionId]);
+      onMutate: () => {
+        setErrorMessage(null);
+        setSuccessMessage(null);
       },
-      onError: () => setErrorMessage("開啟對抗賽失敗，請稍後再試。"),
+      onSuccess: (response, repair) => {
+        queryClient.invalidateQueries(["competitionWithGroups", competitionId]);
+        queryClient.invalidateQueries([
+          "competitionEliminations",
+          competitionId,
+        ]);
+        if (repair) {
+          setSuccessMessage(
+            response.status === 204
+              ? "個人對抗賽資料已完整，無須補建。"
+              : "個人對抗賽缺漏已補齊。"
+          );
+        }
+      },
+      onError: (error, repair) =>
+        setErrorMessage(
+          repair
+            ? error?.response?.status === 409
+              ? "個人對抗賽存在重複資料，無法自動補建。"
+              : "補建個人對抗賽缺漏失敗，請稍後再試。"
+            : "開啟對抗賽失敗，請稍後再試。"
+        ),
     }
   );
 
   const {
     mutate: activateTeamElimination,
     isLoading: isActivatingTeamElimination,
-  } = useMutation(
-    (id: number) =>
-      apiClient.competition.teamEliminationIsactivePartialUpdate(id),
+  } = useMutation<AxiosResponse, AxiosError, boolean>(
+    () =>
+      apiClient.competition.teamEliminationIsactivePartialUpdate(competitionId),
     {
-      onSuccess: () => {
+      onMutate: () => {
+        setErrorMessage(null);
+        setSuccessMessage(null);
+      },
+      onSuccess: (response, repair) => {
         queryClient.invalidateQueries(["competitionWithGroups", competitionId]);
         queryClient.invalidateQueries([
           "competitionEliminations",
           competitionId,
         ]);
+        if (repair) {
+          setSuccessMessage(
+            response.status === 204
+              ? "團體對抗賽資料已完整，無須補建。"
+              : "團體對抗賽缺漏已補齊。"
+          );
+        }
       },
-      onError: () => setErrorMessage("開啟團體對抗賽失敗，請稍後再試。"),
+      onError: (error, repair) =>
+        setErrorMessage(
+          repair
+            ? error?.response?.status === 409
+              ? "團體對抗賽存在重複資料，無法自動補建。"
+              : "補建團體對抗賽缺漏失敗，請稍後再試。"
+            : "開啟團體對抗賽失敗，請稍後再試。"
+        ),
     }
   );
 
   const {
     mutate: activateMixedElimination,
     isLoading: isActivatingMixedElimination,
-  } = useMutation(
-    (id: number) =>
-      apiClient.competition.mixedEliminationIsactivePartialUpdate(id),
+  } = useMutation<AxiosResponse, AxiosError, boolean>(
+    () =>
+      apiClient.competition.mixedEliminationIsactivePartialUpdate(competitionId),
     {
-      onSuccess: () => {
+      onMutate: () => {
+        setErrorMessage(null);
+        setSuccessMessage(null);
+      },
+      onSuccess: (response, repair) => {
         queryClient.invalidateQueries(["competitionWithGroups", competitionId]);
         queryClient.invalidateQueries([
           "competitionEliminations",
           competitionId,
         ]);
+        if (repair) {
+          setSuccessMessage(
+            response.status === 204
+              ? "混雙對抗賽資料已完整，無須補建。"
+              : "混雙對抗賽缺漏已補齊。"
+          );
+        }
       },
-      onError: () => setErrorMessage("開啟混雙對抗賽失敗，請稍後再試。"),
+      onError: (error, repair) =>
+        setErrorMessage(
+          repair
+            ? error?.response?.status === 409
+              ? "混雙對抗賽存在重複資料，無法自動補建。"
+              : "補建混雙對抗賽缺漏失敗，請稍後再試。"
+            : "開啟混雙對抗賽失敗，請稍後再試。"
+        ),
     }
   );
 
@@ -122,7 +182,7 @@ export default function Page({ params }: { params: { id: string } }) {
             if (competition.elimination_is_active) {
               return;
             }
-            activateElimination(competitionId);
+            activateElimination(false);
           },
         },
         {
@@ -133,7 +193,7 @@ export default function Page({ params }: { params: { id: string } }) {
             if (competition.team_elimination_is_active) {
               return;
             }
-            activateTeamElimination(competitionId);
+            activateTeamElimination(false);
           },
         },
         {
@@ -144,7 +204,7 @@ export default function Page({ params }: { params: { id: string } }) {
             if (competition.mixed_elimination_is_active) {
               return;
             }
-            activateMixedElimination(competitionId);
+            activateMixedElimination(false);
           },
         },
       ]
@@ -196,6 +256,42 @@ export default function Page({ params }: { params: { id: string } }) {
               </Button>
             ))}
           </ButtonGroup>
+          {(competition?.elimination_is_active ||
+            competition?.team_elimination_is_active ||
+            competition?.mixed_elimination_is_active) && (
+            <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap">
+              {competition?.elimination_is_active && (
+                <Button
+                  variant="outlined"
+                  aria-label="補建個人對抗賽缺漏"
+                  disabled={isActivatingElimination}
+                  onClick={() => activateElimination(true)}
+                >
+                  個人對抗賽：補建缺漏
+                </Button>
+              )}
+              {competition?.team_elimination_is_active && (
+                <Button
+                  variant="outlined"
+                  aria-label="補建團體對抗賽缺漏"
+                  disabled={isActivatingTeamElimination}
+                  onClick={() => activateTeamElimination(true)}
+                >
+                  團體對抗賽：補建缺漏
+                </Button>
+              )}
+              {competition?.mixed_elimination_is_active && (
+                <Button
+                  variant="outlined"
+                  aria-label="補建混雙對抗賽缺漏"
+                  disabled={isActivatingMixedElimination}
+                  onClick={() => activateMixedElimination(true)}
+                >
+                  混雙對抗賽：補建缺漏
+                </Button>
+              )}
+            </Stack>
+          )}
         </Stack>
         <PhaseControl
           currentPhase={competition?.current_phase}
@@ -205,16 +301,22 @@ export default function Page({ params }: { params: { id: string } }) {
         />
       </Stack>
       <Snackbar
-        open={Boolean(errorMessage)}
+        open={Boolean(errorMessage || successMessage)}
         autoHideDuration={6000}
-        onClose={() => setErrorMessage(null)}
+        onClose={() => {
+          setErrorMessage(null);
+          setSuccessMessage(null);
+        }}
       >
         <Alert
-          severity="error"
-          onClose={() => setErrorMessage(null)}
+          severity={errorMessage ? "error" : "success"}
+          onClose={() => {
+            setErrorMessage(null);
+            setSuccessMessage(null);
+          }}
           sx={{ width: "100%" }}
         >
-          {errorMessage}
+          {errorMessage || successMessage}
         </Alert>
       </Snackbar>
     </Box>

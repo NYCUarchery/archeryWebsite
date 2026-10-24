@@ -360,7 +360,7 @@ const docTemplate = `{
         },
         "/competition/elimination-isactive/{id}": {
             "patch": {
-                "description": "Update one Competition Elimination Active to be true by id.\nCannot change to false, only can change to true.",
+                "description": "Update one Competition Elimination Active to be true by id.\nCannot change to false, only can change to true.\nAtomically fills missing individual Eliminations and medals for assigned groups, including when already active.",
                 "tags": [
                     "Competition"
                 ],
@@ -391,6 +391,12 @@ const docTemplate = `{
                         "description": "invalid competition id parameter",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "duplicate elimination or medal type",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
@@ -605,7 +611,7 @@ const docTemplate = `{
         },
         "/competition/mixed-elimination-isactive/{id}": {
             "patch": {
-                "description": "Update one Competition Mixed Elimination Active to be true by id.\nCannot change to false, only can change to true.\ncreate all mixed elimination for groups",
+                "description": "Update one Competition Mixed Elimination Active to be true by id.\nCannot change to false, only can change to true.\nAtomically fills missing mixed Eliminations and medals for assigned groups, including when already active.",
                 "tags": [
                     "Competition"
                 ],
@@ -636,6 +642,12 @@ const docTemplate = `{
                         "description": "invalid competition id parameter",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "duplicate elimination or medal type",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
@@ -875,7 +887,7 @@ const docTemplate = `{
         },
         "/competition/team-elimination-isactive/{id}": {
             "patch": {
-                "description": "Update one Competition Team Elimination Active to be true by id.\nCannot change to false, only can change to true.\nCreate all team elimination for groups.",
+                "description": "Update one Competition Team Elimination Active to be true by id.\nCannot change to false, only can change to true.\nAtomically fills missing team Eliminations and medals for assigned groups, including when already active.",
                 "tags": [
                     "Competition"
                 ],
@@ -906,6 +918,12 @@ const docTemplate = `{
                         "description": "invalid competition id parameter",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "duplicate elimination or medal type",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
@@ -1307,7 +1325,7 @@ const docTemplate = `{
         },
         "/elimination": {
             "post": {
-                "description": "Post one new Elimination data, and three medals",
+                "description": "Create or return the Elimination for group_id and team_size, filling missing medals without overwriting existing data",
                 "consumes": [
                     "application/json"
                 ],
@@ -1331,7 +1349,7 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "success, return one Elimination with new id",
+                        "description": "success, return the new or existing Elimination",
                         "schema": {
                             "allOf": [
                                 {
@@ -1355,9 +1373,15 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "invalid group ID, maybe not exist",
+                        "description": "invalid group ID or team_size; group must be assigned",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "duplicate elimination or medal type",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {
@@ -2617,7 +2641,7 @@ const docTemplate = `{
         },
         "/groupinfo": {
             "post": {
-                "description": "Post one new GroupInfo data with new id\nCreate qualification with same id\nAuto write GroupIndex\nAuto create elimination",
+                "description": "Post one new GroupInfo data with new id\nCreate qualification with same id\nAuto write GroupIndex\nAuto create elimination\nAtomically creates Qualification, individual Elimination, and any enabled team/mixed Eliminations with medals.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2662,6 +2686,12 @@ const docTemplate = `{
                         "description": "invalid Competition ID, may not exist",
                         "schema": {
                             "$ref": "#/definitions/response.ErrorIdResponse"
+                        }
+                    },
+                    "409": {
+                        "description": "duplicate elimination or medal type",
+                        "schema": {
+                            "$ref": "#/definitions/response.ErrorResponse"
                         }
                     },
                     "500": {

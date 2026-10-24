@@ -1622,6 +1622,7 @@ paths:
       description: |-
         Update one Competition Elimination Active to be true by id.
         Cannot change to false, only can change to true.
+        Atomically fills missing individual Eliminations and medals for assigned groups, including when already active.
       parameters:
       - description: Competition ID
         in: path
@@ -1641,6 +1642,10 @@ paths:
           description: invalid competition id parameter
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "409":
+          description: duplicate elimination or medal type
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: Update Competition Elimination Active
           schema:
@@ -1774,7 +1779,7 @@ paths:
       description: |-
         Update one Competition Mixed Elimination Active to be true by id.
         Cannot change to false, only can change to true.
-        create all mixed elimination for groups
+        Atomically fills missing mixed Eliminations and medals for assigned groups, including when already active.
       parameters:
       - description: Competition ID
         in: path
@@ -1794,6 +1799,10 @@ paths:
           description: invalid competition id parameter
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "409":
+          description: duplicate elimination or medal type
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: Update Competition Mixed Elimination Active / Get Competition
             Group Ids / Post Elimination By Id
@@ -1956,7 +1965,7 @@ paths:
       description: |-
         Update one Competition Team Elimination Active to be true by id.
         Cannot change to false, only can change to true.
-        Create all team elimination for groups.
+        Atomically fills missing team Eliminations and medals for assigned groups, including when already active.
       parameters:
       - description: Competition ID
         in: path
@@ -1976,6 +1985,10 @@ paths:
           description: invalid competition id parameter
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "409":
+          description: duplicate elimination or medal type
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: Update Competition Team Elimination Active / Get Competition
             Group Ids / Post Elimination By Id
@@ -2043,7 +2056,8 @@ paths:
     post:
       consumes:
       - application/json
-      description: Post one new Elimination data, and three medals
+      description: Create or return the Elimination for group_id and team_size, filling
+        missing medals without overwriting existing data
       parameters:
       - description: Elimination
         in: body
@@ -2055,7 +2069,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: success, return one Elimination with new id
+          description: success, return the new or existing Elimination
           schema:
             allOf:
             - $ref: '#/definitions/database.Elimination'
@@ -2068,9 +2082,13 @@ paths:
                   $ref: '#/definitions/response.Nill'
               type: object
         "400":
-          description: invalid group ID, maybe not exist
+          description: invalid group ID or team_size; group must be assigned
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "409":
+          description: duplicate elimination or medal type
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: internal db error for Create Elimination
           schema:
@@ -2916,6 +2934,7 @@ paths:
         Create qualification with same id
         Auto write GroupIndex
         Auto create elimination
+        Atomically creates Qualification, individual Elimination, and any enabled team/mixed Eliminations with medals.
       parameters:
       - description: LaneData
         in: body
@@ -2939,6 +2958,10 @@ paths:
           description: invalid Competition ID, may not exist
           schema:
             $ref: '#/definitions/response.ErrorIdResponse'
+        "409":
+          description: duplicate elimination or medal type
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
         "500":
           description: database error for Create GroupInfo, Create Qualification,
             Create Elimination, get Competition
