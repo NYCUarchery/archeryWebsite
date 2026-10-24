@@ -74,6 +74,11 @@ func isRecurveOutcomeBowType(bowType string) bool {
 	return bowType == "反曲弓" || bowType == "Recurve"
 }
 
+// IsRecurveScoringClosed uses the persisted winner, including manual decisions.
+func IsRecurveScoringClosed(bowType string, hasWinner bool) bool {
+	return isRecurveOutcomeBowType(bowType) && hasWinner
+}
+
 func isCompoundOutcomeBowType(bowType string) bool {
 	return bowType == "複合弓" || bowType == "Compound"
 }

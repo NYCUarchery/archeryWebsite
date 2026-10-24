@@ -2540,7 +2540,7 @@ const docTemplate = `{
         },
         "/elimination/{id}": {
             "get": {
-                "description": "Get only one Elimination by id",
+                "description": "Get elimination progress and current-stage persisted winner/confirmation states without loading arrows. This read never changes winners.",
                 "produces": [
                     "application/json"
                 ],
@@ -3613,7 +3613,7 @@ const docTemplate = `{
         },
         "/matchresult/matchend/isconfirmed/{id}": {
             "patch": {
-                "description": "Confirm an eligible MatchEnd as Player, Judge, or Admin. Only the owning competition Admin may change a confirmed MatchEnd back to unconfirmed.",
+                "description": "Confirm an eligible MatchEnd as Player, Judge, or Admin. Players require a full set of saved arrows and may still confirm the deciding end after a recurve winner is recorded. Only the owning competition Admin may change a confirmed MatchEnd back to unconfirmed.",
                 "consumes": [
                     "application/json"
                 ],
@@ -3675,7 +3675,7 @@ const docTemplate = `{
         },
         "/matchresult/matchend/scores/{id}": {
             "patch": {
-                "description": "Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids\nApproved Judges may update the active current stage, Players their own current match's unconfirmed end, and Admins may perform rescue updates. A confirmed MatchEnd requires Judge or Admin and every MatchScore exactly once; confirmation remains set and total/outcome are recomputed atomically.",
+                "description": "Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids\nApproved Judges may update the active current stage, Players their own current match's unconfirmed end while a recurve match has no persisted winner, and Admins may perform rescue updates. A confirmed MatchEnd requires Judge or Admin and every MatchScore exactly once; confirmation remains set and total/outcome are recomputed atomically.",
                 "consumes": [
                     "application/json"
                 ],
@@ -3737,7 +3737,7 @@ const docTemplate = `{
         },
         "/matchresult/matchend/totalscore/{id}": {
             "patch": {
-                "description": "Recompute one MatchEnd total score from its arrows. Approved Judges may update the active current stage, Players their own current match's unconfirmed end, and Admins may perform rescue updates. Confirmed ends must use the aggregate scores endpoint.",
+                "description": "Recompute one MatchEnd total score from its arrows. Approved Judges may update the active current stage, Players their own current match's unconfirmed end while a recurve match has no persisted winner, and Admins may perform rescue updates. Confirmed ends must use the aggregate scores endpoint.",
                 "consumes": [
                     "application/json"
                 ],
@@ -3799,7 +3799,7 @@ const docTemplate = `{
         },
         "/matchresult/matchscore/score/{id}": {
             "patch": {
-                "description": "Update one MatchScore score and recompute its MatchEnd total. Approved Judges may update the active current stage, Players their own current match's unconfirmed end, and Admins may perform rescue updates. Confirmed ends require the aggregate endpoint.",
+                "description": "Update one MatchScore score and recompute its MatchEnd total. Approved Judges may update the active current stage, Players their own current match's unconfirmed end while a recurve match has no persisted winner, and Admins may perform rescue updates. Confirmed ends require the aggregate endpoint.",
                 "consumes": [
                     "application/json"
                 ],
@@ -7346,6 +7346,13 @@ const docTemplate = `{
                         "$ref": "#/definitions/database.PlayerSet"
                     }
                 },
+                "scoring_status": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.EliminationScoringStatus"
+                    },
+                    "readOnly": true
+                },
                 "stages": {
                     "type": "array",
                     "items": {
@@ -7354,6 +7361,38 @@ const docTemplate = `{
                 },
                 "team_size": {
                     "type": "integer"
+                }
+            }
+        },
+        "database.EliminationEndConfirmation": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "integer"
+                },
+                "is_confirmed": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "database.EliminationScoringStatus": {
+            "type": "object",
+            "properties": {
+                "end_confirmations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/database.EliminationEndConfirmation"
+                    }
+                },
+                "is_scoring_closed": {
+                    "type": "boolean"
+                },
+                "match_id": {
+                    "type": "integer"
+                },
+                "winner_match_result_id": {
+                    "type": "integer",
+                    "x-nullable": true
                 }
             }
         },
