@@ -25,6 +25,7 @@ type EliminationReadback = {
       match_results: Array<{
         id: number;
         player_set_id: number;
+        is_winner: boolean;
         total_points: number;
         match_ends: Array<{
           is_confirmed: boolean;
@@ -52,9 +53,8 @@ export async function assertArcher01ReadsConfirmedQualificationFirstEnd(page: Pa
 }
 
 /**
- * Opens the supplied Player context's scoring page after a Judge correction.
- * The player UI shows only the current end, so this checks only its visible
- * selected MatchResult, current arrows, current total and confirmation state.
+ * Opens the winning recurve Player's scoring page after a Judge correction.
+ * The closed board retains the deciding end and its confirmation state.
  * Its selected MatchResult ID is cross-checked against official detail.
  */
 export async function assertPlayerReadsConfirmedCurrentMatch(page: Page, options: CurrentMatchReadback) {
@@ -75,8 +75,7 @@ export async function assertPlayerReadsConfirmedCurrentMatch(page: Page, options
   await expect(winner.locator(".name_bar")).toHaveText(options.winnerTeam);
   await expect(loser.locator(".name_bar")).toHaveText(options.loserTeam);
 
-  // The player page intentionally renders only the current end. Its selector
-  // and ScoreController must therefore agree with that confirmed end.
+  // The closed board must retain the confirmed deciding end without reopening scoring.
   // Every caller is a member of winnerTeam. Do not click a side here: that
   // would hide a regression where the player board initially selects another
   // MatchResult.
@@ -86,10 +85,13 @@ export async function assertPlayerReadsConfirmedCurrentMatch(page: Page, options
   await expect(loser.locator(".score_block").allTextContents()).resolves.toEqual(loserScores);
   await expect(winner.locator(".match_total_score")).toHaveText(String(winnerTotal));
   await expect(loser.locator(".match_total_score")).toHaveText(String(loserTotal));
-  await expect(board.locator(".controll_button_group").getByRole("button", { name: "已確認", exact: true })).toBeVisible();
+  await expect(board.getByText("本場對抗已結束", { exact: true })).toBeVisible();
+  await expect(board.getByText(`勝者：${options.winnerTeam}`, { exact: true })).toBeVisible();
+  await expect(board.getByRole("button", { name: "已確認", exact: true })).toBeDisabled();
+  await expect(board.locator(".controll_button_group")).toHaveCount(0);
+  await expect(board.getByRole("button", { name: "送出", exact: true })).toHaveCount(0);
 
-  // The page does not render historical ends or match points. Official detail
-  // is used only to identify the current MatchResult selected by this player.
+  // Independently verify the selected result and its saved deciding end.
   const response = await page.request.get(`/api/elimination/stages/scores/medals/${options.eliminationId}`);
   expect(response.ok()).toBeTruthy();
   const detail = await response.json() as EliminationReadback;
@@ -104,6 +106,7 @@ export async function assertPlayerReadsConfirmedCurrentMatch(page: Page, options
   expect(match, "player's current match").toBeDefined();
   const selectedResult = match!.match_results.find((result) => result.player_set_id === winnerId);
   expect(selectedResult, "selected MatchResult").toBeDefined();
+  expect(selectedResult?.is_winner).toBe(true);
   expect(Number(await selected.getAttribute("value"))).toBe(selectedResult!.id);
   const currentEnd = selectedResult!.match_ends[detail.current_end];
   expect(currentEnd, "selected current MatchEnd").toBeDefined();
