@@ -5,6 +5,7 @@ import (
 	response "backend/internal/response"
 	"errors"
 	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -225,36 +226,62 @@ func GetMatchWScoresById(context *gin.Context) {
 }
 
 func PostEliminationById(context *gin.Context, data database.Elimination) (bool, database.Elimination) {
-	newdata, err := database.CreateElimination(data)
-	if response.ErrorInternalErrorTest(context, newdata.ID, "Create Elimination", err) {
+	if data.TeamSize < 1 || data.TeamSize > 3 {
+		response.ErrorReceiveDataFormat(context, "team_size must be 1, 2, or 3")
 		return false, database.Elimination{}
 	}
-	id := newdata.ID
-	/*create medals*/
-	for i := 0; i < 3; i++ {
-		var medal database.Medal
-		medal.EliminationId = id
-		medal.Type = i
-		medal, err = database.CreateMedal(medal)
-		if response.ErrorInternalErrorTest(context, id, "Create Medal when creating elimination", err) {
-			return false, database.Elimination{}
-		}
+	// Resolve the parent outside the transaction; the locked transaction revalidates the group.
+	group, err := database.GetGroupInfoById(data.GroupId)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		response.ErrorIdTest(context, data.GroupId, false, "group when creating elimination")
+		return false, database.Elimination{}
 	}
-	response.AcceptPrint(id, fmt.Sprint(newdata), "Elimination")
-	return true, newdata
+	if response.ErrorInternalErrorTest(context, data.GroupId, "Get elimination group", err) {
+		return false, database.Elimination{}
+	}
+	var newData database.Elimination
+	err = database.DB.Transaction(func(tx *gorm.DB) error {
+		competition, err := lockCompetitionForEliminationCreation(tx, group.CompetitionId)
+		if err != nil {
+			return err
+		}
+		var currentGroup database.Group
+		if err := tx.Where("id = ? AND competition_id = ?", data.GroupId, competition.ID).First(&currentGroup).Error; err != nil {
+			return err
+		}
+		if currentGroup.ID == competition.UnassignedGroupId || currentGroup.GroupIndex == -1 {
+			return gorm.ErrRecordNotFound
+		}
+		newData, _, err = ensureElimination(tx, currentGroup.ID, data.TeamSize)
+		return err
+	})
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		response.ErrorIdTest(context, data.GroupId, false, "group when creating elimination")
+		return false, database.Elimination{}
+	}
+	if errors.Is(err, errEliminationCreationConflict) {
+		context.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		return false, database.Elimination{}
+	}
+	if response.ErrorInternalErrorTest(context, data.GroupId, "Create Elimination", err) {
+		return false, database.Elimination{}
+	}
+	response.AcceptPrint(newData.ID, fmt.Sprint(newData), "Elimination")
+	return true, newData
 }
 
 // Post one Elimination godoc
 //
 //	@Summary		Create one Elimination
-//	@Description	Post one new Elimination data, and three medals
+//	@Description	Create or return the Elimination for group_id and team_size, filling missing medals without overwriting existing data
 //	@Tags			Elimination
 //	@Accept			json
 //	@Produce		json
 //	@Param			Elimination	body		endpoint.PostElimination.PostEliminationData												true	"Elimination"
-//	@Success		200			{object}	database.Elimination{player_sets=response.Nill,stages=response.Nill,medals=response.Nill}	"success, return one Elimination with new id"
-//	@Failure		400			{object}	response.ErrorIdResponse																	"invalid group ID, maybe not exist"
+//	@Success		200			{object}	database.Elimination{player_sets=response.Nill,stages=response.Nill,medals=response.Nill}	"success, return the new or existing Elimination"
+//	@Failure		400			{object}	response.ErrorIdResponse																	"invalid group ID or team_size; group must be assigned"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse															"internal db error for Create Elimination"
+//	@Failure		409			{object}	response.ErrorResponse	"duplicate elimination or medal type"
 //	@Router			/elimination [post]
 func PostElimination(context *gin.Context) {
 	type PostEliminationData struct {
@@ -262,16 +289,12 @@ func PostElimination(context *gin.Context) {
 		TeamSize int  `json:"team_size"`
 	}
 	_ = PostEliminationData{}
-	var data database.Elimination
+	var data PostEliminationData
 	err := context.BindJSON(&data)
 	if response.ErrorReceiveDataTest(context, 0, "Elimination", err) {
 		return
-	} else if response.ErrorIdTest(context, data.GroupId, database.GetGroupIsExist(data.GroupId), "group when creating elimination") {
-		return
 	}
-	data.CurrentEnd = 0
-	data.CurrentStage = 0
-	success, newData := PostEliminationById(context, data)
+	success, newData := PostEliminationById(context, database.Elimination{GroupId: data.GroupId, TeamSize: data.TeamSize})
 	if !success {
 		return
 	}
