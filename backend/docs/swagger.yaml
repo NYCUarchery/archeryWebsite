@@ -67,12 +67,38 @@ definitions:
         items:
           $ref: '#/definitions/database.PlayerSet'
         type: array
+      scoring_status:
+        items:
+          $ref: '#/definitions/database.EliminationScoringStatus'
+        readOnly: true
+        type: array
       stages:
         items:
           $ref: '#/definitions/database.Stage'
         type: array
       team_size:
         type: integer
+    type: object
+  database.EliminationEndConfirmation:
+    properties:
+      id:
+        type: integer
+      is_confirmed:
+        type: boolean
+    type: object
+  database.EliminationScoringStatus:
+    properties:
+      end_confirmations:
+        items:
+          $ref: '#/definitions/database.EliminationEndConfirmation'
+        type: array
+      is_scoring_closed:
+        type: boolean
+      match_id:
+        type: integer
+      winner_match_result_id:
+        type: integer
+        x-nullable: true
     type: object
   database.Group:
     properties:
@@ -2126,7 +2152,8 @@ paths:
       tags:
       - Elimination
     get:
-      description: Get only one Elimination by id
+      description: Get elimination progress and current-stage persisted winner/confirmation
+        states without loading arrows. This read never changes winners.
       parameters:
       - description: Elimination ID
         in: path
@@ -3642,8 +3669,10 @@ paths:
     patch:
       consumes:
       - application/json
-      description: Confirm an eligible MatchEnd as Player, Judge, or Admin. Only the
-        owning competition Admin may change a confirmed MatchEnd back to unconfirmed.
+      description: Confirm an eligible MatchEnd as Player, Judge, or Admin. Players
+        require a full set of saved arrows and may still confirm the deciding end
+        after a recurve winner is recorded. Only the owning competition Admin may
+        change a confirmed MatchEnd back to unconfirmed.
       parameters:
       - description: MatchEnd ID
         in: path
@@ -3687,7 +3716,7 @@ paths:
       - application/json
       description: |-
         Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids
-        Approved Judges may update the active current stage, Players their own current match's unconfirmed end, and Admins may perform rescue updates. A confirmed MatchEnd requires Judge or Admin and every MatchScore exactly once; confirmation remains set and total/outcome are recomputed atomically.
+        Approved Judges may update the active current stage, Players their own current match's unconfirmed end while a recurve match has no persisted winner, and Admins may perform rescue updates. A confirmed MatchEnd requires Judge or Admin and every MatchScore exactly once; confirmation remains set and total/outcome are recomputed atomically.
       parameters:
       - description: MatchEnd ID
         in: path
@@ -3731,8 +3760,8 @@ paths:
       - application/json
       description: Recompute one MatchEnd total score from its arrows. Approved Judges
         may update the active current stage, Players their own current match's unconfirmed
-        end, and Admins may perform rescue updates. Confirmed ends must use the aggregate
-        scores endpoint.
+        end while a recurve match has no persisted winner, and Admins may perform
+        rescue updates. Confirmed ends must use the aggregate scores endpoint.
       parameters:
       - description: MatchEnd ID
         in: path
@@ -3776,8 +3805,8 @@ paths:
       - application/json
       description: Update one MatchScore score and recompute its MatchEnd total. Approved
         Judges may update the active current stage, Players their own current match's
-        unconfirmed end, and Admins may perform rescue updates. Confirmed ends require
-        the aggregate endpoint.
+        unconfirmed end while a recurve match has no persisted winner, and Admins
+        may perform rescue updates. Confirmed ends require the aggregate endpoint.
       parameters:
       - description: MatchScore ID
         in: path

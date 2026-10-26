@@ -82,7 +82,7 @@ func IsGetEliminationWStagesMatchesById(context *gin.Context) (bool, database.El
 // Get one Elimination By ID godoc
 //
 //	@Summary		Show only one Elimination
-//	@Description	Get only one Elimination by id
+//	@Description	Get elimination progress and current-stage persisted winner/confirmation states without loading arrows. This read never changes winners.
 //	@Tags			Elimination
 //	@Produce		json
 //	@Param			id	path		int																							true	"Elimination ID"
@@ -91,8 +91,12 @@ func IsGetEliminationWStagesMatchesById(context *gin.Context) (bool, database.El
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse															"internal db error for Get Elimination"
 //	@Router			/elimination/{id} [get]
 func GetOnlyEliminationById(context *gin.Context) {
-	isExist, data := IsGetEliminationById(context)
+	isExist, _ := IsGetEliminationById(context)
 	if !isExist {
+		return
+	}
+	data, err := database.GetEliminationProgressById(Convert2uint(context, "id"))
+	if response.ErrorInternalErrorTest(context, data.ID, "Get elimination scoring status", err) {
 		return
 	}
 	context.IndentedJSON(200, data)

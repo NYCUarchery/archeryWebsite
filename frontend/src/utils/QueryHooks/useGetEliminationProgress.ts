@@ -4,8 +4,8 @@ import { apiClient } from "@/utils/ApiClient";
 /**
  * 記分頁專用的輕量對抗賽進度。
  *
- * 僅輪詢 current_stage / current_end 所在的 elimination；完整籤表與比分仍由
- * useGetEliminationDetail 的長效快取提供，故輪詢不會覆寫正在輸入的本地分數。
+ * 輪詢輪次、波次、勝者與確認狀態；狀態改變時才重取完整比分，
+ * 不以輪詢資料覆寫正在輸入的本地草稿。
  */
 export default function useGetEliminationProgress(
   eliminationId: number | undefined,
