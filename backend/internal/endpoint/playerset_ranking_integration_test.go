@@ -6,7 +6,9 @@ import (
 	"backend/internal/database"
 	"backend/internal/pkg"
 	"bytes"
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -17,6 +19,7 @@ import (
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/go-sql-driver/mysql"
 	"github.com/stretchr/testify/suite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
@@ -522,6 +525,65 @@ func (suite *PlayerSetRankingIntegrationTestSuite) TestRankingMutationSerializes
 	recorder := <-responses
 	suite.Equal(http.StatusOK, recorder.Code, recorder.Body.String())
 	suite.NotEqual(before, suite.currentRanks(elimination.ID))
+}
+
+// A player_sets scan holding FOR UPDATE must lock only the elimination it
+// filters: another elimination's player set row stays mutable, while the
+// same elimination's locked row times out. The blocked same-elimination
+// update is the control proving the scan really holds row locks, so the
+// other elimination's success cannot come from a scan that locked nothing.
+func (suite *PlayerSetRankingIntegrationTestSuite) TestPlayerSetEliminationsLockIndependently() {
+	elimination, group, lane, participant, _, _ := suite.newElimination(1)
+	other, otherGroup, otherLane, otherParticipant, _, _ := suite.newElimination(1)
+	suite.singlePlayerSet(elimination.ID, group.ID, lane.ID, participant, "a", 100, nil)
+	suite.singlePlayerSet(elimination.ID, group.ID, lane.ID, participant, "b", 90, nil)
+	foreignSet := suite.singlePlayerSet(other.ID, otherGroup.ID, otherLane.ID, otherParticipant, "foreign", 1, nil)
+
+	sqlDB, err := database.DB.DB()
+	suite.Require().NoError(err)
+	ctx := context.Background()
+	lockConn, err := sqlDB.Conn(ctx)
+	suite.Require().NoError(err)
+	defer lockConn.Close()
+	mutatorConn, err := sqlDB.Conn(ctx)
+	suite.Require().NoError(err)
+	defer mutatorConn.Close()
+
+	lockTx, err := lockConn.BeginTx(ctx, nil)
+	suite.Require().NoError(err)
+	defer func() { _ = lockTx.Rollback() }()
+	rows, err := lockTx.QueryContext(ctx,
+		"SELECT id FROM player_sets WHERE elimination_id = ? ORDER BY `rank`, id FOR UPDATE", elimination.ID)
+	suite.Require().NoError(err)
+	var heldIDs []int64
+	for rows.Next() {
+		var id int64
+		suite.Require().NoError(rows.Scan(&id))
+		heldIDs = append(heldIDs, id)
+	}
+	suite.Require().NoError(rows.Err())
+	suite.Require().NoError(rows.Close())
+	suite.Require().Len(heldIDs, 2)
+
+	// Any unexpected block must fail fast as a lock wait timeout instead of
+	// hanging the suite.
+	_, err = mutatorConn.ExecContext(ctx, "SET innodb_lock_wait_timeout = 1")
+	suite.Require().NoError(err)
+
+	result, err := mutatorConn.ExecContext(ctx, "UPDATE player_sets SET set_name = 'foreign-renamed' WHERE id = ?", foreignSet.ID)
+	suite.Require().NoError(err, "a held player_sets FOR UPDATE scan of one elimination must not block another elimination's player set")
+	affected, err := result.RowsAffected()
+	suite.Require().NoError(err)
+	suite.EqualValues(1, affected)
+
+	opCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	_, err = mutatorConn.ExecContext(opCtx, "UPDATE player_sets SET set_name = 'locked-rename' WHERE id = ?", heldIDs[0])
+	var mysqlErr *mysql.MySQLError
+	suite.Require().True(errors.As(err, &mysqlErr), "same-elimination row must stay blocked while the scan is held; got %v", err)
+	suite.Equal(1205, int(mysqlErr.Number), "expected an InnoDB lock wait timeout, got %v", err)
+
+	suite.Require().NoError(lockTx.Rollback())
 }
 
 // TestDeprecatedPrerankingMatchesAutoRankTieBreakAndGating covers case 12:
