@@ -40,8 +40,22 @@ export interface DatabaseElimination {
   id?: number;
   medals?: DatabaseMedal[];
   player_sets?: DatabasePlayerSet[];
+  /** @readonly */
+  scoring_status?: DatabaseEliminationScoringStatus[];
   stages?: DatabaseStage[];
   team_size?: number;
+}
+
+export interface DatabaseEliminationEndConfirmation {
+  id?: number;
+  is_confirmed?: boolean;
+}
+
+export interface DatabaseEliminationScoringStatus {
+  end_confirmations?: DatabaseEliminationEndConfirmation[];
+  is_scoring_closed?: boolean;
+  match_id?: number;
+  winner_match_result_id?: number | null;
 }
 
 export interface DatabaseGroup {
@@ -1645,7 +1659,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Get only one Elimination by id
+     * @description Get elimination progress and current-stage persisted winner/confirmation states without loading arrows. This read never changes winners.
      *
      * @tags Elimination
      * @name EliminationDetail
@@ -2062,7 +2076,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Confirm an eligible MatchEnd as Player, Judge, or Admin. Only the owning competition Admin may change a confirmed MatchEnd back to unconfirmed.
+     * @description Confirm an eligible MatchEnd as Player, Judge, or Admin. Players require a full set of saved arrows and may still confirm the deciding end after a recurve winner is recorded. Only the owning competition Admin may change a confirmed MatchEnd back to unconfirmed.
      *
      * @tags MatchEnd
      * @name MatchendIsconfirmedPartialUpdate
@@ -2083,7 +2097,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids Approved Judges may update the active current stage, Players their own current match's unconfirmed end, and Admins may perform rescue updates. A confirmed MatchEnd requires Judge or Admin and every MatchScore exactly once; confirmation remains set and total/outcome are recomputed atomically.
+     * @description Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids Approved Judges may update the active current stage, Players their own current match's unconfirmed end while a recurve match has no persisted winner, and Admins may perform rescue updates. A confirmed MatchEnd requires Judge or Admin and every MatchScore exactly once; confirmation remains set and total/outcome are recomputed atomically.
      *
      * @tags MatchEnd
      * @name MatchendScoresPartialUpdate
@@ -2104,7 +2118,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Recompute one MatchEnd total score from its arrows. Approved Judges may update the active current stage, Players their own current match's unconfirmed end, and Admins may perform rescue updates. Confirmed ends must use the aggregate scores endpoint.
+     * @description Recompute one MatchEnd total score from its arrows. Approved Judges may update the active current stage, Players their own current match's unconfirmed end while a recurve match has no persisted winner, and Admins may perform rescue updates. Confirmed ends must use the aggregate scores endpoint.
      *
      * @tags MatchEnd
      * @name MatchendTotalscorePartialUpdate
@@ -2125,7 +2139,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
       }),
 
     /**
-     * @description Update one MatchScore score and recompute its MatchEnd total. Approved Judges may update the active current stage, Players their own current match's unconfirmed end, and Admins may perform rescue updates. Confirmed ends require the aggregate endpoint.
+     * @description Update one MatchScore score and recompute its MatchEnd total. Approved Judges may update the active current stage, Players their own current match's unconfirmed end while a recurve match has no persisted winner, and Admins may perform rescue updates. Confirmed ends require the aggregate endpoint.
      *
      * @tags MatchScore
      * @name MatchscoreScorePartialUpdate

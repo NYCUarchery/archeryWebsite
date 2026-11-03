@@ -106,15 +106,52 @@ export default function useCurrentEliminationMatch(
     progress !== undefined &&
     (detail.current_stage !== progress.current_stage ||
       detail.current_end !== progress.current_end);
+  const detailBowType = competitionQuery.data?.groups?.find(
+    (group) => group.id === detail?.group_id
+  )?.bow_type;
+  const isRecurve = detailBowType === "Recurve" || detailBowType === "反曲弓";
+  const myPlayerSetId = detail?.player_sets?.find((set) =>
+    set.players?.some((player) => player.id === myPlayer?.id)
+  )?.id;
+  const currentMatch = myPlayerSetId === undefined ? undefined :
+    detail?.stages?.[progress?.current_stage ?? -1]?.matchs?.find((match) =>
+      match.match_results?.some((result) => result.player_set_id === myPlayerSetId)
+    );
+  const remoteMatchStatus = progress?.scoring_status?.find(
+    (match) => match.match_id === currentMatch?.id
+  );
+  const localWinnerId = currentMatch?.match_results?.find((result) => result.is_winner)?.id ?? null;
+  const localConfirmations = currentMatch?.match_results?.flatMap((result) =>
+    (result.match_ends ?? []).map((end) => ({ id: end.id, is_confirmed: end.is_confirmed ?? false }))
+  ) ?? [];
+  const confirmationKey = (ends: { id?: number; is_confirmed?: boolean }[]) =>
+    JSON.stringify(ends.map((end) => ({ id: end.id, is_confirmed: end.is_confirmed ?? false }))
+      .sort((left, right) => (left.id ?? 0) - (right.id ?? 0)));
+  const scoringStatusChanged = remoteMatchStatus !== undefined && (
+    (remoteMatchStatus.winner_match_result_id ?? null) !== localWinnerId ||
+    confirmationKey(remoteMatchStatus.end_confirmations ?? []) !== confirmationKey(localConfirmations)
+  );
+  const bowTypeChanged = localWinnerId !== null &&
+    remoteMatchStatus?.winner_match_result_id === localWinnerId &&
+    remoteMatchStatus.is_scoring_closed !== undefined &&
+    remoteMatchStatus.is_scoring_closed !== isRecurve;
+  const refetchDetail = eliminationDetailQuery.refetch;
+  const refetchCompetition = competitionQuery.refetch;
 
   useEffect(() => {
-    if (progressChanged) void eliminationDetailQuery.refetch();
+    if (progressChanged || scoringStatusChanged) void refetchDetail();
   }, [
     progressChanged,
+    scoringStatusChanged,
     progress?.current_stage,
     progress?.current_end,
-    eliminationDetailQuery.refetch,
+    eliminationProgressQuery.dataUpdatedAt,
+    refetchDetail,
   ]);
+
+  useEffect(() => {
+    if (bowTypeChanged) void refetchCompetition();
+  }, [bowTypeChanged, eliminationProgressQuery.dataUpdatedAt, refetchCompetition]);
 
   const retryAll = () => {
     userQuery.refetch();
@@ -235,7 +272,7 @@ export default function useCurrentEliminationMatch(
   if (myPlayerSet?.id === undefined) {
     return { kind: "noPlayerSet" };
   }
-  const myPlayerSetId = myPlayerSet.id;
+  const readyPlayerSetId = myPlayerSet.id;
 
   // current_stage 越界檢查。DatabaseStage 未提供可辨識序欄位，僅能以陣列位置對應。
   const currentStageIndex = eliminationProgressQuery.data.current_stage;
@@ -251,7 +288,7 @@ export default function useCurrentEliminationMatch(
   const currentStage = stages[currentStageIndex];
 
   const match = currentStage.matchs?.find((m) =>
-    m.match_results?.some((mr) => mr.player_set_id === myPlayerSetId)
+    m.match_results?.some((mr) => mr.player_set_id === readyPlayerSetId)
   );
   if (!match) {
     return { kind: "noMatch" };
@@ -259,7 +296,7 @@ export default function useCurrentEliminationMatch(
 
   const matchResults = match.match_results ?? [];
   const myMatchResult = matchResults.find(
-    (mr) => mr.player_set_id === myPlayerSetId
+    (mr) => mr.player_set_id === readyPlayerSetId
   );
   if (myMatchResult?.id === undefined) {
     return { kind: "noMatch" };
@@ -307,7 +344,7 @@ export default function useCurrentEliminationMatch(
       currentEndIndex,
       match,
       matchResults,
-      myPlayerSetId,
+      myPlayerSetId: readyPlayerSetId,
       myMatchResultId,
       myPlayer,
     },

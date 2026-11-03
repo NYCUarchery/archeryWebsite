@@ -8,16 +8,29 @@ import (
 )
 
 type Elimination struct {
-	ID               uint         `json:"id"                  gorm:"primary_key"`
-	GroupId          uint         `json:"group_id"            gorm:"constraint:oneToMany;"`
-	CurrentStage     uint         `json:"current_stage"`
-	CurrentEnd       uint         `json:"current_end"`
-	TeamSize         int          `json:"team_size"`
-	BracketSeedCount int          `json:"bracket_seed_count"`
-	PlayerSets       []*PlayerSet `json:"player_sets"         gorm:"constraint:OnDelete:CASCADE;"`
-	Stages           []*Stage     `json:"stages"              gorm:"constraint:OnDelete:CASCADE;"`
-	Medals           []*Medal     `json:"medals"              gorm:"constraint:OnDelete:CASCADE;"`
+	ID               uint                       `json:"id"                  gorm:"primary_key"`
+	GroupId          uint                       `json:"group_id"            gorm:"constraint:oneToMany;"`
+	CurrentStage     uint                       `json:"current_stage"`
+	CurrentEnd       uint                       `json:"current_end"`
+	TeamSize         int                        `json:"team_size"`
+	BracketSeedCount int                        `json:"bracket_seed_count"`
+	PlayerSets       []*PlayerSet               `json:"player_sets"         gorm:"constraint:OnDelete:CASCADE;"`
+	Stages           []*Stage                   `json:"stages"              gorm:"constraint:OnDelete:CASCADE;"`
+	ScoringStatus    []EliminationScoringStatus `json:"scoring_status,omitempty" gorm:"-" readonly:"true"`
+	Medals           []*Medal                   `json:"medals"              gorm:"constraint:OnDelete:CASCADE;"`
 }
+type EliminationScoringStatus struct {
+	MatchID             uint                         `json:"match_id"`
+	WinnerMatchResultID *uint                        `json:"winner_match_result_id" extensions:"x-nullable"`
+	IsScoringClosed     bool                         `json:"is_scoring_closed"`
+	EndConfirmations    []EliminationEndConfirmation `json:"end_confirmations"`
+}
+
+type EliminationEndConfirmation struct {
+	ID          uint `json:"id"`
+	IsConfirmed bool `json:"is_confirmed"`
+}
+
 type Stage struct {
 	ID            uint     `json:"id"        gorm:"primary_key"`
 	EliminationId uint     `json:"elimination_id"`
@@ -446,4 +459,57 @@ func DeleteElimination(id uint) (bool, error) {
 	result := DB.Delete(&Elimination{}, "id =?", id)
 	isChanged := result.RowsAffected != 0
 	return isChanged, result.Error
+}
+
+// GetEliminationProgressById reads current_stage and its persisted outcomes
+// from one snapshot, without loading arrows or recomputing winners.
+func GetEliminationProgressById(id uint) (Elimination, error) {
+	var data Elimination
+	err := DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Table("eliminations").Select("eliminations.*").
+			Joins("JOIN `groups` ON `groups`.id = eliminations.group_id").
+			Joins("JOIN competitions ON competitions.id = `groups`.competition_id").
+			Where("eliminations.id = ? AND competitions.deleted_at IS NULL", id).
+			First(&data).Error; err != nil {
+			return err
+		}
+		return loadEliminationScoringStatus(tx, &data)
+	})
+	return data, err
+}
+
+func loadEliminationScoringStatus(tx *gorm.DB, data *Elimination) error {
+	var stage Stage
+	result := tx.Where("elimination_id = ?", data.ID).Order("id ASC").Offset(int(data.CurrentStage)).Limit(1).Find(&stage)
+	if result.Error != nil || stage.ID == 0 {
+		return result.Error
+	}
+	var group Group
+	if err := tx.Select("bow_type").First(&group, data.GroupId).Error; err != nil {
+		return err
+	}
+	var matches []Match
+	if err := tx.Where("stage_id = ?", stage.ID).Order("id ASC").
+		Preload("MatchResults", func(tx *gorm.DB) *gorm.DB { return tx.Select("id", "match_id", "is_winner").Order("id ASC") }).
+		Preload("MatchResults.MatchEnds", func(tx *gorm.DB) *gorm.DB { return tx.Select("id", "match_result_id", "is_confirmed").Order("id ASC") }).
+		Find(&matches).Error; err != nil {
+		return err
+	}
+	data.ScoringStatus = make([]EliminationScoringStatus, 0, len(matches))
+	for _, match := range matches {
+		status := EliminationScoringStatus{MatchID: match.ID, EndConfirmations: []EliminationEndConfirmation{}}
+		for _, result := range match.MatchResults {
+			if result.IsWinner && status.WinnerMatchResultID == nil {
+				winnerID := result.ID
+				status.WinnerMatchResultID = &winnerID
+			}
+			for _, end := range result.MatchEnds {
+				status.EndConfirmations = append(status.EndConfirmations, EliminationEndConfirmation{ID: end.ID, IsConfirmed: end.IsConfirmed})
+			}
+		}
+		sort.Slice(status.EndConfirmations, func(i, j int) bool { return status.EndConfirmations[i].ID < status.EndConfirmations[j].ID })
+		status.IsScoringClosed = IsRecurveScoringClosed(group.BowType, status.WinnerMatchResultID != nil)
+		data.ScoringStatus = append(data.ScoringStatus, status)
+	}
+	return nil
 }

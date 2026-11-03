@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 type groupIdsForReorder struct {
@@ -207,6 +208,8 @@ func UpdateGroupPlayerRanking(context *gin.Context) {
 //	@Success		200			{object}	database.Group{players=response.Nill}	"success, return new GroupInfo data"
 //	@Failure		400			{object}	response.ErrorIdResponse				"invalid Competition ID, may not exist"
 //	@Failure		500			{object}	response.ErrorInternalErrorResponse		"database error for Create GroupInfo, Create Qualification, Create Elimination, get Competition"
+//	@Description	Atomically creates Qualification, individual Elimination, and any enabled team/mixed Eliminations with medals.
+//	@Failure		409			{object}	response.ErrorResponse	"duplicate elimination or medal type"
 //	@Router			/groupinfo [post]
 func PostGroupInfo(context *gin.Context) {
 	type GroupData struct {
@@ -225,33 +228,52 @@ func PostGroupInfo(context *gin.Context) {
 	} else if response.ErrorReceiveDataNilTest(context, 0, data, "GroupInfo") {
 		return
 	}
-	/*competition id check*/
-	if response.ErrorIdTest(context, data.CompetitionId, database.GetCompetitionIsExist(data.CompetitionId), "Competition(in groupinfo)") {
+	var newData database.Group
+	err = database.DB.Transaction(func(tx *gorm.DB) error {
+		competition, err := lockCompetitionForEliminationCreation(tx, data.CompetitionId)
+		if err != nil {
+			return err
+		}
+		newData = database.Group{
+			CompetitionId: competition.ID,
+			GroupName:     data.GroupName,
+			GroupRange:    data.GroupRange,
+			BowType:       data.BowType,
+			GroupIndex:    competition.GroupsNum,
+		}
+		if err := tx.Create(&newData).Error; err != nil {
+			return err
+		}
+		qualification := database.Qualification{ID: newData.ID}
+		if err := tx.Create(&qualification).Error; err != nil {
+			return err
+		}
+		teamSizes := []int{1}
+		if competition.TeamEliminationIsActive {
+			teamSizes = append(teamSizes, 3)
+		}
+		if competition.MixedEliminationIsActive {
+			teamSizes = append(teamSizes, 2)
+		}
+		for _, teamSize := range teamSizes {
+			if _, _, err := ensureElimination(tx, newData.ID, teamSize); err != nil {
+				return err
+			}
+		}
+		return tx.Model(&database.Competition{}).Where("id = ?", competition.ID).
+			Update("groups_num", competition.GroupsNum+1).Error
+	})
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		response.ErrorIdTest(context, data.CompetitionId, false, "Competition(in groupinfo)")
 		return
 	}
-	/*auto write GroupIndex*/
-	data.GroupIndex = database.GetCompetitionGroupNum(data.CompetitionId)
-
-	newData, err := database.CreateGroupInfo(data)
-	if response.ErrorInternalErrorTest(context, newData.ID, "Post GroupInfo", err) {
+	if errors.Is(err, errEliminationCreationConflict) {
+		context.JSON(http.StatusConflict, gin.H{"error": err.Error()})
 		return
 	}
-	/*auto create qualification*/
-	if !PostQualificationThroughGroup(context, newData.ID) {
+	if response.ErrorInternalErrorTest(context, data.CompetitionId, "Post GroupInfo", err) {
 		return
 	}
-	/*auto create elimination*/
-	var elimination database.Elimination
-	elimination.GroupId = newData.ID
-	elimination.CurrentEnd = 0
-	elimination.CurrentStage = 0
-	elimination.TeamSize = 1
-	success, _ := PostEliminationById(context, elimination)
-	if !success {
-		return
-	}
-	/*update competition.groupnum*/
-	database.AddOneCompetitionGroupNum(data.CompetitionId)
 	context.IndentedJSON(http.StatusOK, newData)
 }
 

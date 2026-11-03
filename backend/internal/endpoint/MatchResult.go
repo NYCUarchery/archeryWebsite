@@ -440,7 +440,7 @@ func PutMatchResultShootOffScoreById(context *gin.Context) {
 		if err != nil {
 			return err
 		}
-		if _, err := authorizeEliminationScore(context, tx, eliminationID, matchID, nil); err != nil {
+		if _, err := authorizeEliminationScore(context, tx, eliminationID, matchID, nil, eliminationScoreWrite); err != nil {
 			return err
 		}
 		if err := requireOccupiedMatch(tx, matchID); err != nil {
@@ -1162,7 +1162,7 @@ func PutMatchResultLaneNumberById(context *gin.Context) {
 // Put MatchEnd totalScores godoc
 //
 //	@Summary		Update one MatchEnd totalScores
-//	@Description	Recompute one MatchEnd total score from its arrows. Approved Judges may update the active current stage, Players their own current match's unconfirmed end, and Admins may perform rescue updates. Confirmed ends must use the aggregate scores endpoint.
+//	@Description	Recompute one MatchEnd total score from its arrows. Approved Judges may update the active current stage, Players their own current match's unconfirmed end while a recurve match has no persisted winner, and Admins may perform rescue updates. Confirmed ends must use the aggregate scores endpoint.
 //	@Tags			MatchEnd
 //	@Accept			json
 //	@Param			id			path		int																true	"MatchEnd ID"
@@ -1202,7 +1202,7 @@ func PutMatchEndsTotalScoresById(context *gin.Context) {
 		if err != nil {
 			return err
 		}
-		if _, err := authorizeEliminationScore(context, tx, eliminationID, matchID, &id); err != nil {
+		if _, err := authorizeEliminationScore(context, tx, eliminationID, matchID, &id, eliminationScoreWrite); err != nil {
 			return err
 		}
 		if err := requireOccupiedMatch(tx, matchID); err != nil {
@@ -1250,7 +1250,7 @@ func PutMatchEndsTotalScoresById(context *gin.Context) {
 //
 //	@Summary		Update one MatchEnd scores
 //	@Description	Update one MatchEnd totalScores by id and all related MatchScores by MatchScore ids
-//	@Description	Approved Judges may update the active current stage, Players their own current match's unconfirmed end, and Admins may perform rescue updates. A confirmed MatchEnd requires Judge or Admin and every MatchScore exactly once; confirmation remains set and total/outcome are recomputed atomically.
+//	@Description	Approved Judges may update the active current stage, Players their own current match's unconfirmed end while a recurve match has no persisted winner, and Admins may perform rescue updates. A confirmed MatchEnd requires Judge or Admin and every MatchScore exactly once; confirmation remains set and total/outcome are recomputed atomically.
 //	@Tags			MatchEnd
 //	@Accept			json
 //	@Param			id					path		int													true	"MatchEnd ID"
@@ -1307,7 +1307,7 @@ func PutMatchEndsScoresById(context *gin.Context) {
 		if err != nil {
 			return err
 		}
-		actor, err := authorizeEliminationScore(context, tx, eliminationID, matchID, &matchEndId)
+		actor, err := authorizeEliminationScore(context, tx, eliminationID, matchID, &matchEndId, eliminationScoreWrite)
 		if err != nil {
 			return err
 		}
@@ -1376,7 +1376,7 @@ func PutMatchEndsScoresById(context *gin.Context) {
 // Put MatchEnd isConfirmed godoc
 //
 //	@Summary		Update one MatchEnd isConfirmed
-//	@Description	Confirm an eligible MatchEnd as Player, Judge, or Admin. Only the owning competition Admin may change a confirmed MatchEnd back to unconfirmed.
+//	@Description	Confirm an eligible MatchEnd as Player, Judge, or Admin. Players require a full set of saved arrows and may still confirm the deciding end after a recurve winner is recorded. Only the owning competition Admin may change a confirmed MatchEnd back to unconfirmed.
 //	@Tags			MatchEnd
 //	@Accept			json
 //	@Param			id			path		int																true	"MatchEnd ID"
@@ -1412,7 +1412,7 @@ func PutMatchEndsIsConfirmedById(context *gin.Context) {
 		if err != nil {
 			return err
 		}
-		actor, err := authorizeEliminationScore(context, tx, eliminationID, matchID, &id)
+		actor, err := authorizeEliminationScore(context, tx, eliminationID, matchID, &id, eliminationScoreConfirmation)
 		if err != nil {
 			return err
 		}
@@ -1422,6 +1422,28 @@ func PutMatchEndsIsConfirmedById(context *gin.Context) {
 		var lockedEnd database.MatchEnd
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&lockedEnd, id).Error; err != nil {
 			return err
+		}
+		if data.IsConfirmed && actor == scoreActorPlayer {
+			var elimination database.Elimination
+			if err := tx.Select("team_size").First(&elimination, eliminationID).Error; err != nil {
+				return err
+			}
+			_, arrows, err := matchEndsAndArrows(elimination.TeamSize)
+			if err != nil {
+				return err
+			}
+			var scores []database.MatchScore
+			if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).Where("match_end_id = ?", id).Find(&scores).Error; err != nil {
+				return err
+			}
+			if len(scores) != arrows {
+				return errScoreForbidden
+			}
+			for _, score := range scores {
+				if score.Score < 0 || score.Score > 11 {
+					return errScoreForbidden
+				}
+			}
 		}
 		if lockedEnd.IsConfirmed && !data.IsConfirmed && actor != scoreActorAdmin {
 			return errScoreForbidden
@@ -1445,7 +1467,7 @@ func PutMatchEndsIsConfirmedById(context *gin.Context) {
 // Put MatchScore score godoc
 //
 //	@Summary		Update one MatchScore score
-//	@Description	Update one MatchScore score and recompute its MatchEnd total. Approved Judges may update the active current stage, Players their own current match's unconfirmed end, and Admins may perform rescue updates. Confirmed ends require the aggregate endpoint.
+//	@Description	Update one MatchScore score and recompute its MatchEnd total. Approved Judges may update the active current stage, Players their own current match's unconfirmed end while a recurve match has no persisted winner, and Admins may perform rescue updates. Confirmed ends require the aggregate endpoint.
 //	@Tags			MatchScore
 //	@Accept			json
 //	@Param			id			path		int												true	"MatchScore ID"
@@ -1494,7 +1516,7 @@ func PutMatchScoreScoreById(context *gin.Context) {
 		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).First(&oldScore, id).Error; err != nil {
 			return err
 		}
-		if _, err := authorizeEliminationScore(context, tx, eliminationID, matchID, &oldScore.MatchEndId); err != nil {
+		if _, err := authorizeEliminationScore(context, tx, eliminationID, matchID, &oldScore.MatchEndId, eliminationScoreWrite); err != nil {
 			return err
 		}
 		if err := requireOccupiedMatch(tx, matchID); err != nil {

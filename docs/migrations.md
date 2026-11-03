@@ -1,6 +1,6 @@
 # 資料庫 migration
 
-所有環境使用同一組版本化 SQL。dev Compose 的 backend 啟動前執行 `migrate up`。production server 的 migration 版本檢查失敗時只記錄警告，仍繼續初始化與啟動；development／test server 與 seeder 仍要求 clean 最新版本。server 不執行 AutoMigrate、修外鍵或刪欄位。production 若 DB 連線或必要初始化本身失敗仍會退出；舊版、dirty 或未知 schema 上的 API 可能失敗或寫入不符預期，應儘速完成手動 migration。
+所有環境使用同一組版本化 SQL。dev Compose 的 backend 啟動前執行 `migrate up`。server 的 migration 版本檢查失敗時只記錄警告、略過啟動資料寫入並保持運行，供執行 `./migrate …` 修復後重啟；seeder 仍要求 clean 最新版本。此行為不會執行 migration，亦不使錯誤的 environment 安全；production 仍必須設為 `production`。server 不執行 AutoMigrate、修外鍵或刪欄位。DB 連線或必要設定失敗仍會退出；舊版、dirty 或未知 schema 上的 API 可能失敗或寫入不符預期，應儘速完成手動 migration。
 
 ## 版本與資料
 

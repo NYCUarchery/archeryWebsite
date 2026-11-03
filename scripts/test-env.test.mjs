@@ -104,6 +104,10 @@ test('go test failure keeps its exit code and still tears down', async () => {
   assertCleaned(events);
   assertIsolatedEnvironment(events);
   const reportDirectory = runnerReportDirectory(events);
+  const testLog = readFileSync(path.join(reportDirectory, 'go-test.jsonl'), 'utf8');
+  assert.match(testLog, /test failure diagnostic/);
+  assert.ok(run.output().includes(testLog), 'test stdout was hidden from CI');
+  assert.match(run.output(), /test stderr diagnostic/);
   assert.ok(existsSync(path.join(reportDirectory, 'services.log')));
   rmSync(reportDirectory, { recursive: true, force: true });
 });

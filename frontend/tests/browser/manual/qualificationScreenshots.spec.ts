@@ -128,6 +128,9 @@ async function registerScoreSummaryRoutes(page: Page, asPlayer = false) {
       }],
     },
   }));
+  await page.route(`**/lane/all/${competitionId}`, (route) => route.fulfill({
+    json: [{ id: 9730, competition_id: competitionId, qualification_id: groupId, lane_number: 1 }],
+  }));
   await page.route(`**/player/scores/${playerId}`, (route) => route.fulfill({ json: player }));
 }
 
@@ -163,8 +166,8 @@ test("選手從我的比賽進入賽事並開啟切換選單", async ({ page }) 
 
 async function selectPlayerForJudge(page: Page) {
   await page.goto(`/competition/${competitionId}/judge`);
-  await page.getByLabel("選手姓名").fill("選手 01");
-  await page.getByRole("option", { name: "選手 01" }).click();
+  await page.getByRole("combobox", { name: "靶位", exact: true }).fill("1A");
+  await page.getByRole("option", { name: "1A 選手 01", exact: true }).click();
   await expect(page.getByText("1-1", { exact: true })).toBeVisible();
 }
 

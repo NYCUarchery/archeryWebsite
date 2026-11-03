@@ -338,6 +338,7 @@ export interface RecordedRequest {
 
 export interface EliminationRouteHandles {
   eliminationDetailRequests: RecordedRequest[];
+  eliminationProgressRequests: RecordedRequest[];
   savedScoreRequests: RecordedRequest[];
   confirmRequests: RecordedRequest[];
   // 積點／勝負／推進局數等「本功能不應呼叫」之其他對抗賽端點，若被呼叫會記錄於此。
@@ -346,6 +347,7 @@ export interface EliminationRouteHandles {
   setConfirmShouldFail(shouldFail: boolean): void;
   setScoreSaveWinner(matchResultId: number | null): void;
   setCompetitionPhase(phase: number): void;
+  setGroupBowType(bowType: string): void;
   setEliminationProgress(stage: number, end: number): void;
   setMatchEndScores(matchEndId: number, scores: number[]): void;
   // 取得目前「伺服器端」某 MatchEnd 之狀態（PATCH 後會更新），供測試斷言持久化結果。
@@ -437,6 +439,33 @@ const FORBIDDEN_PATTERNS = [
   "**/elimination/currentstage/minus/*",
 ];
 
+// 輕量輪詢只含本輪各對局勝者與確認狀態，與後端 scoring_status DTO 同形。
+export function eliminationProgressResponse(elimination: DatabaseElimination, bowType?: string) {
+  const isRecurve = bowType === "Recurve" || bowType === "反曲弓";
+  const stage = elimination.stages?.[elimination.current_stage ?? 0];
+  return {
+    id: elimination.id,
+    group_id: elimination.group_id,
+    team_size: elimination.team_size,
+    current_stage: elimination.current_stage,
+    current_end: elimination.current_end,
+    scoring_status: [...(stage?.matchs ?? [])]
+      .sort((left, right) => (left.id ?? 0) - (right.id ?? 0))
+      .map((match) => {
+        const winner = match.match_results?.find((result) => result.is_winner);
+        return {
+          match_id: match.id,
+          winner_match_result_id: winner?.id ?? null,
+          is_scoring_closed: isRecurve && winner !== undefined,
+          end_confirmations: (match.match_results ?? [])
+            .flatMap((result) => result.match_ends ?? [])
+            .map((end) => ({ id: end.id, is_confirmed: end.is_confirmed ?? false }))
+            .sort((left, right) => (left.id ?? 0) - (right.id ?? 0)),
+        };
+      }),
+  };
+}
+
 // 於指定 page 上攔截對抗賽記分頁會用到之所有後端 API，回傳可觀察／可控制之 handles。
 export async function registerEliminationRoutes(
   page: Page,
@@ -451,6 +480,7 @@ export async function registerEliminationRoutes(
   );
 
   const eliminationDetailRequests: RecordedRequest[] = [];
+  const eliminationProgressRequests: RecordedRequest[] = [];
   const savedScoreRequests: RecordedRequest[] = [];
   const confirmRequests: RecordedRequest[] = [];
   const forbiddenRequests: RecordedRequest[] = [];
@@ -586,18 +616,12 @@ export async function registerEliminationRoutes(
     },
   );
 
-  // current_stage/current_end 採輕量輪詢；完整籤表與分數仍由上方端點提供。
+  // 波次、勝者及確認狀態採輕量輪詢；完整籤表與分數仍由上方端點提供。
   await page.route(`**/elimination/${fixture.eliminationId}`, async (route) => {
+    const request = route.request();
+    eliminationProgressRequests.push({ url: request.url(), method: request.method(), body: null });
     await route.fulfill({
-      status: 200,
-      contentType: "application/json",
-      body: JSON.stringify({
-        id: serverElimination.id,
-        group_id: serverElimination.group_id,
-        team_size: serverElimination.team_size,
-        current_stage: serverElimination.current_stage,
-        current_end: serverElimination.current_end,
-      }),
+      json: eliminationProgressResponse(serverElimination, serverCompetition.groups?.[0].bow_type),
     });
   });
 
@@ -621,15 +645,15 @@ export async function registerEliminationRoutes(
       });
       matchEnd.total_scores = body.total_scores;
       recomputeMatchPoints(serverElimination);
-	  if (scoreSaveWinner !== undefined) {
-		for (const stage of serverElimination.stages ?? []) {
-		  for (const match of stage.matchs ?? []) {
-			for (const result of match.match_results ?? []) {
-			  result.is_winner = result.id === scoreSaveWinner;
-			}
-		  }
-		}
-	  }
+      if (scoreSaveWinner !== undefined) {
+        for (const stage of serverElimination.stages ?? []) {
+          for (const match of stage.matchs ?? []) {
+            for (const result of match.match_results ?? []) {
+              result.is_winner = result.id === scoreSaveWinner;
+            }
+          }
+        }
+      }
     }
     await route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
   });
@@ -668,6 +692,7 @@ export async function registerEliminationRoutes(
 
   return {
     eliminationDetailRequests,
+    eliminationProgressRequests,
     savedScoreRequests,
     confirmRequests,
     forbiddenRequests,
@@ -677,11 +702,14 @@ export async function registerEliminationRoutes(
     setConfirmShouldFail: (shouldFail: boolean) => {
       confirmShouldFail = shouldFail;
     },
-	setScoreSaveWinner: (matchResultId: number | null) => {
-	  scoreSaveWinner = matchResultId;
-	},
+    setScoreSaveWinner: (matchResultId: number | null) => {
+      scoreSaveWinner = matchResultId;
+    },
     setCompetitionPhase: (phase: number) => {
       serverCompetition.current_phase = phase;
+    },
+    setGroupBowType: (bowType: string) => {
+      serverCompetition.groups![0].bow_type = bowType;
     },
     setEliminationProgress: (stage: number, end: number) => {
       serverElimination.current_stage = stage;

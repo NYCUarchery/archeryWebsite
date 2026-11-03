@@ -21,6 +21,10 @@ import {
 } from "./eliminationScoringSlice";
 import EliminationScoringStates from "./EliminationScoringStates";
 import EliminationScoringBoard from "./EliminationScoringBoard";
+import ClosedEliminationScoringBoard from "./ClosedEliminationScoringBoard";
+import { recurveClosingEnd } from "./recurveClosingEnd";
+
+type EliminationDetailResponse = Awaited<ReturnType<typeof apiClient.elimination.stagesScoresMedalsDetail>>;
 
 // 把 useCurrentEliminationMatch 之 ready 資料（DatabaseMatchResult[] + 目前 MatchEnd）
 // 轉換為 slice 所需的 LocalMatchResult[]（見契約 §3 末段之轉換規則）。
@@ -102,10 +106,27 @@ export default function Page({ params }: { params: { id: string } }) {
   const readyMatchId = status.kind === "ready" ? status.data.match.id : undefined;
   const readyEndIndex =
     status.kind === "ready" ? status.data.currentEndIndex : undefined;
+  const isClosed = status.kind === "ready" &&
+    (status.data.group.bow_type === "Recurve" || status.data.group.bow_type === "反曲弓") &&
+    status.data.matchResults.some((result) => result.is_winner);
+  const confirmationEndIndex = isClosed && status.kind === "ready"
+    ? recurveClosingEnd(status.data.matchResults, status.data.teamSize)
+    : undefined;
+  const displayedMatchResults = isClosed && status.kind === "ready"
+    ? toLocalMatchResults(
+        status.data.matchResults,
+        confirmationEndIndex ?? status.data.currentEndIndex,
+        status.data.elimination.player_sets ?? [],
+      )
+    : matchResults;
 
   // ready 時，把該對局資料轉換並整批灌入 slice。
   useEffect(() => {
     if (status.kind !== "ready") return;
+    // Keep abandoned drafts for the warning; the closed board reads saved scores directly.
+    if (isClosed && matchResults.some((local) =>
+      status.data.matchResults.some((result) => result.id === local.matchResultId)
+    )) return;
     isLocalRefreshRef.current = true;
     dispatch(
       initializeMatchResults({
@@ -120,9 +141,9 @@ export default function Page({ params }: { params: { id: string } }) {
       })
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [readyMatchId, readyEndIndex]);
+  }, [readyMatchId, readyEndIndex, isClosed]);
 
-  const selectedMatchResult = matchResults.find(
+  const selectedMatchResult = displayedMatchResults.find(
     (mr) => mr.matchResultId === selectedMatchResultIdentifier
   );
 
@@ -181,7 +202,7 @@ export default function Page({ params }: { params: { id: string } }) {
   );
 
   // 確認：僅呼叫 isconfirmed 端點，不重算/重送分數，不動 total_points/is_winner/current_end。
-  const { mutate: confirmEnd } = useMutation(
+  const { mutate: confirmEnd, isLoading: isConfirming } = useMutation(
     async (target: LocalMatchResult) => {
       await apiClient.matchEnd.matchendIsconfirmedPartialUpdate(
         target.currentMatchEndId,
@@ -190,11 +211,30 @@ export default function Page({ params }: { params: { id: string } }) {
       return {
         matchResultId: target.matchResultId,
         currentMatchEndId: target.currentMatchEndId,
+        eliminationId: status.kind === "ready" ? status.data.elimination.id : undefined,
       };
     },
     {
-      onSuccess: (target) => {
+      onSuccess: async (target) => {
         dispatch(markConfirmed(target));
+        if (target.eliminationId !== undefined) {
+          const key = ["eliminationDetail", target.eliminationId];
+          // The confirmation is already saved; retain it even if the following read fails.
+          queryClient.setQueryData<EliminationDetailResponse | undefined>(key, (cached) => {
+            if (!cached) return cached;
+            const data = structuredClone(cached.data);
+            for (const stage of data.stages ?? []) {
+              for (const match of stage.matchs ?? []) {
+                for (const result of match.match_results ?? []) {
+                  const end = result.match_ends?.find((end) => end.id === target.currentMatchEndId);
+                  if (end) end.is_confirmed = true;
+                }
+              }
+            }
+            return { ...cached, data };
+          });
+          await queryClient.invalidateQueries(key, { exact: true }, { cancelRefetch: true });
+        }
         setSnackbar({ open: true, severity: "success", message: "已確認本波" });
       },
       onError: () => {
@@ -210,6 +250,7 @@ export default function Page({ params }: { params: { id: string } }) {
   // 自動儲存：選中側由未滿轉為填滿容量時自動觸發存分；guard 避免初始化後重觸，
   // 亦避免切換選中側時被舊的填滿狀態誤判。
   useEffect(() => {
+    if (isClosed) return;
     if (!selectedMatchResult) {
       prevFilledCountRef.current = null;
       prevSelectedIdRef.current = selectedMatchResultIdentifier;
@@ -235,13 +276,14 @@ export default function Page({ params }: { params: { id: string } }) {
     prevFilledCountRef.current = filledCount;
 
     if (
+      selectedMatchResult.dirty &&
       prevFilledCount !== null &&
       prevFilledCount < selectedMatchResult.capacity &&
       filledCount >= selectedMatchResult.capacity
     ) {
       saveScores(selectedMatchResult);
     }
-  }, [selectedMatchResult, selectedMatchResultIdentifier, saveScores]);
+  }, [selectedMatchResult, selectedMatchResultIdentifier, saveScores, isClosed]);
 
   const handleCloseSnackbar = () => {
     setSnackbar((prev) => ({ ...prev, open: false }));
@@ -253,6 +295,21 @@ export default function Page({ params }: { params: { id: string } }) {
 
   return (
     <>
+      {isClosed ? (
+        <ClosedEliminationScoringBoard
+          data={status.data}
+          matchResults={displayedMatchResults}
+          selectedMatchResultIdentifier={selectedMatchResultIdentifier}
+          confirmationEndIndex={confirmationEndIndex}
+          isBusy={isSaving || isConfirming}
+          hasUnsavedChanges={matchResults.some((result) => result.dirty)}
+          onSelect={(id) => dispatch(selectMatchResult(id))}
+          onConfirm={() => {
+            if (isSaving || isConfirming || confirmationEndIndex === undefined || !selectedMatchResult || selectedMatchResult.isConfirmed) return;
+            confirmEnd(selectedMatchResult);
+          }}
+        />
+      ) : (
       <EliminationScoringBoard
         data={status.data}
         matchResults={matchResults}
@@ -286,6 +343,7 @@ export default function Page({ params }: { params: { id: string } }) {
           confirmEnd(selectedMatchResult);
         }}
       />
+      )}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={5000}

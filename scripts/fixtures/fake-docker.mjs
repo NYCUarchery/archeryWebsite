@@ -33,7 +33,11 @@ if (command === 'inspect') {
   console.log(JSON.stringify([{ Config: { Labels: { 'com.docker.compose.project': project } } }]));
 }
 if (command === 'run') {
-  if (mode === 'go-fail') process.exit(7);
+  if (mode === 'go-fail') {
+    process.stdout.write('{"Action":"fail","Output":"test failure diagnostic\\n"}\n');
+    process.stderr.write('test stderr diagnostic\n');
+    process.exitCode = 7;
+  }
   if (mode === 'log-write-fail') {
     const volume = args[args.indexOf('-v') + 1];
     const reportDirectory = volume?.split(':/reports')[0];

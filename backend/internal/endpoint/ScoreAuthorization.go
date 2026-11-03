@@ -33,6 +33,7 @@ type eliminationScoreTarget struct {
 	StageID       uint
 	CurrentStage  uint
 	TeamSize      int
+	BowType       string
 	IsActive      bool
 }
 
@@ -89,7 +90,7 @@ func eliminationScoreTargetForMatch(tx *gorm.DB, matchID uint) (eliminationScore
 		Select(`competition_group.competition_id AS competition_id,
 			stages.elimination_id AS elimination_id, matches.id AS match_id,
 			stages.id AS stage_id, eliminations.current_stage AS current_stage,
-			eliminations.team_size AS team_size`).
+			eliminations.team_size AS team_size, competition_group.bow_type AS bow_type`).
 		Joins("JOIN stages ON stages.id = matches.stage_id").
 		Joins("JOIN eliminations ON eliminations.id = stages.elimination_id").
 		Joins("JOIN `groups` AS competition_group ON competition_group.id = eliminations.group_id").
@@ -179,10 +180,17 @@ func requireMatchSidesUnconfirmed(tx *gorm.DB, matchID uint, targetEndID uint) e
 	return nil
 }
 
+type eliminationScoreAction int
+
+const (
+	eliminationScoreWrite eliminationScoreAction = iota
+	eliminationScoreConfirmation
+)
+
 // authorizeEliminationScore must run after lockEliminationForScoring.
 // It observes current_stage and score confirmation under the same transaction
 // as the eventual write.
-func authorizeEliminationScore(context *gin.Context, tx *gorm.DB, eliminationID, matchID uint, matchEndID *uint) (scoreActor, error) {
+func authorizeEliminationScore(context *gin.Context, tx *gorm.DB, eliminationID, matchID uint, matchEndID *uint, action eliminationScoreAction) (scoreActor, error) {
 	userID, err := scoreSessionUserID(context)
 	if err != nil {
 		return 0, err
@@ -220,6 +228,19 @@ func authorizeEliminationScore(context *gin.Context, tx *gorm.DB, eliminationID,
 	}
 	if !participates {
 		return 0, errScoreForbidden
+	}
+	if action == eliminationScoreWrite {
+		var winners []database.MatchResult
+		// Use a locking current read: an earlier roster lookup may have opened
+		// the transaction snapshot before the winning save acquired its lock.
+		if err := tx.Clauses(clause.Locking{Strength: "UPDATE"}).
+			Select("id").Where("match_id = ? AND is_winner = ?", matchID, true).
+			Find(&winners).Error; err != nil {
+			return 0, err
+		}
+		if database.IsRecurveScoringClosed(target.BowType, len(winners) > 0) {
+			return 0, errScoreForbidden
+		}
 	}
 	if err := requireMatchSidesUnconfirmed(tx, matchID, *matchEndID); err != nil {
 		return 0, err

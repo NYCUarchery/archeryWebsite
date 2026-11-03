@@ -8,6 +8,8 @@ import { DatabaseRoundEnd } from "@/types/Api";
 import { Player } from "@/types/oldRef/Player";
 import { apiClient } from "@/utils/ApiClient";
 import useGetCompetitionPlayers from "@/utils/QueryHooks/useGetCompetitionPlayers";
+import useGetLanes from "@/utils/QueryHooks/useGetLanes";
+import getTarget from "@/utils/getTarget";
 import { calculatePlayerStats } from "@/utils/calculatePlayerStatistics";
 import {
   Alert,
@@ -48,6 +50,14 @@ function endTotal(end: DatabaseRoundEnd): number {
   }, 0);
 }
 
+type TargetOption = {
+  label: string;
+  value: number;
+  target: string;
+  laneNumber: number;
+  order: number;
+};
+
 const qualificationScoreSize = "clamp(0.75rem, 3vw, 1.25rem)";
 
 function QualificationScoreSlot({ score }: { score: number | undefined }) {
@@ -85,11 +95,9 @@ export default function QualificationScoreEditor({
   competitionId: number;
 }) {
   const queryClient = useQueryClient();
-  const { data: players } = useGetCompetitionPlayers(competitionId);
-  const [selectedPlayer, setSelectedPlayer] = useState<{
-    label: string;
-    value: number;
-  } | null>(null);
+  const playersQuery = useGetCompetitionPlayers(competitionId);
+  const lanesQuery = useGetLanes(competitionId);
+  const [selectedPlayer, setSelectedPlayer] = useState<TargetOption | null>(null);
   const [inputValue, setInputValue] = useState("");
   const [selectedEnd, setSelectedEnd] = useState<DatabaseRoundEnd | null>(null);
   const [dirty, setDirty] = useState(false);
@@ -144,12 +152,31 @@ export default function QualificationScoreEditor({
     },
   );
 
-  const playerOptions =
-    players?.flatMap((item) =>
-      item?.id === undefined
-        ? []
-        : [{ value: item.id, label: item.name ?? "未命名選手" }],
-    ) ?? [];
+  const isLoadingTargets = playersQuery.isFetching || lanesQuery.isFetching;
+  const hasTargetError = playersQuery.isError || lanesQuery.isError;
+  const lanesById = new Map(
+    (lanesQuery.data ?? [])
+      .filter((lane) => Number.isInteger(lane.id) && lane.id > 0 &&
+        Number.isInteger(lane.lane_number) && lane.lane_number > 0)
+      .map((lane) => [lane.id, lane.lane_number]),
+  );
+  const playerOptions: TargetOption[] = (playersQuery.data ?? []).flatMap((item) => {
+    if (!item || !Number.isInteger(item.id) || (item.id ?? 0) <= 0 ||
+      !Number.isInteger(item.lane_id) || (item.lane_id ?? 0) <= 0 ||
+      !Number.isInteger(item.order) || (item.order ?? 0) < 1 || (item.order ?? 0) > 4) {
+      return [];
+    }
+    const laneNumber = lanesById.get(item.lane_id!);
+    if (laneNumber === undefined) return [];
+    const target = getTarget(laneNumber, item.order!);
+    return [{
+      value: item.id!,
+      label: `${target} ${item.name ?? "未命名選手"}`,
+      target,
+      laneNumber,
+      order: item.order!,
+    }];
+  }).sort((a, b) => a.laneNumber - b.laneNumber || a.order - b.order);
   const playerStats = player
     ? calculatePlayerStats(player as unknown as Player)
     : undefined;
@@ -166,7 +193,7 @@ export default function QualificationScoreEditor({
     setError(null);
   };
 
-  const selectPlayer = (next: { label: string; value: number } | null) => {
+  const selectPlayer = (next: TargetOption | null) => {
     setSelectedPlayer(next);
     setSelectedEnd(null);
     setDirty(false);
@@ -294,19 +321,45 @@ export default function QualificationScoreEditor({
       <Card sx={{ p: { xs: 1, sm: 2 }, m: { xs: 1, sm: 2 } }}>
         <Autocomplete
           sx={{ width: { xs: "100%", sm: 200 } }}
-          options={playerOptions}
+          options={hasTargetError ? [] : playerOptions}
+          disabled={isLoadingTargets || hasTargetError}
+          loading={isLoadingTargets}
+          loadingText="載入靶位中…"
+          noOptionsText="無已排靶選手"
+          isOptionEqualToValue={(option, value) => option.value === value.value}
+          filterOptions={(options, { inputValue: search }) =>
+            options.filter((option) =>
+              option.target.toUpperCase().startsWith(search.trim().toUpperCase()),
+            )
+          }
           id="player-select"
           value={selectedPlayer}
           inputValue={inputValue}
           onChange={(_, next) => selectPlayer(next)}
           onInputChange={(_, next) => setInputValue(next)}
-          renderInput={(params) => <TextField {...params} label="選手姓名" />}
+          renderInput={(params) => <TextField {...params} label="靶位" />}
         />
+        {hasTargetError && (
+          <Alert
+            severity="error"
+            sx={{ mt: 1 }}
+            action={
+              <Button color="inherit" size="small" onClick={() => {
+                void playersQuery.refetch();
+                void lanesQuery.refetch();
+              }}>
+                重試
+              </Button>
+            }
+          >
+            靶位資料載入失敗，請重試。
+          </Alert>
+        )}
       </Card>
 
       <Box sx={{ mx: { xs: 1, sm: 2 }, minWidth: 0 }}>
         {error && !selectedEnd && <Alert severity="error" sx={{ mb: 1 }}>{error}</Alert>}
-        <TableContainer component={Paper} sx={{ width: "100%", overflow: "hidden" }}>
+        {selectedPlayer && <TableContainer component={Paper} sx={{ width: "100%", overflow: "hidden" }}>
           <Table data-testid="qualification-score-editor-table" size="small" sx={{ width: "100%", tableLayout: "fixed" }}>
             <TableHead>
               <TableRow>
@@ -345,7 +398,7 @@ export default function QualificationScoreEditor({
               )}
             </TableBody>
           </Table>
-        </TableContainer>
+        </TableContainer>}
       </Box>
 
       <Dialog

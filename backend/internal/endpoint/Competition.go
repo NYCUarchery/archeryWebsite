@@ -825,23 +825,11 @@ func PutCompetitionQualificationActive(context *gin.Context) {
 //	@Success		204	{object}	response.Nill						"success, but no change"
 //	@Failure		400	{object}	response.ErrorIdResponse			"invalid competition id parameter"
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse	"Update Competition Elimination Active"
+//	@Description	Atomically fills missing individual Eliminations and medals for assigned groups, including when already active.
+//	@Failure		409	{object}	response.ErrorResponse	"duplicate elimination or medal type"
 //	@Router			/competition/elimination-isactive/{id} [patch]
 func PutCompetitionEliminationActive(context *gin.Context) {
-	id := Convert2uint(context, "id")
-	/*check data exist*/
-	isExist, _ := IsGetOnlyCompetition(context, id)
-	if !isExist {
-		return
-	}
-	/*update and check change*/
-	isChanged, err := database.UpdateCompetitionEliminationActive(id)
-	if response.ErrorInternalErrorTest(context, id, "Update Competition Elimination Active", err) {
-		return
-	} else if response.AcceptNotChange(context, id, isChanged) {
-		return
-	}
-
-	context.IndentedJSON(http.StatusOK, gin.H{"message": "Update Competition Elimination Active Success"})
+	putCompetitionEliminationModeActive(context, 1)
 }
 
 // Put Competition Team Elimination Active godoc
@@ -849,47 +837,17 @@ func PutCompetitionEliminationActive(context *gin.Context) {
 //	@Summary		Update one Competition Team Elimination Active to be true and create team elimination.
 //	@Description	Update one Competition Team Elimination Active to be true by id.
 //	@Description	Cannot change to false, only can change to true.
-//	@Description	Create all team elimination for groups.
+//	@Description	Atomically fills missing team Eliminations and medals for assigned groups, including when already active.
 //	@Tags			Competition
 //	@Param			id	path		int									true	"Competition ID"
 //	@Success		200	{object}	response.Response					"success"
 //	@Success		204	{object}	response.Nill						"success, but no change"
 //	@Failure		400	{object}	response.ErrorIdResponse			"invalid competition id parameter"
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse	"Update Competition Team Elimination Active / Get Competition Group Ids / Post Elimination By Id"
+//	@Failure		409	{object}	response.ErrorResponse	"duplicate elimination or medal type"
 //	@Router			/competition/team-elimination-isactive/{id} [patch]
 func PutCompetitionTeamEliminationActive(context *gin.Context) {
-	id := Convert2uint(context, "id")
-	/*check data exist*/
-	isExist, _ := IsGetOnlyCompetition(context, id)
-	if !isExist {
-		return
-	}
-	/*update and check change*/
-	isChanged, err := database.UpdateCompetitionTeamEliminationActive(id)
-	if response.ErrorInternalErrorTest(context, id, "Update Competition Team Elimination Active", err) {
-		return
-	} else if response.AcceptNotChange(context, id, isChanged) {
-		return
-	}
-	/*get all group ids except Unassigned group*/
-	unassignedGroupId := database.GetCompetitionUnassignedGroupId(id)
-	groupIds, err := database.GetCompetitionGroupIds(id, unassignedGroupId)
-	if response.ErrorInternalErrorTest(context, id, "Get Competition Group Ids when update Competition Team Elimination is Active", err) {
-		return
-	}
-	/*create all team elimination for groups*/
-	for _, groupId := range groupIds {
-		var newData database.Elimination
-		newData.GroupId = groupId
-		newData.CurrentEnd = 0
-		newData.CurrentStage = 0
-		newData.TeamSize = 3
-		success, _ := PostEliminationById(context, newData)
-		if !success {
-			return
-		}
-	}
-	context.IndentedJSON(http.StatusOK, gin.H{"message": "Update Competition Team Elimination Active Success"})
+	putCompetitionEliminationModeActive(context, 3)
 }
 
 // Put Competition Mixed Elimination Active godoc
@@ -897,45 +855,75 @@ func PutCompetitionTeamEliminationActive(context *gin.Context) {
 //	@Summary		Update one Competition Mixed Elimination Active to be true and create mixed elimination.
 //	@Description	Update one Competition Mixed Elimination Active to be true by id.
 //	@Description	Cannot change to false, only can change to true.
-//	@Description	create all mixed elimination for groups
+//	@Description	Atomically fills missing mixed Eliminations and medals for assigned groups, including when already active.
 //	@Tags			Competition
 //	@Param			id	path		int									true	"Competition ID"
 //	@Success		200	{object}	response.Response					"success"
 //	@Success		204	{object}	response.Nill						"success, but no change"
 //	@Failure		400	{object}	response.ErrorIdResponse			"invalid competition id parameter"
 //	@Failure		500	{object}	response.ErrorInternalErrorResponse	"Update Competition Mixed Elimination Active / Get Competition Group Ids / Post Elimination By Id"
+//	@Failure		409	{object}	response.ErrorResponse	"duplicate elimination or medal type"
 //	@Router			/competition/mixed-elimination-isactive/{id} [patch]
 func PutCompetitionMixedEliminationActive(context *gin.Context) {
+	putCompetitionEliminationModeActive(context, 2)
+}
+
+func putCompetitionEliminationModeActive(context *gin.Context, teamSize int) {
 	id := Convert2uint(context, "id")
-	/*check data exist*/
-	isExist, _ := IsGetOnlyCompetition(context, id)
-	if !isExist {
-		return
+	column, mode := "elimination_is_active", ""
+	switch teamSize {
+	case 2:
+		column, mode = "mixed_elimination_is_active", "Mixed "
+	case 3:
+		column, mode = "team_elimination_is_active", "Team "
 	}
-	/*update and check change*/
-	isChanged, err := database.UpdateCompetitionMixedEliminationActive(id)
-	if response.ErrorInternalErrorTest(context, id, "Update Competition Mixed Elimination Active", err) {
-		return
-	} else if response.AcceptNotChange(context, id, isChanged) {
-		return
-	}
-	/*get all group ids except Unassigned group*/
-	unassignedGroupId := database.GetCompetitionUnassignedGroupId(id)
-	groupIds, err := database.GetCompetitionGroupIds(id, unassignedGroupId)
-	if response.ErrorInternalErrorTest(context, id, "Get Competition Group Ids when update Competition Mixed Elimination is Active", err) {
-		return
-	}
-	/*create all mixed elimination for groups*/
-	for _, groupId := range groupIds {
-		var newData database.Elimination
-		newData.GroupId = groupId
-		newData.CurrentEnd = 0
-		newData.CurrentStage = 0
-		newData.TeamSize = 2
-		success, _ := PostEliminationById(context, newData)
-		if !success {
-			return
+	changed := false
+	err := database.DB.Transaction(func(tx *gorm.DB) error {
+		competition, err := lockCompetitionForEliminationCreation(tx, id)
+		if err != nil {
+			return err
 		}
+		var groupIDs []uint
+		if err := tx.Model(&database.Group{}).
+			Where("competition_id = ? AND id != ? AND group_index != ?", id, competition.UnassignedGroupId, -1).
+			Order("group_index asc").Pluck("id", &groupIDs).Error; err != nil {
+			return err
+		}
+		for _, groupID := range groupIDs {
+			_, created, err := ensureElimination(tx, groupID, teamSize)
+			if err != nil {
+				return err
+			}
+			changed = changed || created
+		}
+		active := competition.EliminationIsActive
+		switch teamSize {
+		case 2:
+			active = competition.MixedEliminationIsActive
+		case 3:
+			active = competition.TeamEliminationIsActive
+		}
+		if !active {
+			if err := tx.Model(&database.Competition{}).Where("id = ?", id).Update(column, true).Error; err != nil {
+				return err
+			}
+			changed = true
+		}
+		return nil
+	})
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		response.ErrorIdTest(context, id, false, "Competition")
+		return
 	}
-	context.IndentedJSON(http.StatusOK, gin.H{"message": "Update Competition Mixed Elimination Active Success"})
+	if errors.Is(err, errEliminationCreationConflict) {
+		context.JSON(http.StatusConflict, gin.H{"error": err.Error()})
+		return
+	}
+	if response.ErrorInternalErrorTest(context, id, "Update Competition "+mode+"Elimination Active", err) {
+		return
+	}
+	if response.AcceptNotChange(context, id, changed) {
+		return
+	}
+	context.IndentedJSON(http.StatusOK, gin.H{"message": "Update Competition " + mode + "Elimination Active Success"})
 }
